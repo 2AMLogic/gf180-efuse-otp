@@ -1,0 +1,44 @@
+{
+  "pdk_revision": "f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+  "variant": "gf180mcuC",
+  "corner": "typical",
+  "temp_c": 27,
+  "ngspice_version": "46",
+  "timestamp_utc": "20261017T214852Z",
+  "ngspice_exit": 0,
+  "devices": [
+    {
+      "name": "n33",
+      "model": "nfet_03v3",
+      "op_id_a": "0.00093363",
+      "dc_points": 34,
+      "dc_idmax_a": "0.00356002",
+      "converged": true
+    },
+    {
+      "name": "p33",
+      "model": "pfet_03v3",
+      "op_id_a": "0.00024405",
+      "dc_points": 34,
+      "dc_idmax_a": "0.00130965",
+      "converged": true
+    },
+    {
+      "name": "n60",
+      "model": "nfet_06v0",
+      "op_id_a": "0.00193481",
+      "dc_points": 61,
+      "dc_idmax_a": "0.00544473",
+      "converged": true
+    },
+    {
+      "name": "p60",
+      "model": "pfet_06v0",
+      "op_id_a": "0.000599631",
+      "dc_points": 61,
+      "dc_idmax_a": "0.00210443",
+      "converged": true
+    }
+  ],
+  "all_converged": true
+}
