@@ -3,7 +3,7 @@
   "open_pdks_revision": "f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
   "ciel_version": "2.6.1",
   "variant": "gf180mcuC",
-  "ngspice_version": "46",
+  "ngspice_version": "42",
   "xschem_version": "3.4.7",
   "notes": "Provisioning: ciel enable --pdk-family gf180mcu -l gf180mcu_fd_pr <open_pdks_revision> (root ~/.ciel). Variant gf180mcuC carries the 3.3 V and 6 V MOS families in sm141064.ngspice. The variant choice is a toolchain choice only; it implies nothing about device selection."
 }
