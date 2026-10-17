@@ -10,7 +10,7 @@ for the analog paths and Yosys/OpenROAD for the controller.
 **Private repo.** Visibility is an operator decision; nothing here is
 published.
 
-**Status: just opened, specification phase.** Nothing is designed yet.
+**Status: spec ratified.** Nothing is designed yet.
 
 ## What the block is
 
@@ -48,23 +48,17 @@ Three surfaces this block exists to exercise:
   programmed resistance distributions, and where those numbers come from has
   to be documented, not assumed.
 
-## Target specification (DRAFT — engineering to ratify, see issue #1)
+## Target specification
 
-All figures are targets.
-
-| Parameter | Target | Fallback | Stretch |
-|---|---|---|---|
-| Array | 256 bits (32 × 8) | 8 bits (1 × 8) | 1 kbit |
-| Interface | synchronous, native address / program-enable / read | asynchronous parallel read | serial interface |
-| Program supply | external for this test vehicle | — | on-die (decision record) |
-| Program path | worst-corner current delivery at or above the required program current | — | — |
-| Sense margin | positive at every corner, over the documented intact/programmed resistance ranges | — | — |
-| Signoff | DRC (including every `EF.*` rule) + LVS clean | — | — |
+The ratified spec is [`spec/efuse-otp.md`](spec/efuse-otp.md): the PDK
+documentation survey, the parameter table (target / fallback / stretch), the
+PVT corner set, and the limits of pre-silicon evidence. Decision records are in
+[`spec/decisions/`](spec/decisions/).
 
 Maturity ladder: spec ratified → cell and program path simulated across PVT
 → sense path simulated across PVT → array DRC/LVS-clean → controller
 verified → assembled and LVS-clean → shuttle seat → measured silicon.
-**Current position: pre-spec.**
+**Current position: spec ratified.**
 
 ## Repo layout
 
