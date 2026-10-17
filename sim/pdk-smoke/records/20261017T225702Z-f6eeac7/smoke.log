@@ -1,0 +1,40 @@
+
+Note: No compatibility mode selected!
+
+
+Circuit: * pdk smoke: models load and converge. not a device choice. typical, 27 c.
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+No. of Data Rows : 1
+SMOKE_OP n33 id=0.00093363
+SMOKE_OP p33 id=0.00024405
+SMOKE_OP n60 id=0.00193481
+SMOKE_OP p60 id=0.000599631
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+No. of Data Rows : 34
+SMOKE_DC n33 points=34 idmax=0.00356002
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+No. of Data Rows : 34
+SMOKE_DC p33 points=34 idmax=0.00130965
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+No. of Data Rows : 61
+SMOKE_DC n60 points=61 idmax=0.00544473
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+No. of Data Rows : 61
+SMOKE_DC p60 points=61 idmax=0.00210443
+ngspice-42 done

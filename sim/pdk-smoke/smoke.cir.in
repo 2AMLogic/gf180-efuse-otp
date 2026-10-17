@@ -1,0 +1,52 @@
+* PDK smoke: models load and converge. Not a device choice. Typical, 27 C.
+* @DESIGN@ and @LIB@ are substituted by run.sh with the resolved PDK paths.
+.include @DESIGN@
+.lib @LIB@ typical
+.temp 27
+
+* Independent single-device benches: 3.3 V and 6 V families, one N and one P each.
+* Geometry is arbitrary (W/L = 10u/<Lmin-ish>); it is a convergence probe only.
+vdn33 dn33 0 1.65
+vgn33 gn33 0 1.65
+xn33 dn33 gn33 0 0 nfet_03v3 w=10u l=0.5u
+vdp33 dp33 0 -1.65
+vgp33 gp33 0 -1.65
+xp33 dp33 gp33 0 0 pfet_03v3 w=10u l=0.5u
+vdn60 dn60 0 3
+vgn60 gn60 0 3
+xn60 dn60 gn60 0 0 nfet_06v0 w=10u l=0.7u
+vdp60 dp60 0 -3
+vgp60 gp60 0 -3
+xp60 dp60 gp60 0 0 pfet_06v0 w=10u l=0.7u
+* P bulk/source at 0 and the drain/gate negative keeps every bench ground-referenced.
+
+.control
+set noaskquit
+op
+let id_n33 = abs(i(vdn33))
+echo "SMOKE_OP n33 id=$&id_n33"
+let id_p33 = abs(i(vdp33))
+echo "SMOKE_OP p33 id=$&id_p33"
+let id_n60 = abs(i(vdn60))
+echo "SMOKE_OP n60 id=$&id_n60"
+let id_p60 = abs(i(vdp60))
+echo "SMOKE_OP p60 id=$&id_p60"
+dc vgn33 0 3.3 0.1
+let npts_n33 = length(v(gn33))
+let idmax_n33 = maximum(abs(i(vdn33)))
+echo "SMOKE_DC n33 points=$&npts_n33 idmax=$&idmax_n33"
+dc vgp33 0 -3.3 -0.1
+let npts_p33 = length(v(gp33))
+let idmax_p33 = maximum(abs(i(vdp33)))
+echo "SMOKE_DC p33 points=$&npts_p33 idmax=$&idmax_p33"
+dc vgn60 0 6 0.1
+let npts_n60 = length(v(gn60))
+let idmax_n60 = maximum(abs(i(vdn60)))
+echo "SMOKE_DC n60 points=$&npts_n60 idmax=$&idmax_n60"
+dc vgp60 0 -6 -0.1
+let npts_p60 = length(v(gp60))
+let idmax_p60 = maximum(abs(i(vdp60)))
+echo "SMOKE_DC p60 points=$&npts_p60 idmax=$&idmax_p60"
+quit
+.endc
+.end
