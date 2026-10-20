@@ -2,6 +2,11 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-10-20
+
+- **PR #6**: ci: add PDK-free harness workflow and committed signoff record
+- **Issue #5** (closed): T1 item 10: add a block manifest, a committed signoff record and a PDK-free CI that keeps evidence formats valid
+
 ### 2026-10-17
 
 - **PR #8**: docs: ratify eFuse OTP target spec with PDK survey and decision records
