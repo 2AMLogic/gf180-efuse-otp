@@ -4,6 +4,10 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-10-23
 
+- **PR #22**: fix(sim): drop unused --backend option from program-select run.sh
+- **PR #19**: docs(sim): record searched sources for nfet_06v0 voltage limit
+- **Issue #20** (closed): Remove dead --backend flag from sim/program-select/run.sh (parsed, never used, contradicts batch-only header)
+- **Issue #18** (closed): Cite the PDK numeric voltage limit for nfet_06v0 (follow-on from PR #17)
 - **PR #17**: feat(sim): program-select width sweep bench, 60 um passes all PVT points
 - **PR #16**: feat(rtl): add eFuse OTP controller with arm-after-reset and cocotb bench
 - **Issue #15** (closed): sim: size the nfet_06v0 program-select device for >= 10 mA across the decision-0005 corner set (T1 items 1, 5 groundwork, analog partition)
