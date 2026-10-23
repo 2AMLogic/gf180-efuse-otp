@@ -38,7 +38,11 @@ RROUTE_OHM=20
 WIDTHS_UM="20 40 60 80 100"
 IREQ_A=0.010                             # A2, spec/efuse-otp.md section 2
 FUSE_OHMS="140 200 260"                  # A4 range; only 200 ohm is documented
-VMAX_RATING=6.0                          # nfet_06v0 label in sm141064.ngspice; no numeric limit found
+# VMAX_RATING: still an assumption. No documented Vgs/Vds/Vgd rating for nfet_06v0 was found (searched
+# 2026-10-23: sm141064.ngspice; gf180mcu-pdk.readthedocs.io analog/spice/elec_specs_2 "2.0 Medium Voltage
+# Devices (6V)" and elec_specs_7_5; IPs/IO/gf180mcu_fd_io/conditions). 6.0 V is the device class label and
+# the Idsat characterisation bias (|Vds|=|Vgs|=6V), not a rating. See design/README.md.
+VMAX_RATING=6.0
 stamp="$(date -u +%Y%m%dT%H%M%SZ)"
 rec="$here/records/$stamp-${PDK_REVISION:0:7}"
 mkdir -p "$here/records"
