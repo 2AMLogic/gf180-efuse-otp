@@ -2,6 +2,12 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-10-23
+
+- **PR #17**: feat(sim): program-select width sweep bench, 60 um passes all PVT points
+- **PR #16**: feat(rtl): add eFuse OTP controller with arm-after-reset and cocotb bench
+- **Issue #15** (closed): sim: size the nfet_06v0 program-select device for >= 10 mA across the decision-0005 corner set (T1 items 1, 5 groundwork, analog partition)
+
 ### 2026-10-21
 
 - **PR #11**: Bump Repo Skills 0.24.3 -> 0.24.7
