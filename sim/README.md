@@ -37,3 +37,14 @@ Each run creates `sim/pdk-smoke/records/<UTC stamp>-<rev>/` holding
 variant, corner, temperature, ngspice version, and a per-device `converged`
 flag derived from the log). Records are append-only: `run.sh` refuses to reuse
 an existing directory, and committed records are never edited.
+
+## Program-select width sweep
+
+`sim/program-select/run.sh` sweeps the `nfet_06v0` select width over the full
+decision-0005 PVT set with the fuse at 140/200/260 Ω. It writes
+`sim/program-select/records/<stamp>-<rev>/record.json` (every PVT point, fuse
+current, Vgs, Vds, pass/fail against 10 mA, binding corner per width). The grid
+is 15 `klt sim` requests submitted with `--batch-set`, so it needs the batch
+fleet; a failed submit is reported and never re-run locally.
+`program-select.sch` is the schematic (netlist it with `klt netlist`); the
+swept deck is `cell.cir.in`. Result and derivation: `design/README.md`.

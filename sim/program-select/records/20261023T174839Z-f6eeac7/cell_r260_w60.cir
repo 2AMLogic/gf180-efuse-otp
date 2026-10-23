@@ -1,0 +1,31 @@
+* Program-select bench: one cell, nfet_06v0 select in series with the fuse.
+* Circuit body for `klt sim` (no .control/.end). run.sh substitutes /home/ubuntu/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/design.ngspice,
+* 20 and Rfuse na nb 260 and writes the result into the record directory.
+.include /home/ubuntu/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/design.ngspice
+* The PDK efuse subcircuit (pblow=0 -> 200 ohm) comes from the `efuse` section
+* of the model library, added to every corner as a second section by the
+* request (not through a res_* process block, so it does not depend on the
+* process corner name).
+
+* ASSUMPTION (no documented source): routing resistance, one lumped value in
+* series with the fuse. Single parameter, set only in run.sh.
+.param rroute=20
+* Select width; run.sh writes one deck per width.
+.param wsel=60u
+* Plain-resistor fuse variants (140 / 260) are written with the value inline.
+* Program supply; klt sim alters source Vdd per corner (4.5 / 5.0 / 5.5 V).
+.param vdd=5.0
+
+Vdd vdd 0 DC {vdd}
+* ASSUMPTION (ideal level-shifter output): gate = program supply at that
+* corner, so Vgs tracks the supply. Ideal VCVS, no output resistance.
+Eg g 0 vdd 0 1
+* Zero-volt ammeter in the supply leg: fuse current = i(Vi) (run.sh measures it as the Rr drop / rroute).
+Vi vdd na DC 0
+Rfuse na nb 260
+Rr nb d {rroute}
+Xsel d g 0 0 nfet_06v0 w={wsel} l=0.7u
+* Unused two-point sweep axis: plain .meas cards need a dc sweep, and the
+* fuse current is read at its first point (every point is the same bias).
+Vdmy dmy 0 0
+Rdmy dmy 0 1k
