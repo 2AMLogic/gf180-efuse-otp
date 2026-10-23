@@ -1,0 +1,86 @@
+{
+  "netlist": "cell_r140_w40.cir",
+  "engine": "ngspice",
+  "models": {
+    "lib": "libs.tech/ngspice/sm141064.ngspice",
+    "pdk": "gf180mcuD"
+  },
+  "corners": {
+    "process": [
+      {
+        "name": "typical",
+        "sections": [
+          "typical",
+          "efuse"
+        ]
+      },
+      {
+        "name": "ff",
+        "sections": [
+          "ff",
+          "efuse"
+        ]
+      },
+      {
+        "name": "ss",
+        "sections": [
+          "ss",
+          "efuse"
+        ]
+      },
+      {
+        "name": "fs",
+        "sections": [
+          "fs",
+          "efuse"
+        ]
+      },
+      {
+        "name": "sf",
+        "sections": [
+          "sf",
+          "efuse"
+        ]
+      }
+    ],
+    "supply_v": {
+      "vdd": [
+        4.5,
+        5.0,
+        5.5
+      ]
+    },
+    "temperature_c": [
+      -40,
+      25,
+      125
+    ]
+  },
+  "analysis": {
+    "kind": "dc",
+    "args": "Vdmy 0 1 1"
+  },
+  "measurements": [
+    {
+      "name": "i_fuse",
+      "spice": ".meas dc i_fuse find par('(v(nb)-v(d))/20') at=0",
+      "unit": "A",
+      "limits": {
+        "min": 0.010
+      }
+    },
+    {
+      "name": "vgs",
+      "spice": ".meas dc vgs find v(g) at=0",
+      "unit": "V"
+    },
+    {
+      "name": "vds",
+      "spice": ".meas dc vds find v(d) at=0",
+      "unit": "V"
+    }
+  ],
+  "options": {
+    "timeout_s": 10
+  }
+}

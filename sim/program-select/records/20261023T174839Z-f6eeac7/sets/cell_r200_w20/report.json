@@ -1,0 +1,2591 @@
+{
+  "schema_version": 3,
+  "netlist": {
+    "path": "sim/program-select/records/20261023T174839Z-f6eeac7/cell_r200_w20.cir",
+    "scope": "repo"
+  },
+  "status": "fail",
+  "corner_count": 45,
+  "passed": 8,
+  "failed": 37,
+  "errored": 0,
+  "inconclusive": 0,
+  "diagnostic_counts": {
+    "by_code": {},
+    "by_severity": {},
+    "corners_with_diagnostics": 0
+  },
+  "metrics": {
+    "sim__corner__count": 45,
+    "sim__corner__passed_count": 8,
+    "sim__corner__failed_count": 37,
+    "sim__corner__errored_count": 0,
+    "sim__corner__inconclusive_count": 0
+  },
+  "environment": {
+    "engine": "ngspice",
+    "engine_version": "46",
+    "ngspice_binary": "/usr/local/bin/ngspice",
+    "engine_build": {
+      "version_banner": "******\n** ngspice-46 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2025, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Wed Aug  5 10:12:28 UTC 2026\n******",
+      "binary_sha256": "c874869b16dc8a31cfa9d37d2b90a2a9e0e5b996f8e2535db89eb82855072931",
+      "probe": "ok",
+      "reason": null
+    },
+    "models_lib": {
+      "path": null,
+      "scope": "external"
+    },
+    "models_lib_sha256": "f6f4a96e18fc5ad11270ad3451aaecc7ac37fc81eb61e15b0d7d94c7bc594a24",
+    "models_lib_sha256_scope": "client",
+    "netlist_sha256": "42915fcd3e5d0035b195bd7acf5d671306197a02ec26cac7be54822f047e0555",
+    "corner_coverage": {
+      "pdk": "gf180mcuD",
+      "sections": [
+        {
+          "process": "ff",
+          "unmoved_devices": [
+            "06v0",
+            "06v0_nvt",
+            "fets_mm",
+            "noise_corner"
+          ]
+        },
+        {
+          "process": "ss",
+          "unmoved_devices": [
+            "06v0",
+            "06v0_nvt",
+            "fets_mm",
+            "noise_corner"
+          ]
+        },
+        {
+          "process": "fs",
+          "unmoved_devices": [
+            "06v0",
+            "06v0_nvt",
+            "fets_mm",
+            "noise_corner"
+          ]
+        },
+        {
+          "process": "sf",
+          "unmoved_devices": [
+            "06v0",
+            "06v0_nvt",
+            "fets_mm",
+            "noise_corner"
+          ]
+        }
+      ]
+    },
+    "netlist_closure": [
+      {
+        "path": "sim/program-select/records/20261023T174839Z-f6eeac7/cell_r200_w20.cir",
+        "scope": "repo",
+        "sha256": "42915fcd3e5d0035b195bd7acf5d671306197a02ec26cac7be54822f047e0555"
+      },
+      {
+        "target": "$PDK_ROOT/gf180mcuD/libs.tech/ngspice/design.ngspice",
+        "sha256": null,
+        "unhashed_reason": "env_var"
+      }
+    ],
+    "netlist_identity": null,
+    "netlist_identity_error": "include(s) resolved by the executing host are not hashable: $PDK_ROOT/gf180mcuD/libs.tech/ngspice/design.ngspice",
+    "remote": {
+      "provider": "aws-batch-fleet",
+      "job_id": "klt-sim-999127aa70b3",
+      "region": "us-east-1",
+      "instance_id": "i-09846cb7da5701d1d",
+      "instance_type": "c7i.8xlarge",
+      "availability_zone": "us-east-1c",
+      "ami_id": "ami-0e0bec04ad8e81877",
+      "lifecycle": "spot",
+      "spot": true,
+      "state": "failed",
+      "exit_code": "3",
+      "concurrency": "2",
+      "physical_cores": "16",
+      "elapsed_seconds": 7,
+      "client_submitted_at": "2026-10-23T17:49:32.590466Z",
+      "client_launched_at": "2026-10-23T17:50:21.191663Z",
+      "client_status_terminal_at": "2026-10-23T17:50:52.533406Z",
+      "client_collected_at": "2026-10-23T17:50:53.413782Z",
+      "runner_klt_version": "0.7.0",
+      "client_klt_version": "0.7.1.dev2517+g6bb7cf233677",
+      "runner_compatibility": "match",
+      "worker_environment": {
+        "capture": "ok",
+        "simulator": {
+          "requested_binary": "ngspice",
+          "binary_source": "PATH",
+          "selected_path": "/usr/local/bin/ngspice",
+          "version_banner": "******\n** ngspice-46 : Circuit level simulation program\n** Compiled with KLU Direct Linear Solver\n** The U. C. Berkeley CAD Group\n** Copyright 1985-1994, Regents of the University of California.\n** Copyright 2001-2025, The ngspice team.\n** Please get your ngspice manual from https://ngspice.sourceforge.io/docs.html\n** Please file your bug-reports at http://ngspice.sourceforge.net/bugrep.html\n** Creation Date: Thu Oct  1 23:51:59 UTC 2026\n******\n",
+          "version_probe": "ok"
+        },
+        "pdk": {
+          "variant": "gf180mcuD",
+          "root": "/opt/pdk",
+          "stamp_scheme": "sources-sha256",
+          "stamp_sha256": "d5ac52956829da3fee35d0b307d4e6cb83ae0e6535b56dba2eefed61cdffaf9b",
+          "stamp_text": "open_pdks c6d73a35f524070e85faff4a6a9eef49553ebc2b",
+          "models_staged": false,
+          "stamp_scope": "executed"
+        },
+        "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+        "omp_num_threads": null,
+        "image_manifest": null,
+        "model_inputs": null,
+        "diagnostics": [],
+        "pdk_stamp_comparison": {
+          "status": "mismatch",
+          "warning": "the worker's PDK revision stamp for gf180mcuD differs from the one the submitter resolved locally; results may differ from a local run (a matching stamp would not prove identical models)"
+        },
+        "engine_build_comparison": {
+          "status": "mismatch",
+          "warning": "the worker's ngspice --version banner differs from the local binary's; build options (e.g. FFT linkage) may differ, so results derived from them can differ from a local run"
+        }
+      },
+      "runner_model_inputs": null,
+      "job_ceiling": {
+        "basis": "conservative_serial_bound",
+        "unit_count": 45,
+        "per_unit_timeout_s": 10,
+        "overhead_s": 120.0,
+        "job_bound_s": 570.0,
+        "max_job_seconds": 3600.0,
+        "max_job_seconds_source": "fleet_config",
+        "exceeds_ceiling": false,
+        "check": "warn",
+        "max_units_per_job": 348,
+        "recommended_hosts": 1
+      }
+    },
+    "engine_host": "worker",
+    "client_ngspice_binary": "/home/ubuntu/.local/bin/ngspice",
+    "backend": {
+      "resolved": "batch",
+      "source": "flag",
+      "requested": "batch"
+    }
+  },
+  "coverage": {
+    "corners_simulated": 45,
+    "measurements_declared": 3,
+    "measurements_with_limits": 1,
+    "unrecognized_limit_keys": [],
+    "schema_version": 1,
+    "known": true,
+    "checked": [
+      "limit:[0,\"typical/4.500V/-40C\",\"i_fuse\",\"min\"]",
+      "limit:[1,\"typical/4.500V/25C\",\"i_fuse\",\"min\"]",
+      "limit:[10,\"ff/4.500V/25C\",\"i_fuse\",\"min\"]",
+      "limit:[11,\"ff/4.500V/125C\",\"i_fuse\",\"min\"]",
+      "limit:[12,\"ff/5.000V/-40C\",\"i_fuse\",\"min\"]",
+      "limit:[13,\"ff/5.000V/25C\",\"i_fuse\",\"min\"]",
+      "limit:[14,\"ff/5.000V/125C\",\"i_fuse\",\"min\"]",
+      "limit:[15,\"ff/5.500V/-40C\",\"i_fuse\",\"min\"]",
+      "limit:[16,\"ff/5.500V/25C\",\"i_fuse\",\"min\"]",
+      "limit:[17,\"ff/5.500V/125C\",\"i_fuse\",\"min\"]",
+      "limit:[18,\"ss/4.500V/-40C\",\"i_fuse\",\"min\"]",
+      "limit:[19,\"ss/4.500V/25C\",\"i_fuse\",\"min\"]",
+      "limit:[2,\"typical/4.500V/125C\",\"i_fuse\",\"min\"]",
+      "limit:[20,\"ss/4.500V/125C\",\"i_fuse\",\"min\"]",
+      "limit:[21,\"ss/5.000V/-40C\",\"i_fuse\",\"min\"]",
+      "limit:[22,\"ss/5.000V/25C\",\"i_fuse\",\"min\"]",
+      "limit:[23,\"ss/5.000V/125C\",\"i_fuse\",\"min\"]",
+      "limit:[24,\"ss/5.500V/-40C\",\"i_fuse\",\"min\"]",
+      "limit:[25,\"ss/5.500V/25C\",\"i_fuse\",\"min\"]",
+      "limit:[26,\"ss/5.500V/125C\",\"i_fuse\",\"min\"]",
+      "limit:[27,\"fs/4.500V/-40C\",\"i_fuse\",\"min\"]",
+      "limit:[28,\"fs/4.500V/25C\",\"i_fuse\",\"min\"]",
+      "limit:[29,\"fs/4.500V/125C\",\"i_fuse\",\"min\"]",
+      "limit:[3,\"typical/5.000V/-40C\",\"i_fuse\",\"min\"]",
+      "limit:[30,\"fs/5.000V/-40C\",\"i_fuse\",\"min\"]",
+      "limit:[31,\"fs/5.000V/25C\",\"i_fuse\",\"min\"]",
+      "limit:[32,\"fs/5.000V/125C\",\"i_fuse\",\"min\"]",
+      "limit:[33,\"fs/5.500V/-40C\",\"i_fuse\",\"min\"]",
+      "limit:[34,\"fs/5.500V/25C\",\"i_fuse\",\"min\"]",
+      "limit:[35,\"fs/5.500V/125C\",\"i_fuse\",\"min\"]",
+      "limit:[36,\"sf/4.500V/-40C\",\"i_fuse\",\"min\"]",
+      "limit:[37,\"sf/4.500V/25C\",\"i_fuse\",\"min\"]",
+      "limit:[38,\"sf/4.500V/125C\",\"i_fuse\",\"min\"]",
+      "limit:[39,\"sf/5.000V/-40C\",\"i_fuse\",\"min\"]",
+      "limit:[4,\"typical/5.000V/25C\",\"i_fuse\",\"min\"]",
+      "limit:[40,\"sf/5.000V/25C\",\"i_fuse\",\"min\"]",
+      "limit:[41,\"sf/5.000V/125C\",\"i_fuse\",\"min\"]",
+      "limit:[42,\"sf/5.500V/-40C\",\"i_fuse\",\"min\"]",
+      "limit:[43,\"sf/5.500V/25C\",\"i_fuse\",\"min\"]",
+      "limit:[44,\"sf/5.500V/125C\",\"i_fuse\",\"min\"]",
+      "limit:[5,\"typical/5.000V/125C\",\"i_fuse\",\"min\"]",
+      "limit:[6,\"typical/5.500V/-40C\",\"i_fuse\",\"min\"]",
+      "limit:[7,\"typical/5.500V/25C\",\"i_fuse\",\"min\"]",
+      "limit:[8,\"typical/5.500V/125C\",\"i_fuse\",\"min\"]",
+      "limit:[9,\"ff/4.500V/-40C\",\"i_fuse\",\"min\"]",
+      "measurement:[0,\"typical/4.500V/-40C\",\"vds\"]/observation",
+      "measurement:[0,\"typical/4.500V/-40C\",\"vgs\"]/observation",
+      "measurement:[1,\"typical/4.500V/25C\",\"vds\"]/observation",
+      "measurement:[1,\"typical/4.500V/25C\",\"vgs\"]/observation",
+      "measurement:[10,\"ff/4.500V/25C\",\"vds\"]/observation",
+      "measurement:[10,\"ff/4.500V/25C\",\"vgs\"]/observation",
+      "measurement:[11,\"ff/4.500V/125C\",\"vds\"]/observation",
+      "measurement:[11,\"ff/4.500V/125C\",\"vgs\"]/observation",
+      "measurement:[12,\"ff/5.000V/-40C\",\"vds\"]/observation",
+      "measurement:[12,\"ff/5.000V/-40C\",\"vgs\"]/observation",
+      "measurement:[13,\"ff/5.000V/25C\",\"vds\"]/observation",
+      "measurement:[13,\"ff/5.000V/25C\",\"vgs\"]/observation",
+      "measurement:[14,\"ff/5.000V/125C\",\"vds\"]/observation",
+      "measurement:[14,\"ff/5.000V/125C\",\"vgs\"]/observation",
+      "measurement:[15,\"ff/5.500V/-40C\",\"vds\"]/observation",
+      "measurement:[15,\"ff/5.500V/-40C\",\"vgs\"]/observation",
+      "measurement:[16,\"ff/5.500V/25C\",\"vds\"]/observation",
+      "measurement:[16,\"ff/5.500V/25C\",\"vgs\"]/observation",
+      "measurement:[17,\"ff/5.500V/125C\",\"vds\"]/observation",
+      "measurement:[17,\"ff/5.500V/125C\",\"vgs\"]/observation",
+      "measurement:[18,\"ss/4.500V/-40C\",\"vds\"]/observation",
+      "measurement:[18,\"ss/4.500V/-40C\",\"vgs\"]/observation",
+      "measurement:[19,\"ss/4.500V/25C\",\"vds\"]/observation",
+      "measurement:[19,\"ss/4.500V/25C\",\"vgs\"]/observation",
+      "measurement:[2,\"typical/4.500V/125C\",\"vds\"]/observation",
+      "measurement:[2,\"typical/4.500V/125C\",\"vgs\"]/observation",
+      "measurement:[20,\"ss/4.500V/125C\",\"vds\"]/observation",
+      "measurement:[20,\"ss/4.500V/125C\",\"vgs\"]/observation",
+      "measurement:[21,\"ss/5.000V/-40C\",\"vds\"]/observation",
+      "measurement:[21,\"ss/5.000V/-40C\",\"vgs\"]/observation",
+      "measurement:[22,\"ss/5.000V/25C\",\"vds\"]/observation",
+      "measurement:[22,\"ss/5.000V/25C\",\"vgs\"]/observation",
+      "measurement:[23,\"ss/5.000V/125C\",\"vds\"]/observation",
+      "measurement:[23,\"ss/5.000V/125C\",\"vgs\"]/observation",
+      "measurement:[24,\"ss/5.500V/-40C\",\"vds\"]/observation",
+      "measurement:[24,\"ss/5.500V/-40C\",\"vgs\"]/observation",
+      "measurement:[25,\"ss/5.500V/25C\",\"vds\"]/observation",
+      "measurement:[25,\"ss/5.500V/25C\",\"vgs\"]/observation",
+      "measurement:[26,\"ss/5.500V/125C\",\"vds\"]/observation",
+      "measurement:[26,\"ss/5.500V/125C\",\"vgs\"]/observation",
+      "measurement:[27,\"fs/4.500V/-40C\",\"vds\"]/observation",
+      "measurement:[27,\"fs/4.500V/-40C\",\"vgs\"]/observation",
+      "measurement:[28,\"fs/4.500V/25C\",\"vds\"]/observation",
+      "measurement:[28,\"fs/4.500V/25C\",\"vgs\"]/observation",
+      "measurement:[29,\"fs/4.500V/125C\",\"vds\"]/observation",
+      "measurement:[29,\"fs/4.500V/125C\",\"vgs\"]/observation",
+      "measurement:[3,\"typical/5.000V/-40C\",\"vds\"]/observation",
+      "measurement:[3,\"typical/5.000V/-40C\",\"vgs\"]/observation",
+      "measurement:[30,\"fs/5.000V/-40C\",\"vds\"]/observation",
+      "measurement:[30,\"fs/5.000V/-40C\",\"vgs\"]/observation",
+      "measurement:[31,\"fs/5.000V/25C\",\"vds\"]/observation",
+      "measurement:[31,\"fs/5.000V/25C\",\"vgs\"]/observation",
+      "measurement:[32,\"fs/5.000V/125C\",\"vds\"]/observation",
+      "measurement:[32,\"fs/5.000V/125C\",\"vgs\"]/observation",
+      "measurement:[33,\"fs/5.500V/-40C\",\"vds\"]/observation",
+      "measurement:[33,\"fs/5.500V/-40C\",\"vgs\"]/observation",
+      "measurement:[34,\"fs/5.500V/25C\",\"vds\"]/observation",
+      "measurement:[34,\"fs/5.500V/25C\",\"vgs\"]/observation",
+      "measurement:[35,\"fs/5.500V/125C\",\"vds\"]/observation",
+      "measurement:[35,\"fs/5.500V/125C\",\"vgs\"]/observation",
+      "measurement:[36,\"sf/4.500V/-40C\",\"vds\"]/observation",
+      "measurement:[36,\"sf/4.500V/-40C\",\"vgs\"]/observation",
+      "measurement:[37,\"sf/4.500V/25C\",\"vds\"]/observation",
+      "measurement:[37,\"sf/4.500V/25C\",\"vgs\"]/observation",
+      "measurement:[38,\"sf/4.500V/125C\",\"vds\"]/observation",
+      "measurement:[38,\"sf/4.500V/125C\",\"vgs\"]/observation",
+      "measurement:[39,\"sf/5.000V/-40C\",\"vds\"]/observation",
+      "measurement:[39,\"sf/5.000V/-40C\",\"vgs\"]/observation",
+      "measurement:[4,\"typical/5.000V/25C\",\"vds\"]/observation",
+      "measurement:[4,\"typical/5.000V/25C\",\"vgs\"]/observation",
+      "measurement:[40,\"sf/5.000V/25C\",\"vds\"]/observation",
+      "measurement:[40,\"sf/5.000V/25C\",\"vgs\"]/observation",
+      "measurement:[41,\"sf/5.000V/125C\",\"vds\"]/observation",
+      "measurement:[41,\"sf/5.000V/125C\",\"vgs\"]/observation",
+      "measurement:[42,\"sf/5.500V/-40C\",\"vds\"]/observation",
+      "measurement:[42,\"sf/5.500V/-40C\",\"vgs\"]/observation",
+      "measurement:[43,\"sf/5.500V/25C\",\"vds\"]/observation",
+      "measurement:[43,\"sf/5.500V/25C\",\"vgs\"]/observation",
+      "measurement:[44,\"sf/5.500V/125C\",\"vds\"]/observation",
+      "measurement:[44,\"sf/5.500V/125C\",\"vgs\"]/observation",
+      "measurement:[5,\"typical/5.000V/125C\",\"vds\"]/observation",
+      "measurement:[5,\"typical/5.000V/125C\",\"vgs\"]/observation",
+      "measurement:[6,\"typical/5.500V/-40C\",\"vds\"]/observation",
+      "measurement:[6,\"typical/5.500V/-40C\",\"vgs\"]/observation",
+      "measurement:[7,\"typical/5.500V/25C\",\"vds\"]/observation",
+      "measurement:[7,\"typical/5.500V/25C\",\"vgs\"]/observation",
+      "measurement:[8,\"typical/5.500V/125C\",\"vds\"]/observation",
+      "measurement:[8,\"typical/5.500V/125C\",\"vgs\"]/observation",
+      "measurement:[9,\"ff/4.500V/-40C\",\"vds\"]/observation",
+      "measurement:[9,\"ff/4.500V/-40C\",\"vgs\"]/observation"
+    ],
+    "skipped": [],
+    "inapplicable": [
+      {
+        "id": "measurement:[0,\"typical/4.500V/-40C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[0,\"typical/4.500V/-40C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"typical/4.500V/25C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[1,\"typical/4.500V/25C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"ff/4.500V/25C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[10,\"ff/4.500V/25C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"ff/4.500V/125C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[11,\"ff/4.500V/125C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"ff/5.000V/-40C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[12,\"ff/5.000V/-40C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"ff/5.000V/25C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[13,\"ff/5.000V/25C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"ff/5.000V/125C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[14,\"ff/5.000V/125C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[15,\"ff/5.500V/-40C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[15,\"ff/5.500V/-40C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[16,\"ff/5.500V/25C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[16,\"ff/5.500V/25C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[17,\"ff/5.500V/125C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[17,\"ff/5.500V/125C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[18,\"ss/4.500V/-40C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[18,\"ss/4.500V/-40C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[19,\"ss/4.500V/25C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[19,\"ss/4.500V/25C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"typical/4.500V/125C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[2,\"typical/4.500V/125C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[20,\"ss/4.500V/125C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[20,\"ss/4.500V/125C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[21,\"ss/5.000V/-40C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[21,\"ss/5.000V/-40C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[22,\"ss/5.000V/25C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[22,\"ss/5.000V/25C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[23,\"ss/5.000V/125C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[23,\"ss/5.000V/125C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[24,\"ss/5.500V/-40C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[24,\"ss/5.500V/-40C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[25,\"ss/5.500V/25C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[25,\"ss/5.500V/25C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[26,\"ss/5.500V/125C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[26,\"ss/5.500V/125C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[27,\"fs/4.500V/-40C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[27,\"fs/4.500V/-40C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[28,\"fs/4.500V/25C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[28,\"fs/4.500V/25C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[29,\"fs/4.500V/125C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[29,\"fs/4.500V/125C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typical/5.000V/-40C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[3,\"typical/5.000V/-40C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[30,\"fs/5.000V/-40C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[30,\"fs/5.000V/-40C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[31,\"fs/5.000V/25C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[31,\"fs/5.000V/25C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[32,\"fs/5.000V/125C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[32,\"fs/5.000V/125C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[33,\"fs/5.500V/-40C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[33,\"fs/5.500V/-40C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[34,\"fs/5.500V/25C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[34,\"fs/5.500V/25C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[35,\"fs/5.500V/125C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[35,\"fs/5.500V/125C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[36,\"sf/4.500V/-40C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[36,\"sf/4.500V/-40C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[37,\"sf/4.500V/25C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[37,\"sf/4.500V/25C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[38,\"sf/4.500V/125C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[38,\"sf/4.500V/125C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[39,\"sf/5.000V/-40C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[39,\"sf/5.000V/-40C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typical/5.000V/25C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[4,\"typical/5.000V/25C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[40,\"sf/5.000V/25C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[40,\"sf/5.000V/25C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[41,\"sf/5.000V/125C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[41,\"sf/5.000V/125C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[42,\"sf/5.500V/-40C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[42,\"sf/5.500V/-40C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[43,\"sf/5.500V/25C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[43,\"sf/5.500V/25C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[44,\"sf/5.500V/125C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[44,\"sf/5.500V/125C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typical/5.000V/125C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[5,\"typical/5.000V/125C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"typical/5.500V/-40C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[6,\"typical/5.500V/-40C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"typical/5.500V/25C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[7,\"typical/5.500V/25C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"typical/5.500V/125C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[8,\"typical/5.500V/125C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"ff/4.500V/-40C\",\"vds\"]/limits",
+        "reason": "characterization_without_limits"
+      },
+      {
+        "id": "measurement:[9,\"ff/4.500V/-40C\",\"vgs\"]/limits",
+        "reason": "characterization_without_limits"
+      }
+    ],
+    "unknown": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": []
+  },
+  "provenance": {
+    "klt_version": "0.7.1.dev2517+g6bb7cf233677",
+    "klayout_version": "0.30.12",
+    "pdk": {
+      "name": "gf180mcuD",
+      "source": "PDK_ROOT environment variable",
+      "version": "open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+      "ambiguous_sources": [
+        "search root: ~/.ciel",
+        "search root: ~/.volare"
+      ]
+    },
+    "deck": {
+      "name": "sm141064.ngspice",
+      "content_hash": "sha256:f6f4a96e18fc5ad11270ad3451aaecc7ac37fc81eb61e15b0d7d94c7bc594a24",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:42915fcd3e5d0035b195bd7acf5d671306197a02ec26cac7be54822f047e0555",
+      "role": "netlist"
+    }
+  },
+  "measurements": [
+    {
+      "name": "i_fuse",
+      "unit": "A",
+      "limits": {
+        "min": 0.01
+      },
+      "status": "fail",
+      "worst_case": {
+        "corner_id": "ss/4.500V/125C",
+        "value": 0.00518488,
+        "margin": -0.00481512
+      }
+    },
+    {
+      "name": "vgs",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "typical/4.500V/-40C",
+        "value": 4.5,
+        "margin": null
+      }
+    },
+    {
+      "name": "vds",
+      "unit": "V",
+      "limits": null,
+      "status": "pass",
+      "worst_case": {
+        "corner_id": "typical/4.500V/-40C",
+        "value": 2.68431,
+        "margin": null
+      }
+    }
+  ],
+  "corners": [
+    {
+      "corner_id": "typical/4.500V/-40C",
+      "process": "typical",
+      "supply_v": {
+        "vdd": 4.5
+      },
+      "temperature_c": -40,
+      "status": "fail",
+      "runtime_s": 0.324,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00825313,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.001746870000000001
+        },
+        {
+          "name": "vgs",
+          "value": 4.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 2.68431,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "typical/4.500V/25C",
+      "process": "typical",
+      "supply_v": {
+        "vdd": 4.5
+      },
+      "temperature_c": 25,
+      "status": "fail",
+      "runtime_s": 0.326,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00739518,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.00260482
+        },
+        {
+          "name": "vgs",
+          "value": 4.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 2.87306,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "typical/4.500V/125C",
+      "process": "typical",
+      "supply_v": {
+        "vdd": 4.5
+      },
+      "temperature_c": 125,
+      "status": "fail",
+      "runtime_s": 0.327,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00625081,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.0037491900000000003
+        },
+        {
+          "name": "vgs",
+          "value": 4.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.12482,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "typical/5.000V/-40C",
+      "process": "typical",
+      "supply_v": {
+        "vdd": 5.0
+      },
+      "temperature_c": -40,
+      "status": "fail",
+      "runtime_s": 0.336,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00961435,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.00038564999999999953
+        },
+        {
+          "name": "vgs",
+          "value": 5.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 2.88484,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "typical/5.000V/25C",
+      "process": "typical",
+      "supply_v": {
+        "vdd": 5.0
+      },
+      "temperature_c": 25,
+      "status": "fail",
+      "runtime_s": 0.322,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00861371,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.00138629
+        },
+        {
+          "name": "vgs",
+          "value": 5.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.10498,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "typical/5.000V/125C",
+      "process": "typical",
+      "supply_v": {
+        "vdd": 5.0
+      },
+      "temperature_c": 125,
+      "status": "fail",
+      "runtime_s": 0.326,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00727368,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.00272632
+        },
+        {
+          "name": "vgs",
+          "value": 5.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.39979,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "typical/5.500V/-40C",
+      "process": "typical",
+      "supply_v": {
+        "vdd": 5.5
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 0.337,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.0109708,
+          "unit": "A",
+          "status": "pass",
+          "margin": 0.0009707999999999991
+        },
+        {
+          "name": "vgs",
+          "value": 5.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.08643,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "typical/5.500V/25C",
+      "process": "typical",
+      "supply_v": {
+        "vdd": 5.5
+      },
+      "temperature_c": 25,
+      "status": "fail",
+      "runtime_s": 0.283,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00982534,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.0001746600000000001
+        },
+        {
+          "name": "vgs",
+          "value": 5.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.33843,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "typical/5.500V/125C",
+      "process": "typical",
+      "supply_v": {
+        "vdd": 5.5
+      },
+      "temperature_c": 125,
+      "status": "fail",
+      "runtime_s": 0.28,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00828873,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.0017112700000000008
+        },
+        {
+          "name": "vgs",
+          "value": 5.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.67648,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/4.500V/-40C",
+      "process": "ff",
+      "supply_v": {
+        "vdd": 4.5
+      },
+      "temperature_c": -40,
+      "status": "fail",
+      "runtime_s": 0.338,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00983206,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.0001679400000000001
+        },
+        {
+          "name": "vgs",
+          "value": 4.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 2.33695,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/4.500V/25C",
+      "process": "ff",
+      "supply_v": {
+        "vdd": 4.5
+      },
+      "temperature_c": 25,
+      "status": "fail",
+      "runtime_s": 0.274,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00873478,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.001265220000000001
+        },
+        {
+          "name": "vgs",
+          "value": 4.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 2.57835,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/4.500V/125C",
+      "process": "ff",
+      "supply_v": {
+        "vdd": 4.5
+      },
+      "temperature_c": 125,
+      "status": "fail",
+      "runtime_s": 0.327,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00730997,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.0026900300000000004
+        },
+        {
+          "name": "vgs",
+          "value": 4.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 2.89181,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/5.000V/-40C",
+      "process": "ff",
+      "supply_v": {
+        "vdd": 5.0
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 0.329,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.0113668,
+          "unit": "A",
+          "status": "pass",
+          "margin": 0.0013667999999999996
+        },
+        {
+          "name": "vgs",
+          "value": 5.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 2.49931,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/5.000V/25C",
+      "process": "ff",
+      "supply_v": {
+        "vdd": 5.0
+      },
+      "temperature_c": 25,
+      "status": "pass",
+      "runtime_s": 0.324,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.010089,
+          "unit": "A",
+          "status": "pass",
+          "margin": 8.900000000000054e-05
+        },
+        {
+          "name": "vgs",
+          "value": 5.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 2.78042,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/5.000V/125C",
+      "process": "ff",
+      "supply_v": {
+        "vdd": 5.0
+      },
+      "temperature_c": 125,
+      "status": "fail",
+      "runtime_s": 0.324,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00842747,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.0015725300000000008
+        },
+        {
+          "name": "vgs",
+          "value": 5.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.14596,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/5.500V/-40C",
+      "process": "ff",
+      "supply_v": {
+        "vdd": 5.5
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 0.334,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.0128881,
+          "unit": "A",
+          "status": "pass",
+          "margin": 0.0028880999999999993
+        },
+        {
+          "name": "vgs",
+          "value": 5.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 2.66462,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/5.500V/25C",
+      "process": "ff",
+      "supply_v": {
+        "vdd": 5.5
+      },
+      "temperature_c": 25,
+      "status": "pass",
+      "runtime_s": 0.037,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.0114268,
+          "unit": "A",
+          "status": "pass",
+          "margin": 0.0014268000000000006
+        },
+        {
+          "name": "vgs",
+          "value": 5.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 2.9861,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ff/5.500V/125C",
+      "process": "ff",
+      "supply_v": {
+        "vdd": 5.5
+      },
+      "temperature_c": 125,
+      "status": "fail",
+      "runtime_s": 0.035,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00952758,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.00047241999999999944
+        },
+        {
+          "name": "vgs",
+          "value": 5.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.40393,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/4.500V/-40C",
+      "process": "ss",
+      "supply_v": {
+        "vdd": 4.5
+      },
+      "temperature_c": -40,
+      "status": "fail",
+      "runtime_s": 0.035,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00662387,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.0033761300000000006
+        },
+        {
+          "name": "vgs",
+          "value": 4.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.04275,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/4.500V/25C",
+      "process": "ss",
+      "supply_v": {
+        "vdd": 4.5
+      },
+      "temperature_c": 25,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00603042,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.00396958
+        },
+        {
+          "name": "vgs",
+          "value": 4.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.17331,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/4.500V/125C",
+      "process": "ss",
+      "supply_v": {
+        "vdd": 4.5
+      },
+      "temperature_c": 125,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00518488,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.00481512
+        },
+        {
+          "name": "vgs",
+          "value": 4.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.35933,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/5.000V/-40C",
+      "process": "ss",
+      "supply_v": {
+        "vdd": 5.0
+      },
+      "temperature_c": -40,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00777172,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.00222828
+        },
+        {
+          "name": "vgs",
+          "value": 5.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.29022,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/5.000V/25C",
+      "process": "ss",
+      "supply_v": {
+        "vdd": 5.0
+      },
+      "temperature_c": 25,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00708264,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.00291736
+        },
+        {
+          "name": "vgs",
+          "value": 5.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.44182,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/5.000V/125C",
+      "process": "ss",
+      "supply_v": {
+        "vdd": 5.0
+      },
+      "temperature_c": 125,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00609215,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.00390785
+        },
+        {
+          "name": "vgs",
+          "value": 5.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.65973,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/5.500V/-40C",
+      "process": "ss",
+      "supply_v": {
+        "vdd": 5.5
+      },
+      "temperature_c": -40,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00892048,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.0010795200000000005
+        },
+        {
+          "name": "vgs",
+          "value": 5.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.53749,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/5.500V/25C",
+      "process": "ss",
+      "supply_v": {
+        "vdd": 5.5
+      },
+      "temperature_c": 25,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00813505,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.0018649500000000006
+        },
+        {
+          "name": "vgs",
+          "value": 5.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.71029,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "ss/5.500V/125C",
+      "process": "ss",
+      "supply_v": {
+        "vdd": 5.5
+      },
+      "temperature_c": 125,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00699958,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.00300042
+        },
+        {
+          "name": "vgs",
+          "value": 5.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.96009,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/4.500V/-40C",
+      "process": "fs",
+      "supply_v": {
+        "vdd": 4.5
+      },
+      "temperature_c": -40,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00935287,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.000647130000000001
+        },
+        {
+          "name": "vgs",
+          "value": 4.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 2.44237,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/4.500V/25C",
+      "process": "fs",
+      "supply_v": {
+        "vdd": 4.5
+      },
+      "temperature_c": 25,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00832924,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.0016707600000000003
+        },
+        {
+          "name": "vgs",
+          "value": 4.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 2.66757,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/4.500V/125C",
+      "process": "fs",
+      "supply_v": {
+        "vdd": 4.5
+      },
+      "temperature_c": 125,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00699068,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.0030093200000000002
+        },
+        {
+          "name": "vgs",
+          "value": 4.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 2.96205,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/5.000V/-40C",
+      "process": "fs",
+      "supply_v": {
+        "vdd": 5.0
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.0108348,
+          "unit": "A",
+          "status": "pass",
+          "margin": 0.0008348000000000001
+        },
+        {
+          "name": "vgs",
+          "value": 5.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 2.61635,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/5.000V/25C",
+      "process": "fs",
+      "supply_v": {
+        "vdd": 5.0
+      },
+      "temperature_c": 25,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00964202,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.0003579800000000008
+        },
+        {
+          "name": "vgs",
+          "value": 5.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 2.87876,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/5.000V/125C",
+      "process": "fs",
+      "supply_v": {
+        "vdd": 5.0
+      },
+      "temperature_c": 125,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00807918,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.0019208200000000002
+        },
+        {
+          "name": "vgs",
+          "value": 5.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.22258,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/5.500V/-40C",
+      "process": "fs",
+      "supply_v": {
+        "vdd": 5.5
+      },
+      "temperature_c": -40,
+      "status": "pass",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.012306,
+          "unit": "A",
+          "status": "pass",
+          "margin": 0.002305999999999999
+        },
+        {
+          "name": "vgs",
+          "value": 5.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 2.79268,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/5.500V/25C",
+      "process": "fs",
+      "supply_v": {
+        "vdd": 5.5
+      },
+      "temperature_c": 25,
+      "status": "pass",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.0109413,
+          "unit": "A",
+          "status": "pass",
+          "margin": 0.0009412999999999991
+        },
+        {
+          "name": "vgs",
+          "value": 5.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.09292,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "fs/5.500V/125C",
+      "process": "fs",
+      "supply_v": {
+        "vdd": 5.5
+      },
+      "temperature_c": 125,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00915312,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.0008468799999999995
+        },
+        {
+          "name": "vgs",
+          "value": 5.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.48631,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/4.500V/-40C",
+      "process": "sf",
+      "supply_v": {
+        "vdd": 4.5
+      },
+      "temperature_c": -40,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00708191,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.00291809
+        },
+        {
+          "name": "vgs",
+          "value": 4.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 2.94198,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/4.500V/25C",
+      "process": "sf",
+      "supply_v": {
+        "vdd": 4.5
+      },
+      "temperature_c": 25,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00641042,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.00358958
+        },
+        {
+          "name": "vgs",
+          "value": 4.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.08971,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/4.500V/125C",
+      "process": "sf",
+      "supply_v": {
+        "vdd": 4.5
+      },
+      "temperature_c": 125,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00547854,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.004521460000000001
+        },
+        {
+          "name": "vgs",
+          "value": 4.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.29472,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/5.000V/-40C",
+      "process": "sf",
+      "supply_v": {
+        "vdd": 5.0
+      },
+      "temperature_c": -40,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00829461,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.001705390000000001
+        },
+        {
+          "name": "vgs",
+          "value": 5.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.17519,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/5.000V/25C",
+      "process": "sf",
+      "supply_v": {
+        "vdd": 5.0
+      },
+      "temperature_c": 25,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00751309,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.00248691
+        },
+        {
+          "name": "vgs",
+          "value": 5.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.34712,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/5.000V/125C",
+      "process": "sf",
+      "supply_v": {
+        "vdd": 5.0
+      },
+      "temperature_c": 125,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.0064208,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.0035792000000000003
+        },
+        {
+          "name": "vgs",
+          "value": 5.0,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.58743,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/5.500V/-40C",
+      "process": "sf",
+      "supply_v": {
+        "vdd": 5.5
+      },
+      "temperature_c": -40,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00950703,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.0004929700000000006
+        },
+        {
+          "name": "vgs",
+          "value": 5.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.40845,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/5.500V/25C",
+      "process": "sf",
+      "supply_v": {
+        "vdd": 5.5
+      },
+      "temperature_c": 25,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00861434,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.0013856600000000004
+        },
+        {
+          "name": "vgs",
+          "value": 5.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.60484,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    },
+    {
+      "corner_id": "sf/5.500V/125C",
+      "process": "sf",
+      "supply_v": {
+        "vdd": 5.5
+      },
+      "temperature_c": 125,
+      "status": "fail",
+      "runtime_s": 0.033,
+      "measurements": [
+        {
+          "name": "i_fuse",
+          "value": 0.00736129,
+          "unit": "A",
+          "status": "fail",
+          "margin": -0.00263871
+        },
+        {
+          "name": "vgs",
+          "value": 5.5,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        },
+        {
+          "name": "vds",
+          "value": 3.88052,
+          "unit": "V",
+          "status": "pass",
+          "margin": null
+        }
+      ],
+      "diagnostics": [],
+      "artifacts": {
+        "log": null,
+        "raw": null,
+        "waveform": null,
+        "deck": null
+      },
+      "monte_carlo": null
+    }
+  ]
+}
