@@ -14,6 +14,10 @@ sim/build/
 flow/build/
 # local klt install, created by the setup script
 .venv/
+# controller bench / synthesis scratch
+verification/.venv/
+verification/build/
+rtl/.klt/
 # >>> loom-managed (do not edit) >>>
 # Loom runtime state (don't commit these)
 .loom-in-use
