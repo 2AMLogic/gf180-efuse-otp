@@ -24,8 +24,15 @@ slowest process, hottest, highest fuse resistance.
 5.5 V (gate = supply at the 5.5 V corner) and Vds reaches 2.32 V. Both are
 within 6.0 V. That 6.0 V is an **assumed limit**: the model library names
 `nfet_06v0` the "6.0V NMOS" but I found no numeric rating in it or in `spec/`,
-so the PDK's documented limit still has to be cited before this is read as a
-rating check. The 3.3 V fallback is not taken.
+so this is not a rating check. A later search (2026-10-23) of the open PDK
+documentation (gf180mcu-pdk.readthedocs.io: `analog/spice/elec_specs/elec_specs_2`
+"2.0 Medium Voltage Devices (6V)", `elec_specs_7_5` "7.3A 6V NMOS SAB",
+`IPs/IO/gf180mcu_fd_io/conditions`) also found no Vgs/Vds/Vgd limit. What it
+does document for the 6V NMOS (NE2, W/L 10/0.7) is characterisation bias, not a
+rating: Idsat at |Vds| = |Vgs| = 6 V, Ioff at |Vds| = 6.6 V, and BVDSS 8.5 V min
+(11 V typ). The foundry design-rule and reliability documents were not
+available, so the limit stays an assumption; the 5.5 V Vgs and 2.32 V Vds seen
+here are below the 6 V test bias, which is context only. The 3.3 V fallback is not taken.
 
 **Assumptions (no documented source; also in `record.json`).**
 

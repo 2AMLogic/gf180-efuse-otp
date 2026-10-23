@@ -105,7 +105,7 @@ def main():
             "gate_drive": {"value": "ideal source equal to the program supply at the corner (Vgs = Vprog)", "status": "assumption, no documented source"},
             "fuse_140_260_ohm": "plain resistor; the PDK efuse subcircuit (rfuse = 200*(1-pblow)+900*pblow) cannot reach 140 or 260 ohm. 200 ohm uses the PDK efuse subcircuit with pblow=0.",
             "fuse_range": "A4 140-260 ohm; only 200 ohm is documented",
-            "voltage_limit_v": {"value": a.vmax, "status": "assumption: sm141064.ngspice labels nfet_06v0 as the 6.0V NMOS; no numeric rating found in the model file or spec/. Vgs and Vds are recorded per point so a different limit can be applied."},
+            "voltage_limit_v": {"value": a.vmax, "status": "assumption, no documented rating: searched sm141064.ngspice, gf180mcu-pdk.readthedocs.io analog/spice/elec_specs_2 (2.0 Medium Voltage Devices (6V)) and elec_specs_7_5, and IPs/IO/gf180mcu_fd_io/conditions (checked 2026-10-23); none gives a Vgs/Vds/Vgd limit. 6.0 V is the device-class label and the Idsat test bias, not a rating. Vgs and Vds are recorded per point so a different limit can be applied."},
         },
         "complete": complete,
         "widths": out_w,
