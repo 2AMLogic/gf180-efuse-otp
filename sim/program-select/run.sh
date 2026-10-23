@@ -6,7 +6,7 @@
 # environment.remote of each report. Writes a new append-only record under
 # sim/program-select/records/<UTC stamp>-<pdk rev:7>/. Never overwrites.
 #
-#   run.sh [--backend local|batch] [--dry-run]
+#   run.sh [--dry-run]
 #
 # Exit 0 once the record is written. Pass/fail against 10 mA is data in
 # record.json, not a script error. A failed batch submit exits non-zero and
@@ -15,12 +15,11 @@ set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 source "$here/../lib/pdk_env.sh"        # refuses a tree that is not the pin
 
-backend_args=(); dry=0
+dry=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --backend) backend_args=(--backend "$2"); shift 2 ;;
     --dry-run) dry=1; shift ;;
-    *) echo "usage: run.sh [--backend local|batch] [--dry-run]" >&2; exit 2 ;;
+    *) echo "usage: run.sh [--dry-run]" >&2; exit 2 ;;
   esac
 done
 
