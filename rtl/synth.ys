@@ -1,0 +1,7 @@
+# Generic synthesis check for efuse_otp_ctrl; run through rtl/synth.sh from the
+# repo root (it also reports the latch count).
+read_verilog rtl/efuse_otp_ctrl.v
+hierarchy -check -top efuse_otp_ctrl
+synth -top efuse_otp_ctrl
+check -assert
+stat
