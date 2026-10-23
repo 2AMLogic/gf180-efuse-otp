@@ -25,13 +25,13 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#14**: rtl: synchronous OTP controller with arm-after-reset protection and cocotb bench (T1 items 1, 9, digital partition)
+_None._
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#18**: Cite the PDK numeric voltage limit for nfet_06v0 (follow-on from PR #17)
+_None._
 
 ## PRs Awaiting Review
 
@@ -43,19 +43,17 @@ _None._
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-- **#19**: docs(sim): record searched sources for nfet_06v0 voltage limit
+_None._
 
 ## Proposed
 
 Issues carrying `loom:curated`.
 
 - **#3**: Track the gap to T1 (klayout-tools design-evidence-tiers.md) *(curated)*
-- **#14**: rtl: synchronous OTP controller with arm-after-reset protection and cocotb bench (T1 items 1, 9, digital partition) *(curated)*
-- **#18**: Cite the PDK numeric voltage limit for nfet_06v0 (follow-on from PR #17) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-- **#20**: Remove dead --backend flag from sim/program-select/run.sh (parsed, never used, contradicts batch-only header) *(hermit)*
+_None._
 
 ## Epics
 
@@ -68,11 +66,11 @@ _None._
 | Operator merge-risk holds | 0 |
 | Very important | 0 |
 | Important | 0 |
-| Ready (`loom:issue`) | 1 |
-| In Progress (`loom:building`) | 1 |
+| Ready (`loom:issue`) | 0 |
+| In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 1 |
-| Curated | 3 |
-| Architect / Hermit proposals | 1 |
+| Approved PRs awaiting merge | 0 |
+| Curated | 1 |
+| Architect / Hermit proposals | 0 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
