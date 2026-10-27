@@ -9,6 +9,7 @@ The block's verdict of record against the klayout-tools evidence tiers.
 | `block-manifest.json` | Block name, kind (`mixed-signal`), the `partition_boundary` (analog and digital nets) and the `evidence` map (`1.digital`, `1.analog`, `2.digital`, `2.analog`, `10`). |
 | `item2-analog.attest.json` | Hand-written generic envelope for T1 item 2, analog: binds `layout/efuse_otp_array.gds` by sha256 with a regeneration claim (`layout/regen-gds.sh`); cited for `2.analog`. |
 | `block-manifest.signoff.json` | Committed `klt signoff --manifest` output: the verdict of record. Item 1, item 2 and item 10 are `met` for both partitions; every other row is `unmet` / `no_evidence`. |
+| `../layout/drc-*.report.json` | Committed `klt drc` reports for T1 item 3 (`layout/drc.sh`). Both are `status: violations`, so item 3 is not cited and stays `unmet`; see `layout/README.md`, "DRC". |
 | `klt-pin.txt` | The single place the grader version is pinned. CI installs `$(cat signoff/klt-pin.txt)`. |
 | `item1-digital-inventory.json` | `t1-attestation-inventory` for T1 item 1, digital: the RTL source and the committed gate-level netlist `rtl/efuse_otp_ctrl.gl.v`, whose freshness `check` is `rtl/regen-gl.sh --check` (`local_only`: it needs Yosys and the PDK). |
 | `item1-digital.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.digital` in `block-manifest.json`, pinned by the inventory's sha256. |
