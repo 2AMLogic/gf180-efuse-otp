@@ -88,14 +88,62 @@ the check is a byte compare.
   `rsh_ppolyf_u` = 350 Ω/sq. The 1 µm width is an assumption, not a sourced
   value.
 
+## DRC (T1 item 3): not clean
+
+`layout/drc.sh` runs `klt drc --deck gf180mcu --top <top>` (the pinned klt,
+`signoff/klt-pin.txt`) on each GDS and keeps the reports as found:
+`layout/drc-array.report.json`, `layout/drc-ctrl.report.json`. `--check` re-hashes
+the input and the deck against them (`--rerun` re-runs). Deck content hash, both
+runs: `sha256:0eb6df1bafc5106ec50bd58479dbd7cda36bb685f1ef18cd3a2244a6e7e48666`
+(klt 0.8.0, klayout 0.30.12). **Item 3 stays `unmet`; no envelope is cited for it.**
+
+| Partition | status | violations |
+|---|---|---|
+| analog `efuse_otp_array` | `violations` | 2560: `contact.ongrid.1` 1128, `metal1.ongrid.1` 536, `comp.ongrid.1` 300, `poly2.ongrid.1` 222, `pplus.ongrid.1` 158, `nplus.ongrid.1` 148, `nwell.ongrid.1` 48, `dualgate.ongrid.1` 8, `res_mk.ongrid.1` 6, `sab.ongrid.1` 6 |
+| digital `efuse_otp_ctrl` | `violations` | 2525: `metal2/3.ongrid.1` 444 each, `via2/3.ongrid.1` 444 each, `metal4.ongrid.1` 24, `via2/3.width.1` 111 each, `comp.tap_distance.nwell.mv.1` 253, `comp.tap_distance.psub.mv.1` 250 |
+
+Sources (from the reports' `source_cell`):
+
+- **Analog:** every hit is inside the `efuse_sense` / `efuse_comp` hierarchy
+  (the MOS cells), none in the fuse cell, so the PDK primitive's own
+  `*.ongrid.1` hits (`spec/efuse-otp.md` §1.3) do not appear here. A standalone
+  `klt gen mos_array` cell with the same kind of parameters is clean, so the
+  off-grid vertices come from how `layout/gen_efuse_otp.py` places the cells
+  (bbox lower-left on a 0.0005 µm database grid, which is finer than the 0.005 µm
+  rule grid). Not fixed here; follow-up.
+- **Digital:** the 444-each `metal3`/`via2`/`via3` `ongrid.1` hits are in the PDN
+  via stack `VIA_via2_3_8960_1200_*` that place-and-route emits (compare
+  klayout-tools#4301). The `via2/3.width.1`, `metal4.ongrid.1`, most `metal2.ongrid.1`
+  and all `tap_distance.*.mv.1` hits are inside foundry standard cells
+  (`gf180mcu_fd_sc_mcu7t5v0__*`: `fill_*`, `dffq_1`, `nor3_1`, ...), which this
+  repo does not draw. Whether those are real violations or the curated deck
+  disagreeing with the foundry's own cells is not established here. Not fixed
+  here; follow-up.
+
+Coverage, quoted from the reports (`coverage.*`):
+
+| | analog | digital |
+|---|---|---|
+| `layers_in_stream_without_rules` | `34/10`, `100/8` | `0/0`, `21/10`, `34/10`, `36/10`, `63/63`, `81/10`, `204/10` |
+| `rules_skipped` | 64 rules, none `EF.*`; `efuse_mk.ongrid.1`/`plfuse.ongrid.1` are checked | 42 rules, including `efuse_mk.ongrid.1`, `plfuse.ongrid.1` |
+| `deck_scope` | both: 10.4.2 MIM Option B, 10.7 DRC_BJT Mark Layer, 7.12 Contact, 7.13 Metaln, 7.14 Vian, 7.15 MetalTop, 7.4 Nwell, 7.5 Comp, 7.7 Poly2, 7.8 Nplus, 7.9 Pplus, 9.1 Bond Pad, ESD, GR, OFFGRID, SB | |
+
+**`EF.*` rules are not evaluated.** Neither report's `coverage.rules_checked`
+carries an `EF.*` rule: the curated deck has none (klayout-tools#4312). The route
+via the PDK's own `efuse.rb` also fails: `klt drc --engine klayout --deck-file
+<PDK>/libs.tech/klayout/tech/drc/rule_decks/efuse.rb` exits 1 with
+`NameError: uninitialized constant GF180_DRC_REGISTRY` (the file is one fragment
+of a deck that must be assembled with the registry; klayout-tools#4002). The spec
+row "DRC clean including every `EF.*` rule" stays `unmet`.
+
 ## What is not claimed
 
 - **No routing and no connectivity.** Devices and cells are placed; no wire
   joins them, so the stream is not a circuit and does not match the netlist
   until routing is added.
-- **No DRC, no LVS, no ERC.** Those are #31, #32 and #33. `klt drc` does not
-  run the `EF.*` rules at all (`spec/efuse-otp.md` §1.3), so a DRC result on
-  this stream would not cover them.
+- **No LVS, no ERC.** Those are #32 and #33. DRC is reported in the next
+  section: neither partition is clean, and `klt drc` does not run the `EF.*`
+  rules at all (`spec/efuse-otp.md` §1.3).
 - Cell-to-cell clearance is a fixed 2 µm between bounding boxes, not a
   rule-derived spacing.
 - The `item2-analog.attest.json` envelope is hand-written: `klt signoff
