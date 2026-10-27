@@ -40,4 +40,4 @@ nominal 32 x 8 bench on each. It exits 0 only if the named check fails for every
 defect, and non-zero (including when a pattern no longer matches the RTL) otherwise.
 
 Expected: `ALL CHECKS PASSED` for `run.sh`, `NEGATIVE CONTROL OK` for the mode above.
-The bench is not wired into `ci.yml`.
+CI runs both modes in the `controller` job of `.github/workflows/ci.yml`.
