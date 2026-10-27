@@ -45,8 +45,8 @@ CI runs both modes in the `controller` job of `.github/workflows/ci.yml`.
 ## klt functional-verification
 
 `verification/klt-fv.sh [outdir]` runs the same bench through the pinned
-`klt functional-verification`, one request per parameter set
-(`verification/klt/fv-*.json`; expected pulse/settle counts are passed through the
-environment as in `runner.py`). Reports are kept in `sim/controller-fv/`
-(9 sets, 12/12 checks each). Keep the request parameters and the table in
-`klt-fv.sh` in step with `CONFIGS` in `runner.py`.
+`klt functional-verification`, one request per parameter set. The requests are
+generated from `CONFIGS` in `runner.py` (`runner.py --emit-klt-requests DIR`), the
+single table of parameter sets; expected pulse/settle counts are passed through the
+environment as in `runner.py`. Reports are kept in `sim/controller-fv/`
+(9 sets, 12/12 checks each).

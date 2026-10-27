@@ -4,16 +4,19 @@
   python runner.py --negative-control  run deliberately broken RTL mutants;
                                        exit 0 iff each mutant is caught by the
                                        check named for it
+  python runner.py --emit-klt-requests DIR
+                                       write one `klt functional-verification`
+                                       request per CONFIGS row into DIR and print
+                                       "name rows cols pulse settle" per row
 
 Results (build dirs, results.xml) go under verification/build/ (gitignored).
 """
 import argparse
+import json
 import shutil
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
-
-from cocotb_tools.runner import get_runner
 
 HERE = Path(__file__).resolve().parent
 RTL = HERE.parent / "rtl" / "efuse_otp_ctrl.v"
@@ -53,12 +56,37 @@ MUTANTS = [
 ]
 
 
+def klt_request(c):
+    """The `klt functional-verification` request for one CONFIGS row."""
+    return {
+        "engine": "icarus",
+        "sources": [str(RTL)],
+        "hdl_toplevel": TOP,
+        "testbench": {"module": "test_efuse_otp_ctrl", "search_path": str(HERE)},
+        "parameters": dict(ROWS=c["rows"], COLS=c["cols"], AW=c["aw"],
+                           CLK_HZ=c["clk"], PULSE_US=c["pulse_us"],
+                           SETTLE_CYCLES=c["settle"]),
+        "options": {"timescale": ["1ns", "1ps"], "build_args": ["-g2001"],
+                    "random_seed": 1},
+    }
+
+
+def emit_klt_requests(outdir):
+    outdir = Path(outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
+    for c in CONFIGS:
+        (outdir / f"fv-{c['name']}.json").write_text(
+            json.dumps(klt_request(c), indent=2) + "\n")
+        print(c["name"], c["rows"], c["cols"], c["expect_n"], c["settle"])
+
+
 def run_cfg(c, rtl, tag):
     bdir = BUILD / f"{tag}_{c['name']}"
     shutil.rmtree(bdir, ignore_errors=True)
     params = dict(ROWS=c["rows"], COLS=c["cols"], AW=c["aw"],
                   CLK_HZ=c["clk"], PULSE_US=c["pulse_us"],
                   SETTLE_CYCLES=c["settle"])
+    from cocotb_tools.runner import get_runner  # not needed to emit requests
     runner = get_runner("icarus")
     runner.build(verilog_sources=[rtl], hdl_toplevel=TOP, parameters=params,
                  build_dir=bdir, build_args=["-g2001"], timescale=("1ns", "1ps"),
@@ -79,7 +107,11 @@ def run_cfg(c, rtl, tag):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--negative-control", action="store_true")
+    ap.add_argument("--emit-klt-requests", metavar="DIR")
     args = ap.parse_args()
+    if args.emit_klt_requests:
+        emit_klt_requests(args.emit_klt_requests)
+        return 0
     BUILD.mkdir(exist_ok=True)
 
     if not args.negative_control:
