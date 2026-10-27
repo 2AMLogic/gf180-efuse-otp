@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "kind": "t1-attestation-inventory",
+  "t1_item": 1,
+  "description": "Analog partition (efuse_otp_array): xschem schematics for the fuse bitcell, row, level shifter, row and column drivers, comparator, sense path and 32 x 8 array top (with their cell symbols), and the SPICE netlist derived from them with klt netlist (PDK gf180mcuC, open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7; xschem 3.4.7). Structure only: no simulation result is claimed.",
+  "sources": [
+    "design/efuse_bitcell.sch",
+    "design/efuse_row.sch",
+    "design/efuse_ls.sch",
+    "design/efuse_rowdrv.sch",
+    "design/efuse_coldrv.sch",
+    "design/efuse_comp.sch",
+    "design/efuse_sense.sch",
+    "design/efuse_otp_array.sch",
+    "design/efuse_bitcell.sym",
+    "design/efuse_coldrv.sym",
+    "design/efuse_comp.sym",
+    "design/efuse_ls.sym",
+    "design/efuse_otp_array.sym",
+    "design/efuse_prim.sym",
+    "design/efuse_row.sym",
+    "design/efuse_rowdrv.sym",
+    "design/efuse_sense.sym"
+  ],
+  "derived": [
+    {
+      "path": "design/efuse_otp_array.spice",
+      "generator": "klt netlist (design/regen-netlist.sh)",
+      "check": {
+        "argv": [
+          "design/regen-netlist.sh",
+          "--check"
+        ],
+        "local_only": true
+      }
+    }
+  ]
+}

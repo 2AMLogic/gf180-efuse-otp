@@ -53,3 +53,10 @@ jobs:
             exit 1
           fi
           cmp "$RUNNER_TEMP/regraded.json" signoff/block-manifest.signoff.json
+
+      - name: Item 1 (analog) attestation reproduces
+        # Re-hashes the schematics, symbols and netlist; the xschem freshness
+        # check is local_only and is not re-run here (no xschem on the runner).
+        run: |
+          klt signoff --attest 1 --inventory signoff/item1-analog-inventory.json \
+            --check signoff/item1-analog.attest.json

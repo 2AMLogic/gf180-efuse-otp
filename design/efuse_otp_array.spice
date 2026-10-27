@@ -1,0 +1,280 @@
+** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-25/design/efuse_otp_array.sch
+**.subckt efuse_otp_array
+*+ row_sel[31],row_sel[30],row_sel[29],row_sel[28],row_sel[27],row_sel[26],row_sel[25],row_sel[24],row_sel[23],row_sel[22],row_sel[21],row_sel[20],row_sel[19],row_sel[18],row_sel[17],row_sel[16],row_sel[15],row_sel[14],row_sel[13],row_sel[12],row_sel[11],row_sel[10],row_sel[9],row_sel[8],row_sel[7],row_sel[6],row_sel[5],row_sel[4],row_sel[3],row_sel[2],row_sel[1],row_sel[0] col_sel[7],col_sel[6],col_sel[5],col_sel[4],col_sel[3],col_sel[2],col_sel[1],col_sel[0] prog_strobe sense_en clk sense_out vdd33
+*+ vprog vss
+*.ipin
+*+ row_sel[31],row_sel[30],row_sel[29],row_sel[28],row_sel[27],row_sel[26],row_sel[25],row_sel[24],row_sel[23],row_sel[22],row_sel[21],row_sel[20],row_sel[19],row_sel[18],row_sel[17],row_sel[16],row_sel[15],row_sel[14],row_sel[13],row_sel[12],row_sel[11],row_sel[10],row_sel[9],row_sel[8],row_sel[7],row_sel[6],row_sel[5],row_sel[4],row_sel[3],row_sel[2],row_sel[1],row_sel[0]
+*.ipin col_sel[7],col_sel[6],col_sel[5],col_sel[4],col_sel[3],col_sel[2],col_sel[1],col_sel[0]
+*.ipin prog_strobe
+*.ipin sense_en
+*.ipin clk
+*.opin sense_out
+*.iopin vdd33
+*.iopin vprog
+*.iopin vss
+Xrd[31] row_sel[31] wl[31] vdd33 vprog vss efuse_rowdrv
+Xrd[30] row_sel[30] wl[30] vdd33 vprog vss efuse_rowdrv
+Xrd[29] row_sel[29] wl[29] vdd33 vprog vss efuse_rowdrv
+Xrd[28] row_sel[28] wl[28] vdd33 vprog vss efuse_rowdrv
+Xrd[27] row_sel[27] wl[27] vdd33 vprog vss efuse_rowdrv
+Xrd[26] row_sel[26] wl[26] vdd33 vprog vss efuse_rowdrv
+Xrd[25] row_sel[25] wl[25] vdd33 vprog vss efuse_rowdrv
+Xrd[24] row_sel[24] wl[24] vdd33 vprog vss efuse_rowdrv
+Xrd[23] row_sel[23] wl[23] vdd33 vprog vss efuse_rowdrv
+Xrd[22] row_sel[22] wl[22] vdd33 vprog vss efuse_rowdrv
+Xrd[21] row_sel[21] wl[21] vdd33 vprog vss efuse_rowdrv
+Xrd[20] row_sel[20] wl[20] vdd33 vprog vss efuse_rowdrv
+Xrd[19] row_sel[19] wl[19] vdd33 vprog vss efuse_rowdrv
+Xrd[18] row_sel[18] wl[18] vdd33 vprog vss efuse_rowdrv
+Xrd[17] row_sel[17] wl[17] vdd33 vprog vss efuse_rowdrv
+Xrd[16] row_sel[16] wl[16] vdd33 vprog vss efuse_rowdrv
+Xrd[15] row_sel[15] wl[15] vdd33 vprog vss efuse_rowdrv
+Xrd[14] row_sel[14] wl[14] vdd33 vprog vss efuse_rowdrv
+Xrd[13] row_sel[13] wl[13] vdd33 vprog vss efuse_rowdrv
+Xrd[12] row_sel[12] wl[12] vdd33 vprog vss efuse_rowdrv
+Xrd[11] row_sel[11] wl[11] vdd33 vprog vss efuse_rowdrv
+Xrd[10] row_sel[10] wl[10] vdd33 vprog vss efuse_rowdrv
+Xrd[9] row_sel[9] wl[9] vdd33 vprog vss efuse_rowdrv
+Xrd[8] row_sel[8] wl[8] vdd33 vprog vss efuse_rowdrv
+Xrd[7] row_sel[7] wl[7] vdd33 vprog vss efuse_rowdrv
+Xrd[6] row_sel[6] wl[6] vdd33 vprog vss efuse_rowdrv
+Xrd[5] row_sel[5] wl[5] vdd33 vprog vss efuse_rowdrv
+Xrd[4] row_sel[4] wl[4] vdd33 vprog vss efuse_rowdrv
+Xrd[3] row_sel[3] wl[3] vdd33 vprog vss efuse_rowdrv
+Xrd[2] row_sel[2] wl[2] vdd33 vprog vss efuse_rowdrv
+Xrd[1] row_sel[1] wl[1] vdd33 vprog vss efuse_rowdrv
+Xrd[0] row_sel[0] wl[0] vdd33 vprog vss efuse_rowdrv
+Xcd[7] col_sel[7] prog_strobe sense_en bl[7] sbl vdd33 vprog vss efuse_coldrv
+Xcd[6] col_sel[6] prog_strobe sense_en bl[6] sbl vdd33 vprog vss efuse_coldrv
+Xcd[5] col_sel[5] prog_strobe sense_en bl[5] sbl vdd33 vprog vss efuse_coldrv
+Xcd[4] col_sel[4] prog_strobe sense_en bl[4] sbl vdd33 vprog vss efuse_coldrv
+Xcd[3] col_sel[3] prog_strobe sense_en bl[3] sbl vdd33 vprog vss efuse_coldrv
+Xcd[2] col_sel[2] prog_strobe sense_en bl[2] sbl vdd33 vprog vss efuse_coldrv
+Xcd[1] col_sel[1] prog_strobe sense_en bl[1] sbl vdd33 vprog vss efuse_coldrv
+Xcd[0] col_sel[0] prog_strobe sense_en bl[0] sbl vdd33 vprog vss efuse_coldrv
+Xarr[31] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[31] vss efuse_row
+Xarr[30] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[30] vss efuse_row
+Xarr[29] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[29] vss efuse_row
+Xarr[28] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[28] vss efuse_row
+Xarr[27] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[27] vss efuse_row
+Xarr[26] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[26] vss efuse_row
+Xarr[25] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[25] vss efuse_row
+Xarr[24] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[24] vss efuse_row
+Xarr[23] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[23] vss efuse_row
+Xarr[22] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[22] vss efuse_row
+Xarr[21] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[21] vss efuse_row
+Xarr[20] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[20] vss efuse_row
+Xarr[19] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[19] vss efuse_row
+Xarr[18] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[18] vss efuse_row
+Xarr[17] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[17] vss efuse_row
+Xarr[16] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[16] vss efuse_row
+Xarr[15] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[15] vss efuse_row
+Xarr[14] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[14] vss efuse_row
+Xarr[13] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[13] vss efuse_row
+Xarr[12] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[12] vss efuse_row
+Xarr[11] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[11] vss efuse_row
+Xarr[10] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[10] vss efuse_row
+Xarr[9] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[9] vss efuse_row
+Xarr[8] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[8] vss efuse_row
+Xarr[7] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[7] vss efuse_row
+Xarr[6] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[6] vss efuse_row
+Xarr[5] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[5] vss efuse_row
+Xarr[4] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[4] vss efuse_row
+Xarr[3] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[3] vss efuse_row
+Xarr[2] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[2] vss efuse_row
+Xarr[1] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[1] vss efuse_row
+Xarr[0] bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl[0] vss efuse_row
+Xsa sbl sense_en clk sense_out vdd33 vprog vss efuse_sense
+**.ends
+
+* expanding   symbol:  efuse_rowdrv.sym # of pins=5
+** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-25/design/efuse_rowdrv.sym
+** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-25/design/efuse_rowdrv.sch
+.subckt efuse_rowdrv row_sel wl vdd33 vprog vss
+*.ipin row_sel
+*.opin wl
+*.iopin vdd33
+*.iopin vprog
+*.iopin vss
+Xls row_sel wl vdd33 vprog vss efuse_ls
+.ends
+
+
+* expanding   symbol:  efuse_coldrv.sym # of pins=8
+** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-25/design/efuse_coldrv.sym
+** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-25/design/efuse_coldrv.sch
+.subckt efuse_coldrv col_sel prog_strobe sense_en bl sbl vdd33 vprog vss
+*.ipin col_sel
+*.ipin prog_strobe
+*.ipin sense_en
+*.iopin bl
+*.iopin sbl
+*.iopin vdd33
+*.iopin vprog
+*.iopin vss
+XMppa npg col_sel vdd33 vdd33 pfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMppb npg prog_strobe vdd33 vdd33 pfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMnpa npg col_sel mp vss nfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMnpb mp prog_strobe vss vss nfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+Xls npg pg vdd33 vprog vss efuse_ls
+XMdrv bl pg vprog vprog pfet_06v0 L=0.5u W=100u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMpra nrd col_sel vdd33 vdd33 pfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMprb nrd sense_en vdd33 vdd33 pfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMnra nrd col_sel mr vss nfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMnrb mr sense_en vss vss nfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMpr rd nrd vdd33 vdd33 pfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMnr rd nrd vss vss nfet_03v3 L=0.28u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMrs bl rd sbl vss nfet_06v0 L=0.7u W=4u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+.ends
+
+
+* expanding   symbol:  efuse_row.sym # of pins=3
+** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-25/design/efuse_row.sym
+** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-25/design/efuse_row.sch
+.subckt efuse_row bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl vss
+*.iopin bl[7],bl[6],bl[5],bl[4],bl[3],bl[2],bl[1],bl[0]
+*.ipin wl
+*.iopin vss
+Xb[7] bl[7] wl vss efuse_bitcell
+Xb[6] bl[6] wl vss efuse_bitcell
+Xb[5] bl[5] wl vss efuse_bitcell
+Xb[4] bl[4] wl vss efuse_bitcell
+Xb[3] bl[3] wl vss efuse_bitcell
+Xb[2] bl[2] wl vss efuse_bitcell
+Xb[1] bl[1] wl vss efuse_bitcell
+Xb[0] bl[0] wl vss efuse_bitcell
+.ends
+
+
+* expanding   symbol:  efuse_sense.sym # of pins=7
+** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-25/design/efuse_sense.sym
+** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-25/design/efuse_sense.sch
+.subckt efuse_sense sbl sense_en clk sense_out vdd33 vprog vss
+*.iopin sbl
+*.ipin sense_en
+*.ipin clk
+*.opin sense_out
+*.iopin vdd33
+*.iopin vprog
+*.iopin vss
+XMb vbp vbp vdd33 vdd33 pfet_03v3 L=1u W=4u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+Rb vbp nb 2k m=1
+XMbs nb sense_en vss vss nfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMbp vbp sense_en vdd33 vdd33 pfet_03v3 L=0.28u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMf sbl vbp vdd33 vdd33 pfet_03v3 L=1u W=4u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMrf sref vbp vdd33 vdd33 pfet_03v3 L=1u W=4u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+Rref sref rn1 400 m=1
+XMsw rn1 sense_en rn2 vss nfet_06v0 L=0.7u W=4u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMsel rn2 vprog vss vss nfet_06v0 L=0.7u W=60u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMpca clkn clk vdd33 vdd33 pfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMpcb clkn sense_en vdd33 vdd33 pfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMnca clkn clk mc vss nfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMncb mc sense_en vss vss nfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+Xcmp sref sbl clkn cp cn vdd33 vss efuse_comp
+XMpqa mq cn vdd33 vdd33 pfet_03v3 L=0.28u W=4u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMpqb sense_out qb mq vdd33 pfet_03v3 L=0.28u W=4u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMnqa sense_out cn vss vss nfet_03v3 L=0.28u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMnqb sense_out qb vss vss nfet_03v3 L=0.28u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMpba mb cp vdd33 vdd33 pfet_03v3 L=0.28u W=4u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMpbb qb sense_out mb vdd33 pfet_03v3 L=0.28u W=4u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMnba qb cp vss vss nfet_03v3 L=0.28u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMnbb qb sense_out vss vss nfet_03v3 L=0.28u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+.ends
+
+
+* expanding   symbol:  efuse_ls.sym # of pins=5
+** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-25/design/efuse_ls.sym
+** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-25/design/efuse_ls.sch
+.subckt efuse_ls in out vdd33 vprog vss
+*.ipin in
+*.opin out
+*.iopin vdd33
+*.iopin vprog
+*.iopin vss
+XMpi inb in vdd33 vdd33 pfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMni inb in vss vss nfet_03v3 L=0.28u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMn1 x1 in vss vss nfet_06v0 L=0.7u W=4u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMn2 out inb vss vss nfet_06v0 L=0.7u W=4u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMp1 x1 out vprog vprog pfet_06v0 L=0.5u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMp2 out x1 vprog vprog pfet_06v0 L=0.5u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+.ends
+
+
+* expanding   symbol:  efuse_bitcell.sym # of pins=3
+** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-25/design/efuse_bitcell.sym
+** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-25/design/efuse_bitcell.sch
+.subckt efuse_bitcell bl wl vss
+*.iopin bl
+*.ipin wl
+*.iopin vss
+XXf bl n efuse pblow=0
+XXsel n wl vss vss nfet_06v0 L=0.7u W=60u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+.ends
+
+
+* expanding   symbol:  efuse_comp.sym # of pins=7
+** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-25/design/efuse_comp.sym
+** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-25/design/efuse_comp.sch
+.subckt efuse_comp inp inn clkn outp outn vdd33 vss
+*.ipin inp
+*.ipin inn
+*.ipin clkn
+*.opin outp
+*.opin outn
+*.iopin vdd33
+*.iopin vss
+XMt tail clkn vdd33 vdd33 pfet_03v3 L=0.28u W=8u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XM1 outp inp tail vdd33 pfet_03v3 L=0.28u W=8u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XM2 outn inn tail vdd33 pfet_03v3 L=0.28u W=8u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMx1 outp outn vss vss nfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMx2 outn outp vss vss nfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMr1 outp clkn vss vss nfet_03v3 L=0.28u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+XMr2 outn clkn vss vss nfet_03v3 L=0.28u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
+.ends
+
+.end
