@@ -1,5 +1,10 @@
 {
   "block": "gf180-efuse-otp",
   "kind": "mixed-signal",
-  "evidence": {}
+  "evidence": {
+    "1.digital": {
+      "file": "signoff/item1-digital.attest.json",
+      "content_hash": "sha256:fe311ca86300437a79b0378de18166c046e6133958b97fb6df36faeab5f6c510"
+    }
+  }
 }
