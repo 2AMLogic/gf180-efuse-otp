@@ -34,6 +34,7 @@ from pathlib import Path
 import klayout.db as kdb
 
 DBU_UM = 0.0005  # the dbu `klt gen` writes for gf180mcu
+GRID_DBU = 10  # the 0.005 um rule grid in database units (DBU_UM = 0.0005)
 GAP_UM = 2.0  # clearance between placed cells (bboxes include guard rings)
 MAX_FINGER_W_UM = 10.0  # folded devices: fingers of at most this width
 # Assumption, not a design fact: the schematic carries ideal resistors, so the
@@ -117,6 +118,12 @@ class Klt:
         return self.cache[key]
 
 
+def snap(dbu, up=True):
+    """Round a database-unit length to the rule grid, up or down."""
+    q = -(-dbu // GRID_DBU) if up else dbu // GRID_DBU
+    return q * GRID_DBU
+
+
 def fold(width_um):
     fingers = max(1, math.ceil(width_um / MAX_FINGER_W_UM - 1e-9))
     return fingers, round(width_um / fingers, 6)
@@ -150,11 +157,15 @@ class Builder:
     def leaf(self, subckt, inst):
         name = f"{subckt}__{inst['name'][1:]}"
         if inst["kind"] == "res":
-            length = round(inst["ohms"] / RSH_PPOLYF_U * RES_WIDTH_UM, 3)
+            # Length snapped to the 0.005 um rule grid (an off-grid length puts
+            # the strip's vertices off it); the drawn ohms follow from it.
+            step = GRID_DBU * DBU_UM
+            length = round(round(inst["ohms"] / RSH_PPOLYF_U * RES_WIDTH_UM / step) * step, 3)
             gds, top = self.klt.gen("res_array", {
                 "length_um": length, "width_um": RES_WIDTH_UM, "num": 1,
                 "dummy": 0, "flavor": "generic"})
             self.devices.append({"cell": name, "device": "ppolyf_u", "ohms": inst["ohms"],
+                                 "ohms_drawn": round(length / RES_WIDTH_UM * RSH_PPOLYF_U, 2),
                                  "length_um": length, "width_um": RES_WIDTH_UM})
             return self.import_cell(gds, top, name)
         master = inst["master"]
@@ -178,19 +189,27 @@ class Builder:
     def bbox(self, cell):
         return cell.bbox()
 
-    def place(self, parent, child, x_um, y_um, rows=1, cols=1, pitch_x_um=0.0, pitch_y_um=0.0):
-        """Instance of child with its bbox lower-left at (x_um, y_um)."""
+    def place(self, parent, child, x_um, y_um, rows=1, cols=1, pitch_x_um=0.0, pitch_y_um=0.0,
+              away_x=True, away_y=True):
+        """Instance of child with its bbox lower-left at (x_um, y_um), snapped.
+
+        The child's bbox edges are vertices (guard rings; the PDK fuse stream's
+        own origin is off the grid by one stream dbu), so landing the lower-left
+        on the rule grid puts every vertex on it. The lower-left is rounded away
+        from the placed neighbours (up, or down with away_* False) so the
+        clearance is never reduced; the pitches are rounded up to the grid.
+        """
         bb = child.bbox()
-        dx = round(x_um / DBU_UM) - bb.left
-        dy = round(y_um / DBU_UM) - bb.bottom
+        dx = snap(round(x_um / DBU_UM), away_x) - bb.left
+        dy = snap(round(y_um / DBU_UM), away_y) - bb.bottom
         trans = kdb.Trans(dx, dy)
         if rows == 1 and cols == 1:
             parent.insert(kdb.CellInstArray(child.cell_index(), trans))
         else:
             parent.insert(kdb.CellInstArray(
                 child.cell_index(), trans,
-                kdb.Vector(round(pitch_x_um / DBU_UM), 0),
-                kdb.Vector(0, round(pitch_y_um / DBU_UM)), cols, rows))
+                kdb.Vector(snap(round(pitch_x_um / DBU_UM)), 0),
+                kdb.Vector(0, snap(round(pitch_y_um / DBU_UM))), cols, rows))
 
     def size(self, cell):
         bb = cell.bbox()
@@ -204,7 +223,7 @@ class Builder:
             child = (self.cells[inst["master"]] if inst["kind"] == "x" and inst["master"] in self.netlist
                      else self.leaf(subckt, inst))
             self.place(cell, child, x, 0.0)
-            x += self.size(child)[0] + GAP_UM
+            x += self.size(child)[0] + GAP_UM + GRID_DBU * DBU_UM  # snap slack
         self.cells[subckt] = cell
         return cell
 
@@ -275,9 +294,11 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
 
     t = b.layout.create_cell(top)
     b.place(t, row, 0.0, 0.0, ROWS, 1, 0.0, pitch_y)
-    b.place(t, b.cells["efuse_rowdrv"], -(rd_w + GAP_UM), 0.0, ROWS, 1, 0.0, pitch_y)
-    b.place(t, b.cells["efuse_coldrv"], 0.0, -(cd_h + GAP_UM), 1, COLS, pitch_x)
-    b.place(t, b.cells["efuse_sense"], 0.0, -(cd_h + GAP_UM + sa_h + GAP_UM))
+    b.place(t, b.cells["efuse_rowdrv"], -(rd_w + GAP_UM), 0.0, ROWS, 1, 0.0, pitch_y,
+            away_x=False)
+    b.place(t, b.cells["efuse_coldrv"], 0.0, -(cd_h + GAP_UM), 1, COLS, pitch_x,
+            away_y=False)
+    b.place(t, b.cells["efuse_sense"], 0.0, -(cd_h + GAP_UM + sa_h + GAP_UM), away_y=False)
 
     verify_fuse(b.layout, "efuse_bitcell__Xf", fuse_gds)
 
