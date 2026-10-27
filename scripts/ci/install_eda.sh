@@ -29,9 +29,13 @@ fi
 
 if [ ! -x "$PREFIX/bin/yosys" ]; then
   fetch "$YOSYS_REPO" "$YOSYS_TAG" "$YOSYS_COMMIT" "$src/yosys"
+  # v0.67 builds with CMake (no top-level Makefile). Configure needs every
+  # submodule checked out; the slang frontend is not used, so it is not built.
   git -C "$src/yosys" submodule update --init --recursive --depth 1 --quiet
-  make -C "$src/yosys" -j2 PREFIX="$PREFIX" ENABLE_ABC=1 >/dev/null
-  make -C "$src/yosys" PREFIX="$PREFIX" install >/dev/null
+  cmake -S "$src/yosys" -B "$src/yosys/build" -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX="$PREFIX" -DYOSYS_WITHOUT_SLANG=ON >/dev/null
+  cmake --build "$src/yosys/build" --parallel 2 >/dev/null
+  cmake --install "$src/yosys/build" >/dev/null
 fi
 
 "$PREFIX/bin/iverilog" -V | head -1

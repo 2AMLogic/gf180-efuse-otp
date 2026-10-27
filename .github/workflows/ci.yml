@@ -19,7 +19,7 @@ jobs:
       - name: Build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends build-essential clang bison flex \
+          sudo apt-get install -y --no-install-recommends build-essential clang cmake bison flex \
             gperf autoconf libreadline-dev gawk tcl-dev libffi-dev pkg-config zlib1g-dev
       - name: Cache pinned Icarus 13.0 and Yosys 0.67
         id: eda
