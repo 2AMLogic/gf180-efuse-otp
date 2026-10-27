@@ -59,18 +59,24 @@ rtl/synth.sh        # plain Yosys: synth + check -assert + stat; log in flow/bui
 Last result (Yosys 0.67): completes, prints `Number of latches: 0` (the script
 counts latch cell types in the `stat` table and exits non-zero otherwise).
 
-Cross-check with the pinned klt against `gf180mcu_fd_sc_mcu7t5v0`:
+Mapped gate-level netlist (committed as `efuse_otp_ctrl.gl.v`), for
+`gf180mcu_fd_sc_mcu7t5v0` at 32 x 8 (`synth-request.json` states `ROWS`, `COLS`,
+`AW` explicitly):
 
 ```sh
-PDK=gf180mcuD PDK_ROOT=$HOME/.ciel \
-  uvx --from "$(cat signoff/klt-pin.txt)" klt synthesize rtl/synth-request.json --format json
+rtl/regen-gl.sh           # rewrite rtl/efuse_otp_ctrl.gl.v with the pinned klt
+rtl/regen-gl.sh --check   # regenerate to a temp file; non-zero if it differs
 ```
 
-`klt synthesize` (klayout-tools 0.7.0) reports `structural.latches` directly:
-status `ok`, `latches: 0`, `unexpected_latches: 0`, `comb_loops: 0`,
-`multi_driven: 0`, 308 mapped instances. That is the structural equivalent of
-the Yosys line. It writes scratch under `rtl/.klt/` (gitignored). No tool gap
-was found, so no friction issue was filed.
+The script runs `klt synthesize` from the release in `signoff/klt-pin.txt`
+(`uvx --from`, never a host-installed klt), needs `yosys` on `PATH` and the
+`gf180mcuD` PDK under `PDK_ROOT` (default `~/.ciel`), and exits non-zero unless
+klt's structural counts are zero (`latches`, `unexpected_latches`, `comb_loops`,
+`multi_driven`) and the mapped netlist contains no latch cell. With klt 0.8.0 and
+Yosys 0.67+post, two consecutive runs produce byte-identical netlists. The
+netlist depends on the klt release and Yosys version, so a pin bump means
+regenerating it and the item-1 attestation (`signoff/README.md`). klt writes
+scratch under `rtl/.klt/` (gitignored).
 
 ## Sibling reuse decision
 

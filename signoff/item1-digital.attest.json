@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "kind": "generic",
+  "status": "pass",
+  "t1_item": 1,
+  "summary": "T1 item 1 (Design sources): 3/3 attestation checks passed (klt signoff --attest)",
+  "source": "signoff/item1-digital-inventory.json",
+  "attestation": {
+    "producer": "klt signoff --attest",
+    "inventory_schema_version": 1,
+    "hash_algorithm": "sha256-raw-bytes",
+    "check_count": 3,
+    "passed_count": 3,
+    "checks": [
+      {
+        "check": "present",
+        "role": "source",
+        "path": "rtl/efuse_otp_ctrl.v",
+        "passed": true,
+        "content_hash": "sha256:812f696e79b2e7585f59575ebf8dc7e771460fddbe73421f655804d67caac58e"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "rtl/efuse_otp_ctrl.gl.v",
+        "passed": true,
+        "content_hash": "sha256:840543dd0ba0efb2d261c243e292b468fe11cb1380237787f786c191272c5d00"
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "rtl/efuse_otp_ctrl.gl.v",
+        "generator": "klt synthesize (rtl/regen-gl.sh)",
+        "argv": [
+          "rtl/regen-gl.sh",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true,
+        "local_only": true
+      }
+    ]
+  },
+  "provenance": {
+    "klt_version": "0.8.0",
+    "klayout_version": null,
+    "pdk": null,
+    "deck": null,
+    "input": {
+      "path": {
+        "path": "signoff/item1-digital-inventory.json",
+        "scope": "repo"
+      },
+      "content_hash": "sha256:fe311ca86300437a79b0378de18166c046e6133958b97fb6df36faeab5f6c510"
+    }
+  }
+}

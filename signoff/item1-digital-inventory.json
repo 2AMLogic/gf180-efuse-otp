@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "t1-attestation-inventory",
+  "t1_item": 1,
+  "description": "Digital partition (efuse_otp_ctrl): RTL source and the mapped gate-level netlist synthesized from it for gf180mcu_fd_sc_mcu7t5v0 (PDK gf180mcuD, open_pdks f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7; Yosys 0.67+post, ROWS=32 COLS=8 AW=8).",
+  "sources": ["rtl/efuse_otp_ctrl.v"],
+  "derived": [
+    {
+      "path": "rtl/efuse_otp_ctrl.gl.v",
+      "generator": "klt synthesize (rtl/regen-gl.sh)",
+      "check": {"argv": ["rtl/regen-gl.sh", "--check"], "local_only": true}
+    }
+  ]
+}
