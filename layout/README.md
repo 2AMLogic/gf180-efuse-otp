@@ -8,9 +8,9 @@ analog partition is below.
 
 | File | Role |
 |---|---|
-| `pnr-request.json` | The `klt place-and-route` request: `gf180mcu_fd_sc_mcu7t5v0`, 40 % utilization, 10 µm core margin, the `gf180mcu_7t_6M` PDN preset (the klt-tabulated recipe transcribed from OpenROAD-flow-scripts), I/O pins on Metal3 (horizontal) / Metal2 (vertical), `target_stage: route`, seed 1, `portable_paths`. |
+| `pnr-request.json` | The `klt place-and-route` request: `gf180mcu_fd_sc_mcu7t5v0`, 40 % utilization, 10 µm core margin, explicit PDN straps and connects (the `gf180mcu_7t_6M` recipe values, written out because a preset cannot be combined with overrides, with the `split_cuts` option dropped; see DRC below), `power.tapcell.distance_um` 15, I/O pins on Metal3 (horizontal) / Metal2 (vertical), `target_stage: route`, seed 1, `portable_paths`. |
 | `pnr.sh` | Runs the flow with the pinned klt (`signoff/klt-pin.txt`), asserts `status: ok` and `power.pdn: true`, and writes the files below. `--check` runs `klt place-and-route --check` plus the GDS sha256; `--check --rerun` re-runs the flow and diffs the verdict-bearing fields. |
-| `pnr-report.json` | Committed `--format json` response. Route stage reached, 0 route DRC and 0 antenna violations, `power.pdn: true`, `power.tapcell_master: gf180mcu_fd_sc_mcu7t5v0__filltie`. |
+| `pnr-report.json` | Committed `--format json` response. Route stage reached, 0 route DRC and 0 antenna violations, `power.pdn: true`, `power.connects[].split_cuts: null`, `power.tapcell_master: gf180mcu_fd_sc_mcu7t5v0__filltie`. |
 | `efuse_otp_ctrl.gds` | Routed GDS (standard-cell GDS views merged in by klt). Its sha256 is in `efuse_otp_ctrl.gds.sha256`. |
 | `efuse_otp_ctrl.asbuilt.v` | `verilog_path` output: the as-built gate-level netlist (CTS buffers, resizes, antenna diodes included). This, not `rtl/efuse_otp_ctrl.gl.v`, is the reference for the controller LVS run. |
 | `attest.sh`, `pnr.attest.json` | The T1 item 2 (digital) attestation: a generic envelope bound to the GDS, with a `layout/pnr.sh` regeneration claim (geometry digest). klt has no `--attest 2`, so `attest.sh` assembles it from the committed report (klayout-tools issues #4188, #4221). |
@@ -88,19 +88,19 @@ the check is a byte compare.
   `rsh_ppolyf_u` = 350 Ω/sq, snapped to the 0.005 µm grid. The 1 µm width is an assumption, not a sourced
   value.
 
-## DRC (T1 item 3): not clean
+## DRC (T1 item 3): both partitions clean, `EF.*` not evaluated
 
 `layout/drc.sh` runs `klt drc --deck gf180mcu --top <top>` (the pinned klt,
 `signoff/klt-pin.txt`) on each GDS and keeps the reports as found:
 `layout/drc-array.report.json`, `layout/drc-ctrl.report.json`. `--check` re-hashes
 the input and the deck against them (`--rerun` re-runs). Deck content hash, both
 runs: `sha256:0eb6df1bafc5106ec50bd58479dbd7cda36bb685f1ef18cd3a2244a6e7e48666`
-(klt 0.8.0, klayout 0.30.12). **Item 3 stays `unmet` (the digital partition is not clean, and `EF.*` is not evaluated); no envelope is cited for it.**
+(klt 0.8.0, klayout 0.30.12). **Item 3 stays `unmet` (`EF.*` is not evaluated, see below); no envelope is cited for it.** Both partitions are clean under the curated deck.
 
 | Partition | status | violations |
 |---|---|---|
 | analog `efuse_otp_array` | `clean` | 0 (was 2560 `*.ongrid.1` hits at `45987b9`) |
-| digital `efuse_otp_ctrl` | `violations` | 2525: `metal2/3.ongrid.1` 444 each, `via2/3.ongrid.1` 444 each, `metal4.ongrid.1` 24, `via2/3.width.1` 111 each, `comp.tap_distance.nwell.mv.1` 253, `comp.tap_distance.psub.mv.1` 250 |
+| digital `efuse_otp_ctrl` | `clean` | 0 (was 2525 before the two request changes below) |
 
 Sources (from the reports' `source_cell`):
 
@@ -117,14 +117,45 @@ Sources (from the reports' `source_cell`):
   remain assumptions). The fuse cell's geometry is unchanged
   (`verify_fuse` against the PDK stream passes). Clean means clean under the
   curated deck's coverage below, which has no `EF.*` rules.
-- **Digital:** the 444-each `metal3`/`via2`/`via3` `ongrid.1` hits are in the PDN
-  via stack `VIA_via2_3_8960_1200_*` that place-and-route emits (compare
-  klayout-tools#4301). The `via2/3.width.1`, `metal4.ongrid.1`, most `metal2.ongrid.1`
-  and all `tap_distance.*.mv.1` hits are inside foundry standard cells
-  (`gf180mcu_fd_sc_mcu7t5v0__*`: `fill_*`, `dffq_1`, `nor3_1`, ...), which this
-  repo does not draw. Whether those are real violations or the curated deck
-  disagreeing with the foundry's own cells is not established here. Not fixed
-  here; follow-up.
+- **Digital, classification of the 2525 hits before the fix** (sum 2525; counts
+  from the previous `layout/drc-ctrl.report.json`, `source_cell` of the hit):
+
+  | Rule | Total | PDN via cells (`VIA_*`) | Foundry cells (`gf180mcu_fd_sc_mcu7t5v0__*`) | Other |
+  |---|---|---|---|---|
+  | `metal2.ongrid.1` | 444 | 18 (`VIA_via4_5_8960_8960_*`) | 426 | 0 |
+  | `metal3.ongrid.1` | 444 | 444 (`VIA_via2_3_8960_1200_*`) | 0 | 0 |
+  | `metal4.ongrid.1` | 24 | 0 | 24 | 0 |
+  | `via2.ongrid.1` | 444 | 444 (`VIA_via2_3_8960_1200_*`) | 0 | 0 |
+  | `via3.ongrid.1` | 444 | 444 (`VIA_via2_3_8960_1200_*`) | 0 | 0 |
+  | `via2.width.1` | 111 | 3 (`VIA_via4_5_*`) | 108 | 0 |
+  | `via3.width.1` | 111 | 3 (`VIA_via4_5_*`) | 108 | 0 |
+  | `comp.tap_distance.nwell.mv.1` | 253 | 0 | 253 | 0 |
+  | `comp.tap_distance.psub.mv.1` | 250 | 0 | 250 | 0 |
+
+  `source_cell` names the cell whose geometry the polygon sits in, not the cause.
+  Two causes in our request account for all 2525:
+  1. **PDN via stack.** The `gf180mcu_7t_6M` preset connects Metal1 to Metal4 with
+     `-split_cuts {Metal3 0.128}`. Replacing the preset with the same straps and
+     connects minus `split_cuts` (`layout/pnr-request.json`) removed every
+     `metal2/3/4.ongrid.1`, `via2/3.ongrid.1` and `via2/3.width.1` hit (2022 in
+     total), including the 666 (24 + 426 + 108 + 108) attributed to foundry cells: those
+     polygons were the foundry cells' shapes overlaid by the oversized cuts, not
+     defects of the cells. Measured: the re-run, same seed, has 0 such hits. This is
+     klayout-tools#4301 gap 1; no new tool issue is needed.
+  2. **Tap cell pitch.** The tap-distance rules (15 µm, 5V/6V) are about the tap
+     cells' placement. The default pitch is 100 µm, so 503 hits. With
+     `power.tapcell.distance_um: 15` (171 tap cells instead of 19) both
+     `comp.tap_distance.*.mv.1` rules report 0.
+
+  Re-run result: `status: clean`, 0 violations; `pnr-report.json` still has 0
+  route DRC and 0 antenna violations. Placement changed (more tap cells), so
+  `efuse_otp_ctrl.asbuilt.v` differs from before in clock-tree buffer naming and
+  the clock-load cells; `rtl/efuse_otp_ctrl.gl.v` is unchanged.
+
+  No foundry-cell DRC status is cited and none is needed: no hit remains in a
+  foundry cell. That the foundry cells' own geometry is DRC-clean under this deck
+  rests on this run only (the deck's curated scope, `coverage` below); it is not
+  taken from foundry documentation. The generated GDS was not hand-edited.
 
 Coverage, quoted from the reports (`coverage.*`):
 
