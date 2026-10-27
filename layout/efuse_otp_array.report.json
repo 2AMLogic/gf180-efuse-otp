@@ -2,15 +2,15 @@
   "top_cell": "efuse_otp_array",
   "dbu_um": 0.0005,
   "bbox_um": [
-    -35.72,
+    -35.745,
     -33.84,
-    917.68,
+    918.36,
     539.44
   ],
   "array": {
     "rows": 32,
     "cols": 8,
-    "pitch_x_um": 114.96,
+    "pitch_x_um": 115.045,
     "pitch_y_um": 16.92
   },
   "caveat": "placed hierarchy only: no routing, no connectivity, no DRC/LVS claim",
@@ -240,7 +240,8 @@
       "cell": "efuse_sense__b",
       "device": "ppolyf_u",
       "ohms": 2000.0,
-      "length_um": 5.714,
+      "ohms_drawn": 2000.25,
+      "length_um": 5.715,
       "width_um": 1.0
     },
     {
@@ -279,7 +280,8 @@
       "cell": "efuse_sense__ref",
       "device": "ppolyf_u",
       "ohms": 400.0,
-      "length_um": 1.143,
+      "ohms_drawn": 400.75,
+      "length_um": 1.145,
       "width_um": 1.0
     },
     {
