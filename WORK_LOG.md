@@ -4,6 +4,8 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-10-27
 
+- **PR #47**: verification: record klt functional-verification and multi-corner STA of the routed controller
+- **PR #46**: layout: record klt drc results for both partitions (not clean; item 3 stays unmet)
 - **PR #44**: layout: route the digital controller with klt place-and-route and attest item 2
 - **PR #43**: feat(layout): placed analog layout stream with reproducible generator
 - **PR #38**: ci: run controller bench in CI, add README reproduce steps, attest T1 item 10
