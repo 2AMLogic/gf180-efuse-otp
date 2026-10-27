@@ -4,6 +4,11 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-10-27
 
+- **PR #51**: layout: make the digital partition DRC-clean via explicit PDN straps and 15 um tap pitch
+- **Issue #49** (closed): T1 item 3 (DRC), digital partition: classify the 2525 hits by source and fix or document each
+- **PR #42**: sim: add sense-margin bench, testbench inventory and item 9 attestation
+- **PR #50**: layout: snap placement and resistor lengths to the rule grid, analog DRC clean
+- **Issue #48** (closed): T1 item 3 (DRC), analog partition: grid-snap cell placement in gen_efuse_otp.py to clear 2560 *.ongrid.1 hits
 - **PR #47**: verification: record klt functional-verification and multi-corner STA of the routed controller
 - **PR #46**: layout: record klt drc results for both partitions (not clean; item 3 stays unmet)
 - **PR #44**: layout: route the digital controller with klt place-and-route and attest item 2
