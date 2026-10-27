@@ -88,3 +88,10 @@ jobs:
         run: |
           klt signoff --attest 10 --inventory signoff/attest/item10.json \
             --check signoff/attest/item10.envelope.json
+
+      - name: Item 1 (analog) attestation reproduces
+        # Re-hashes the schematics, symbols and netlist; the xschem freshness
+        # check is local_only and is not re-run here (no xschem on the runner).
+        run: |
+          klt signoff --attest 1 --inventory signoff/item1-analog-inventory.json \
+            --check signoff/item1-analog.attest.json

@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "kind": "generic",
+  "status": "pass",
+  "t1_item": 1,
+  "summary": "T1 item 1 (Design sources): 19/19 attestation checks passed (klt signoff --attest)",
+  "source": "signoff/item1-analog-inventory.json",
+  "attestation": {
+    "producer": "klt signoff --attest",
+    "inventory_schema_version": 1,
+    "hash_algorithm": "sha256-raw-bytes",
+    "check_count": 19,
+    "passed_count": 19,
+    "checks": [
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/efuse_bitcell.sch",
+        "passed": true,
+        "content_hash": "sha256:5a2f400a3914d8c7e14dbc9d1dd9824ba7800c140fb96d451ef2e504e8810b7e"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/efuse_bitcell.sym",
+        "passed": true,
+        "content_hash": "sha256:b66f442928ad3f2ca54929a2cb428e22b78393f881a56c3a4ca2569e66a4dc1e"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/efuse_coldrv.sch",
+        "passed": true,
+        "content_hash": "sha256:fd2b23aaaed29271f5ba354b424667f6e8d2e2ac2d27af15830b43f4c16e2166"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/efuse_coldrv.sym",
+        "passed": true,
+        "content_hash": "sha256:b840cdcaba4d56172342a60e74cb9e77334e1930bb23520fcba3b2dc9c04b4ff"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/efuse_comp.sch",
+        "passed": true,
+        "content_hash": "sha256:c456c5370b5dffcd2d7f12362e0008a7752d3b09dc31778f8989409909dd4a2f"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/efuse_comp.sym",
+        "passed": true,
+        "content_hash": "sha256:1463b14e318a80b7c1cd7b68503c5cac9d97d31c55a07bcbf398995cb25f3f20"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/efuse_ls.sch",
+        "passed": true,
+        "content_hash": "sha256:038f414860a36a5be5921a746ee28dc3190323f7116f14e91a19c4b3ec463798"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/efuse_ls.sym",
+        "passed": true,
+        "content_hash": "sha256:bd7d6d3d90636615e5b4b35da032012a61c3f1ba1bf77b053a7ad8ee6eebdced"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/efuse_otp_array.sch",
+        "passed": true,
+        "content_hash": "sha256:46a9e758335ae30f2c687625b09ac904fa3322e826cd3dc45062962da3a87143"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/efuse_otp_array.sym",
+        "passed": true,
+        "content_hash": "sha256:f987db93c644a79ff18156eaeb8a927bc7837c46b8798ce7bcb5e6d2c229266b"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/efuse_prim.sym",
+        "passed": true,
+        "content_hash": "sha256:156214a614f184c57981212e8b6ed5d0ee5e9e5270b5d06a2dfdb5bcf497eb12"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/efuse_row.sch",
+        "passed": true,
+        "content_hash": "sha256:b208d61ca6d3796068c23bad3eafcab71477f403a63bb1bbfd26d79436461cd2"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/efuse_row.sym",
+        "passed": true,
+        "content_hash": "sha256:3867080c4f1cc5fc464c8e66de966d581ba77ff96fda6a60629f396a4bdcd1f1"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/efuse_rowdrv.sch",
+        "passed": true,
+        "content_hash": "sha256:4a0cc398163643085fe1d367b7b8c7cd1cd84b4f408e95da69f8d47775764081"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/efuse_rowdrv.sym",
+        "passed": true,
+        "content_hash": "sha256:1fdf8ad71ea8176af3e11fffc2ab43ee469aa291d337cfd8a1eb648edbdce2a7"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/efuse_sense.sch",
+        "passed": true,
+        "content_hash": "sha256:1ca53d995b61635b4166b1b7b81ed0cb4eed6ecd90e38902614d6cb4a7ecbadb"
+      },
+      {
+        "check": "present",
+        "role": "source",
+        "path": "design/efuse_sense.sym",
+        "passed": true,
+        "content_hash": "sha256:2b208f68b4807fc4b19dbfdc55c2958634c6de05b6d73ffc95f2c2ebef55d412"
+      },
+      {
+        "check": "present",
+        "role": "derived",
+        "path": "design/efuse_otp_array.spice",
+        "passed": true,
+        "content_hash": "sha256:6c5be74429a0ff791e5ccf409242da5acb871331118b1d4927aed670b37ed8cb"
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "design/efuse_otp_array.spice",
+        "generator": "klt netlist (design/regen-netlist.sh)",
+        "argv": [
+          "design/regen-netlist.sh",
+          "--check"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true,
+        "local_only": true
+      }
+    ]
+  },
+  "provenance": {
+    "klt_version": "0.8.0",
+    "klayout_version": null,
+    "pdk": null,
+    "deck": null,
+    "input": {
+      "path": {
+        "path": "signoff/item1-analog-inventory.json",
+        "scope": "repo"
+      },
+      "content_hash": "sha256:93ea87453830d77b7805c42e3dca70fd6117fe2cebcb73ac83ee4a7a2e84cc46"
+    }
+  }
+}

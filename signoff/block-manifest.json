@@ -9,6 +9,14 @@
     "10": {
       "file": "signoff/attest/item10.envelope.json",
       "content_hash": "sha256:3c94322d25101f9cd9aebd6cdec2d8cd612edeb2fb8819e2a2c7a0c9dd9f3b81"
+    },
+    "1.analog": {
+      "file": "signoff/item1-analog.attest.json",
+      "content_hash": "sha256:93ea87453830d77b7805c42e3dca70fd6117fe2cebcb73ac83ee4a7a2e84cc46"
     }
+  },
+  "partition_boundary": {
+    "analog": "design/efuse_otp_array.sch (array, row/column drivers with level shifters, sense path incl. comparator) is the analog partition. Boundary nets it exposes: inputs row_sel[31:0], col_sel[7:0], prog_strobe, sense_en (3.3 V, from the controller) and clk (the system clock, routed to the comparator and gated there with sense_en; the clock is a digital-side net that terminates in the analog partition); output sense_out (the comparator's latched result); supplies vdd33, vprog, vss.",
+    "digital": "rtl/efuse_otp_ctrl.v (synchronous controller) is the digital partition. Boundary nets it drives into analog: prog_strobe, row_sel[31:0], col_sel[7:0], sense_en; it receives sense_in (= analog sense_out). clk, rst, addr[7:0], prog_en, rd_en, dout and busy are external pins of the digital partition only; clk additionally fans out to the analog comparator."
   }
 }

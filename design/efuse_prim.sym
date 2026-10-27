@@ -1,0 +1,16 @@
+v {xschem version=3.4.7 file_version=1.2}
+G {}
+K {type=primitive
+format="@spiceprefix@name @pinlist @model pblow=@pblow"
+template="name=Xf model=efuse pblow=0 spiceprefix=X"
+}
+V {}
+S {}
+E {}
+L 4 0 -30 0 -20 {}
+L 4 0 20 0 30 {}
+B 4 -8 -20 8 20 {}
+B 5 -2.5 -32.5 2.5 -27.5 {name=in dir=inout}
+B 5 -2.5 27.5 2.5 32.5 {name=out dir=inout}
+T {@model} 14 -6 0 0 0.2 0.2 {}
+T {@name} 14 8 0 0 0.2 0.2 {}
