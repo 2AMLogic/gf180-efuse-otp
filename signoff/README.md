@@ -8,8 +8,10 @@ The block's verdict of record against the klayout-tools evidence tiers.
 | `attest/item10.envelope.json` | Envelope emitted by `klt signoff --attest 10`; cited for `10` in `block-manifest.json`, pinned by the inventory's sha256. |
 | `attest/item9.json` | `t1-attestation-inventory` for T1 item 9, testbenches shipped: the controller, program-select and sense-margin bench files, the cold-start command `sim/cold-start.sh` (`local_only`), and the PDK and tool pins. |
 | `attest/item9.envelope.json` | Envelope emitted by `klt signoff --attest 9`; cited for `9` in `block-manifest.json`, pinned by the inventory's sha256. |
-| `block-manifest.json` | Block name, kind (`mixed-signal`), the `partition_boundary` (analog and digital nets) and the `evidence` map (`1.digital`, `1.analog`, `9`, `10`). |
-| `block-manifest.signoff.json` | Committed `klt signoff --manifest` output: the verdict of record. Items 1, 9 and 10 are `met` for both partitions; every other row, for both partitions, is `unmet` / `no_evidence`. |
+| `block-manifest.json` | Block name, kind (`mixed-signal`), the `partition_boundary` (analog and digital nets) and the `evidence` map (`1.digital`, `1.analog`, `2.digital`, `2.analog`, `9`, `10`). |
+| `item2-analog.attest.json` | Hand-written generic envelope for T1 item 2, analog: binds `layout/efuse_otp_array.gds` by sha256 with a regeneration claim (`layout/regen-gds.sh`); cited for `2.analog`. |
+| `block-manifest.signoff.json` | Committed `klt signoff --manifest` output: the verdict of record. Items 1, 2, 9 and 10 are `met` for both partitions; every other row, for both partitions, is `unmet` / `no_evidence`. |
+| `../layout/drc-*.report.json` | Committed `klt drc` reports for T1 item 3 (`layout/drc.sh`). Both are `status: violations`, so item 3 is not cited and stays `unmet`; see `layout/README.md`, "DRC". |
 | `klt-pin.txt` | The single place the grader version is pinned. CI installs `$(cat signoff/klt-pin.txt)`. |
 | `item1-digital-inventory.json` | `t1-attestation-inventory` for T1 item 1, digital: the RTL source and the committed gate-level netlist `rtl/efuse_otp_ctrl.gl.v`, whose freshness `check` is `rtl/regen-gl.sh --check` (`local_only`: it needs Yosys and the PDK). |
 | `item1-digital.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.digital` in `block-manifest.json`, pinned by the inventory's sha256. |
@@ -102,6 +104,41 @@ uvx --from "$(cat signoff/klt-pin.txt)" klt signoff --attest 1 \
 Then set the `content_hash` for `1.analog` in `block-manifest.json` to the sha256
 of `item1-analog-inventory.json` and regenerate the record as above. CI re-hashes
 the sources and the netlist with `--check`; it does not re-run xschem.
+
+## Re-attest item 2 (digital)
+
+After any change to `rtl/efuse_otp_ctrl.gl.v`, `layout/pnr-request.json` or the pin:
+
+```sh
+layout/pnr.sh
+layout/attest.sh
+```
+
+Then set the `content_hash` for `2.digital` in `block-manifest.json` to the
+`provenance.input.content_hash` in `layout/pnr.attest.json` (the GDS sha256), and
+regenerate the record as above. klt's `--attest` covers items 1, 9 and 10 only, so
+this envelope is written by `layout/attest.sh`; the grader checks that the GDS
+re-hashes to the pinned value and that the geometry digest matches the claim.
+It does not re-run the flow: `layout/pnr.sh --check --rerun` does.
+
+## Re-attest item 2 (analog layout)
+
+After any change to `layout/gen_efuse_otp.py`, `design/efuse_otp_array.spice` or
+the pin:
+
+```sh
+layout/regen-gds.sh
+```
+
+`klt signoff --attest` has no producer for item 2 (klayout-tools#4188, #4221),
+so `item2-analog.attest.json` is a hand-written generic envelope: `t1_item` 2,
+`provenance.input` the stream and its sha256, and a `provenance.regeneration`
+claim carrying the same hash (the grader never runs the generator). Set the new
+sha256 (from `layout/efuse_otp_array.gds.sha256`) in `provenance.input.content_hash`,
+in `provenance.regeneration.regenerated_hash` and as the `content_hash` for
+`2.analog` in `block-manifest.json`, then regenerate the record as above. The
+claim is the stream's existence and reproducibility only; it makes no DRC, LVS
+or connectivity statement.
 
 ## What CI does and does not check
 

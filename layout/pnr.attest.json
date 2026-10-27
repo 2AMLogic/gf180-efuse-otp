@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "kind": "generic",
+  "status": "pass",
+  "t1_item": 2,
+  "summary": "T1 item 2 (Layout, digital): routed GDS from klt place-and-route (layout/pnr-report.json: status ok, stage_reached route, power.pdn true, route_drc_violation_count 0, antenna_violation_count 0)",
+  "source": "layout/pnr-report.json",
+  "provenance": {
+    "klt_version": "0.8.0",
+    "klayout_version": null,
+    "pdk": null,
+    "deck": null,
+    "input": {
+      "path": {
+        "path": "layout/efuse_otp_ctrl.gds",
+        "scope": "repo"
+      },
+      "content_hash": "sha256:4584727c24c77fc004f603eef7e7a047d0e8de262f4398a10189252a65d34564"
+    },
+    "regeneration": {
+      "generator": "layout/pnr.sh",
+      "regenerated_hash": "sha256:b32ace87502c0ffd3318d6be7ab5daa1688654a9bce259817d3d6408052d3734",
+      "hash_kind": "geometry"
+    }
+  }
+}

@@ -12,8 +12,9 @@ published.
 
 **Status: spec ratified.** Committed so far: the PDK smoke record, the
 program-select width sweep record, the controller RTL with its cocotb bench and
-negative control, a mapped gate-level netlist, and the signoff record. The sense
-path, array and layout are not started.
+negative control, a mapped gate-level netlist, the analog schematics and netlist,
+a placed analog layout stream, the routed controller layout, and the signoff
+record. The sense path and analog routing, DRC and LVS are not started.
 
 ## What the block is
 
