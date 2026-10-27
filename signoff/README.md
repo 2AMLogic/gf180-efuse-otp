@@ -4,8 +4,10 @@ The block's verdict of record against the klayout-tools evidence tiers.
 
 | File | Role |
 |---|---|
-| `block-manifest.json` | Block name, kind (`mixed-signal`), the `partition_boundary` (analog and digital nets) and the `evidence` map (`1.digital`, `1.analog` so far). |
-| `block-manifest.signoff.json` | Committed `klt signoff --manifest` output: the verdict of record. Item 1 is `met` for both partitions; every other row, for both partitions, is `unmet` / `no_evidence`. |
+| `attest/item10.json` | `t1-attestation-inventory` for T1 item 10, repo hygiene: the hygiene files and the bare-runner harness checks (checker self-tests, evidence-format check). |
+| `attest/item10.envelope.json` | Envelope emitted by `klt signoff --attest 10`; cited for `10` in `block-manifest.json`, pinned by the inventory's sha256. |
+| `block-manifest.json` | Block name, kind (`mixed-signal`), the `partition_boundary` (analog and digital nets) and the `evidence` map (`1.digital`, `1.analog`, `10`). |
+| `block-manifest.signoff.json` | Committed `klt signoff --manifest` output: the verdict of record. Item 1 and item 10 are `met` for both partitions; every other row, for both partitions, is `unmet` / `no_evidence`. |
 | `klt-pin.txt` | The single place the grader version is pinned. CI installs `$(cat signoff/klt-pin.txt)`. |
 | `item1-digital-inventory.json` | `t1-attestation-inventory` for T1 item 1, digital: the RTL source and the committed gate-level netlist `rtl/efuse_otp_ctrl.gl.v`, whose freshness `check` is `rtl/regen-gl.sh --check` (`local_only`: it needs Yosys and the PDK). |
 | `item1-digital.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.digital` in `block-manifest.json`, pinned by the inventory's sha256. |
@@ -52,6 +54,20 @@ check is carried from attest time, not re-run). The item 1 inventory schema has
 no `pins` block (that is item 9), so the PDK and Yosys revision are recorded in
 the inventory `description`.
 
+## Re-attest item 10 (repo hygiene)
+
+After any edit to `README.md`, `LICENSE`, `.github/workflows/ci.yml`,
+`spec/efuse-otp.md` or `attest/item10.json`:
+
+```sh
+uvx --from "$(cat signoff/klt-pin.txt)" klt signoff --attest 10 \
+  --inventory signoff/attest/item10.json -o signoff/attest/item10.envelope.json
+```
+
+Then set the `content_hash` for `10` in `block-manifest.json` to the sha256 of
+`attest/item10.json`, and regenerate the record as above. CI runs
+`--check signoff/attest/item10.envelope.json`, so editing a hygiene file without
+re-attesting fails (exit 3 = stale).
 ## Re-attest item 1 (analog)
 
 After any change to `design/*.sch`, `design/*.sym` or the pin:
@@ -69,8 +85,15 @@ the sources and the netlist with `--check`; it does not re-run xschem.
 
 ## What CI does and does not check
 
-`.github/workflows/ci.yml` installs only Python and the pinned klt (no PDK,
-ngspice, xschem or klayout). It checks that:
+`.github/workflows/ci.yml` has two jobs. `harness` installs only Python and the
+pinned klt (no PDK, ngspice, xschem or klayout); `controller` builds the pinned
+Icarus 13.0 and Yosys 0.67 (`scripts/ci/install_eda.sh`, cached) and runs
+`verification/run.sh`, its `--negative-control` and `rtl/synth.sh`. Together
+they check that:
+
+- the controller bench passes, the negative control catches every seeded
+  defect, and synthesis reports zero latches;
+- the committed item 10 envelope matches a fresh attestation;
 
 - the checker self-tests still reject seeded-bad input;
 - each evidence directory has a `README.md`, and any `sim/**/records/*.json`

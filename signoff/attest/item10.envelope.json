@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "kind": "generic",
+  "status": "pass",
+  "t1_item": 10,
+  "summary": "T1 item 10 (Repo hygiene): 6/6 attestation checks passed (klt signoff --attest)",
+  "source": "signoff/attest/item10.json",
+  "attestation": {
+    "producer": "klt signoff --attest",
+    "inventory_schema_version": 1,
+    "hash_algorithm": "sha256-raw-bytes",
+    "check_count": 6,
+    "passed_count": 6,
+    "checks": [
+      {
+        "check": "present",
+        "role": "hygiene",
+        "path": ".github/workflows/ci.yml",
+        "passed": true,
+        "content_hash": "sha256:43539be1091047d31de30d52d0d0211e716156ebc2ef6344a745bd3ec88d3edf"
+      },
+      {
+        "check": "present",
+        "role": "hygiene",
+        "path": "LICENSE",
+        "passed": true,
+        "content_hash": "sha256:cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      {
+        "check": "present",
+        "role": "hygiene",
+        "path": "README.md",
+        "passed": true,
+        "content_hash": "sha256:ef5dcf5d2d1c58cf1ccd0fbd49a0cfdcdff6f6793ba4037cb4c332d71b347d91"
+      },
+      {
+        "check": "present",
+        "role": "hygiene",
+        "path": "spec/efuse-otp.md",
+        "passed": true,
+        "content_hash": "sha256:b4d6c545447a2c12675f9612a6f83199b22cc9f2b75b9ff210b4f7bc9ed3a4a9"
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "checker-self-tests",
+        "argv": [
+          "python3",
+          "-I",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "scripts/ci",
+          "-p",
+          "test_*.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "audit",
+        "name": "evidence-format",
+        "argv": [
+          "python3",
+          "scripts/ci/check_evidence_format.py"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      }
+    ]
+  },
+  "provenance": {
+    "klt_version": "0.8.0",
+    "klayout_version": null,
+    "pdk": null,
+    "deck": null,
+    "input": {
+      "path": {
+        "path": "signoff/attest/item10.json",
+        "scope": "repo"
+      },
+      "content_hash": "sha256:3c94322d25101f9cd9aebd6cdec2d8cd612edeb2fb8819e2a2c7a0c9dd9f3b81"
+    }
+  }
+}
