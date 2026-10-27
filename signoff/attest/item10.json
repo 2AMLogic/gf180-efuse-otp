@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "kind": "t1-attestation-inventory",
+  "t1_item": 10,
+  "description": "Repo hygiene: README with block description, spec table and reproduction steps; license; spec; CI workflow. Checks are the harness commands CI runs on a bare runner (no PDK, ngspice, Icarus or Yosys).",
+  "hygiene": ["README.md", "LICENSE", ".github/workflows/ci.yml", "spec/efuse-otp.md"],
+  "checks": [
+    {"name": "checker-self-tests", "argv": ["python3", "-I", "-m", "unittest", "discover", "-s", "scripts/ci", "-p", "test_*.py"]},
+    {"name": "evidence-format", "argv": ["python3", "scripts/ci/check_evidence_format.py"]}
+  ]
+}
