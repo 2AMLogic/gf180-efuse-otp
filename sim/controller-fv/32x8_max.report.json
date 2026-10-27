@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "engine": "icarus",
+  "hdl_toplevel": "efuse_otp_ctrl",
+  "testbench": "test_efuse_otp_ctrl",
+  "status": "pass",
+  "test_count": 12,
+  "passed_count": 12,
+  "failed_count": 0,
+  "skipped_count": 0,
+  "tests": [
+    {
+      "name": "test_no_program_output_at_power_up",
+      "status": "passed",
+      "sim_time_ns": 36.0,
+      "real_time_s": 0.001
+    },
+    {
+      "name": "test_no_program_before_arming",
+      "status": "passed",
+      "sim_time_ns": 10155.0,
+      "real_time_s": 0.051
+    },
+    {
+      "name": "test_arming_boundary",
+      "status": "passed",
+      "sim_time_ns": 30525.0,
+      "real_time_s": 0.165
+    },
+    {
+      "name": "test_enable_stuck_high_never_programs",
+      "status": "passed",
+      "sim_time_ns": 20475.0,
+      "real_time_s": 0.088
+    },
+    {
+      "name": "test_reset_mid_pulse",
+      "status": "passed",
+      "sim_time_ns": 10245.0,
+      "real_time_s": 0.05
+    },
+    {
+      "name": "test_pulse_width_and_selects",
+      "status": "passed",
+      "sim_time_ns": 30145.0,
+      "real_time_s": 0.139
+    },
+    {
+      "name": "test_address_change_while_busy",
+      "status": "passed",
+      "sim_time_ns": 10115.0,
+      "real_time_s": 0.079
+    },
+    {
+      "name": "test_request_while_busy_ignored_and_back_to_back",
+      "status": "passed",
+      "sim_time_ns": 20135.000000000015,
+      "real_time_s": 0.094
+    },
+    {
+      "name": "test_busy_idle_low",
+      "status": "passed",
+      "sim_time_ns": 105.0,
+      "real_time_s": 0.001
+    },
+    {
+      "name": "test_read_settle_and_sample",
+      "status": "passed",
+      "sim_time_ns": 235.0,
+      "real_time_s": 0.001
+    },
+    {
+      "name": "test_read_works_before_arming",
+      "status": "passed",
+      "sim_time_ns": 115.0,
+      "real_time_s": 0.001
+    },
+    {
+      "name": "test_read_has_priority_over_program",
+      "status": "passed",
+      "sim_time_ns": 10215.0,
+      "real_time_s": 0.04
+    }
+  ],
+  "coverage": null,
+  "trace": null,
+  "environment": {
+    "engine": "icarus",
+    "engine_version": "13.0",
+    "cocotb_version": "2.1.0",
+    "results_xml": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-35/sim/controller-fv/32x8_max/results_icarus.xml",
+    "test_log": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-35/sim/controller-fv/32x8_max/test_icarus.log",
+    "build_log": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-35/sim/controller-fv/32x8_max/build_icarus.log",
+    "random_seed": 1,
+    "source_defines": {},
+    "initial_state": null,
+    "sdf": null
+  }
+}
