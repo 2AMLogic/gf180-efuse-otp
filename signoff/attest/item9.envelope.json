@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "kind": "generic",
+  "status": "pass",
+  "t1_item": 9,
+  "summary": "T1 item 9 (Testbenches shipped): 13/13 attestation checks passed (klt signoff --attest)",
+  "source": "signoff/attest/item9.json",
+  "attestation": {
+    "producer": "klt signoff --attest",
+    "inventory_schema_version": 1,
+    "hash_algorithm": "sha256-raw-bytes",
+    "check_count": 13,
+    "passed_count": 13,
+    "checks": [
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/cold-start.sh",
+        "passed": true,
+        "content_hash": "sha256:05731ef2c2e648cbf6902dfafc7e9b656c5dc981316d3b27b9150eda62187ea8"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/program-select/cell.cir.in",
+        "passed": true,
+        "content_hash": "sha256:afc01ef24442b8420419d32a575ec7bc172243bd272c94877873966fcd8f82c5"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/program-select/run.sh",
+        "passed": true,
+        "content_hash": "sha256:ed33da16793e05d70f2e79002e445ca53030836847c66a71c29245526f0c0fb4"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/program-select/summarize.py",
+        "passed": true,
+        "content_hash": "sha256:c2011fe9aa89c86940d24a07ac8a7387d3c3b07788506e0abde4b631c37409ca"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/sense-margin/run.sh",
+        "passed": true,
+        "content_hash": "sha256:372649f50a7e82c4d531c9306b123d2dbbb6e731080d5aaf9b44bf01ac7106f4"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/sense-margin/sense.cir.in",
+        "passed": true,
+        "content_hash": "sha256:6993f3bc580a5fa3226f406fe1a9b76f5aa3a1c67d36a37bfea8428d984d859f"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/sense-margin/summarize.py",
+        "passed": true,
+        "content_hash": "sha256:0f235ad0337eb1d7d9547ee44ebf62b0656ca127eaf58bcec404f6cf8b111c0a"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "verification/run.sh",
+        "passed": true,
+        "content_hash": "sha256:e0e0baae4de3c692d341a3fd0919a35cb38083e5f279e85e4291e0148fdd79d4"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "verification/runner.py",
+        "passed": true,
+        "content_hash": "sha256:45e47e916c94a52c6798f5edc5a74c67a67a6bf121c6c9d666b8dcf9b227cced"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "verification/test_efuse_otp_ctrl.py",
+        "passed": true,
+        "content_hash": "sha256:9038cd0c5befc7967f474b8de36e014593f7e182f1d523504b5a16f772993409"
+      },
+      {
+        "check": "command",
+        "role": "cold_start",
+        "argv": [
+          "sim/cold-start.sh"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true,
+        "local_only": true
+      },
+      {
+        "check": "pin",
+        "role": "pdk",
+        "passed": true,
+        "value": {
+          "name": "gf180mcu",
+          "revision": "f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7"
+        }
+      },
+      {
+        "check": "pin",
+        "role": "tools",
+        "passed": true,
+        "value": {
+          "ciel": "2.6.1",
+          "cocotb": "2.1.0",
+          "iverilog": "13.0",
+          "klayout-tools": "0.8.0",
+          "ngspice": "42",
+          "xschem": "3.4.7",
+          "yosys": "0.67"
+        }
+      }
+    ]
+  },
+  "provenance": {
+    "klt_version": "0.8.0",
+    "klayout_version": null,
+    "pdk": null,
+    "deck": null,
+    "input": {
+      "path": {
+        "path": "signoff/attest/item9.json",
+        "scope": "repo"
+      },
+      "content_hash": "sha256:df0b24e4bc9ed40387d1a75ed1472992910cdf773015b32f6ae4ab911bfc719b"
+    }
+  }
+}
