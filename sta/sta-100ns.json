@@ -1,0 +1,19 @@
+{
+  "def": "../layout/.klt/place-and-route/efuse_otp_ctrl.def",
+  "hdl_toplevel": "efuse_otp_ctrl",
+  "pdk": {
+    "cell_library": "gf180mcu_fd_sc_mcu7t5v0",
+    "corners": [
+      "ss_n40C_3v00",
+      "ss_125C_3v00",
+      "tt_025C_3v30",
+      "ff_n40C_3v60",
+      "ff_125C_3v60"
+    ]
+  },
+  "constraints": {
+    "clock_port": "clk",
+    "clock_period_ns": 100
+  },
+  "geometry_source": "routed"
+}
