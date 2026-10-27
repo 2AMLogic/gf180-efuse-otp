@@ -6,8 +6,10 @@ The block's verdict of record against the klayout-tools evidence tiers.
 |---|---|
 | `attest/item10.json` | `t1-attestation-inventory` for T1 item 10, repo hygiene: the hygiene files and the bare-runner harness checks (checker self-tests, evidence-format check). |
 | `attest/item10.envelope.json` | Envelope emitted by `klt signoff --attest 10`; cited for `10` in `block-manifest.json`, pinned by the inventory's sha256. |
-| `block-manifest.json` | Block name, kind (`mixed-signal`), the `partition_boundary` (analog and digital nets) and the `evidence` map (`1.digital`, `1.analog`, `10`). |
-| `block-manifest.signoff.json` | Committed `klt signoff --manifest` output: the verdict of record. Item 1 and item 10 are `met` for both partitions; every other row, for both partitions, is `unmet` / `no_evidence`. |
+| `attest/item9.json` | `t1-attestation-inventory` for T1 item 9, testbenches shipped: the controller, program-select and sense-margin bench files, the cold-start command `sim/cold-start.sh` (`local_only`), and the PDK and tool pins. |
+| `attest/item9.envelope.json` | Envelope emitted by `klt signoff --attest 9`; cited for `9` in `block-manifest.json`, pinned by the inventory's sha256. |
+| `block-manifest.json` | Block name, kind (`mixed-signal`), the `partition_boundary` (analog and digital nets) and the `evidence` map (`1.digital`, `1.analog`, `9`, `10`). |
+| `block-manifest.signoff.json` | Committed `klt signoff --manifest` output: the verdict of record. Items 1, 9 and 10 are `met` for both partitions; every other row, for both partitions, is `unmet` / `no_evidence`. |
 | `klt-pin.txt` | The single place the grader version is pinned. CI installs `$(cat signoff/klt-pin.txt)`. |
 | `item1-digital-inventory.json` | `t1-attestation-inventory` for T1 item 1, digital: the RTL source and the committed gate-level netlist `rtl/efuse_otp_ctrl.gl.v`, whose freshness `check` is `rtl/regen-gl.sh --check` (`local_only`: it needs Yosys and the PDK). |
 | `item1-digital.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.digital` in `block-manifest.json`, pinned by the inventory's sha256. |
@@ -54,6 +56,24 @@ check is carried from attest time, not re-run). The item 1 inventory schema has
 no `pins` block (that is item 9), so the PDK and Yosys revision are recorded in
 the inventory `description`.
 
+## Re-attest item 9 (testbenches shipped)
+
+After any edit to a bench file listed in `attest/item9.json`, to `sim/cold-start.sh`
+or to the pins:
+
+```sh
+uvx --from "$(cat signoff/klt-pin.txt)" klt signoff --attest 9 \
+  --inventory signoff/attest/item9.json -o signoff/attest/item9.envelope.json
+```
+
+`--attest` runs `sim/cold-start.sh` (controller bench, then `--dry-run` of the two
+analog request sets), so it needs the PDK, ngspice, Icarus and Yosys. Then set the
+`content_hash` for `9` in `block-manifest.json` to the sha256 of `attest/item9.json`
+and regenerate the record as above. CI runs `--check`, which re-hashes the bench files
+and re-checks the pins but does not re-run the `local_only` cold start. The attestation
+shows the benches exist, are pinned and launch; it says nothing about whether any
+margin or current passes.
+
 ## Re-attest item 10 (repo hygiene)
 
 After any edit to `README.md`, `LICENSE`, `.github/workflows/ci.yml`,
@@ -93,7 +113,7 @@ they check that:
 
 - the controller bench passes, the negative control catches every seeded
   defect, and synthesis reports zero latches;
-- the committed item 10 envelope matches a fresh attestation;
+- the committed item 10 and item 9 envelopes match a fresh attestation;
 
 - the checker self-tests still reject seeded-bad input;
 - each evidence directory has a `README.md`, and any `sim/**/records/*.json`

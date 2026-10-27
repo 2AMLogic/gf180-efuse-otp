@@ -48,3 +48,34 @@ is 15 `klt sim` requests submitted with `--batch-set`, so it needs the batch
 fleet; a failed submit is reported and never re-run locally.
 `program-select.sch` is the schematic (netlist it with `klt netlist`); the
 swept deck is `cell.cir.in`. Result and derivation: `design/README.md`.
+
+## Sense-margin bench
+
+`sim/sense-margin/run.sh` runs the committed sense path (`efuse_sense`, `efuse_comp`)
+against intact 140/200/260 ohm (A4) and programmed 630/900 ohm/open (A5) fuse values and
+the 400 ohm reference (A6) over the decision-0005 grid, plus a negative control with the
+reference moved inside the intact range. It submits 8 requests with `klt sim --batch-set`
+(batch only) and writes `sim/sense-margin/records/<stamp>-<rev>/record.json`. Assumptions
+and the record layout: `sim/sense-margin/README.md`.
+
+## Testbench inventory
+
+The item-9 inventory is `signoff/attest/item9.json`. Cold start for all of it, from a
+fresh clone with the pinned tools installed (above, plus Icarus Verilog 13.0, Yosys 0.67
+and network for the first `pip install` of the pinned cocotb):
+
+```bash
+sim/cold-start.sh
+```
+
+It runs the controller bench, then `--dry-run` of each analog request set. `--dry-run`
+validates the request set only; it runs no corner and says nothing about margin or
+current. The campaigns are the batch commands in the table.
+
+| Spec row | Bench | Cold-start (validate) | Campaign (batch, writes a record) | Pinned |
+|---|---|---|---|---|
+| Program current (A2, decision 0002) | `sim/program-select/run.sh`, `cell.cir.in`, `summarize.py` | `sim/program-select/run.sh --dry-run` | `sim/program-select/run.sh` | open_pdks `f6eeac7`, ngspice 42, klt 0.8.0 |
+| Sense margin (A4/A5/A6, decision 0003) | `sim/sense-margin/run.sh`, `sense.cir.in`, `summarize.py` | `sim/sense-margin/run.sh --dry-run` | `sim/sense-margin/run.sh` | open_pdks `f6eeac7`, ngspice 42, klt 0.8.0 |
+| Controller behaviour (decision 0004) | `verification/run.sh`, `runner.py`, `test_efuse_otp_ctrl.py` | `verification/run.sh` (runs the bench itself) | `verification/run.sh --negative-control` | Icarus 13.0, Yosys 0.67, cocotb 2.1.0 |
+
+The batch campaigns need access to the batch fleet; the cold start does not run a corner.

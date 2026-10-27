@@ -9,7 +9,7 @@
   "tier": null,
   "t1_item_count": 22,
   "build_t1_item_count": 22,
-  "t1_met_count": 4,
+  "t1_met_count": 6,
   "source_doc": "signoff/design-evidence-tiers.md",
   "source_doc_content_hash": "sha256:a26b90262320d0fbd32b3f549a02b6300832706041797a559d8bf6bdb62efdc7",
   "build": {
@@ -296,10 +296,35 @@
       "partition_boundary": "design/efuse_otp_array.sch (array, row/column drivers with level shifters, sense path incl. comparator) is the analog partition. Boundary nets it exposes: inputs row_sel[31:0], col_sel[7:0], prog_strobe, sense_en (3.3 V, from the controller) and clk (the system clock, routed to the comparator and gated there with sense_en; the clock is a digital-side net that terminates in the analog partition); output sense_out (the comparator's latched result); supplies vdd33, vprog, vss.",
       "text": "every claimed measurement's testbench committed, with a documented cold-start invocation a third party can run; pinned PDK revision.",
       "notes": [],
-      "status": "unmet",
-      "reason": "no_evidence",
+      "status": "met",
+      "reason": null,
       "graded_by_build": true,
-      "citation": null
+      "citation": {
+        "file": "signoff/attest/item9.envelope.json",
+        "command": null,
+        "kind": "generic",
+        "check_status": "pass",
+        "content_hash": "sha256:df0b24e4bc9ed40387d1a75ed1472992910cdf773015b32f6ae4ab911bfc719b",
+        "input_verified": true,
+        "exit_status": 0,
+        "artifact_binding": {
+          "t1_item": 9,
+          "path": {
+            "path": "signoff/attest/item9.json",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:df0b24e4bc9ed40387d1a75ed1472992910cdf773015b32f6ae4ab911bfc719b",
+          "input_verified": true,
+          "summary": "T1 item 9 (Testbenches shipped): 13/13 attestation checks passed (klt signoff --attest)",
+          "source": "signoff/attest/item9.json",
+          "attestation": {
+            "producer": "klt signoff --attest",
+            "inventory_schema_version": 1,
+            "check_count": 13,
+            "passed_count": 13
+          }
+        }
+      }
     },
     {
       "tier": "T1",
@@ -309,10 +334,35 @@
       "partition_boundary": "rtl/efuse_otp_ctrl.v (synchronous controller) is the digital partition. Boundary nets it drives into analog: prog_strobe, row_sel[31:0], col_sel[7:0], sense_en; it receives sense_in (= analog sense_out). clk, rst, addr[7:0], prog_en, rd_en, dout and busy are external pins of the digital partition only; clk additionally fans out to the analog comparator.",
       "text": "every claimed measurement's testbench committed, with a documented cold-start invocation a third party can run; pinned PDK revision.",
       "notes": [],
-      "status": "unmet",
-      "reason": "no_evidence",
+      "status": "met",
+      "reason": null,
       "graded_by_build": true,
-      "citation": null
+      "citation": {
+        "file": "signoff/attest/item9.envelope.json",
+        "command": null,
+        "kind": "generic",
+        "check_status": "pass",
+        "content_hash": "sha256:df0b24e4bc9ed40387d1a75ed1472992910cdf773015b32f6ae4ab911bfc719b",
+        "input_verified": true,
+        "exit_status": 0,
+        "artifact_binding": {
+          "t1_item": 9,
+          "path": {
+            "path": "signoff/attest/item9.json",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:df0b24e4bc9ed40387d1a75ed1472992910cdf773015b32f6ae4ab911bfc719b",
+          "input_verified": true,
+          "summary": "T1 item 9 (Testbenches shipped): 13/13 attestation checks passed (klt signoff --attest)",
+          "source": "signoff/attest/item9.json",
+          "attestation": {
+            "producer": "klt signoff --attest",
+            "inventory_schema_version": 1,
+            "check_count": 13,
+            "passed_count": 13
+          }
+        }
+      }
     },
     {
       "tier": "T1",
