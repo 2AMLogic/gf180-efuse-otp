@@ -56,7 +56,7 @@ layout/regen-gds.sh           # rewrite the files
 layout/regen-gds.sh --check   # exit 3 = drifted
 ```
 
-`sha256(efuse_otp_array.gds)` = `a4a198d06061ea6cee2d2c41eff233cf695deeb29b37f6a9bc2b0f7c5a558a5b`
+`sha256(efuse_otp_array.gds)` = `e97864907c437e03547b6b33a2b14308333e9d7490806c52578f56eddc3a4e26`
 (klt 0.8.0, `gf180mcuC` at open_pdks `f6eeac7`). Streams carry no write time, so
 the check is a byte compare.
 
