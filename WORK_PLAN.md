@@ -19,7 +19,9 @@ _None._
 
 `loom:important`; taken before unlabelled work.
 
-_None._
+- **#28**: T1 item 9 (testbenches shipped): sense-margin bench, testbench inventory and --attest 9
+- **#29**: T1 item 2 (layout, analog): generated GDS for the fuse bitcell, 32x8 array, drivers and sense path
+- **#30**: T1 item 2 (layout, digital): klt place-and-route flow and routed GDS for efuse_otp_ctrl
 
 ## Ready
 
@@ -31,7 +33,7 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-_None._
+- **#27**: T1 item 10 (repo hygiene): README reproduction steps, controller bench in CI, klt signoff --attest 10
 
 ## PRs Awaiting Review
 
@@ -43,17 +45,18 @@ _None._
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-_None._
+- **#38**: ci: run controller bench in CI, add README reproduce steps, attest T1 item 10
 
 ## Proposed
 
 Issues carrying `loom:curated`.
 
 - **#3**: Track the gap to T1 (klayout-tools design-evidence-tiers.md) *(curated)*
+- **#27**: T1 item 10 (repo hygiene): README reproduction steps, controller bench in CI, klt signoff --attest 10 *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-_None._
+- **#40**: Remove rtl/synth.sh: superseded by regen-gl.sh latch check, plus dead Yosys gate in cocotb runner *(hermit)*
 
 ## Epics
 
@@ -65,12 +68,12 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Very important | 0 |
-| Important | 0 |
+| Important | 3 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 0 |
+| In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 0 |
-| Curated | 1 |
-| Architect / Hermit proposals | 0 |
+| Approved PRs awaiting merge | 1 |
+| Curated | 2 |
+| Architect / Hermit proposals | 1 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
