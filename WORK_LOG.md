@@ -4,6 +4,12 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-10-27
 
+- **PR #44**: layout: route the digital controller with klt place-and-route and attest item 2
+- **PR #43**: feat(layout): placed analog layout stream with reproducible generator
+- **PR #38**: ci: run controller bench in CI, add README reproduce steps, attest T1 item 10
+- **Issue #30** (closed): T1 item 2 (layout, digital): klt place-and-route flow and routed GDS for efuse_otp_ctrl
+- **Issue #29** (closed): T1 item 2 (layout, analog): generated GDS for the fuse bitcell, 32x8 array, drivers and sense path
+- **Issue #27** (closed): T1 item 10 (repo hygiene): README reproduction steps, controller bench in CI, klt signoff --attest 10
 - **PR #39**: feat(design): analog schematics, derived netlist and item 1 analog attestation
 - **PR #37**: feat(rtl): commit mapped gf180mcu netlist and attest T1 item 1 (digital)
 - **Issue #25** (closed): T1 item 1 (design sources, analog): schematics and derived netlist for the fuse array, program drivers and sense path

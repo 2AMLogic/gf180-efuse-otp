@@ -20,8 +20,7 @@ _None._
 `loom:important`; taken before unlabelled work.
 
 - **#28**: T1 item 9 (testbenches shipped): sense-margin bench, testbench inventory and --attest 9
-- **#29**: T1 item 2 (layout, analog): generated GDS for the fuse bitcell, 32x8 array, drivers and sense path
-- **#30**: T1 item 2 (layout, digital): klt place-and-route flow and routed GDS for efuse_otp_ctrl
+- **#31**: T1 item 3 (DRC clean): klt drc on both partitions, including a route to the EF.* rules
 
 ## Ready
 
@@ -33,7 +32,7 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-- **#27**: T1 item 10 (repo hygiene): README reproduction steps, controller bench in CI, klt signoff --attest 10
+- **#28**: T1 item 9 (testbenches shipped): sense-margin bench, testbench inventory and --attest 9
 
 ## PRs Awaiting Review
 
@@ -45,14 +44,14 @@ _None._
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-- **#38**: ci: run controller bench in CI, add README reproduce steps, attest T1 item 10
+_None._
 
 ## Proposed
 
 Issues carrying `loom:curated`.
 
 - **#3**: Track the gap to T1 (klayout-tools design-evidence-tiers.md) *(curated)*
-- **#27**: T1 item 10 (repo hygiene): README reproduction steps, controller bench in CI, klt signoff --attest 10 *(curated)*
+- **#28**: T1 item 9 (testbenches shipped): sense-margin bench, testbench inventory and --attest 9 *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -68,11 +67,11 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Very important | 0 |
-| Important | 3 |
+| Important | 2 |
 | Ready (`loom:issue`) | 0 |
 | In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 1 |
+| Approved PRs awaiting merge | 0 |
 | Curated | 2 |
 | Architect / Hermit proposals | 1 |
 | Active epics | 0 |
