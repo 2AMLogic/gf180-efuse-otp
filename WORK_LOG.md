@@ -2,6 +2,13 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-10-27
+
+- **PR #39**: feat(design): analog schematics, derived netlist and item 1 analog attestation
+- **PR #37**: feat(rtl): commit mapped gf180mcu netlist and attest T1 item 1 (digital)
+- **Issue #25** (closed): T1 item 1 (design sources, analog): schematics and derived netlist for the fuse array, program drivers and sense path
+- **Issue #26** (closed): T1 item 1 (design sources, digital): klt synthesize efuse_otp_ctrl to a committed gf180mcu gate-level netlist
+
 ### 2026-10-23
 
 - **Issue #14** (closed): rtl: synchronous OTP controller with arm-after-reset protection and cocotb bench (T1 items 1, 9, digital partition)

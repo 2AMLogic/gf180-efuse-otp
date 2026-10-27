@@ -1,0 +1,398 @@
+{
+  "top_cell": "efuse_otp_array",
+  "dbu_um": 0.0005,
+  "bbox_um": [
+    -35.72,
+    -33.84,
+    917.68,
+    539.44
+  ],
+  "array": {
+    "rows": 32,
+    "cols": 8,
+    "pitch_x_um": 114.96,
+    "pitch_y_um": 16.92
+  },
+  "caveat": "placed hierarchy only: no routing, no connectivity, no DRC/LVS claim",
+  "devices": [
+    {
+      "cell": "efuse_bitcell__Xf",
+      "device": "efuse",
+      "source": "PDK efuse.gds"
+    },
+    {
+      "cell": "efuse_bitcell__Xsel",
+      "device": "nfet_06v0",
+      "w_um": 60.0,
+      "l_um": 0.7,
+      "fingers": 6,
+      "finger_w_um": 10.0
+    },
+    {
+      "cell": "efuse_ls__Mpi",
+      "device": "pfet_03v3",
+      "w_um": 2.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 2.0
+    },
+    {
+      "cell": "efuse_ls__Mni",
+      "device": "nfet_03v3",
+      "w_um": 1.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 1.0
+    },
+    {
+      "cell": "efuse_ls__Mn1",
+      "device": "nfet_06v0",
+      "w_um": 4.0,
+      "l_um": 0.7,
+      "fingers": 1,
+      "finger_w_um": 4.0
+    },
+    {
+      "cell": "efuse_ls__Mn2",
+      "device": "nfet_06v0",
+      "w_um": 4.0,
+      "l_um": 0.7,
+      "fingers": 1,
+      "finger_w_um": 4.0
+    },
+    {
+      "cell": "efuse_ls__Mp1",
+      "device": "pfet_06v0",
+      "w_um": 1.0,
+      "l_um": 0.5,
+      "fingers": 1,
+      "finger_w_um": 1.0
+    },
+    {
+      "cell": "efuse_ls__Mp2",
+      "device": "pfet_06v0",
+      "w_um": 1.0,
+      "l_um": 0.5,
+      "fingers": 1,
+      "finger_w_um": 1.0
+    },
+    {
+      "cell": "efuse_coldrv__Mppa",
+      "device": "pfet_03v3",
+      "w_um": 2.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 2.0
+    },
+    {
+      "cell": "efuse_coldrv__Mppb",
+      "device": "pfet_03v3",
+      "w_um": 2.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 2.0
+    },
+    {
+      "cell": "efuse_coldrv__Mnpa",
+      "device": "nfet_03v3",
+      "w_um": 2.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 2.0
+    },
+    {
+      "cell": "efuse_coldrv__Mnpb",
+      "device": "nfet_03v3",
+      "w_um": 2.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 2.0
+    },
+    {
+      "cell": "efuse_coldrv__Mdrv",
+      "device": "pfet_06v0",
+      "w_um": 100.0,
+      "l_um": 0.5,
+      "fingers": 10,
+      "finger_w_um": 10.0
+    },
+    {
+      "cell": "efuse_coldrv__Mpra",
+      "device": "pfet_03v3",
+      "w_um": 2.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 2.0
+    },
+    {
+      "cell": "efuse_coldrv__Mprb",
+      "device": "pfet_03v3",
+      "w_um": 2.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 2.0
+    },
+    {
+      "cell": "efuse_coldrv__Mnra",
+      "device": "nfet_03v3",
+      "w_um": 2.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 2.0
+    },
+    {
+      "cell": "efuse_coldrv__Mnrb",
+      "device": "nfet_03v3",
+      "w_um": 2.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 2.0
+    },
+    {
+      "cell": "efuse_coldrv__Mpr",
+      "device": "pfet_03v3",
+      "w_um": 2.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 2.0
+    },
+    {
+      "cell": "efuse_coldrv__Mnr",
+      "device": "nfet_03v3",
+      "w_um": 1.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 1.0
+    },
+    {
+      "cell": "efuse_coldrv__Mrs",
+      "device": "nfet_06v0",
+      "w_um": 4.0,
+      "l_um": 0.7,
+      "fingers": 1,
+      "finger_w_um": 4.0
+    },
+    {
+      "cell": "efuse_comp__Mt",
+      "device": "pfet_03v3",
+      "w_um": 8.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 8.0
+    },
+    {
+      "cell": "efuse_comp__M1",
+      "device": "pfet_03v3",
+      "w_um": 8.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 8.0
+    },
+    {
+      "cell": "efuse_comp__M2",
+      "device": "pfet_03v3",
+      "w_um": 8.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 8.0
+    },
+    {
+      "cell": "efuse_comp__Mx1",
+      "device": "nfet_03v3",
+      "w_um": 2.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 2.0
+    },
+    {
+      "cell": "efuse_comp__Mx2",
+      "device": "nfet_03v3",
+      "w_um": 2.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 2.0
+    },
+    {
+      "cell": "efuse_comp__Mr1",
+      "device": "nfet_03v3",
+      "w_um": 1.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 1.0
+    },
+    {
+      "cell": "efuse_comp__Mr2",
+      "device": "nfet_03v3",
+      "w_um": 1.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 1.0
+    },
+    {
+      "cell": "efuse_sense__Mb",
+      "device": "pfet_03v3",
+      "w_um": 4.0,
+      "l_um": 1.0,
+      "fingers": 1,
+      "finger_w_um": 4.0
+    },
+    {
+      "cell": "efuse_sense__b",
+      "device": "ppolyf_u",
+      "ohms": 2000.0,
+      "length_um": 5.714,
+      "width_um": 1.0
+    },
+    {
+      "cell": "efuse_sense__Mbs",
+      "device": "nfet_03v3",
+      "w_um": 2.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 2.0
+    },
+    {
+      "cell": "efuse_sense__Mbp",
+      "device": "pfet_03v3",
+      "w_um": 1.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 1.0
+    },
+    {
+      "cell": "efuse_sense__Mf",
+      "device": "pfet_03v3",
+      "w_um": 4.0,
+      "l_um": 1.0,
+      "fingers": 1,
+      "finger_w_um": 4.0
+    },
+    {
+      "cell": "efuse_sense__Mrf",
+      "device": "pfet_03v3",
+      "w_um": 4.0,
+      "l_um": 1.0,
+      "fingers": 1,
+      "finger_w_um": 4.0
+    },
+    {
+      "cell": "efuse_sense__ref",
+      "device": "ppolyf_u",
+      "ohms": 400.0,
+      "length_um": 1.143,
+      "width_um": 1.0
+    },
+    {
+      "cell": "efuse_sense__Msw",
+      "device": "nfet_06v0",
+      "w_um": 4.0,
+      "l_um": 0.7,
+      "fingers": 1,
+      "finger_w_um": 4.0
+    },
+    {
+      "cell": "efuse_sense__Msel",
+      "device": "nfet_06v0",
+      "w_um": 60.0,
+      "l_um": 0.7,
+      "fingers": 6,
+      "finger_w_um": 10.0
+    },
+    {
+      "cell": "efuse_sense__Mpca",
+      "device": "pfet_03v3",
+      "w_um": 2.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 2.0
+    },
+    {
+      "cell": "efuse_sense__Mpcb",
+      "device": "pfet_03v3",
+      "w_um": 2.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 2.0
+    },
+    {
+      "cell": "efuse_sense__Mnca",
+      "device": "nfet_03v3",
+      "w_um": 2.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 2.0
+    },
+    {
+      "cell": "efuse_sense__Mncb",
+      "device": "nfet_03v3",
+      "w_um": 2.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 2.0
+    },
+    {
+      "cell": "efuse_sense__Mpqa",
+      "device": "pfet_03v3",
+      "w_um": 4.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 4.0
+    },
+    {
+      "cell": "efuse_sense__Mpqb",
+      "device": "pfet_03v3",
+      "w_um": 4.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 4.0
+    },
+    {
+      "cell": "efuse_sense__Mnqa",
+      "device": "nfet_03v3",
+      "w_um": 1.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 1.0
+    },
+    {
+      "cell": "efuse_sense__Mnqb",
+      "device": "nfet_03v3",
+      "w_um": 1.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 1.0
+    },
+    {
+      "cell": "efuse_sense__Mpba",
+      "device": "pfet_03v3",
+      "w_um": 4.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 4.0
+    },
+    {
+      "cell": "efuse_sense__Mpbb",
+      "device": "pfet_03v3",
+      "w_um": 4.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 4.0
+    },
+    {
+      "cell": "efuse_sense__Mnba",
+      "device": "nfet_03v3",
+      "w_um": 1.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 1.0
+    },
+    {
+      "cell": "efuse_sense__Mnbb",
+      "device": "nfet_03v3",
+      "w_um": 1.0,
+      "l_um": 0.28,
+      "fingers": 1,
+      "finger_w_um": 1.0
+    }
+  ]
+}
