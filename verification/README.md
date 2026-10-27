@@ -41,3 +41,12 @@ defect, and non-zero (including when a pattern no longer matches the RTL) otherw
 
 Expected: `ALL CHECKS PASSED` for `run.sh`, `NEGATIVE CONTROL OK` for the mode above.
 CI runs both modes in the `controller` job of `.github/workflows/ci.yml`.
+
+## klt functional-verification
+
+`verification/klt-fv.sh [outdir]` runs the same bench through the pinned
+`klt functional-verification`, one request per parameter set
+(`verification/klt/fv-*.json`; expected pulse/settle counts are passed through the
+environment as in `runner.py`). Reports are kept in `sim/controller-fv/`
+(9 sets, 12/12 checks each). Keep the request parameters and the table in
+`klt-fv.sh` in step with `CONFIGS` in `runner.py`.
