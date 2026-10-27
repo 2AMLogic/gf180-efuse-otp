@@ -9,7 +9,7 @@
   "tier": null,
   "t1_item_count": 22,
   "build_t1_item_count": 22,
-  "t1_met_count": 5,
+  "t1_met_count": 6,
   "source_doc": "signoff/design-evidence-tiers.md",
   "source_doc_content_hash": "sha256:a26b90262320d0fbd32b3f549a02b6300832706041797a559d8bf6bdb62efdc7",
   "build": {
@@ -143,10 +143,35 @@
       "partition_boundary": "rtl/efuse_otp_ctrl.v (synchronous controller) is the digital partition. Boundary nets it drives into analog: prog_strobe, row_sel[31:0], col_sel[7:0], sense_en; it receives sense_in (= analog sense_out). clk, rst, addr[7:0], prog_en, rd_en, dout and busy are external pins of the digital partition only; clk additionally fans out to the analog comparator.",
       "text": "committed routed GDS/OASIS from place-and-route, reproducibly generated from the gate-level netlist (P&R script/flow committed, not a one-off hand edit). For the same full-custom sub-case, this item is satisfied instead by the Analog column's artifact: committed GDS/OASIS, reproducibly generated or with documented provenance \u2014 hand-drawn layout, not P&R output.",
       "notes": [],
-      "status": "unmet",
-      "reason": "no_evidence",
+      "status": "met",
+      "reason": null,
       "graded_by_build": true,
-      "citation": null
+      "citation": {
+        "file": "layout/pnr.attest.json",
+        "command": null,
+        "kind": "generic",
+        "check_status": "pass",
+        "content_hash": "sha256:4584727c24c77fc004f603eef7e7a047d0e8de262f4398a10189252a65d34564",
+        "input_verified": true,
+        "exit_status": 0,
+        "artifact_binding": {
+          "t1_item": 2,
+          "path": {
+            "path": "layout/efuse_otp_ctrl.gds",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:4584727c24c77fc004f603eef7e7a047d0e8de262f4398a10189252a65d34564",
+          "input_verified": true,
+          "summary": "T1 item 2 (Layout, digital): routed GDS from klt place-and-route (layout/pnr-report.json: status ok, stage_reached route, power.pdn true, route_drc_violation_count 0, antenna_violation_count 0)",
+          "source": "layout/pnr-report.json",
+          "regeneration": {
+            "generator": "layout/pnr.sh",
+            "regenerated_hash": "sha256:b32ace87502c0ffd3318d6be7ab5daa1688654a9bce259817d3d6408052d3734",
+            "executed_by_klt": false,
+            "hash_kind": "geometry"
+          }
+        }
+      }
     },
     {
       "tier": "T1",
