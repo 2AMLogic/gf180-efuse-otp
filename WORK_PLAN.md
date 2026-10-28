@@ -20,19 +20,18 @@ _None._
 `loom:important`; taken before unlabelled work.
 
 - **#28**: T1 item 9 (testbenches shipped): sense-margin bench, testbench inventory and --attest 9
-- **#31**: T1 item 3 (DRC clean): klt drc on both partitions, including a route to the EF.* rules
 
 ## Ready
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#31**: T1 item 3 (DRC clean): klt drc on both partitions, including a route to the EF.* rules
+- **#35**: T1 item 5 (corner verification, digital): klt sta and klt functional-verification for the controller
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#28**: T1 item 9 (testbenches shipped): sense-margin bench, testbench inventory and --attest 9
+_None._
 
 ## PRs Awaiting Review
 
@@ -67,9 +66,9 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Very important | 0 |
-| Important | 2 |
+| Important | 1 |
 | Ready (`loom:issue`) | 1 |
-| In Progress (`loom:building`) | 1 |
+| In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 2 |
