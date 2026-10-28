@@ -2,6 +2,10 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-10-28
+
+- **PR #58**: docs: propose 10 MHz controller clock target as decision 0006
+
 ### 2026-10-27
 
 - **PR #56**: docs: record clean curated-deck DRC verdicts in signoff README
