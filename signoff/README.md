@@ -6,6 +6,7 @@ The block's verdict of record against the klayout-tools evidence tiers.
 |---|---|
 | `attest/item10.json` | `t1-attestation-inventory` for T1 item 10, repo hygiene: the hygiene files and the bare-runner harness checks (checker self-tests, evidence-format check). |
 | `attest/item10.envelope.json` | Envelope emitted by `klt signoff --attest 10`; cited for `10` in `block-manifest.json`, pinned by the inventory's sha256. |
+| `attest/item8.json` | `t1-attestation-inventory` for T1 item 8, characterization report: the report `measurements/characterization/README.md` and bare-runner checks (report exists, every spec row id appears once). **No envelope yet**: the pinned `klayout-tools==0.8.0` has no `signoff --attest 8`, so `8.analog` / `8.digital` are not cited and stay `unmet`. |
 | `attest/item9.json` | `t1-attestation-inventory` for T1 item 9, testbenches shipped: the controller, program-select and sense-margin bench files, the cold-start command `sim/cold-start.sh` (`local_only`), and the PDK and tool pins. |
 | `attest/item9.envelope.json` | Envelope emitted by `klt signoff --attest 9`; cited for `9` in `block-manifest.json`, pinned by the inventory's sha256. |
 | `block-manifest.json` | Block name, kind (`mixed-signal`), the `partition_boundary` (analog and digital nets) and the `evidence` map (`1.digital`, `1.analog`, `2.digital`, `2.analog`, `9`, `10`). |
