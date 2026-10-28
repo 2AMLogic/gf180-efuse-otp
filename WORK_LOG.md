@@ -4,6 +4,10 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-10-27
 
+- **PR #56**: docs: record clean curated-deck DRC verdicts in signoff README
+- **PR #54**: refactor: generate klt FV requests from runner.py CONFIGS
+- **Issue #52** (closed): Single-source the controller parameter sets (runner.py CONFIGS, klt-fv.sh table, 9 request JSONs)
+- **Issue #31** (closed): T1 item 3 (DRC clean): klt drc on both partitions, including a route to the EF.* rules
 - **PR #51**: layout: make the digital partition DRC-clean via explicit PDN straps and 15 um tap pitch
 - **Issue #49** (closed): T1 item 3 (DRC), digital partition: classify the 2525 hits by source and fix or document each
 - **PR #42**: sim: add sense-margin bench, testbench inventory and item 9 attestation
