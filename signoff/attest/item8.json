@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "kind": "t1-attestation-inventory",
+  "t1_item": 8,
+  "description": "Characterization report: measurements/characterization/README.md aggregates the committed records per ratified spec row (P01-P13 parameters, C1-C3 claims) with bound, verdict, binding corner, statistical flag and cited record, plus controller Fmax, area and estimated power per klt sta corner. Unmeasured rows are marked 'not measured' with their owning issue. Checks run on a bare runner. Not yet gradable: the pinned klayout-tools 0.8.0 has no 'signoff --attest 8'; this inventory is the input for it once a release carries it.",
+  "report": "measurements/characterization/README.md",
+  "checks": [
+    {"name": "report-exists", "argv": ["test", "-s", "measurements/characterization/README.md"]},
+    {"name": "every-spec-row-once", "argv": ["python3", "-I", "-c", "import re,sys;t=open('measurements/characterization/README.md').read();ids=['P%02d'%i for i in range(1,14)]+['C1','C2','C3'];bad=[i for i in ids if len(re.findall(r'^\\| '+i+r' \\|',t,re.M))!=1];sys.exit('rows missing or duplicated: %s'%bad if bad else 0)"]}
+  ]
+}
