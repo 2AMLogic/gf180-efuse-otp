@@ -4,6 +4,7 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-10-28
 
+- **PR #63**: docs: add T1 item 8 characterization report and inventory
 - **PR #58**: docs: propose 10 MHz controller clock target as decision 0006
 
 ### 2026-10-27
