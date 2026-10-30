@@ -1,0 +1,96 @@
+{
+  "netlist": "bench_rfopen_rr400.cir",
+  "engine": "ngspice",
+  "models": {
+    "lib": "libs.tech/ngspice/sm141064.ngspice",
+    "pdk": "gf180mcuD"
+  },
+  "corners": {
+    "process": [
+      {
+        "name": "typical",
+        "sections": [
+          "typical"
+        ]
+      },
+      {
+        "name": "ff",
+        "sections": [
+          "ff"
+        ]
+      },
+      {
+        "name": "ss",
+        "sections": [
+          "ss"
+        ]
+      },
+      {
+        "name": "fs",
+        "sections": [
+          "fs"
+        ]
+      },
+      {
+        "name": "sf",
+        "sections": [
+          "sf"
+        ]
+      }
+    ],
+    "supply_v": {
+      "vdd33": [
+        2.97,
+        3.30,
+        3.63
+      ]
+    },
+    "temperature_c": [
+      -40,
+      25,
+      125
+    ]
+  },
+  "analysis": {
+    "kind": "tran",
+    "args": "100p 40n"
+  },
+  "measurements": [
+    {
+      "name": "v_sbl",
+      "spice": ".meas tran v_sbl find v(sbl) at=14.9n",
+      "unit": "V"
+    },
+    {
+      "name": "v_sref",
+      "spice": ".meas tran v_sref find v(xsa.sref) at=14.9n",
+      "unit": "V"
+    },
+    {
+      "name": "v_sense_out",
+      "spice": ".meas tran v_sense_out find v(sense_out) at=38n",
+      "unit": "V"
+    },
+    {
+      "name": "v_cp",
+      "spice": ".meas tran v_cp find v(xsa.cp) at=38n",
+      "unit": "V"
+    },
+    {
+      "name": "v_cn",
+      "spice": ".meas tran v_cn find v(xsa.cn) at=38n",
+      "unit": "V"
+    },
+    {
+      "name": "v_vdd33",
+      "spice": ".meas tran v_vdd33 find v(vdd33) at=38n",
+      "unit": "V"
+    }
+  ],
+  "options": {
+    "timeout_s": 60,
+    "ngspice_init": [
+      "set measureprec=9"
+    ]
+  }
+}

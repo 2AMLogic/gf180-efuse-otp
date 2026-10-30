@@ -1,0 +1,64 @@
+klt: warning: 3 installs provide PDK variant 'gf180mcuD'; read /home/ubuntu/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7 (PDK_ROOT environment variable), skipped /home/ubuntu/.ciel (search root: ~/.ciel), /home/ubuntu/.volare (search root: ~/.volare). Resolution is first-match-wins, so a pinned open_pdks build may not be the one this run read -- pin the root explicitly (--pdk-root, or a request's models.pdk_root) to disable the search and choose deliberately.
+klt: warning: 3 installs provide PDK variant 'gf180mcuD'; read /home/ubuntu/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7 (PDK_ROOT environment variable), skipped /home/ubuntu/.ciel (search root: ~/.ciel), /home/ubuntu/.volare (search root: ~/.volare). Resolution is first-match-wins, so a pinned open_pdks build may not be the one this run read -- pin the root explicitly (--pdk-root, or a request's models.pdk_root) to disable the search and choose deliberately.
+klt: warning: 3 installs provide PDK variant 'gf180mcuD'; read /home/ubuntu/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7 (PDK_ROOT environment variable), skipped /home/ubuntu/.ciel (search root: ~/.ciel), /home/ubuntu/.volare (search root: ~/.volare). Resolution is first-match-wins, so a pinned open_pdks build may not be the one this run read -- pin the root explicitly (--pdk-root, or a request's models.pdk_root) to disable the search and choose deliberately.
+klt: warning: 3 installs provide PDK variant 'gf180mcuD'; read /home/ubuntu/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7 (PDK_ROOT environment variable), skipped /home/ubuntu/.ciel (search root: ~/.ciel), /home/ubuntu/.volare (search root: ~/.volare). Resolution is first-match-wins, so a pinned open_pdks build may not be the one this run read -- pin the root explicitly (--pdk-root, or a request's models.pdk_root) to disable the search and choose deliberately.
+klt: batch job klt-sim-c4e9a17e9c61 submitting to s3://<bucket>/jobs/klt-sim-c4e9a17e9c61
+klt: batch job klt-sim-126431b80a10 submitting to s3://<bucket>/jobs/klt-sim-126431b80a10
+klt: batch job klt-sim-835b05cf5143 submitting to s3://<bucket>/jobs/klt-sim-835b05cf5143
+klt: batch job klt-sim-1f331cfda3ae submitting to s3://<bucket>/jobs/klt-sim-1f331cfda3ae
+klt sim: batch job klt-sim-835b05cf5143: submitted
+klt sim: batch job klt-sim-1f331cfda3ae: submitted
+klt sim: batch job klt-sim-c4e9a17e9c61: submitted
+klt sim: batch job klt-sim-126431b80a10: submitted
+klt sim: batch job klt-sim-1f331cfda3ae launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-1f331cfda3ae`
+klt sim: batch job klt-sim-835b05cf5143 launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-835b05cf5143`
+klt sim: batch job klt-sim-1f331cfda3ae state=no status.json yet elapsed=1s
+klt sim: batch job klt-sim-835b05cf5143 state=no status.json yet elapsed=1s
+klt sim: batch job klt-sim-126431b80a10 launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-126431b80a10`
+klt sim: batch job klt-sim-126431b80a10 state=no status.json yet elapsed=1s
+klt sim: batch job klt-sim-c4e9a17e9c61 launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-c4e9a17e9c61`
+klt sim: batch job klt-sim-c4e9a17e9c61 state=no status.json yet elapsed=1s
+klt sim: batch job klt-sim-835b05cf5143: running
+klt sim: batch job klt-sim-835b05cf5143 state=running elapsed=31s
+klt sim: batch job klt-sim-1f331cfda3ae: running
+klt sim: batch job klt-sim-1f331cfda3ae state=running elapsed=31s
+klt sim: batch job klt-sim-126431b80a10: running
+klt sim: batch job klt-sim-126431b80a10 state=running elapsed=32s
+klt sim: batch job klt-sim-c4e9a17e9c61: running
+klt sim: batch job klt-sim-c4e9a17e9c61 state=running elapsed=32s
+klt sim: batch job klt-sim-126431b80a10: done
+klt: warning: 3 installs provide PDK variant 'gf180mcuD'; read /home/ubuntu/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7 (PDK_ROOT environment variable), skipped /home/ubuntu/.ciel (search root: ~/.ciel), /home/ubuntu/.volare (search root: ~/.volare). Resolution is first-match-wins, so a pinned open_pdks build may not be the one this run read -- pin the root explicitly (--pdk-root, or a request's models.pdk_root) to disable the search and choose deliberately.
+klt: batch job klt-sim-51206cc3cf39 submitting to s3://<bucket>/jobs/klt-sim-51206cc3cf39
+klt sim: batch job klt-sim-c4e9a17e9c61: done
+klt: warning: 3 installs provide PDK variant 'gf180mcuD'; read /home/ubuntu/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7 (PDK_ROOT environment variable), skipped /home/ubuntu/.ciel (search root: ~/.ciel), /home/ubuntu/.volare (search root: ~/.volare). Resolution is first-match-wins, so a pinned open_pdks build may not be the one this run read -- pin the root explicitly (--pdk-root, or a request's models.pdk_root) to disable the search and choose deliberately.
+klt: batch job klt-sim-b456af5356c0 submitting to s3://<bucket>/jobs/klt-sim-b456af5356c0
+klt sim: batch job klt-sim-51206cc3cf39: submitted
+klt sim: batch job klt-sim-b456af5356c0: submitted
+klt sim: batch job klt-sim-b456af5356c0 launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-b456af5356c0`
+klt sim: batch job klt-sim-51206cc3cf39 launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-51206cc3cf39`
+klt sim: batch job klt-sim-b456af5356c0 state=no status.json yet elapsed=1s
+klt sim: batch job klt-sim-51206cc3cf39 state=no status.json yet elapsed=1s
+klt sim: batch job klt-sim-835b05cf5143: done
+klt sim: batch job klt-sim-1f331cfda3ae: done
+klt: warning: 3 installs provide PDK variant 'gf180mcuD'; read /home/ubuntu/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7 (PDK_ROOT environment variable), skipped /home/ubuntu/.ciel (search root: ~/.ciel), /home/ubuntu/.volare (search root: ~/.volare). Resolution is first-match-wins, so a pinned open_pdks build may not be the one this run read -- pin the root explicitly (--pdk-root, or a request's models.pdk_root) to disable the search and choose deliberately.
+klt: batch job klt-sim-337e8ffe0a53 submitting to s3://<bucket>/jobs/klt-sim-337e8ffe0a53
+klt: warning: 3 installs provide PDK variant 'gf180mcuD'; read /home/ubuntu/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7 (PDK_ROOT environment variable), skipped /home/ubuntu/.ciel (search root: ~/.ciel), /home/ubuntu/.volare (search root: ~/.volare). Resolution is first-match-wins, so a pinned open_pdks build may not be the one this run read -- pin the root explicitly (--pdk-root, or a request's models.pdk_root) to disable the search and choose deliberately.
+klt: batch job klt-sim-6e9129ca84fb submitting to s3://<bucket>/jobs/klt-sim-6e9129ca84fb
+klt sim: batch job klt-sim-337e8ffe0a53: submitted
+klt sim: batch job klt-sim-6e9129ca84fb: submitted
+klt sim: batch job klt-sim-6e9129ca84fb launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-6e9129ca84fb`
+klt sim: batch job klt-sim-337e8ffe0a53 launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-337e8ffe0a53`
+klt sim: batch job klt-sim-337e8ffe0a53 state=no status.json yet elapsed=1s
+klt sim: batch job klt-sim-6e9129ca84fb state=no status.json yet elapsed=1s
+klt sim: batch job klt-sim-b456af5356c0: running
+klt sim: batch job klt-sim-b456af5356c0 state=running elapsed=31s
+klt sim: batch job klt-sim-51206cc3cf39: running
+klt sim: batch job klt-sim-51206cc3cf39 state=running elapsed=31s
+klt sim: batch job klt-sim-6e9129ca84fb: running
+klt sim: batch job klt-sim-6e9129ca84fb state=running elapsed=31s
+klt sim: batch job klt-sim-337e8ffe0a53: running
+klt sim: batch job klt-sim-337e8ffe0a53 state=running elapsed=31s
+klt sim: batch job klt-sim-b456af5356c0: done
+klt sim: batch job klt-sim-51206cc3cf39: done
+klt sim: batch job klt-sim-337e8ffe0a53: done
+klt sim: batch job klt-sim-6e9129ca84fb: done
