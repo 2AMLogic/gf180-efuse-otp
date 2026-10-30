@@ -2,6 +2,11 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-10-30
+
+- **PR #65**: sim: add sense-margin batch campaign record
+- **Issue #28** (closed): T1 item 9 (testbenches shipped): sense-margin bench, testbench inventory and --attest 9
+
 ### 2026-10-28
 
 - **PR #63**: docs: add T1 item 8 characterization report and inventory
