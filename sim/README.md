@@ -49,6 +49,19 @@ fleet; a failed submit is reported and never re-run locally.
 `program-select.sch` is the schematic (netlist it with `klt netlist`); the
 swept deck is `cell.cir.in`. Result and derivation: `design/README.md`.
 
+## Program-current corner verification
+
+`sim/corner-verification/run.sh` drives the committed program path (`efuse_coldrv`,
+`efuse_rowdrv`, each with its `efuse_ls` level shifter, and `efuse_bitcell`, extracted from
+`design/efuse_otp_array.spice`) into one selected cell, replacing the ideal gate drive of the
+width sweep. Fuse 140/200/260 ohm, decision-0005 grid (5 process x -40/25/125 C x supplies
+that step together: vdd33 2.97/3.30/3.63 V with vprog 4.5/5.0/5.5 V), plus a negative control
+(select narrowed to 4 um). Four `klt sim` requests, `--batch-set` (batch only; a failed submit
+is reported and never re-run locally); `--dry-run` validates the set and leaves no record.
+It writes `sim/corner-verification/records/<stamp>-<rev>/record.json` (per-point current,
+per-fuse pass/fail against 10 mA, binding corner, negative-control validity). The sense row
+is not re-run: `record.json` quotes the committed `sim/sense-margin` record by reference.
+
 ## Sense-margin bench
 
 `sim/sense-margin/run.sh` runs the committed sense path (`efuse_sense`, `efuse_comp`)
