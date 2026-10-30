@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "status": "fail",
+  "request_count": 4,
+  "max_in_flight": 4,
+  "submitted": 4,
+  "refused": 0,
+  "refused_codes": [],
+  "requests": [
+    {
+      "index": 0,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-34/sim/corner-verification/records/20261030T230649Z-f6eeac7/prog_rf140.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-ef9fff39e2f2",
+      "job_ids": [
+        "klt-sim-ef9fff39e2f2"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-34/sim/corner-verification/records/20261030T230649Z-f6eeac7/sets/prog_rf140/report.json",
+      "error": null
+    },
+    {
+      "index": 1,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-34/sim/corner-verification/records/20261030T230649Z-f6eeac7/prog_rf200.json",
+      "status": "fail",
+      "exit_code": 3,
+      "job_id": "klt-sim-98833d2b0d3e",
+      "job_ids": [
+        "klt-sim-98833d2b0d3e"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-34/sim/corner-verification/records/20261030T230649Z-f6eeac7/sets/prog_rf200/report.json",
+      "error": null
+    },
+    {
+      "index": 2,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-34/sim/corner-verification/records/20261030T230649Z-f6eeac7/prog_rf260.json",
+      "status": "fail",
+      "exit_code": 3,
+      "job_id": "klt-sim-9c7e9b85c446",
+      "job_ids": [
+        "klt-sim-9c7e9b85c446"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-34/sim/corner-verification/records/20261030T230649Z-f6eeac7/sets/prog_rf260/report.json",
+      "error": null
+    },
+    {
+      "index": 3,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-34/sim/corner-verification/records/20261030T230649Z-f6eeac7/control_rf260_w4u.json",
+      "status": "fail",
+      "exit_code": 3,
+      "job_id": "klt-sim-5c5f09198f6e",
+      "job_ids": [
+        "klt-sim-5c5f09198f6e"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-34/sim/corner-verification/records/20261030T230649Z-f6eeac7/sets/control_rf260_w4u/report.json",
+      "error": null
+    }
+  ]
+}

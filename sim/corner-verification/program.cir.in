@@ -1,0 +1,32 @@
+* Program-current bench: the committed program path from
+* design/efuse_otp_array.spice (efuse_coldrv with its level shifter -> bitline ->
+* efuse_bitcell select, and efuse_rowdrv with its level shifter -> word line) driving
+* ONE selected cell. Circuit body for `klt sim` (no .control/.end). run.sh substitutes
+* @DESIGN@ and appends the extracted subcircuits and the cell variant.
+.include @DESIGN@
+
+* Logic supply and program supply; klt sim alters Vdd33 and Vvprog per corner
+* (2.97 / 3.30 / 3.63 V and 4.5 / 5.0 / 5.5 V, decision 0005).
+Vdd33 vdd33 0 DC 3.3
+Vprog vprog 0 DC 5.0
+
+* Selected row and column, program strobe asserted, sense_en deasserted (3.3 V domain,
+* tracks vdd33 per corner).
+Rrow row_sel vdd33 1
+Rcol col_sel vdd33 1
+Rstb prog_strobe vdd33 1
+Rsen sense_en 0 1
+
+Xrd row_sel wl vdd33 vprog 0 efuse_rowdrv
+Xcd col_sel prog_strobe sense_en bl sbl vdd33 vprog 0 efuse_coldrv
+* ASSUMPTION (no documented source): lumped routing resistance between the column
+* driver and the cell, matching sim/program-select (set only in run.sh).
+Rroute bl blc @RROUTE@
+Xcell blc wl 0 efuse_bitcell
+* Sense side of the column mux is left open: the read pass device is off (rd high).
+Rsbl sbl 0 1G
+
+* Unused one-point sweep axis: plain .meas cards need a dc sweep and the operating
+* point is the same at every point.
+Vdmy dmy 0 0
+Rdmy dmy 0 1k
