@@ -4,6 +4,7 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-10-30
 
+- **PR #67**: sim: program-current corner verification on the real driver path; item 5 analog regraded unmet
 - **PR #65**: sim: add sense-margin batch campaign record
 - **Issue #28** (closed): T1 item 9 (testbenches shipped): sense-margin bench, testbench inventory and --attest 9
 
