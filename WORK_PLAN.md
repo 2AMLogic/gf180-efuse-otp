@@ -50,10 +50,13 @@ _None._
 Issues carrying `loom:curated`.
 
 - **#3**: Track the gap to T1 (klayout-tools design-evidence-tiers.md) *(curated)*
+- **#34**: T1 item 5 (corner verification, analog): klt sim envelopes for program current and sense margin across decision-0005 PVT *(curated)*
+- **#36**: T1 item 6 (Monte Carlo): klt yield on sense margin, and the controller's not-applicable statement *(curated)*
 
 ## Proposed (Architect / Hermit)
 
 - **#40**: Remove rtl/synth.sh: superseded by regen-gl.sh latch check, plus dead Yosys gate in cocotb runner *(hermit)*
+- **#68**: Dedupe fleet-image PDK variant check and report fold across sim benches *(hermit)*
 
 ## Epics
 
@@ -70,7 +73,7 @@ _None._
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 1 |
-| Architect / Hermit proposals | 1 |
+| Curated | 3 |
+| Architect / Hermit proposals | 2 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
