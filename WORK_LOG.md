@@ -2,6 +2,10 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-01
+
+- **PR #70**: Bump Repo Skills 0.24.7 -> 0.25.1
+
 ### 2026-10-30
 
 - **PR #67**: sim: program-current corner verification on the real driver path; item 5 analog regraded unmet
