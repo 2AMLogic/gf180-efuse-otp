@@ -19,7 +19,8 @@ _None._
 
 `loom:important`; taken before unlabelled work.
 
-_None._
+- **#34**: T1 item 5 (corner verification, analog): klt sim envelopes for program current and sense margin across decision-0005 PVT
+- **#35**: T1 item 5 (corner verification, digital): klt sta and klt functional-verification for the controller
 
 ## Ready
 
@@ -68,7 +69,7 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Very important | 0 |
-| Important | 0 |
+| Important | 2 |
 | Ready (`loom:issue`) | 0 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
