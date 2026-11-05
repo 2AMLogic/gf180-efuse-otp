@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "requests": [
+    {
+      "index": 0,
+      "request": "sim/sense-mc/records/20261105T084326Z-f6eeac7/mc_intact_rf260_rr400.json",
+      "dir": "sim/sense-mc/records/20261105T084326Z-f6eeac7/sets/mc_intact_rf260_rr400",
+      "status": "pass",
+      "job_id": "klt-sim-9b3ca02756c7",
+      "job_ids": [
+        "klt-sim-9b3ca02756c7"
+      ],
+      "attempts": 2
+    },
+    {
+      "index": 1,
+      "request": "sim/sense-mc/records/20261105T084326Z-f6eeac7/mc_prog_rf630_rr400.json",
+      "dir": "sim/sense-mc/records/20261105T084326Z-f6eeac7/sets/mc_prog_rf630_rr400",
+      "status": "pass",
+      "job_id": "klt-sim-1997a3a793a3",
+      "job_ids": [
+        "klt-sim-1997a3a793a3"
+      ],
+      "attempts": 2
+    },
+    {
+      "index": 2,
+      "request": "sim/sense-mc/records/20261105T084326Z-f6eeac7/ctl_intact_rf260_rr200.json",
+      "dir": "sim/sense-mc/records/20261105T084326Z-f6eeac7/sets/ctl_intact_rf260_rr200",
+      "status": "fail",
+      "job_id": "klt-sim-3a9cf99dbd90",
+      "job_ids": [
+        "klt-sim-3a9cf99dbd90"
+      ],
+      "attempts": 2
+    },
+    {
+      "index": 3,
+      "request": "sim/sense-mc/records/20261105T084326Z-f6eeac7/ctl_prog_rf630_rr1000.json",
+      "dir": "sim/sense-mc/records/20261105T084326Z-f6eeac7/sets/ctl_prog_rf630_rr1000",
+      "status": "fail",
+      "job_id": "klt-sim-66bc56b8d246",
+      "job_ids": [
+        "klt-sim-66bc56b8d246"
+      ],
+      "attempts": 2
+    }
+  ]
+}
