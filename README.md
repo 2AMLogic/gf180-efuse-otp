@@ -10,11 +10,26 @@ for the analog paths and Yosys/OpenROAD for the controller.
 **Private repo.** Visibility is an operator decision; nothing here is
 published.
 
-**Status: spec ratified.** Committed so far: the PDK smoke record, the
-program-select width sweep record, the controller RTL with its cocotb bench and
-negative control, a mapped gate-level netlist, the analog schematics and netlist,
-a placed analog layout stream, the routed controller layout, and the signoff
-record. The sense path and analog routing, DRC and LVS are not started.
+**Status: spec ratified.** Committed on `main`:
+
+- the PDK smoke record and the program-select width sweep record;
+- the controller RTL with its cocotb bench and negative control, and a mapped
+  gate-level netlist;
+- the analog schematics and netlist in [`design/`](design/), including the sense
+  path ([`efuse_sense.sch`](design/efuse_sense.sch),
+  [`efuse_comp.sch`](design/efuse_comp.sch)) and its margin campaign in
+  [`sim/sense-margin/`](sim/sense-margin/) (#28);
+- a placed analog layout stream and the routed controller layout
+  ([`layout/efuse_otp_ctrl.gds`](layout/efuse_otp_ctrl.gds),
+  [`layout/pnr-report.json`](layout/pnr-report.json));
+- DRC reports for both partitions
+  ([`layout/drc-array.report.json`](layout/drc-array.report.json),
+  [`layout/drc-ctrl.report.json`](layout/drc-ctrl.report.json)); the `EF.*`
+  rules are not yet evaluated by the deck (#60);
+- the signoff record.
+
+Not started: analog routing, LVS (#32) and ERC (#33). Verdicts of record are in
+[`signoff/block-manifest.signoff.json`](signoff/block-manifest.signoff.json).
 
 ## What the block is
 
