@@ -1,0 +1,304 @@
+{
+ "pdk_revision": "f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+ "variant_pinned": "gf180mcuC",
+ "variant_simulated": "gf180mcuD (fleet image; model files byte-identical to gf180mcuC, checked by run.sh)",
+ "timestamp_utc": "20261105T053444Z",
+ "ngspice_version_local": "46",
+ "klt_sim_version": "klt 0.9.0.dev1379+g5dbbad05ff42",
+ "klt_yield_pin": "klayout-tools==0.8.0",
+ "remote_job_ids": [
+  "klt-sim-22f5c3cdec7e",
+  "klt-sim-39eeae6d5358",
+  "klt-sim-6968e3c9102a",
+  "klt-sim-b53e9934590a"
+ ],
+ "tool_versions": {
+  "ngspice_local": "46",
+  "klt_sim": "klt 0.9.0.dev1379+g5dbbad05ff42",
+  "klt_yield": "klayout-tools==0.8.0"
+ },
+ "dut": "efuse_sense (with efuse_comp), extracted from design/efuse_otp_array.spice",
+ "corners": "45 per request: 5 process x 3 temperature x 3 vdd33 (decision 0005); see pvt",
+ "pvt": {
+  "process": [
+   "typical",
+   "ff",
+   "ss",
+   "fs",
+   "sf"
+  ],
+  "temp_c": [
+   -40,
+   25,
+   125
+  ],
+  "vdd33_v": [
+   2.97,
+   3.3,
+   3.63
+  ],
+  "source": "decision 0005",
+  "note": "every sample is drawn at every one of the 45 corners: MC is combined with, not instead of, the corner grid"
+ },
+ "monte_carlo": {
+  "seed": 36036,
+  "seed_scope": "point",
+  "vary": "mismatch",
+  "n_per_corner_nominal": 12,
+  "n_per_corner_control": 6,
+  "samples_per_nominal_request": 540,
+  "samples_per_control_request": 270,
+  "mismatch": "PDK MOS mismatch at its model default (sw_stat_mismatch=1); covers comparator pair, mirror and bias devices",
+  "reference_tolerance": "klt-injected Gaussian multiplier on Rref, relative sigma 0.05",
+  "reproducibility": "the draws are a pure function of seed, seed_scope=point and the corner identity; re-running run.sh with the same constants reproduces the sample sequence"
+ },
+ "assumptions": {
+  "A4_intact_ohm": "140-260; only the 200 ohm point is documented. 260 (upper edge) is the binding intact value here",
+  "A5_programmed_ohm": ">=630 up to open; only the 900 ohm point is documented. 630 (lower edge) is the binding programmed value here",
+  "A6_reference_ohm": "400 (decision 0003)",
+  "A7_reference_relative_sigma": "0.05: NO documented source for the reference tolerance; a stated working value, not a fact (new assumption, not in spec/efuse-otp.md)",
+  "fuse_model": "plain resistor behind a series switch + select replica; the fuse value is not varied inside the Monte Carlo (the A4/A5 range edges are the evaluated points)",
+  "not_covered": "bitline capacitance, column-mux leakage, supply noise, post-layout parasitics"
+ },
+ "limits": {
+  "margin_v": "> 0 V (spec/efuse-otp.md section 2, Sense margin: positive over the A4/A5 ranges); signed so that positive is the correct side of the reference",
+  "decision_margin": ">= 0.2 (sense_out/vdd33 at least 0.2 past the 0.5 midpoint, signed for the expected bit); same 0.7 / 0.3 rails as sim/sense-margin"
+ },
+ "min_samples": 200,
+ "target_ci_halfwidth": 0.01,
+ "confidence": 0.95,
+ "populations": {
+  "intact": {
+   "rfuse_ohm": 260,
+   "why_this_value": "A4 upper edge",
+   "rref_nominal_ohm": 400.0,
+   "sets": {
+    "nominal": {
+     "stem": "mc_intact_rf260_rr400",
+     "corner_count": 540,
+     "errored": 0,
+     "stats": {
+      "margin_v": {
+       "samples": 540,
+       "min": 0.0121684489,
+       "max": 0.05130401552,
+       "failing_samples": 0,
+       "corners_with_a_failing_sample": 0,
+       "corners": 45,
+       "binding_corner": {
+        "corner": "ss/125C/2.97V",
+        "n": 12,
+        "fail": 0,
+        "min": 0.0121684489
+       }
+      },
+      "decision_margin": {
+       "samples": 540,
+       "min": -0.3990351609,
+       "max": 0.5000003585,
+       "failing_samples": 3,
+       "corners_with_a_failing_sample": 2,
+       "corners": 45,
+       "binding_corner": {
+        "corner": "fs/25C/2.97V",
+        "n": 12,
+        "fail": 2,
+        "min": -0.3990351609
+       }
+      }
+     }
+    },
+    "control": {
+     "stem": "ctl_intact_rf260_rr200",
+     "corner_count": 270,
+     "errored": 0,
+     "stats": {
+      "margin_v": {
+       "samples": 270,
+       "min": -0.02297418192,
+       "max": -0.002199019852,
+       "failing_samples": 270,
+       "corners_with_a_failing_sample": 45,
+       "corners": 45,
+       "binding_corner": {
+        "corner": "sf/-40C/3.63V",
+        "n": 6,
+        "fail": 6,
+        "min": -0.02297418192
+       }
+      },
+      "decision_margin": {
+       "samples": 270,
+       "min": -0.4046619989,
+       "max": 0.4999998895,
+       "failing_samples": 6,
+       "corners_with_a_failing_sample": 2,
+       "corners": 45,
+       "binding_corner": {
+        "corner": "fs/-40C/2.97V",
+        "n": 6,
+        "fail": 4,
+        "min": -0.4046619989
+       }
+      }
+     }
+    }
+   },
+   "cited_yield_report": "yield/intact.yield.json",
+   "cited": {
+    "status": "reported",
+    "measurements": [
+     {
+      "name": "margin_v",
+      "n": 540,
+      "yield_empirical": 1.0,
+      "yield_ci95": [
+       0.9931920217555323,
+       1.0
+      ],
+      "sample_size_verdict": "sufficient",
+      "required_n": 183,
+      "negative_control_verdict": "detected",
+      "negative_control_yield": 0.0
+     }
+    ]
+   },
+   "uncited_decision_report": "yield/intact.decision.yield.json",
+   "decision": {
+    "status": "reported",
+    "measurements": [
+     {
+      "name": "decision_margin",
+      "n": 540,
+      "yield_empirical": 0.9944444444444445,
+      "yield_ci95": [
+       0.9838508070705019,
+       0.9988528422691652
+      ],
+      "sample_size_verdict": "sufficient",
+      "required_n": 213,
+      "negative_control_verdict": "not_detected",
+      "negative_control_yield": 0.9777777777777777
+     }
+    ]
+   }
+  },
+  "programmed": {
+   "rfuse_ohm": 630,
+   "why_this_value": "A5 lower edge",
+   "rref_nominal_ohm": 400.0,
+   "sets": {
+    "nominal": {
+     "stem": "mc_prog_rf630_rr400",
+     "corner_count": 540,
+     "errored": 0,
+     "stats": {
+      "margin_v": {
+       "samples": 540,
+       "min": 0.02233984028,
+       "max": 0.08104259852,
+       "failing_samples": 0,
+       "corners_with_a_failing_sample": 0,
+       "corners": 45,
+       "binding_corner": {
+        "corner": "typical/125C/2.97V",
+        "n": 12,
+        "fail": 0,
+        "min": 0.02233984028
+       }
+      },
+      "decision_margin": {
+       "samples": 540,
+       "min": -0.4973436087,
+       "max": 0.4610705427,
+       "failing_samples": 512,
+       "corners_with_a_failing_sample": 43,
+       "corners": 45,
+       "binding_corner": {
+        "corner": "ss/-40C/2.97V",
+        "n": 12,
+        "fail": 12,
+        "min": -0.4973436087
+       }
+      }
+     }
+    },
+    "control": {
+     "stem": "ctl_prog_rf630_rr1000",
+     "corner_count": 270,
+     "errored": 0,
+     "stats": {
+      "margin_v": {
+       "samples": 270,
+       "min": -0.1209400774,
+       "max": -0.03262434587,
+       "failing_samples": 270,
+       "corners_with_a_failing_sample": 45,
+       "corners": 45,
+       "binding_corner": {
+        "corner": "ff/-40C/3.63V",
+        "n": 6,
+        "fail": 6,
+        "min": -0.1209400774
+       }
+      },
+      "decision_margin": {
+       "samples": 270,
+       "min": -0.5000007061,
+       "max": -0.3561325472,
+       "failing_samples": 270,
+       "corners_with_a_failing_sample": 45,
+       "corners": 45,
+       "binding_corner": {
+        "corner": "fs/-40C/3.30V",
+        "n": 6,
+        "fail": 6,
+        "min": -0.5000007061
+       }
+      }
+     }
+    }
+   },
+   "cited_yield_report": "yield/prog.yield.json",
+   "cited": {
+    "status": "reported",
+    "measurements": [
+     {
+      "name": "margin_v",
+      "n": 540,
+      "yield_empirical": 1.0,
+      "yield_ci95": [
+       0.9931920217555323,
+       1.0
+      ],
+      "sample_size_verdict": "sufficient",
+      "required_n": 183,
+      "negative_control_verdict": "detected",
+      "negative_control_yield": 0.0
+     }
+    ]
+   },
+   "uncited_decision_report": "yield/prog.decision.yield.json",
+   "decision": {
+    "status": "reported",
+    "measurements": [
+     {
+      "name": "decision_margin",
+      "n": 540,
+      "yield_empirical": 0.05185185185185185,
+      "yield_ci95": [
+       0.034728118820240655,
+       0.07407111526009097
+      ],
+      "sample_size_verdict": "insufficient",
+      "required_n": 1889,
+      "negative_control_verdict": "detected",
+      "negative_control_yield": 0.0
+     }
+    ]
+   }
+  }
+ },
+ "cited_evidence_meets_item6_discipline": true,
+ "decision_path_finding": "decision_margin is reported but NOT cited: the committed sim/sense-margin record shows the comparator does not resolve for a resistive fuse (the latched output reads 0 at nearly every corner for every fuse short of open), so the decision measurement neither passes the programmed population nor discriminates under its negative control. Comparator offset is therefore not established by this record."
+}
