@@ -2,10 +2,304 @@
   "schema_version": 1,
   "kind": "t1-attestation-inventory",
   "t1_item": 8,
-  "description": "Characterization report: measurements/characterization/README.md aggregates the committed records per ratified spec row (P01-P13 parameters, C1-C3 claims) with bound, verdict, binding corner, statistical flag and cited record, plus controller Fmax, area and estimated power per klt sta corner. Unmeasured rows are marked 'not measured' with their owning issue. Checks run on a bare runner. Not yet gradable: the pinned klayout-tools 0.8.0 has no 'signoff --attest 8'; this inventory is the input for it once a release carries it.",
+  "description": "Characterization report: measurements/characterization/README.md aggregates the committed records per ratified spec row (P01-P13, C1-C3). Rows with no committed record (P08, P09, P10, C2) cite nothing, so the attestation fails on them by design; they are not given a placeholder citation. Each cited record's freshness command is a presence check only (the records are append-only evidence, not regenerated). Controller Fmax, area and power are bound per klt sta corner (power is an engine-default estimate).",
   "report": "measurements/characterization/README.md",
-  "checks": [
-    {"name": "report-exists", "argv": ["test", "-s", "measurements/characterization/README.md"]},
-    {"name": "every-spec-row-once", "argv": ["python3", "-I", "-c", "import re,sys;t=open('measurements/characterization/README.md').read();ids=['P%02d'%i for i in range(1,14)]+['C1','C2','C3'];bad=[i for i in ids if len(re.findall(r'^\\| '+i+r' \\|',t,re.M))!=1];sys.exit('rows missing or duplicated: %s'%bad if bad else 0)"]}
-  ]
+  "spec_rows": [
+    "P01",
+    "P02",
+    "P03",
+    "P04",
+    "P05",
+    "P06",
+    "P07",
+    "P08",
+    "P09",
+    "P10",
+    "P11",
+    "P12",
+    "P13",
+    "C1",
+    "C2",
+    "C3"
+  ],
+  "citations": {
+    "P01": [
+      "layout/efuse_otp_array.report.json",
+      "sim/controller-fv/1x8_max.report.json",
+      "sim/controller-fv/1x8_min.report.json",
+      "sim/controller-fv/1x8_nom.report.json",
+      "sim/controller-fv/32x8_100MHz_max.report.json",
+      "sim/controller-fv/32x8_clamp_hi.report.json",
+      "sim/controller-fv/32x8_clamp_lo.report.json",
+      "sim/controller-fv/32x8_max.report.json",
+      "sim/controller-fv/32x8_min.report.json",
+      "sim/controller-fv/32x8_nom.report.json"
+    ],
+    "P02": [
+      "layout/drc-array.report.json"
+    ],
+    "P03": [
+      "sim/program-select/records/20261023T174839Z-f6eeac7/record.json"
+    ],
+    "P04": [
+      "sim/program-select/records/20261023T174839Z-f6eeac7/record.json"
+    ],
+    "P05": [
+      "sim/controller-fv/1x8_max.report.json",
+      "sim/controller-fv/1x8_min.report.json",
+      "sim/controller-fv/1x8_nom.report.json",
+      "sim/controller-fv/32x8_100MHz_max.report.json",
+      "sim/controller-fv/32x8_clamp_hi.report.json",
+      "sim/controller-fv/32x8_clamp_lo.report.json",
+      "sim/controller-fv/32x8_max.report.json",
+      "sim/controller-fv/32x8_min.report.json",
+      "sim/controller-fv/32x8_nom.report.json"
+    ],
+    "P06": [
+      "sim/program-select/records/20261023T174839Z-f6eeac7/record.json"
+    ],
+    "P07": [
+      "sim/program-select/records/20261023T174839Z-f6eeac7/record.json"
+    ],
+    "P08": [],
+    "P09": [],
+    "P10": [],
+    "P11": [
+      "sim/controller-fv/1x8_max.report.json",
+      "sim/controller-fv/1x8_min.report.json",
+      "sim/controller-fv/1x8_nom.report.json",
+      "sim/controller-fv/32x8_100MHz_max.report.json",
+      "sim/controller-fv/32x8_clamp_hi.report.json",
+      "sim/controller-fv/32x8_clamp_lo.report.json",
+      "sim/controller-fv/32x8_max.report.json",
+      "sim/controller-fv/32x8_min.report.json",
+      "sim/controller-fv/32x8_nom.report.json"
+    ],
+    "P12": [
+      "sim/controller-fv/1x8_max.report.json",
+      "sim/controller-fv/1x8_min.report.json",
+      "sim/controller-fv/1x8_nom.report.json",
+      "sim/controller-fv/32x8_100MHz_max.report.json",
+      "sim/controller-fv/32x8_clamp_hi.report.json",
+      "sim/controller-fv/32x8_clamp_lo.report.json",
+      "sim/controller-fv/32x8_max.report.json",
+      "sim/controller-fv/32x8_min.report.json",
+      "sim/controller-fv/32x8_nom.report.json"
+    ],
+    "P13": [
+      "layout/drc-array.report.json",
+      "layout/drc-ctrl.report.json",
+      "layout/pnr-report.json",
+      "signoff/block-manifest.signoff.json",
+      "sim/controller-sta/sta-100ns.report.json"
+    ],
+    "C1": [
+      "sim/program-select/records/20261023T174839Z-f6eeac7/record.json"
+    ],
+    "C2": [],
+    "C3": [
+      "sim/controller-fv/1x8_max.report.json",
+      "sim/controller-fv/1x8_min.report.json",
+      "sim/controller-fv/1x8_nom.report.json",
+      "sim/controller-fv/32x8_100MHz_max.report.json",
+      "sim/controller-fv/32x8_clamp_hi.report.json",
+      "sim/controller-fv/32x8_clamp_lo.report.json",
+      "sim/controller-fv/32x8_max.report.json",
+      "sim/controller-fv/32x8_min.report.json",
+      "sim/controller-fv/32x8_nom.report.json"
+    ]
+  },
+  "envelope_checks": {
+    "layout/drc-array.report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "layout/drc-array.report.json"
+      ]
+    },
+    "layout/drc-ctrl.report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "layout/drc-ctrl.report.json"
+      ]
+    },
+    "layout/efuse_otp_array.report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "layout/efuse_otp_array.report.json"
+      ]
+    },
+    "layout/pnr-report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "layout/pnr-report.json"
+      ]
+    },
+    "signoff/block-manifest.signoff.json": {
+      "argv": [
+        "test",
+        "-s",
+        "signoff/block-manifest.signoff.json"
+      ]
+    },
+    "sim/controller-fv/1x8_max.report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/controller-fv/1x8_max.report.json"
+      ]
+    },
+    "sim/controller-fv/1x8_min.report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/controller-fv/1x8_min.report.json"
+      ]
+    },
+    "sim/controller-fv/1x8_nom.report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/controller-fv/1x8_nom.report.json"
+      ]
+    },
+    "sim/controller-fv/32x8_100MHz_max.report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/controller-fv/32x8_100MHz_max.report.json"
+      ]
+    },
+    "sim/controller-fv/32x8_clamp_hi.report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/controller-fv/32x8_clamp_hi.report.json"
+      ]
+    },
+    "sim/controller-fv/32x8_clamp_lo.report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/controller-fv/32x8_clamp_lo.report.json"
+      ]
+    },
+    "sim/controller-fv/32x8_max.report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/controller-fv/32x8_max.report.json"
+      ]
+    },
+    "sim/controller-fv/32x8_min.report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/controller-fv/32x8_min.report.json"
+      ]
+    },
+    "sim/controller-fv/32x8_nom.report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/controller-fv/32x8_nom.report.json"
+      ]
+    },
+    "sim/controller-sta/sta-100ns.report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/controller-sta/sta-100ns.report.json"
+      ]
+    },
+    "sim/program-select/records/20261023T174839Z-f6eeac7/record.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/program-select/records/20261023T174839Z-f6eeac7/record.json"
+      ]
+    }
+  },
+  "corners": [
+    "ss_n40C_3v00",
+    "ss_125C_3v00",
+    "tt_025C_3v30",
+    "ff_n40C_3v60",
+    "ff_125C_3v60"
+  ],
+  "metrics": {
+    "ss_n40C_3v00": {
+      "fmax": {
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.0.fmax_mhz"
+      },
+      "power": {
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.0.estimated_power_mw"
+      },
+      "area": {
+        "envelope": "layout/pnr-report.json",
+        "field": "die_area_um2"
+      }
+    },
+    "ss_125C_3v00": {
+      "fmax": {
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.1.fmax_mhz"
+      },
+      "power": {
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.1.estimated_power_mw"
+      },
+      "area": {
+        "envelope": "layout/pnr-report.json",
+        "field": "die_area_um2"
+      }
+    },
+    "tt_025C_3v30": {
+      "fmax": {
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.2.fmax_mhz"
+      },
+      "power": {
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.2.estimated_power_mw"
+      },
+      "area": {
+        "envelope": "layout/pnr-report.json",
+        "field": "die_area_um2"
+      }
+    },
+    "ff_n40C_3v60": {
+      "fmax": {
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.3.fmax_mhz"
+      },
+      "power": {
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.3.estimated_power_mw"
+      },
+      "area": {
+        "envelope": "layout/pnr-report.json",
+        "field": "die_area_um2"
+      }
+    },
+    "ff_125C_3v60": {
+      "fmax": {
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.4.fmax_mhz"
+      },
+      "power": {
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.4.estimated_power_mw"
+      },
+      "area": {
+        "envelope": "layout/pnr-report.json",
+        "field": "die_area_um2"
+      }
+    }
+  }
 }
