@@ -71,6 +71,9 @@ jobs:
           fi
           python3 scripts/ci/check_sim_append_only.py --base "$base"
 
+      - name: Item 6 digital extract bound to the spec
+        run: signoff/check-item6-digital.sh
+
       - name: Re-grade signoff record
         run: |
           rc=0

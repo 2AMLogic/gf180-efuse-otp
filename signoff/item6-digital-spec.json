@@ -1,0 +1,40 @@
+{
+ "status": "ratified",
+ "description": "Rows of spec/efuse-otp.md section 2 that bear on the digital partition (rtl/efuse_otp_ctrl.v and its row/column/strobe outputs), each as its verbatim table row. Derived extract for klt signoff item 6 (not_applicable form); the source is spec/efuse-otp.md, bound by sha256. signoff/check-item6-digital.sh fails when the source changes or a row no longer matches.",
+ "source": {
+  "file": "spec/efuse-otp.md",
+  "sha256": "b4d6c545447a2c12675f9612a6f83199b22cc9f2b75b9ff210b4f7bc9ed3a4a9"
+ },
+ "rows": [
+  {
+   "id": "array",
+   "parameter": "Array",
+   "text": "| Array | 256 bits, 32 rows × 8 columns | 8 bits, 1 × 8 | 1 kbit | Exercises row/column decode and tiling; the fallback keeps program and sense paths testable. (0001) |"
+  },
+  {
+   "id": "pulse-width",
+   "parameter": "Pulse width",
+   "text": "| Pulse width | 10 µs nominal, controller range 1–100 µs (A3) | — | — | No PDK source. |"
+  },
+  {
+   "id": "controller-interface",
+   "parameter": "Controller interface",
+   "text": "| Controller interface | Synchronous: clock, address, program-enable, read-enable, data out, busy | Asynchronous parallel read | Serial interface | (0004) |"
+  },
+  {
+   "id": "controller-behavior",
+   "parameter": "Controller behavior",
+   "text": "| Controller behavior | Program only after an explicit registered arm state set after reset release; program drive held inactive in reset and power-up; fixed sense-settle count for read; address stable before enable | — | — | Protection against unintended programming at power-up. (0004) |"
+  },
+  {
+   "id": "pvt-corners",
+   "parameter": "PVT corners",
+   "text": "| PVT corners | Process `typical`, `ff`, `ss`, `fs`, `sf`; T = −40, 25, 125 °C; logic/sense supply 3.3 V ±10% (2.97/3.30/3.63 V); program supply 5.0 V ±10% (4.5/5.0/5.5 V) | — | — | Names confirmed against `sm141064.ngspice`. (0005) |"
+  },
+  {
+   "id": "signoff",
+   "parameter": "Signoff",
+   "text": "| Signoff | DRC clean including every `EF.*` rule; LVS clean with the fuse as a recognized device; controller verified (cocotb + Icarus, Yosys, OpenROAD) | — | — | |"
+  }
+ ]
+}

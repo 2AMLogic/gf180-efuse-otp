@@ -45,7 +45,33 @@
           "P06"
         ]
       }
-    ]
+    ],
+    "6.analog": [
+      {
+        "file": "sim/sense-mc/records/20261105T053444Z-f6eeac7/yield/intact.yield.json",
+        "rows": [
+          "P10"
+        ]
+      },
+      {
+        "file": "sim/sense-mc/records/20261105T053444Z-f6eeac7/yield/prog.yield.json",
+        "rows": [
+          "P10"
+        ]
+      }
+    ],
+    "6.digital": {
+      "not_applicable": {
+        "spec": {
+          "file": "signoff/item6-digital-spec.json",
+          "content_hash": "sha256:f076383eb14ff91deea6e426ffa847c02275ee959fb6301709b12e74428d2b21"
+        },
+        "statement": {
+          "file": "signoff/item6-digital-statement.json",
+          "content_hash": "sha256:395adbd68602b3b3ffd57ca929395b801b310b651e8f27a62a54d1fe554216a6"
+        }
+      }
+    }
   },
   "partition_boundary": {
     "analog": "design/efuse_otp_array.sch (array, row/column drivers with level shifters, sense path incl. comparator) is the analog partition. Boundary nets it exposes: inputs row_sel[31:0], col_sel[7:0], prog_strobe, sense_en (3.3 V, from the controller) and clk (the system clock, routed to the comparator and gated there with sense_en; the clock is a digital-side net that terminates in the analog partition); output sense_out (the comparator's latched result); supplies vdd33, vprog, vss.",
