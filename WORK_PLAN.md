@@ -26,7 +26,7 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#36**: T1 item 6 (Monte Carlo): klt yield on sense margin, and the controller's not-applicable statement
+_None._
 
 ## In Progress
 
@@ -52,13 +52,14 @@ Issues carrying `loom:curated`.
 
 - **#3**: Track the gap to T1 (klayout-tools design-evidence-tiers.md) *(curated)*
 - **#34**: T1 item 5 (corner verification, analog): klt sim envelopes for program current and sense margin across decision-0005 PVT *(curated)*
-- **#36**: T1 item 6 (Monte Carlo): klt yield on sense margin, and the controller's not-applicable statement *(curated)*
+- **#62**: T1 item 8 (characterization report): per-ratified-row report with controller Fmax/area/power, attested with --attest 8 *(curated)*
 - **#73**: Route the fuse-free analog leaf cells (efuse_ls, efuse_coldrv) and LVS-match each one *(curated)*
 
 ## Proposed (Architect / Hermit)
 
 - **#40**: Remove rtl/synth.sh: superseded by regen-gl.sh latch check, plus dead Yosys gate in cocotb runner *(hermit)*
 - **#68**: Dedupe fleet-image PDK variant check and report fold across sim benches *(hermit)*
+- **#83**: Consolidate sense-margin probe decks: 10 near-identical 126-line netlists differ by 1-2 lines *(hermit)*
 
 ## Epics
 
@@ -71,11 +72,11 @@ _None._
 | Operator merge-risk holds | 0 |
 | Very important | 0 |
 | Important | 2 |
-| Ready (`loom:issue`) | 1 |
+| Ready (`loom:issue`) | 0 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 4 |
-| Architect / Hermit proposals | 2 |
+| Architect / Hermit proposals | 3 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
