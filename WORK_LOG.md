@@ -2,6 +2,11 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-05
+
+- **PR #75**: docs: refresh README status to match committed artifacts
+- **Issue #74** (closed): Refresh README status line: sense path, DRC and controller routing exist
+
 ### 2026-11-01
 
 - **PR #70**: Bump Repo Skills 0.24.7 -> 0.25.1
