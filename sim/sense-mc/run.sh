@@ -95,7 +95,7 @@ mk() {
      monte_carlo:{n:$n, seed:$seed, vary:"mismatch", seed_scope:"point",
                   mismatch_scale:$ms,
                   injected:[{instance:"Rref", parameter:"r", relative_sigma:$sigma, distribution:"gaussian"}]},
-     analysis:{kind:"tran", args:"100p 40n"},
+     analysis:{kind:"tran", args:"20p 40n"},
      measurements:[
        {name:"margin_v", spec_row:"P10", unit:"V", limits:{min:0},
         spice:(".meas tran margin_v find par(" + $q + $margin + $q + ") at=" + $tpre)},
