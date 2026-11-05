@@ -1,0 +1,36 @@
+{
+ "description": "Accounts for each row of item6-digital-spec.json with the reason its row class is not statistical. Hash-bound to the spec extract by the manifest and, through it, to spec/efuse-otp.md.",
+ "spec": "signoff/item6-digital-spec.json",
+ "rows": [
+  {
+   "id": "array",
+   "class": "structural / addressing (deterministic)",
+   "reason": "Array organization fixes the row and column decode width (32 x 8, 8-bit address). The controller decode is exercised by the functional bench at both the 1x8 fallback and the 32x8 target (sim/controller-fv); no row of it is a distribution."
+  },
+  {
+   "id": "pulse-width",
+   "class": "timing / counter range (corner-bounded)",
+   "reason": "The 1-100 us program pulse is a registered counter range of the controller, checked at its clamp limits (sim/controller-fv 32x8_clamp_lo / clamp_hi) and bounded at the PDK's characterised corners by static timing (sim/controller-sta). The analog pulse event itself is not simulated (spec section 3)."
+  },
+  {
+   "id": "controller-interface",
+   "class": "functional (deterministic)",
+   "reason": "The interface is a fixed set of synchronous ports; conformance is a pass/fail property of the port list and cycle behavior, checked by the functional bench (sim/controller-fv)."
+  },
+  {
+   "id": "controller-behavior",
+   "class": "functional / sequencing (deterministic)",
+   "reason": "Arm-state gating, inactive program drive in reset and power-up, fixed sense-settle count and address-stable-before-enable are sequencing properties, each pass/fail under the functional bench at the min/nom/max corner set (sim/controller-fv)."
+  },
+  {
+   "id": "pvt-corners",
+   "class": "corner definition (deterministic)",
+   "reason": "Declares the corner set results are recorded at (decision 0005); it is the set of points, not a measured quantity, and the digital timing rows are bounded at those points by static timing and the corner functional runs."
+  },
+  {
+   "id": "signoff",
+   "class": "flow / verification-method (deterministic)",
+   "reason": "States which verification flows must be clean (DRC, LVS, controller verification); each is a tool pass/fail verdict recorded under signoff/ and layout/, not a measured quantity with a spread."
+  }
+ ]
+}
