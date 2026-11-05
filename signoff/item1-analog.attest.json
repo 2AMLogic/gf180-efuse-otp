@@ -155,16 +155,147 @@
     ]
   },
   "provenance": {
-    "klt_version": "0.8.0",
+    "klt_version": "0.9.0",
     "klayout_version": null,
     "pdk": null,
     "deck": null,
     "input": {
-      "path": {
-        "path": "signoff/item1-analog-inventory.json",
-        "scope": "repo"
-      },
-      "content_hash": "sha256:93ea87453830d77b7805c42e3dca70fd6117fe2cebcb73ac83ee4a7a2e84cc46"
+      "paths": [
+        {
+          "path": {
+            "path": "design/efuse_bitcell.sch",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:5a2f400a3914d8c7e14dbc9d1dd9824ba7800c140fb96d451ef2e504e8810b7e"
+        },
+        {
+          "path": {
+            "path": "design/efuse_bitcell.sym",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:b66f442928ad3f2ca54929a2cb428e22b78393f881a56c3a4ca2569e66a4dc1e"
+        },
+        {
+          "path": {
+            "path": "design/efuse_coldrv.sch",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:fd2b23aaaed29271f5ba354b424667f6e8d2e2ac2d27af15830b43f4c16e2166"
+        },
+        {
+          "path": {
+            "path": "design/efuse_coldrv.sym",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:b840cdcaba4d56172342a60e74cb9e77334e1930bb23520fcba3b2dc9c04b4ff"
+        },
+        {
+          "path": {
+            "path": "design/efuse_comp.sch",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:c0168462afa78a851075fec4c28aab31e8cb4a056f46221885b18110d6fc6d46"
+        },
+        {
+          "path": {
+            "path": "design/efuse_comp.sym",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:1463b14e318a80b7c1cd7b68503c5cac9d97d31c55a07bcbf398995cb25f3f20"
+        },
+        {
+          "path": {
+            "path": "design/efuse_ls.sch",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:038f414860a36a5be5921a746ee28dc3190323f7116f14e91a19c4b3ec463798"
+        },
+        {
+          "path": {
+            "path": "design/efuse_ls.sym",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:bd7d6d3d90636615e5b4b35da032012a61c3f1ba1bf77b053a7ad8ee6eebdced"
+        },
+        {
+          "path": {
+            "path": "design/efuse_otp_array.sch",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:46a9e758335ae30f2c687625b09ac904fa3322e826cd3dc45062962da3a87143"
+        },
+        {
+          "path": {
+            "path": "design/efuse_otp_array.spice",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:0c002616b9494532ec6b3880e356b0d598bc1ba87393df9639f6adf285a928bb"
+        },
+        {
+          "path": {
+            "path": "design/efuse_otp_array.sym",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:f987db93c644a79ff18156eaeb8a927bc7837c46b8798ce7bcb5e6d2c229266b"
+        },
+        {
+          "path": {
+            "path": "design/efuse_prim.sym",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:156214a614f184c57981212e8b6ed5d0ee5e9e5270b5d06a2dfdb5bcf497eb12"
+        },
+        {
+          "path": {
+            "path": "design/efuse_row.sch",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:b208d61ca6d3796068c23bad3eafcab71477f403a63bb1bbfd26d79436461cd2"
+        },
+        {
+          "path": {
+            "path": "design/efuse_row.sym",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:3867080c4f1cc5fc464c8e66de966d581ba77ff96fda6a60629f396a4bdcd1f1"
+        },
+        {
+          "path": {
+            "path": "design/efuse_rowdrv.sch",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:4a0cc398163643085fe1d367b7b8c7cd1cd84b4f408e95da69f8d47775764081"
+        },
+        {
+          "path": {
+            "path": "design/efuse_rowdrv.sym",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:1fdf8ad71ea8176af3e11fffc2ab43ee469aa291d337cfd8a1eb648edbdce2a7"
+        },
+        {
+          "path": {
+            "path": "design/efuse_sense.sch",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:1ca53d995b61635b4166b1b7b81ed0cb4eed6ecd90e38902614d6cb4a7ecbadb"
+        },
+        {
+          "path": {
+            "path": "design/efuse_sense.sym",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:2b208f68b4807fc4b19dbfdc55c2958634c6de05b6d73ffc95f2c2ebef55d412"
+        },
+        {
+          "path": {
+            "path": "signoff/item1-analog-inventory.json",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:93ea87453830d77b7805c42e3dca70fd6117fe2cebcb73ac83ee4a7a2e84cc46"
+        }
+      ],
+      "content_hash": "sha256:a6a3957c81ddc0077cefb9b6c0f769819107d69f883965cf72a4eeb79412e3e3"
     }
   }
 }

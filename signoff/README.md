@@ -6,7 +6,7 @@ The block's verdict of record against the klayout-tools evidence tiers.
 |---|---|
 | `attest/item10.json` | `t1-attestation-inventory` for T1 item 10, repo hygiene: the hygiene files and the bare-runner harness checks (checker self-tests, evidence-format check). |
 | `attest/item10.envelope.json` | Envelope emitted by `klt signoff --attest 10`; cited for `10` in `block-manifest.json`, pinned by the inventory's sha256. |
-| `attest/item8.json` | `t1-attestation-inventory` for T1 item 8, characterization report: the report `measurements/characterization/README.md` and bare-runner checks (report exists, every spec row id appears once). **No envelope yet**: the pinned `klayout-tools==0.8.0` has no `signoff --attest 8`, so `8.analog` / `8.digital` are not cited and stay `unmet`. |
+| `attest/item8.json` | `t1-attestation-inventory` for T1 item 8, characterization report (klayout-tools 0.9.0 schema): the report `measurements/characterization/README.md`, the records each spec row cites, a presence check per cited record, and the controller Fmax, power and area bound per `klt sta` corner. `klt signoff --attest 8` **fails** (exit 3, no envelope written) because P08, P09, P10 and C2 have no committed record to cite, so there is no `item8.envelope.json` and `8.analog` / `8.digital` stay `unmet`. Do not add placeholder citations: cite a record when #34 / #36 land. |
 | `attest/item9.json` | `t1-attestation-inventory` for T1 item 9, testbenches shipped: the controller, program-select and sense-margin bench files, the cold-start command `sim/cold-start.sh` (`local_only`), and the PDK and tool pins. |
 | `attest/item9.envelope.json` | Envelope emitted by `klt signoff --attest 9`; cited for `9` in `block-manifest.json`, pinned by the inventory's sha256. |
 | `block-manifest.json` | Block name, kind (`mixed-signal`), the `partition_boundary` (analog and digital nets) and the `evidence` map (`1.digital`, `1.analog`, `2.digital`, `2.analog`, `9`, `10`). |
@@ -21,7 +21,7 @@ The block's verdict of record against the klayout-tools evidence tiers.
 | `item1-digital.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.digital` in `block-manifest.json`, pinned by the inventory's sha256. |
 | `item1-analog-inventory.json` | `t1-attestation-inventory` for T1 item 1, analog: the xschem schematics and cell symbols in `design/` and the netlist `design/efuse_otp_array.spice`, whose freshness `check` is `design/regen-netlist.sh --check` (`local_only`: it needs xschem). |
 | `item1-analog.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.analog`, pinned by the inventory's sha256. |
-| `design-evidence-tiers.md` | Copy of the tiers doc shipped with the pinned klt (`klayout-tools==0.8.0`, `klayout_tools/data/design-evidence-tiers.md`), so the record does not move when an installed klt bundles a different doc. |
+| `design-evidence-tiers.md` | Copy of the tiers doc shipped with the pinned klt (`klayout-tools==0.9.0`, `klayout_tools/data/design-evidence-tiers.md`), so the record does not move when an installed klt bundles a different doc. |
 
 ## Regenerate the record
 
@@ -120,7 +120,7 @@ layout/attest.sh
 
 Then set the `content_hash` for `2.digital` in `block-manifest.json` to the
 `provenance.input.content_hash` in `layout/pnr.attest.json` (the GDS sha256), and
-regenerate the record as above. klt's `--attest` covers items 1, 9 and 10 only, so
+regenerate the record as above. klt's `--attest` has no producer for item 2, so
 this envelope is written by `layout/attest.sh`; the grader checks that the GDS
 re-hashes to the pinned value and that the geometry digest matches the claim.
 It does not re-run the flow: `layout/pnr.sh --check --rerun` does.
@@ -166,3 +166,20 @@ they check that:
 
 **CI does not check that any evidence is correct.** It checks formats,
 append-only history, and that the record reproduces.
+
+## Re-attest item 8 (characterization report)
+
+```sh
+uvx --from "$(cat signoff/klt-pin.txt)" klt signoff --attest 8 \
+  --inventory signoff/attest/item8.json -o signoff/attest/item8.envelope.json --format json
+```
+
+Use `--format json`: the 0.9.0 text renderer raises `KeyError: 'value'` when a
+citation check fails. Today the command exits 3 on the four uncited rows. Once
+every row cites a record, write the envelope, cite it for `8.analog` and
+`8.digital` in `block-manifest.json` (hash = the envelope's
+`provenance.input.content_hash`) and regenerate the record.
+
+From 0.9.0 the item 1 envelope's `provenance.input.content_hash` is a composite
+over the sources, so the `content_hash` in `block-manifest.json` for `1.digital`
+and `1.analog` is that value, not the inventory's sha256.

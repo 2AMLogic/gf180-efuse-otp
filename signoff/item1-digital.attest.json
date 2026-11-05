@@ -43,16 +43,35 @@
     ]
   },
   "provenance": {
-    "klt_version": "0.8.0",
+    "klt_version": "0.9.0",
     "klayout_version": null,
     "pdk": null,
     "deck": null,
     "input": {
-      "path": {
-        "path": "signoff/item1-digital-inventory.json",
-        "scope": "repo"
-      },
-      "content_hash": "sha256:fe311ca86300437a79b0378de18166c046e6133958b97fb6df36faeab5f6c510"
+      "paths": [
+        {
+          "path": {
+            "path": "rtl/efuse_otp_ctrl.gl.v",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:840543dd0ba0efb2d261c243e292b468fe11cb1380237787f786c191272c5d00"
+        },
+        {
+          "path": {
+            "path": "rtl/efuse_otp_ctrl.v",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:812f696e79b2e7585f59575ebf8dc7e771460fddbe73421f655804d67caac58e"
+        },
+        {
+          "path": {
+            "path": "signoff/item1-digital-inventory.json",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:fe311ca86300437a79b0378de18166c046e6133958b97fb6df36faeab5f6c510"
+        }
+      ],
+      "content_hash": "sha256:a3add58741055c796d850a63e9543714cc038e24e6bf38cbdf6b25a23f15c19a"
     }
   }
 }
