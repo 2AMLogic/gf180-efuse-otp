@@ -30,3 +30,18 @@ effect (`clkn` swings fully, see above).
 
 Result of record: `sim/sense-margin/records/20261105T071054Z-f6eeac7` and
 `sim/sense-mc/records/20261105T071340Z-f6eeac7` (see `sim/sense-mc/README.md`).
+
+## Residual intact-edge failures: input pair 8u/2.24u (issue 77, third increment)
+
+After the 4u/1.12u pair, 2 of 540 intact-edge Monte Carlo samples still resolved the wrong bit
+(both at 125 C, analog margin about 14 mV; `sim/sense-mc/README.md`). Same mechanism as before:
+input-referred mismatch offset, which scales as 1/sqrt(gate area). `M1`/`M2` of `efuse_comp` are now
+8u/2.24u (same W/L as 4u/1.12u, so drive is unchanged and the pair stays weaker than the 8u latch;
+4x the gate area, offset about 2x lower).
+
+| Deck | Corner | What it shows |
+|---|---|---|
+| `new_2p24_260.cir`, `new_2p24_630.cir` | typical / 25 C / 3.30 V | New pair. 260 ohm: `cp` 0.04 V, `cn` 3.19 V (bit 0); 630 ohm: `cp` 3.20 V, `cn` 0.04 V (bit 1). Latch still regenerates to opposite bits. |
+
+Results of record: `sim/sense-margin/records/20261105T083938Z-f6eeac7`,
+`sim/sense-mc/records/20261105T084326Z-f6eeac7`.

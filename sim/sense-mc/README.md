@@ -132,3 +132,24 @@ schematic). `design/regen-netlist.sh` on this host with the pinned klt rewrites 
 (drops `pd=`/`ps=` on every device), and `--check` already reports that drift on unmodified `main`,
 so the regenerated file was not committed. The T1 item 1 analog attestation hashes are not
 refreshed here.
+
+## Re-run with an 8u/2.24u comparator input pair (issue 77, third increment)
+
+The two residual intact-edge failures of the previous record are the input-referred offset of the
+4u/1.12u pair (trace: `sim/sense-margin/probe/README.md`). `M1`/`M2` of `efuse_comp` changed to
+8u/2.24u (4x gate area, same W/L). New record: `records/20261105T084326Z-f6eeac7/record.json`
+(same seed, grid, samples and assumptions A4-A7; previous records untouched). Batch only; the
+single-unit probes in `sim/sense-margin/probe/` are the only local runs.
+
+- `margin_v` (cited): yield 1.0, 540 samples per population, sufficient, control `detected`;
+  smallest margin 12 mV (intact, ss / 125 C / 2.97 V).
+- `decision_margin` (not cited), intact edge: yield 1.0000 (95 % CI lower bound 0.9932), 0 of 540
+  fail, sample size `sufficient`, control `detected` (control yield 0.0037). Was 0.9963.
+- `decision_margin`, programmed edge: yield 1.0000, `sufficient`, control `detected`.
+- Corner matrix, `sim/sense-margin/records/20261105T083938Z-f6eeac7`: 45 corners for each of
+  140/200/260/630/900/open ohm, `decision_correct_everywhere` true, no unresolved point.
+
+A 1.0 yield over 540 samples bounds the failure rate below about 0.7 % at 95 % confidence; it does
+not show zero failures. A7 (reference sigma 0.05) is still an assumption with no documented source,
+as are A4-A6. The item 1 analog and item 2 analog attestations, the array GDS and the re-graded
+record are refreshed for the new netlist (`design/regen-netlist.sh --check` passes on the pinned klt).
