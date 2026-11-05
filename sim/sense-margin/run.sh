@@ -77,7 +77,7 @@ mk() {                                   # mk <stem> <rfuse> <rref>
      models:{lib:$lib, pdk:"gf180mcuD"},
      corners:{process:(["typical","ff","ss","fs","sf"]|map({name:., sections:[.]})),
               supply_v:{vdd33:[2.97,3.30,3.63]}, temperature_c:[-40,25,125]},
-     analysis:{kind:"tran", args:"100p 40n"},
+     analysis:{kind:"tran", args:"20p 40n"},  # 100p under-resolves the 200p edge: decisions flipped with the step (issue 77)
      measurements:[
        {name:"v_sbl", spice:(".meas tran v_sbl find v(sbl) at=" + $tpre), unit:"V"},
        {name:"v_sref", spice:(".meas tran v_sref find v(xsa.sref) at=" + $tpre), unit:"V"},
