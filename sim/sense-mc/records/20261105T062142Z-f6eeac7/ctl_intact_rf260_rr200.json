@@ -1,0 +1,99 @@
+{
+  "netlist": "ctl_intact_rf260_rr200.cir",
+  "engine": "ngspice",
+  "models": {
+    "lib": "libs.tech/ngspice/sm141064.ngspice",
+    "pdk": "gf180mcuD"
+  },
+  "corners": {
+    "process": [
+      {
+        "name": "typical",
+        "sections": [
+          "typical"
+        ]
+      },
+      {
+        "name": "ff",
+        "sections": [
+          "ff"
+        ]
+      },
+      {
+        "name": "ss",
+        "sections": [
+          "ss"
+        ]
+      },
+      {
+        "name": "fs",
+        "sections": [
+          "fs"
+        ]
+      },
+      {
+        "name": "sf",
+        "sections": [
+          "sf"
+        ]
+      }
+    ],
+    "supply_v": {
+      "vdd33": [
+        2.97,
+        3.30,
+        3.63
+      ]
+    },
+    "temperature_c": [
+      -40,
+      25,
+      125
+    ]
+  },
+  "monte_carlo": {
+    "n": 6,
+    "seed": 36036,
+    "vary": "mismatch",
+    "seed_scope": "point",
+    "mismatch_scale": 1,
+    "injected": [
+      {
+        "instance": "Rref",
+        "parameter": "r",
+        "relative_sigma": 0.05,
+        "distribution": "gaussian"
+      }
+    ]
+  },
+  "analysis": {
+    "kind": "tran",
+    "args": "20p 40n"
+  },
+  "measurements": [
+    {
+      "name": "margin_v",
+      "spec_row": "P10",
+      "unit": "V",
+      "limits": {
+        "min": 0
+      },
+      "spice": ".meas tran margin_v find par('v(xsa.sref)-v(sbl)') at=14.9n"
+    },
+    {
+      "name": "decision_margin",
+      "spec_row": "P10",
+      "unit": "V/V",
+      "limits": {
+        "min": 0.2
+      },
+      "spice": ".meas tran decision_margin find par('0.5-v(sense_out)/v(vdd33)') at=38n"
+    }
+  ],
+  "options": {
+    "timeout_s": 60,
+    "ngspice_init": [
+      "set measureprec=9"
+    ]
+  }
+}

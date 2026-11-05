@@ -86,3 +86,22 @@ verify the samples hash in CI). `run.sh` now runs klt from the repo root with re
 paths. For this record (never on `main`), the stored path prefix was stripped and the `yield/`
 outputs were regenerated with `klt yield-samples` / `klt yield` from the unchanged fleet reports
 under `sets/*/report.json`; no grid was re-run and the raw fleet reports are untouched.
+
+## Re-run on the resized comparator (issue 77)
+
+The comparator latch was resized and the bench timestep changed (`tran` step 100p -> 20p, as in
+`sim/sense-margin/run.sh`); `run.sh` now uses 20p. The record above predates that and is kept
+untouched as evidence of the old DUT. New record: `records/20261105T062142Z-f6eeac7/record.json`
+(same seed, grid, samples and assumptions A4-A7; 4 batch jobs in `remote_job_ids`).
+
+- `margin_v` (cited): yield 1.0, 540 samples per population, sufficient, negative control `detected`;
+  smallest margin 12 mV (intact, ss / 125 C / 2.97 V) and 22 mV (programmed, typical / 125 C / 2.97 V).
+- `decision_margin` (not cited), now a measured result rather than a non-resolving latch:
+  intact yield 0.906 (95 % CI 0.878-0.929; 51 of 540 samples fail, 29 of 45 corners affected,
+  sample size `insufficient`, control `detected`); programmed yield 0.991 (CI 0.979-0.997; 5 of 540
+  fail, sample size `sufficient`, control `detected`).
+- **The resized comparator does not meet a resolved-decision yield of 1.0 under mismatch at the
+  intact edge (260 ohm vs a 400 ohm reference).** This is the comparator offset the ratified row asks
+  to include; it is not a pass, and nothing here relaxes the spec. The decision criterion's sample
+  size (about 3300 needed at that yield) was not reached.
+- A7 (reference sigma 0.05) remains an assumption with no documented source.

@@ -71,6 +71,22 @@ def graded(path):
     return {"status": rep.get("status"), "measurements": rows}
 
 
+def decision_finding(pops):
+    """Describe the uncited decision_margin grading from the graded data (no fixed text)."""
+    parts = []
+    for name, p in pops.items():
+        ms = p["decision"].get("measurements") or []
+        if not ms:
+            parts.append(f"{name}: decision_margin not graded")
+            continue
+        m = ms[0]
+        parts.append(f"{name}: decision yield {m['yield_empirical']:.4f} over {m['n']} samples "
+                     f"(sample size {m['sample_size_verdict']}, negative control {m['negative_control_verdict']})")
+    return ("decision_margin (latched sense_out past the midpoint) is reported, not cited: "
+            + "; ".join(parts) + ". A decision yield below 1.0 is comparator offset plus reference tolerance "
+            "flipping or failing to resolve the latched bit; read the per-corner stats in populations.*.sets.nominal.stats.")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("rec")
@@ -149,7 +165,7 @@ def main():
         "min_samples": a.min_samples, "target_ci_halfwidth": a.ci_halfwidth, "confidence": 0.95,
         "populations": out_pops,
         "cited_evidence_meets_item6_discipline": cited_ok,
-        "decision_path_finding": "decision_margin is reported but NOT cited: the committed sim/sense-margin record shows the comparator does not resolve for a resistive fuse (the latched output reads 0 at nearly every corner for every fuse short of open), so the decision measurement neither passes the programmed population nor discriminates under its negative control. Comparator offset is therefore not established by this record.",
+        "decision_path_finding": decision_finding(out_pops),
     }
     with open(os.path.join(a.rec, "record.json"), "w") as f:
         json.dump(rec, f, indent=1)
