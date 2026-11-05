@@ -4,6 +4,10 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-05
 
+- **PR #80**: feat(sim): re-run sense-mc campaign on resized comparator, record decision yield
+- **PR #79**: fix: size comparator latch to out-pull input pair, resolve sense bench timestep
+- **PR #78**: feat: sense-path Monte Carlo campaign and item 6 evidence (analog yield, digital not-applicable)
+- **Issue #36** (closed): T1 item 6 (Monte Carlo): klt yield on sense margin, and the controller's not-applicable statement
 - **PR #75**: docs: refresh README status to match committed artifacts
 - **Issue #74** (closed): Refresh README status line: sense path, DRC and controller routing exist
 
