@@ -4,6 +4,10 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-05
 
+- **PR #85**: fix: widen comparator input pair to 8u/2.24u for intact-edge decision yield
+- **PR #84**: fix: enlarge comparator input pair to cut offset-driven wrong decisions
+- **PR #82**: build(signoff): bump klt pin to 0.9.0 and re-attest; item 8 inventory moves to new schema
+- **Issue #77** (closed): Sense comparator does not resolve a decision for resistive fuses; comparator offset unevidenced
 - **PR #80**: feat(sim): re-run sense-mc campaign on resized comparator, record decision yield
 - **PR #79**: fix: size comparator latch to out-pull input pair, resolve sense bench timestep
 - **PR #78**: feat: sense-path Monte Carlo campaign and item 6 evidence (analog yield, digital not-applicable)
