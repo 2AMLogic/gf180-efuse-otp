@@ -105,3 +105,30 @@ untouched as evidence of the old DUT. New record: `records/20261105T062142Z-f6ee
   to include; it is not a pass, and nothing here relaxes the spec. The decision criterion's sample
   size (about 3300 needed at that yield) was not reached.
 - A7 (reference sigma 0.05) remains an assumption with no documented source.
+
+## Re-run with a larger comparator input pair (issue 77, second increment)
+
+Trace and root cause: `sim/sense-margin/probe/README.md`. The intact-edge failures of the previous
+record were resolved wrong decisions whose rate tracks the analog margin, i.e. comparator
+input-referred offset. `M1`/`M2` of `efuse_comp` changed 2u/0.28u -> 4u/1.12u (8x gate area).
+New record: `records/20261105T071340Z-f6eeac7/record.json` (same seed, grid, samples and
+assumptions A4-A7; previous records untouched). Batch only.
+
+- `margin_v` (cited): yield 1.0, 540 samples per population, sufficient, control `detected`.
+- `decision_margin` (not cited), intact edge: yield 0.9963 (95 % CI 0.9867-0.9996; 2 of 540 fail:
+  typical / 2.97 V / 125 C, margin 14.6 mV, and ss / 3.63 V / 125 C, margin 14.1 mV), sample size
+  `sufficient`, control `detected` (0.056). Was 0.906.
+- `decision_margin`, programmed edge: yield 1.0 (CI lower bound 0.9932), `sufficient`, control `detected`.
+- Corner matrix, `sim/sense-margin/records/20261105T071054Z-f6eeac7`: 45 corners for each of
+  140/200/260/630/900/open ohm, `decision_correct_everywhere` true, no unresolved point.
+
+**Residual:** comparator offset is now covered by a measured result, but the intact edge is not at
+yield 1.0: two 125 C samples with about 14 mV of analog margin still decide wrong. Not a pass of
+a 1.0 criterion and nothing here relaxes the spec; the smallest analog margin (12 mV) is the
+limit, so a further gain needs a larger pair or more signal. A7 is still an assumption.
+
+`design/efuse_otp_array.spice` was edited by hand on the two `XM1`/`XM2` lines (matching the
+schematic). `design/regen-netlist.sh` on this host with the pinned klt rewrites ~230 unrelated lines
+(drops `pd=`/`ps=` on every device), and `--check` already reports that drift on unmodified `main`,
+so the regenerated file was not committed. The T1 item 1 analog attestation hashes are not
+refreshed here.
