@@ -58,9 +58,13 @@ netlist="$repo/design/efuse_otp_array.spice"
 [[ -f "$netlist" ]] || { echo "run.sh: $netlist missing" >&2; exit 1; }
 sub() { awk -v n="$1" '$1==".subckt" && $2==n {p=1} p {print} p && $1==".ends" {exit}' "$netlist"; }
 
+# All klt invocations run from the repo root with repo-relative record paths, so the paths
+# stored in set-report.json, set-manifest.json and the yield/samples files resolve from any
+# checkout (an absolute worktree path does not exist in CI and breaks input verification).
+cd "$repo"
 stamp="$(date -u +%Y%m%dT%H%M%SZ)"
 if [[ $dry -eq 1 ]]; then rec="$(mktemp -d)"; else
-  rec="$here/records/$stamp-${PDK_REVISION:0:7}"; mkdir -p "$here/records"; mkdir "$rec"; fi
+  rec="sim/sense-mc/records/$stamp-${PDK_REVISION:0:7}"; mkdir -p "$repo/sim/sense-mc/records"; mkdir "$repo/$rec"; fi
 
 reqs=()
 # mk <stem> <kind: intact|prog> <rfuse> <rref> <n>

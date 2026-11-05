@@ -77,3 +77,12 @@ at 95 %; `klt yield-samples` pairs each nominal with its control. The yield step
 
 Records are append-only; `run.sh` refuses to reuse a directory. `klt.err`, `set-report.json` and the
 sample sets carry the absolute paths the tools wrote, as in `sim/sense-margin/records`.
+
+## Path normalisation (PR #78 review)
+
+The first commit of this record stored absolute builder-worktree paths in `set-report.json`,
+`sets/set-manifest.json` and `yield/*.json`, which no other checkout can resolve (klt could not
+verify the samples hash in CI). `run.sh` now runs klt from the repo root with repo-relative record
+paths. For this record (never on `main`), the stored path prefix was stripped and the `yield/`
+outputs were regenerated with `klt yield-samples` / `klt yield` from the unchanged fleet reports
+under `sets/*/report.json`; no grid was re-run and the raw fleet reports are untouched.
