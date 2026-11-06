@@ -3,11 +3,16 @@
 Local single-unit `ngspice -b` runs (one corner each, not a grid), built from the
 decks in `records/20261030T223615Z-f6eeac7/` (old comparator sizes inline).
 
-| Deck | Corner | What it shows |
+Every probe is `probe.cir.in` with a few fields overridden; the overrides are the table in
+`gen_probe.sh`. Regenerate a deck with `./gen_probe.sh <name> > <name>.cir` and run
+`ngspice -b <name>.cir` (`./gen_probe.sh --list` lists the names). The library path comes from
+`sim/lib/pdk_env.sh`.
+
+| Probe (`gen_probe.sh` name) | Corner | What it shows |
 |---|---|---|
-| `probe_rf260.cir`, `probe_rf630.cir` | typical / 25 C / 3.30 V | Old sizes. `clkn` falls 3.3 V -> 0 (clocking is fine, not a bench-edge problem). `sbl` ~0.2 V, tail ~2.6 V, `cp`/`cn` both ~2.1 V: latch never regenerates. |
-| `v_mx8_*`, `v_pair2_*`, `v_both_*` | typical / 25 C / 3.30 V | Latch NMOS 2u -> 8u, input pair 8u -> 2u, both. Each regenerates to the correct bit (260 ohm -> 0, 630 ohm -> 1). Root cause: the on-state PMOS input pair out-pulls the 2u latch. `both` is what the schematic now carries. |
-| `probe_new_ff_rf140.cir` / `_100p.cir` | ff / 25 C / 3.30 V | New sizes, 140 ohm. Same deck at a 20 ps vs 100 ps step gives opposite decisions: the 100 ps step under-resolves the 200 ps edge and its 40-60 mV kickback. `run.sh` now uses 20 ps. |
+| `probe_rf260`, `probe_rf630` | typical / 25 C / 3.30 V | Old sizes. `clkn` falls 3.3 V -> 0 (clocking is fine, not a bench-edge problem). `sbl` ~0.2 V, tail ~2.6 V, `cp`/`cn` both ~2.1 V: latch never regenerates. |
+| `v_mx8_*`, `v_pair2_*`, `v_both_*` (each `_260` and `_630`) | typical / 25 C / 3.30 V | Latch NMOS 2u -> 8u, input pair 8u -> 2u, both. Each regenerates to the correct bit (260 ohm -> 0, 630 ohm -> 1). Root cause: the on-state PMOS input pair out-pulls the 2u latch. `both` is what the schematic now carries. |
+| `probe_new_ff_rf140` / `probe_new_ff_rf140_100p` | ff / 25 C / 3.30 V | New sizes, 140 ohm. Same deck at a 20 ps vs 100 ps step gives opposite decisions: the 100 ps step under-resolves the 200 ps edge and its 40-60 mV kickback. `run.sh` now uses 20 ps. |
 
 Decks are probes, not results: the evidence of record is `records/`.
 
@@ -24,9 +29,9 @@ cause: comparator input-referred mismatch offset, set by the input pair's gate a
 is of the same order as the 12-50 mV signal. It is a design sizing effect, not a bench or clocking
 effect (`clkn` swings fully, see above).
 
-| Deck | Corner | What it shows |
+| Probe (`gen_probe.sh` name) | Corner | What it shows |
 |---|---|---|
-| `new_1p12_260.cir`, `new_1p12_630.cir` | typical / 25 C / 3.30 V | Input pair 4u/1.12u (8x area; drive about half of 2u/0.28u so it stays weaker than the 8u latch). 260 ohm: `cp` 0.04 V, `cn` 3.19 V; 630 ohm: `cp` 3.19 V, `cn` 0.04 V. Latch regenerates to opposite bits. |
+| `new_1p12_260`, `new_1p12_630` | typical / 25 C / 3.30 V | Input pair 4u/1.12u (8x area; drive about half of 2u/0.28u so it stays weaker than the 8u latch). 260 ohm: `cp` 0.04 V, `cn` 3.19 V; 630 ohm: `cp` 3.19 V, `cn` 0.04 V. Latch regenerates to opposite bits. |
 
 Result of record: `sim/sense-margin/records/20261105T071054Z-f6eeac7` and
 `sim/sense-mc/records/20261105T071340Z-f6eeac7` (see `sim/sense-mc/README.md`).
@@ -39,9 +44,9 @@ input-referred mismatch offset, which scales as 1/sqrt(gate area). `M1`/`M2` of 
 8u/2.24u (same W/L as 4u/1.12u, so drive is unchanged and the pair stays weaker than the 8u latch;
 4x the gate area, offset about 2x lower).
 
-| Deck | Corner | What it shows |
+| Probe (`gen_probe.sh` name) | Corner | What it shows |
 |---|---|---|
-| `new_2p24_260.cir`, `new_2p24_630.cir` | typical / 25 C / 3.30 V | New pair. 260 ohm: `cp` 0.04 V, `cn` 3.19 V (bit 0); 630 ohm: `cp` 3.20 V, `cn` 0.04 V (bit 1). Latch still regenerates to opposite bits. |
+| `new_2p24_260`, `new_2p24_630` | typical / 25 C / 3.30 V | New pair. 260 ohm: `cp` 0.04 V, `cn` 3.19 V (bit 0); 630 ohm: `cp` 3.20 V, `cn` 0.04 V (bit 1). Latch still regenerates to opposite bits. |
 
 Results of record: `sim/sense-margin/records/20261105T083938Z-f6eeac7`,
 `sim/sense-mc/records/20261105T084326Z-f6eeac7`.
