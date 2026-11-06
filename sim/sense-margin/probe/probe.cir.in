@@ -1,15 +1,15 @@
-* probe rf=630 typical/25C/3.30V
-.lib /home/ubuntu/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+* probe %%TITLE%%
+.lib %%LIB_DIR%%/sm141064.ngspice %%CORNER%%
 .temp 25
 * Sense-margin bench: the committed efuse_sense subcircuit (design/efuse_otp_array.spice,
 * extracted by run.sh together with efuse_comp) against a resistor standing in for the
 * selected fuse. Circuit body for `klt sim` (no .control/.end). run.sh substitutes
-* /home/ubuntu/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/design.ngspice, 630 and @RREF@ and appends the two extracted subcircuits.
-.include /home/ubuntu/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/design.ngspice
+* %%LIB_DIR%%/design.ngspice, %%RFUSE%% and @RREF@ and appends the two extracted subcircuits.
+.include %%LIB_DIR%%/design.ngspice
 
 * ASSUMPTION (A4/A5, no documented source beyond the 200 / 900 ohm points): the selected
 * fuse is a plain resistor of the stated value. "open" is 1 Gohm.
-.param rfuse=630
+.param rfuse=%%RFUSE%%
 * Reference: efuse_sense carries Rref = 400 ohm (A6, decision 0003). The negative
 * control rewrites that one line to @RREF@ ohm in the deck copy; the committed netlist
 * is not touched.
@@ -99,13 +99,13 @@ XMnbb qb sense_out vss vss nfet_03v3 L=0.28u W=1u nf=1 ad='int((nf+1)/2) * W/nf 
 *.iopin vss
 XMt tail clkn vdd33 vdd33 pfet_03v3 L=0.28u W=8u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
 + ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
-XM1 outp inp tail vdd33 pfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
+XM1 outp inp tail vdd33 pfet_03v3 L=%%PAIR_L%% W=%%PAIR_W%% nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
 + ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
-XM2 outn inn tail vdd33 pfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
+XM2 outn inn tail vdd33 pfet_03v3 L=%%PAIR_L%% W=%%PAIR_W%% nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
 + ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
-XMx1 outp outn vss vss nfet_03v3 L=0.28u W=8u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
+XMx1 outp outn vss vss nfet_03v3 L=0.28u W=%%LATCH_W%% nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
 + ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
-XMx2 outn outp vss vss nfet_03v3 L=0.28u W=8u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
+XMx2 outn outp vss vss nfet_03v3 L=0.28u W=%%LATCH_W%% nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
 + ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
 XMr1 outp clkn vss vss nfet_03v3 L=0.28u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
 + ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
@@ -113,14 +113,11 @@ XMr2 outn clkn vss vss nfet_03v3 L=0.28u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.
 + ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
 .ends
 .control
-tran 100p 40n
-meas tran clkn_pre find v(xsa.clkn) at=14.9n
-meas tran clkn_post find v(xsa.clkn) at=30n
-meas tran tail find v(xsa.xcmp.tail) at=30n
+tran %%TRAN%% 40n
+%%MEAS_PRE%%
 meas tran cp find v(xsa.cp) at=38n
 meas tran cn find v(xsa.cn) at=38n
 meas tran so find v(sense_out) at=38n
-meas tran sbl find v(sbl) at=14.9n
-meas tran sref find v(xsa.sref) at=14.9n
+%%MEAS_POST%%
 .endc
 .end
