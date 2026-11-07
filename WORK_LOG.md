@@ -2,6 +2,11 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-06
+
+- **PR #87**: refactor: generate comparator probe decks from one template
+- **Issue #83** (closed): Consolidate sense-margin probe decks: 10 near-identical 126-line netlists differ by 1-2 lines
+
 ### 2026-11-05
 
 - **PR #85**: fix: widen comparator input pair to 8u/2.24u for intact-edge decision yield
