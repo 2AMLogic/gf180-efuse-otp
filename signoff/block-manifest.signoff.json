@@ -457,7 +457,7 @@
         "declared_gaps": [
           {
             "id": "P10",
-            "gap": "sense margin includes reference tolerance and comparator offset (statistical, Monte Carlo owned by #36); the sense-margin corner record sim/sense-margin/records/20261030T223615Z-f6eeac7 has decision_correct_everywhere=false (comparator unresolved at ss/125 C/2.97 V), so it is not cited as passing"
+            "gap": "sense margin includes reference tolerance and comparator offset (statistical, Monte Carlo owned by #36); the post-#85 sense-margin corner record sim/sense-margin/records/20261105T083938Z-f6eeac7 has decision_correct_everywhere=true, but every one of its six sets/*/report.json has coverage.measurements_with_limits=0 (no limit declared on margin_v), so the pinned grader cannot grade it as passing and it is not cited; a graded P10 needs a campaign that declares a limit on margin_v"
           }
         ],
         "unratified_rows": [],
@@ -496,11 +496,11 @@
       "reason": null,
       "graded_by_build": true,
       "citation": {
-        "file": "sim/sense-mc/records/20261105T053444Z-f6eeac7/yield/intact.yield.json",
+        "file": "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/intact.yield.json",
         "command": null,
         "kind": "yield",
         "check_status": "reported",
-        "content_hash": "sha256:b3cfe669acefeae58161cd45e6c24205e4d2f1feedcb72ab2a78bbb5e09222fc",
+        "content_hash": "sha256:56f20fb4a46523482ce5234268b154e9d7df2b0350092c5a5a611b151eb70655",
         "input_verified": true,
         "exit_status": 0,
         "yield_campaign": {
@@ -514,7 +514,7 @@
       },
       "citations_graded": [
         {
-          "citation": "sim/sense-mc/records/20261105T053444Z-f6eeac7/yield/intact.yield.json",
+          "citation": "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/intact.yield.json",
           "rows": [
             "P10"
           ],
@@ -522,7 +522,7 @@
           "reason": null
         },
         {
-          "citation": "sim/sense-mc/records/20261105T053444Z-f6eeac7/yield/prog.yield.json",
+          "citation": "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/prog.yield.json",
           "rows": [
             "P10"
           ],
@@ -532,11 +532,11 @@
       ],
       "citations": [
         {
-          "file": "sim/sense-mc/records/20261105T053444Z-f6eeac7/yield/intact.yield.json",
+          "file": "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/intact.yield.json",
           "command": null,
           "kind": "yield",
           "check_status": "reported",
-          "content_hash": "sha256:b3cfe669acefeae58161cd45e6c24205e4d2f1feedcb72ab2a78bbb5e09222fc",
+          "content_hash": "sha256:56f20fb4a46523482ce5234268b154e9d7df2b0350092c5a5a611b151eb70655",
           "input_verified": true,
           "exit_status": 0,
           "yield_campaign": {
@@ -549,11 +549,11 @@
           }
         },
         {
-          "file": "sim/sense-mc/records/20261105T053444Z-f6eeac7/yield/prog.yield.json",
+          "file": "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/prog.yield.json",
           "command": null,
           "kind": "yield",
           "check_status": "reported",
-          "content_hash": "sha256:8f7afe083ba7f85454c1d3967d64ea68f5a9404f4a4d660f13cc202ed1ab30cd",
+          "content_hash": "sha256:5d6eabca42c4a97f3ad2027c93f2cb25a9524f6b1dfa53ca05f0d1fc2949d566",
           "input_verified": true,
           "exit_status": 0,
           "yield_campaign": {
