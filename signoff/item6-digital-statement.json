@@ -23,6 +23,11 @@
    "reason": "Arm-state gating, inactive program drive in reset and power-up, fixed sense-settle count and address-stable-before-enable are sequencing properties, each pass/fail under the functional bench at the min/nom/max corner set (sim/controller-fv)."
   },
   {
+   "id": "controller-clock",
+   "class": "timing / clock target (corner-bounded)",
+   "reason": "The clock period is a fixed target (100 ns, decision 0006), not a distribution. It is bounded at the PDK's characterised corners by static timing (sim/controller-sta/sta-100ns.report.json); the 10 ns report is out-of-spec headroom and is not cited."
+  },
+  {
    "id": "pvt-corners",
    "class": "corner definition (deterministic)",
    "reason": "Declares the corner set results are recorded at (decision 0005); it is the set of points, not a measured quantity, and the digital timing rows are bounded at those points by static timing and the corner functional runs."

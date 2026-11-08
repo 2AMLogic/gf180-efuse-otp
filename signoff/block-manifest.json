@@ -46,6 +46,38 @@
         ]
       }
     ],
+    "5.digital": [
+      {
+        "file": "sim/controller-sta/sta-100ns.report.json"
+      },
+      {
+        "file": "sim/controller-fv/1x8_max.report.json"
+      },
+      {
+        "file": "sim/controller-fv/1x8_min.report.json"
+      },
+      {
+        "file": "sim/controller-fv/1x8_nom.report.json"
+      },
+      {
+        "file": "sim/controller-fv/32x8_100MHz_max.report.json"
+      },
+      {
+        "file": "sim/controller-fv/32x8_clamp_hi.report.json"
+      },
+      {
+        "file": "sim/controller-fv/32x8_clamp_lo.report.json"
+      },
+      {
+        "file": "sim/controller-fv/32x8_max.report.json"
+      },
+      {
+        "file": "sim/controller-fv/32x8_min.report.json"
+      },
+      {
+        "file": "sim/controller-fv/32x8_nom.report.json"
+      }
+    ],
     "6.analog": [
       {
         "file": "sim/sense-mc/records/20261105T053444Z-f6eeac7/yield/intact.yield.json",
@@ -64,11 +96,11 @@
       "not_applicable": {
         "spec": {
           "file": "signoff/item6-digital-spec.json",
-          "content_hash": "sha256:f076383eb14ff91deea6e426ffa847c02275ee959fb6301709b12e74428d2b21"
+          "content_hash": "sha256:e2718b609bf7f2c0e665db595b4bb402992dba5cad6840e47b7766ef13729c6f"
         },
         "statement": {
           "file": "signoff/item6-digital-statement.json",
-          "content_hash": "sha256:395adbd68602b3b3ffd57ca929395b801b310b651e8f27a62a54d1fe554216a6"
+          "content_hash": "sha256:23c09beb9083d2133cb02e8d841e46a86ac4e1fe9edb6d78f1b25d3f4b24eac3"
         }
       }
     }

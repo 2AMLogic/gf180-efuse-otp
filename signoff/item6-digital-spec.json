@@ -3,7 +3,7 @@
  "description": "Rows of spec/efuse-otp.md section 2 that bear on the digital partition (rtl/efuse_otp_ctrl.v and its row/column/strobe outputs), each as its verbatim table row. Derived extract for klt signoff item 6 (not_applicable form); the source is spec/efuse-otp.md, bound by sha256. signoff/check-item6-digital.sh fails when the source changes or a row no longer matches.",
  "source": {
   "file": "spec/efuse-otp.md",
-  "sha256": "b4d6c545447a2c12675f9612a6f83199b22cc9f2b75b9ff210b4f7bc9ed3a4a9"
+  "sha256": "bf24af7eedd41f17a20295f3954c1adc2820a4aa347cf40012a9b28c5c3bdfe7"
  },
  "rows": [
   {
@@ -25,6 +25,11 @@
    "id": "controller-behavior",
    "parameter": "Controller behavior",
    "text": "| Controller behavior | Program only after an explicit registered arm state set after reset release; program drive held inactive in reset and power-up; fixed sense-settle count for read; address stable before enable | — | — | Protection against unintended programming at power-up. (0004) |"
+  },
+  {
+   "id": "controller-clock",
+   "parameter": "Controller clock",
+   "text": "| Controller clock | 10 MHz (100 ns period); 100 MHz (10 ns) is not a requirement | — | — | Routed-DEF `klt sta` at 100 ns is constrained with non-negative setup and hold slack at all five library corners; the 10 ns result is out-of-spec headroom, not a failing row. Ratified by operator ruling, issue #35. (0006) |"
   },
   {
    "id": "pvt-corners",

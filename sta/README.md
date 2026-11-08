@@ -31,9 +31,9 @@ therefore the five corners above; the rest is a gap, not a pass.
 | ff_n40C_3v60 | 96.84 / 0.64 | 6.84 / 0.64 |
 | ff_125C_3v60 | 95.36 / 0.91 | 5.36 / 0.91 |
 
-Decision 0006 (proposed, not yet ratified) sets the controller clock target at
-10 MHz; if ratified, the 100 MHz result below is out-of-spec headroom rather
-than a failure against a requirement. Item 5 (digital) is not claimed until then.
+Decision 0006 (ratified 2026-11-08) sets the controller clock target at 10 MHz,
+so the 100 MHz result below is out-of-spec headroom rather than a failure
+against a requirement. Item 5 (digital) cites the 100 ns report only.
 
 The 100 MHz case **fails setup at `ss_125C_3v00`** (44 violating endpoints, worst
 path `_477_/Q` -> `_439_/D`, an internal register path). No clock, RTL or

@@ -9,7 +9,7 @@
   "tier": null,
   "t1_item_count": 22,
   "build_t1_item_count": 22,
-  "t1_met_count": 9,
+  "t1_met_count": 10,
   "t1_not_applicable_count": 1,
   "source_doc": "signoff/design-evidence-tiers.md",
   "source_doc_content_hash": "sha256:08dcbfd2c3f2df152868d86c0ad2aa6a43d393b1d266f0b1e914cd8f0a329c58",
@@ -476,10 +476,162 @@
       "notes": [
         "Both require the spec table itself to be ratified \u2014 verdicts against a draft spec are provisional by construction."
       ],
-      "status": "unmet",
-      "reason": "no_evidence",
+      "status": "met",
+      "reason": null,
       "graded_by_build": true,
-      "citation": null
+      "citation": {
+        "file": "sim/controller-sta/sta-100ns.report.json",
+        "command": null,
+        "kind": "sta",
+        "check_status": "ok",
+        "content_hash": "sha256:3afa4360b2499d968de07195e1dcec46c9d8b07a04809048b2a80b5134b04a05",
+        "input_verified": null,
+        "exit_status": 0
+      },
+      "citations_graded": [
+        {
+          "citation": "sim/controller-sta/sta-100ns.report.json",
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/controller-fv/1x8_max.report.json",
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/controller-fv/1x8_min.report.json",
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/controller-fv/1x8_nom.report.json",
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/controller-fv/32x8_100MHz_max.report.json",
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/controller-fv/32x8_clamp_hi.report.json",
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/controller-fv/32x8_clamp_lo.report.json",
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/controller-fv/32x8_max.report.json",
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/controller-fv/32x8_min.report.json",
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/controller-fv/32x8_nom.report.json",
+          "status": "met",
+          "reason": null
+        }
+      ],
+      "citations": [
+        {
+          "file": "sim/controller-sta/sta-100ns.report.json",
+          "command": null,
+          "kind": "sta",
+          "check_status": "ok",
+          "content_hash": "sha256:3afa4360b2499d968de07195e1dcec46c9d8b07a04809048b2a80b5134b04a05",
+          "input_verified": null,
+          "exit_status": 0
+        },
+        {
+          "file": "sim/controller-fv/1x8_max.report.json",
+          "command": null,
+          "kind": "functional-verification",
+          "check_status": "pass",
+          "content_hash": null,
+          "input_verified": null,
+          "exit_status": 0
+        },
+        {
+          "file": "sim/controller-fv/1x8_min.report.json",
+          "command": null,
+          "kind": "functional-verification",
+          "check_status": "pass",
+          "content_hash": null,
+          "input_verified": null,
+          "exit_status": 0
+        },
+        {
+          "file": "sim/controller-fv/1x8_nom.report.json",
+          "command": null,
+          "kind": "functional-verification",
+          "check_status": "pass",
+          "content_hash": null,
+          "input_verified": null,
+          "exit_status": 0
+        },
+        {
+          "file": "sim/controller-fv/32x8_100MHz_max.report.json",
+          "command": null,
+          "kind": "functional-verification",
+          "check_status": "pass",
+          "content_hash": null,
+          "input_verified": null,
+          "exit_status": 0
+        },
+        {
+          "file": "sim/controller-fv/32x8_clamp_hi.report.json",
+          "command": null,
+          "kind": "functional-verification",
+          "check_status": "pass",
+          "content_hash": null,
+          "input_verified": null,
+          "exit_status": 0
+        },
+        {
+          "file": "sim/controller-fv/32x8_clamp_lo.report.json",
+          "command": null,
+          "kind": "functional-verification",
+          "check_status": "pass",
+          "content_hash": null,
+          "input_verified": null,
+          "exit_status": 0
+        },
+        {
+          "file": "sim/controller-fv/32x8_max.report.json",
+          "command": null,
+          "kind": "functional-verification",
+          "check_status": "pass",
+          "content_hash": null,
+          "input_verified": null,
+          "exit_status": 0
+        },
+        {
+          "file": "sim/controller-fv/32x8_min.report.json",
+          "command": null,
+          "kind": "functional-verification",
+          "check_status": "pass",
+          "content_hash": null,
+          "input_verified": null,
+          "exit_status": 0
+        },
+        {
+          "file": "sim/controller-fv/32x8_nom.report.json",
+          "command": null,
+          "kind": "functional-verification",
+          "check_status": "pass",
+          "content_hash": null,
+          "input_verified": null,
+          "exit_status": 0
+        }
+      ]
     },
     {
       "tier": "T1",
@@ -585,13 +737,13 @@
       "not_applicable": {
         "spec": {
           "file": "signoff/item6-digital-spec.json",
-          "content_hash": "sha256:f076383eb14ff91deea6e426ffa847c02275ee959fb6301709b12e74428d2b21",
+          "content_hash": "sha256:e2718b609bf7f2c0e665db595b4bb402992dba5cad6840e47b7766ef13729c6f",
           "status": "ratified",
-          "row_count": 6
+          "row_count": 7
         },
         "statement": {
           "file": "signoff/item6-digital-statement.json",
-          "content_hash": "sha256:395adbd68602b3b3ffd57ca929395b801b310b651e8f27a62a54d1fe554216a6",
+          "content_hash": "sha256:23c09beb9083d2133cb02e8d841e46a86ac4e1fe9edb6d78f1b25d3f4b24eac3",
           "rows": [
             {
               "id": "array",
@@ -612,6 +764,11 @@
               "id": "controller-behavior",
               "class": "functional / sequencing (deterministic)",
               "reason": "Arm-state gating, inactive program drive in reset and power-up, fixed sense-settle count and address-stable-before-enable are sequencing properties, each pass/fail under the functional bench at the min/nom/max corner set (sim/controller-fv)."
+            },
+            {
+              "id": "controller-clock",
+              "class": "timing / clock target (corner-bounded)",
+              "reason": "The clock period is a fixed target (100 ns, decision 0006), not a distribution. It is bounded at the PDK's characterised corners by static timing (sim/controller-sta/sta-100ns.report.json); the 10 ns report is out-of-spec headroom and is not cited."
             },
             {
               "id": "pvt-corners",
