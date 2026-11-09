@@ -48,13 +48,13 @@
     ],
     "6.analog": [
       {
-        "file": "sim/sense-mc/records/20261105T053444Z-f6eeac7/yield/intact.yield.json",
+        "file": "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/intact.yield.json",
         "rows": [
           "P10"
         ]
       },
       {
-        "file": "sim/sense-mc/records/20261105T053444Z-f6eeac7/yield/prog.yield.json",
+        "file": "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/prog.yield.json",
         "rows": [
           "P10"
         ]
@@ -84,7 +84,7 @@
       },
       {
         "id": "P10",
-        "gap": "sense margin includes reference tolerance and comparator offset, which are statistical and not simulated by the deterministic corner bench (Monte Carlo owned by #36); the latest sense-margin corner record sim/sense-margin/records/20261105T083938Z-f6eeac7 has margin positive and the decision correct at every corner, but it does not express tolerance or offset, so P10 stays a declared gap here"
+        "gap": "sense margin includes reference tolerance and comparator offset (statistical, Monte Carlo owned by #36); the post-#85 sense-margin corner record sim/sense-margin/records/20261105T083938Z-f6eeac7 has decision_correct_everywhere=true, but every one of its six sets/*/report.json has coverage.measurements_with_limits=0 (no limit declared on margin_v), so the pinned grader cannot grade it as passing and it is not cited; a graded P10 needs a campaign that declares a limit on margin_v"
       }
     ]
   }
