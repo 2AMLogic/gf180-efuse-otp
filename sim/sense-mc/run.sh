@@ -28,11 +28,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-libc="$PDK_VARIANT_DIR/libs.tech/ngspice"
-lib="$PDK_ROOT/gf180mcuD/libs.tech/ngspice"
-for f in sm141064.ngspice sm141064.spice design.ngspice; do
-  cmp -s "$libc/$f" "$lib/$f" || { echo "run.sh: $f differs between gf180mcuC and gf180mcuD" >&2; exit 1; }
-done
+pdk_fleet_check || exit 1
+lib="$PDK_FLEET_LIB_DIR"
 
 KLT_PIN="$(cat "$repo/signoff/klt-pin.txt")"
 KLT_YIELD=(uvx --from "${KLT_PIN%%==*}[yield]==${KLT_PIN##*==}" klt)

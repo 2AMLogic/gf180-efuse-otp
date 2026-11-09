@@ -30,11 +30,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Same fleet-image rule as sim/program-select/run.sh (fleet ships gf180mcuD, pin is C).
-libc="$PDK_VARIANT_DIR/libs.tech/ngspice"
-lib="$PDK_ROOT/gf180mcuD/libs.tech/ngspice"
-for f in sm141064.ngspice sm141064.spice design.ngspice; do
-  cmp -s "$libc/$f" "$lib/$f" || { echo "run.sh: $f differs between gf180mcuC and gf180mcuD" >&2; exit 1; }
-done
+pdk_fleet_check || exit 1
+lib="$PDK_FLEET_LIB_DIR"
 
 # ASSUMPTIONS, recorded verbatim in record.json (no documented source).
 RROUTE_OHM=20                            # same lumped value as sim/program-select
