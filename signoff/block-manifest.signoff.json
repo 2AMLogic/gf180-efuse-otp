@@ -9,7 +9,7 @@
   "tier": null,
   "t1_item_count": 22,
   "build_t1_item_count": 22,
-  "t1_met_count": 8,
+  "t1_met_count": 9,
   "t1_not_applicable_count": 1,
   "source_doc": "signoff/design-evidence-tiers.md",
   "source_doc_content_hash": "sha256:08dcbfd2c3f2df152868d86c0ad2aa6a43d393b1d266f0b1e914cd8f0a329c58",
@@ -265,10 +265,18 @@
       "notes": [
         "Both require the spec table itself to be ratified \u2014 verdicts against a draft spec are provisional by construction."
       ],
-      "status": "unmet",
-      "reason": "partial_coverage",
+      "status": "met",
+      "reason": null,
       "graded_by_build": true,
-      "citation": null,
+      "citation": {
+        "file": "sim/corner-verification/records/20261108T235928Z-f6eeac7/sets/prog_rf140/report.json",
+        "command": null,
+        "kind": "sim",
+        "check_status": "pass",
+        "content_hash": "sha256:4ebe334f758a97b2d99f4ca01c0e3a2a94f7e89d998750d311ee7138a054e9cb",
+        "input_verified": true,
+        "exit_status": 0
+      },
       "citations_graded": [
         {
           "citation": "sim/corner-verification/records/20261108T235928Z-f6eeac7/sets/prog_rf140/report.json",
@@ -293,22 +301,149 @@
           ],
           "status": "met",
           "reason": null
+        },
+        {
+          "citation": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf140_rr400/report.json",
+          "rows": [
+            "P10"
+          ],
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf200_rr400/report.json",
+          "rows": [
+            "P10"
+          ],
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf260_rr400/report.json",
+          "rows": [
+            "P10"
+          ],
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf630_rr400/report.json",
+          "rows": [
+            "P10"
+          ],
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf900_rr400/report.json",
+          "rows": [
+            "P10"
+          ],
+          "status": "met",
+          "reason": null
+        },
+        {
+          "citation": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rfopen_rr400/report.json",
+          "rows": [
+            "P10"
+          ],
+          "status": "met",
+          "reason": null
         }
       ],
-      "detail": {
+      "row_coverage": {
         "failed_rows": [],
         "uncovered_rows": [],
-        "declared_gaps": [
-          {
-            "id": "P10",
-            "gap": "sense margin includes reference tolerance and comparator offset (statistical, Monte Carlo owned by #36); the post-#85 sense-margin corner record sim/sense-margin/records/20261105T083938Z-f6eeac7 has decision_correct_everywhere=true, but every one of its six sets/*/report.json has coverage.measurements_with_limits=0 (no limit declared on margin_v), so the pinned grader cannot grade it as passing and it is not cited; a graded P10 needs a campaign that declares a limit on margin_v"
-          }
-        ],
+        "declared_gaps": [],
         "unratified_rows": [],
         "row_sources": {
-          "P06": "asserted"
+          "P06": "asserted",
+          "P10": "asserted"
         }
-      }
+      },
+      "citations": [
+        {
+          "file": "sim/corner-verification/records/20261108T235928Z-f6eeac7/sets/prog_rf140/report.json",
+          "command": null,
+          "kind": "sim",
+          "check_status": "pass",
+          "content_hash": "sha256:4ebe334f758a97b2d99f4ca01c0e3a2a94f7e89d998750d311ee7138a054e9cb",
+          "input_verified": true,
+          "exit_status": 0
+        },
+        {
+          "file": "sim/corner-verification/records/20261108T235928Z-f6eeac7/sets/prog_rf200/report.json",
+          "command": null,
+          "kind": "sim",
+          "check_status": "pass",
+          "content_hash": "sha256:f621b224795124d6014dbd16c807b0c0488df0ceec485fd6593c808b33c0cad0",
+          "input_verified": true,
+          "exit_status": 0
+        },
+        {
+          "file": "sim/corner-verification/records/20261108T235928Z-f6eeac7/sets/prog_rf260/report.json",
+          "command": null,
+          "kind": "sim",
+          "check_status": "pass",
+          "content_hash": "sha256:86fd0dd3c1b9608ede18f32cb86f13fa4f76b9f96ba22566f8ccb9d6674f0c1c",
+          "input_verified": true,
+          "exit_status": 0
+        },
+        {
+          "file": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf140_rr400/report.json",
+          "command": null,
+          "kind": "sim",
+          "check_status": "pass",
+          "content_hash": "sha256:07ea1e1d723772148fca20286a285f422f6cae5de1ba2ac80a9f58284f629e0a",
+          "input_verified": true,
+          "exit_status": 0
+        },
+        {
+          "file": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf200_rr400/report.json",
+          "command": null,
+          "kind": "sim",
+          "check_status": "pass",
+          "content_hash": "sha256:62df7f4178595838102cb1844240beb50e0fdb9f8b2ce61bab63475cd8cda543",
+          "input_verified": true,
+          "exit_status": 0
+        },
+        {
+          "file": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf260_rr400/report.json",
+          "command": null,
+          "kind": "sim",
+          "check_status": "pass",
+          "content_hash": "sha256:bc5927648abd900a1b707d4d23c398b2aa571557dba0261d2ac801c6c5b5ca25",
+          "input_verified": true,
+          "exit_status": 0
+        },
+        {
+          "file": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf630_rr400/report.json",
+          "command": null,
+          "kind": "sim",
+          "check_status": "pass",
+          "content_hash": "sha256:5b2bacf452dc35634745812efd8a8d299d7ca21cb4a889a3f848059194252247",
+          "input_verified": true,
+          "exit_status": 0
+        },
+        {
+          "file": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf900_rr400/report.json",
+          "command": null,
+          "kind": "sim",
+          "check_status": "pass",
+          "content_hash": "sha256:de9bd36995067f3176d45cba9d7e54ff6e91a02aed2df93d49bcde602504de58",
+          "input_verified": true,
+          "exit_status": 0
+        },
+        {
+          "file": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rfopen_rr400/report.json",
+          "command": null,
+          "kind": "sim",
+          "check_status": "pass",
+          "content_hash": "sha256:a8e61df08f681a3ce71f5730e21cb390abd5cbba18778db717cdf1f9eeb96081",
+          "input_verified": true,
+          "exit_status": 0
+        }
+      ]
     },
     {
       "tier": "T1",

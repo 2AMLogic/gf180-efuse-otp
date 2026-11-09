@@ -44,6 +44,42 @@
         "rows": [
           "P06"
         ]
+      },
+      {
+        "file": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf140_rr400/report.json",
+        "rows": [
+          "P10"
+        ]
+      },
+      {
+        "file": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf200_rr400/report.json",
+        "rows": [
+          "P10"
+        ]
+      },
+      {
+        "file": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf260_rr400/report.json",
+        "rows": [
+          "P10"
+        ]
+      },
+      {
+        "file": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf630_rr400/report.json",
+        "rows": [
+          "P10"
+        ]
+      },
+      {
+        "file": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf900_rr400/report.json",
+        "rows": [
+          "P10"
+        ]
+      },
+      {
+        "file": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rfopen_rr400/report.json",
+        "rows": [
+          "P10"
+        ]
       }
     ],
     "6.analog": [
@@ -83,8 +119,7 @@
         "id": "P06"
       },
       {
-        "id": "P10",
-        "gap": "sense margin includes reference tolerance and comparator offset (statistical, Monte Carlo owned by #36); the post-#85 sense-margin corner record sim/sense-margin/records/20261105T083938Z-f6eeac7 has decision_correct_everywhere=true, but every one of its six sets/*/report.json has coverage.measurements_with_limits=0 (no limit declared on margin_v), so the pinned grader cannot grade it as passing and it is not cited; a graded P10 needs a campaign that declares a limit on margin_v"
+        "id": "P10"
       }
     ]
   }
