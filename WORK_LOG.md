@@ -2,6 +2,18 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-09
+
+- **PR #98**: sim: declare margin_v limit in sense-margin campaign; item 5 analog grades met
+- **PR #97**: refactor(sim): share the gf180mcuC/D fleet-image check via pdk_fleet_check
+- **PR #96**: chore(verification): drop dead Yosys version gate from controller bench runner
+- **PR #95**: fix(design): widen column driver to 3x100um to clear 10 mA at the binding corner
+- **PR #93**: docs(signoff): repoint P10 evidence to post-#85 records, restate P10 gap
+- **Issue #88** (closed): Re-cite sense row P10 for items 5 and 6 (analog) to the post-#85 comparator records
+- **Issue #68** (closed): Dedupe fleet-image PDK variant check and report fold across sim benches
+- **Issue #40** (closed): Remove rtl/synth.sh: superseded by regen-gl.sh latch check, plus dead Yosys gate in cocotb runner
+- **Issue #34** (closed): T1 item 5 (corner verification, analog): klt sim envelopes for program current and sense margin across decision-0005 PVT
+
 ### 2026-11-07
 
 - **PR #90**: chore: bump Repo Skills 0.25.1 -> 0.25.10
