@@ -85,6 +85,10 @@ width from the result above.
 - The program current now also flows through the column `pfet_06v0` (W = 100 µm
   placeholder); the 60 µm select result above did not include it, so the
   program-path claim needs re-simulation with this driver (#28).
+- 2026-11-08 (#34): `Mdrv` is now `m=3` x W = 100 µm (300 µm total; one 300 µm device is
+  outside the `pfet_06v0` model bins). At 100 µm the corner campaign gave 8.835 mA at the
+  binding corner (below A2's 10 mA); at 300 µm it gives 10.97 mA. The layout report
+  (`layout/efuse_otp_array.report.json`) still reflects the 100 µm driver.
 
 **Comparator clock.** `clk` is the digital partition's system clock. It enters
 the analog partition as a boundary input and is gated there with `sense_en`

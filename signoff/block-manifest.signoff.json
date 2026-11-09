@@ -9,7 +9,7 @@
   "tier": null,
   "t1_item_count": 22,
   "build_t1_item_count": 22,
-  "t1_met_count": 9,
+  "t1_met_count": 8,
   "t1_not_applicable_count": 1,
   "source_doc": "signoff/design-evidence-tiers.md",
   "source_doc_content_hash": "sha256:08dcbfd2c3f2df152868d86c0ad2aa6a43d393b1d266f0b1e914cd8f0a329c58",
@@ -31,22 +31,12 @@
       "partition_boundary": "design/efuse_otp_array.sch (array, row/column drivers with level shifters, sense path incl. comparator) is the analog partition. Boundary nets it exposes: inputs row_sel[31:0], col_sel[7:0], prog_strobe, sense_en (3.3 V, from the controller) and clk (the system clock, routed to the comparator and gated there with sense_en; the clock is a digital-side net that terminates in the analog partition); output sense_out (the comparator's latched result); supplies vdd33, vprog, vss.",
       "text": "committed schematic sources (or generator) plus the netlist derived from them, regenerated on design change.",
       "notes": [],
-      "status": "met",
-      "reason": null,
+      "status": "unmet",
+      "reason": "stale_evidence",
       "graded_by_build": true,
-      "citation": {
-        "file": "signoff/item1-analog.attest.json",
-        "command": null,
-        "kind": "generic",
-        "check_status": "pass",
-        "content_hash": "sha256:7fca42681c8376cb141b74af4a19ba7ddbc34e1f71a124a8e871ae95203cb5f5",
-        "input_verified": true,
-        "exit_status": 0,
+      "citation": null,
+      "detail": {
         "artifact_binding": {
-          "t1_item": 1,
-          "path": null,
-          "content_hash": "sha256:7fca42681c8376cb141b74af4a19ba7ddbc34e1f71a124a8e871ae95203cb5f5",
-          "input_verified": true,
           "members": [
             {
               "path": {
@@ -70,7 +60,7 @@
                 "scope": "repo"
               },
               "content_hash": "sha256:fd2b23aaaed29271f5ba354b424667f6e8d2e2ac2d27af15830b43f4c16e2166",
-              "status": "verified"
+              "status": "stale"
             },
             {
               "path": {
@@ -126,7 +116,7 @@
                 "scope": "repo"
               },
               "content_hash": "sha256:78524d58ec6ee4d0241f5bc95aa0af527e24f56ec8f5cda3f1d16afd5e1d88fc",
-              "status": "verified"
+              "status": "stale"
             },
             {
               "path": {
@@ -200,15 +190,7 @@
               "content_hash": "sha256:93ea87453830d77b7805c42e3dca70fd6117fe2cebcb73ac83ee4a7a2e84cc46",
               "status": "verified"
             }
-          ],
-          "summary": "T1 item 1 (Design sources): 19/19 attestation checks passed (klt signoff --attest)",
-          "source": "signoff/item1-analog-inventory.json",
-          "attestation": {
-            "producer": "klt signoff --attest",
-            "inventory_schema_version": 1,
-            "check_count": 19,
-            "passed_count": 19
-          }
+          ]
         }
       }
     },
@@ -411,12 +393,12 @@
         "Both require the spec table itself to be ratified \u2014 verdicts against a draft spec are provisional by construction."
       ],
       "status": "unmet",
-      "reason": "check_failed",
+      "reason": "partial_coverage",
       "graded_by_build": true,
       "citation": null,
       "citations_graded": [
         {
-          "citation": "sim/corner-verification/records/20261030T230649Z-f6eeac7/sets/prog_rf140/report.json",
+          "citation": "sim/corner-verification/records/20261108T235928Z-f6eeac7/sets/prog_rf140/report.json",
           "rows": [
             "P06"
           ],
@@ -424,40 +406,29 @@
           "reason": null
         },
         {
-          "citation": "sim/corner-verification/records/20261030T230649Z-f6eeac7/sets/prog_rf200/report.json",
+          "citation": "sim/corner-verification/records/20261108T235928Z-f6eeac7/sets/prog_rf200/report.json",
           "rows": [
             "P06"
           ],
-          "status": "unmet",
-          "reason": "check_failed"
+          "status": "met",
+          "reason": null
         },
         {
-          "citation": "sim/corner-verification/records/20261030T230649Z-f6eeac7/sets/prog_rf260/report.json",
+          "citation": "sim/corner-verification/records/20261108T235928Z-f6eeac7/sets/prog_rf260/report.json",
           "rows": [
             "P06"
           ],
-          "status": "unmet",
-          "reason": "check_failed"
+          "status": "met",
+          "reason": null
         }
       ],
       "detail": {
-        "critical_metric_blockers": [
-          {
-            "metric": "sim__corner__failed_count",
-            "value": 1,
-            "higher_is_better": false
-          }
-        ],
-        "failed_citations": [
-          "sim/corner-verification/records/20261030T230649Z-f6eeac7/sets/prog_rf200/report.json",
-          "sim/corner-verification/records/20261030T230649Z-f6eeac7/sets/prog_rf260/report.json"
-        ],
         "failed_rows": [],
         "uncovered_rows": [],
         "declared_gaps": [
           {
             "id": "P10",
-            "gap": "sense margin includes reference tolerance and comparator offset (statistical, Monte Carlo owned by #36); the sense-margin corner record sim/sense-margin/records/20261030T223615Z-f6eeac7 has decision_correct_everywhere=false (comparator unresolved at ss/125 C/2.97 V), so it is not cited as passing"
+            "gap": "sense margin includes reference tolerance and comparator offset, which are statistical and not simulated by the deterministic corner bench (Monte Carlo owned by #36); the latest sense-margin corner record sim/sense-margin/records/20261105T083938Z-f6eeac7 has margin positive and the decision correct at every corner, but it does not express tolerance or offset, so P10 stays a declared gap here"
           }
         ],
         "unratified_rows": [],

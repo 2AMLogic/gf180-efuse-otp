@@ -28,19 +28,19 @@
     },
     "5.analog": [
       {
-        "file": "sim/corner-verification/records/20261030T230649Z-f6eeac7/sets/prog_rf140/report.json",
+        "file": "sim/corner-verification/records/20261108T235928Z-f6eeac7/sets/prog_rf140/report.json",
         "rows": [
           "P06"
         ]
       },
       {
-        "file": "sim/corner-verification/records/20261030T230649Z-f6eeac7/sets/prog_rf200/report.json",
+        "file": "sim/corner-verification/records/20261108T235928Z-f6eeac7/sets/prog_rf200/report.json",
         "rows": [
           "P06"
         ]
       },
       {
-        "file": "sim/corner-verification/records/20261030T230649Z-f6eeac7/sets/prog_rf260/report.json",
+        "file": "sim/corner-verification/records/20261108T235928Z-f6eeac7/sets/prog_rf260/report.json",
         "rows": [
           "P06"
         ]
@@ -84,7 +84,7 @@
       },
       {
         "id": "P10",
-        "gap": "sense margin includes reference tolerance and comparator offset (statistical, Monte Carlo owned by #36); the sense-margin corner record sim/sense-margin/records/20261030T223615Z-f6eeac7 has decision_correct_everywhere=false (comparator unresolved at ss/125 C/2.97 V), so it is not cited as passing"
+        "gap": "sense margin includes reference tolerance and comparator offset, which are statistical and not simulated by the deterministic corner bench (Monte Carlo owned by #36); the latest sense-margin corner record sim/sense-margin/records/20261105T083938Z-f6eeac7 has margin positive and the decision correct at every corner, but it does not express tolerance or offset, so P10 stays a declared gap here"
       }
     ]
   }
