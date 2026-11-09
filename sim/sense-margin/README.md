@@ -31,6 +31,11 @@ whether the comparator resolved (`|v(cp) - v(cn)| >= 0.5 vdd33`), the latched de
 and whether it matches the expected bit. The binding (minimum-margin) corner is named per
 fuse value. **Pass/fail is data in the record, not an exit status.**
 
+Each request also declares a `klt sim` limit `margin_v >= 0` (signed, so positive is the
+correct side of the reference; measured just before the edge), so the pinned grader can
+grade the reports. The negative control carries the same limit and its 260 ohm request
+reads fail. Reference tolerance and offset are not covered by corners (see `sim/sense-mc/`).
+
 The negative control moves the reference inside the intact range. It demonstrates the
 bench can fail when some intact point that reads the correct side at 400 ohm reads the
 wrong side at 200 ohm (`negative_control.demonstrates_bench_can_fail`).

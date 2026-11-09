@@ -4,7 +4,9 @@
 # (5 process x -40/25/125 C x vdd33 2.97/3.30/3.63 V). One `klt sim` request per
 # fuse value (intact 140/200/260 ohm = A4, programmed 630/900/open = A5), all
 # against the 400 ohm reference (A6), plus a negative control with the reference
-# moved inside the intact range. The set is submitted with `klt sim --batch-set`
+# moved inside the intact range. Each request declares margin_v >= 0 (signed: positive
+# is the correct side of the reference, so the grader sees a limit) as a klt limit; the
+# negative control carries the same limit and must read fail. The set is submitted with `klt sim --batch-set`
 # (batch only, never local); job ids land in environment.remote of each report.
 # Writes a new append-only record under sim/sense-margin/records/<UTC stamp>-<pdk
 # rev:7>/. Never overwrites.
@@ -61,8 +63,8 @@ else
 fi
 
 reqs=()
-mk() {                                   # mk <stem> <rfuse> <rref>
-  local stem="$1" rf="$2" rr="$3" val="$2"
+mk() {                                   # mk <stem> <rfuse> <rref> <sign>
+  local stem="$1" rf="$2" rr="$3" sgn="$4" val="$2"   # sgn: +1 programmed (sbl > sref), -1 intact
   [[ "$rf" == open ]] && val=1G
   { sed -e "s#@DESIGN@#$lib/design.ngspice#" -e "s#@RFUSE@#$val#" "$here/sense.cir.in"
     echo
@@ -72,13 +74,14 @@ mk() {                                   # mk <stem> <rfuse> <rref>
   } > "$rec/$stem.cir"
   grep -q "^Rref sref rn1 $rr " "$rec/$stem.cir" || { echo "run.sh: Rref line not found in efuse_sense" >&2; exit 1; }
   jq -n --arg net "$stem.cir" --arg lib "libs.tech/ngspice/sm141064.ngspice" \
-        --arg tpre "$T_PRE" --arg tout "$T_OUT" '
+        --arg tpre "$T_PRE" --arg tout "$T_OUT" --arg sgn "$sgn" '
     {netlist:$net, engine:"ngspice",
      models:{lib:$lib, pdk:"gf180mcuD"},
      corners:{process:(["typical","ff","ss","fs","sf"]|map({name:., sections:[.]})),
               supply_v:{vdd33:[2.97,3.30,3.63]}, temperature_c:[-40,25,125]},
      analysis:{kind:"tran", args:"20p 40n"},  # 100p under-resolves the 200p edge: decisions flipped with the step (issue 77)
      measurements:[
+       {name:"margin_v", spice:(".meas tran margin_v find par(\u0027" + $sgn + "*(v(sbl)-v(xsa.sref))\u0027) at=" + $tpre), unit:"V", limits:{min:0}},
        {name:"v_sbl", spice:(".meas tran v_sbl find v(sbl) at=" + $tpre), unit:"V"},
        {name:"v_sref", spice:(".meas tran v_sref find v(xsa.sref) at=" + $tpre), unit:"V"},
        {name:"v_sense_out", spice:(".meas tran v_sense_out find v(sense_out) at=" + $tout), unit:"V"},
@@ -88,8 +91,9 @@ mk() {                                   # mk <stem> <rfuse> <rref>
      options:{timeout_s:60, ngspice_init:["set measureprec=9"]}}' > "$rec/$stem.json"
   reqs+=("$rec/$stem.json")
 }
-for r in $INTACT_OHMS $PROGRAMMED_OHMS; do mk "bench_rf${r}_rr${RREF_OHM}" "$r" "$RREF_OHM"; done
-for r in 140 260; do mk "control_rf${r}_rr${RREF_CONTROL_OHM}" "$r" "$RREF_CONTROL_OHM"; done
+for r in $INTACT_OHMS; do mk "bench_rf${r}_rr${RREF_OHM}" "$r" "$RREF_OHM" -1; done
+for r in $PROGRAMMED_OHMS; do mk "bench_rf${r}_rr${RREF_OHM}" "$r" "$RREF_OHM" 1; done
+for r in 140 260; do mk "control_rf${r}_rr${RREF_CONTROL_OHM}" "$r" "$RREF_CONTROL_OHM" -1; done
 
 if [[ $dry -eq 1 ]]; then
   for q in "${reqs[@]}"; do
@@ -104,7 +108,7 @@ fi
 # refused (partial set). Anything else is a tool failure. A failed or refused
 # submit is reported, never re-run on local ngspice.
 set +e
-klt sim --batch-set "${reqs[@]}" --max-in-flight 4 --capacity-retries 3 \
+klt sim --batch-set "${reqs[@]}" --max-in-flight 4 --capacity-retries 3 --wait-for-capacity 600 \
     -o "$rec/sets" --format json > "$rec/set-report.json" 2> "$rec/klt.err"
 rc=$?
 set -e
