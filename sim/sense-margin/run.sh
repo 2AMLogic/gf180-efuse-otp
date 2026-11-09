@@ -32,11 +32,8 @@ done
 
 # Same fleet-image rule as sim/program-select/run.sh: the fleet ships gf180mcuD,
 # the pin is gf180mcuC; the model files read here must be byte-identical.
-libc="$PDK_VARIANT_DIR/libs.tech/ngspice"
-lib="$PDK_ROOT/gf180mcuD/libs.tech/ngspice"
-for f in sm141064.ngspice sm141064.spice design.ngspice; do
-  cmp -s "$libc/$f" "$lib/$f" || { echo "run.sh: $f differs between gf180mcuC and gf180mcuD" >&2; exit 1; }
-done
+pdk_fleet_check || exit 1
+lib="$PDK_FLEET_LIB_DIR"
 
 # ASSUMPTIONS, recorded verbatim in record.json (only 200 and 900 ohm are documented).
 INTACT_OHMS="140 200 260"                # A4
