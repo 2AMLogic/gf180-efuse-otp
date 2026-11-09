@@ -27,11 +27,8 @@ done
 # model files this bench reads are the same bytes in both at the pinned
 # revision; check that at run time and use the D paths so the request is valid
 # on either backend. Any difference refuses the run.
-libc="$PDK_VARIANT_DIR/libs.tech/ngspice"
-lib="$PDK_ROOT/gf180mcuD/libs.tech/ngspice"
-for f in sm141064.ngspice sm141064.spice design.ngspice; do
-  cmp -s "$libc/$f" "$lib/$f" || { echo "run.sh: $f differs between gf180mcuC and gf180mcuD" >&2; exit 1; }
-done
+pdk_fleet_check || exit 1
+lib="$PDK_FLEET_LIB_DIR"
 # ASSUMPTIONS, recorded verbatim in record.json (no documented source).
 RROUTE_OHM=20
 WIDTHS_UM="20 40 60 80 100"
