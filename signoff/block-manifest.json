@@ -28,19 +28,19 @@
     },
     "5.analog": [
       {
-        "file": "sim/corner-verification/records/20261030T230649Z-f6eeac7/sets/prog_rf140/report.json",
+        "file": "sim/corner-verification/records/20261108T235928Z-f6eeac7/sets/prog_rf140/report.json",
         "rows": [
           "P06"
         ]
       },
       {
-        "file": "sim/corner-verification/records/20261030T230649Z-f6eeac7/sets/prog_rf200/report.json",
+        "file": "sim/corner-verification/records/20261108T235928Z-f6eeac7/sets/prog_rf200/report.json",
         "rows": [
           "P06"
         ]
       },
       {
-        "file": "sim/corner-verification/records/20261030T230649Z-f6eeac7/sets/prog_rf260/report.json",
+        "file": "sim/corner-verification/records/20261108T235928Z-f6eeac7/sets/prog_rf260/report.json",
         "rows": [
           "P06"
         ]
@@ -80,13 +80,13 @@
     ],
     "6.analog": [
       {
-        "file": "sim/sense-mc/records/20261105T053444Z-f6eeac7/yield/intact.yield.json",
+        "file": "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/intact.yield.json",
         "rows": [
           "P10"
         ]
       },
       {
-        "file": "sim/sense-mc/records/20261105T053444Z-f6eeac7/yield/prog.yield.json",
+        "file": "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/prog.yield.json",
         "rows": [
           "P10"
         ]
@@ -116,7 +116,7 @@
       },
       {
         "id": "P10",
-        "gap": "sense margin includes reference tolerance and comparator offset (statistical, Monte Carlo owned by #36); the sense-margin corner record sim/sense-margin/records/20261030T223615Z-f6eeac7 has decision_correct_everywhere=false (comparator unresolved at ss/125 C/2.97 V), so it is not cited as passing"
+        "gap": "sense margin includes reference tolerance and comparator offset (statistical, Monte Carlo owned by #36); the post-#85 sense-margin corner record sim/sense-margin/records/20261105T083938Z-f6eeac7 has decision_correct_everywhere=true, but every one of its six sets/*/report.json has coverage.measurements_with_limits=0 (no limit declared on margin_v), so the pinned grader cannot grade it as passing and it is not cited; a graded P10 needs a campaign that declares a limit on margin_v"
       }
     ]
   }
