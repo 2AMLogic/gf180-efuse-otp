@@ -105,7 +105,7 @@ fi
 # (partial set). Anything else is a tool failure. A failed or refused submit is
 # reported, never re-run on local ngspice.
 set +e
-klt sim --batch-set "${reqs[@]}" --max-in-flight 4 --capacity-retries 3 \
+klt sim --batch-set "${reqs[@]}" --max-in-flight 4 --capacity-retries 3 --wait-for-capacity 600 \
     -o "$rec/sets" --format json > "$rec/set-report.json" 2> "$rec/klt.err"
 rc=$?
 set -e

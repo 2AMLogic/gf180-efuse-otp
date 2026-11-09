@@ -1,0 +1,96 @@
+{
+  "netlist": "prog_rf200.cir",
+  "engine": "ngspice",
+  "models": {
+    "lib": "libs.tech/ngspice/sm141064.ngspice",
+    "pdk": "gf180mcuD"
+  },
+  "corners": {
+    "process": [
+      {
+        "name": "typical",
+        "sections": [
+          "typical",
+          "efuse"
+        ]
+      },
+      {
+        "name": "ff",
+        "sections": [
+          "ff",
+          "efuse"
+        ]
+      },
+      {
+        "name": "ss",
+        "sections": [
+          "ss",
+          "efuse"
+        ]
+      },
+      {
+        "name": "fs",
+        "sections": [
+          "fs",
+          "efuse"
+        ]
+      },
+      {
+        "name": "sf",
+        "sections": [
+          "sf",
+          "efuse"
+        ]
+      }
+    ],
+    "supply_v": {
+      "vdd33": [
+        2.97,
+        3.30,
+        3.63
+      ],
+      "vprog": [
+        4.5,
+        5.0,
+        5.5
+      ]
+    },
+    "temperature_c": [
+      -40,
+      25,
+      125
+    ]
+  },
+  "analysis": {
+    "kind": "dc",
+    "args": "Vdmy 0 1 1"
+  },
+  "measurements": [
+    {
+      "name": "i_fuse",
+      "spice": ".meas dc i_fuse find par('(v(blc)-v(xcell.n))/200') at=0",
+      "unit": "A",
+      "limits": {
+        "min": 0.010
+      }
+    },
+    {
+      "name": "v_wl",
+      "spice": ".meas dc v_wl find v(wl) at=0",
+      "unit": "V"
+    },
+    {
+      "name": "v_bl",
+      "spice": ".meas dc v_bl find v(bl) at=0",
+      "unit": "V"
+    },
+    {
+      "name": "v_sel_d",
+      "spice": ".meas dc v_sel_d find v(xcell.n) at=0",
+      "unit": "V"
+    }
+  ],
+  "options": {
+    "timeout_s": 30
+  }
+}

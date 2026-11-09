@@ -7,7 +7,7 @@ verification/run.sh                    # all parameter sets, exit 0 iff every ch
 verification/run.sh --negative-control # exit 0 only if every deliberately broken variant is caught
 ```
 
-`run.sh` checks the tool versions (Icarus Verilog 13.0, Yosys 0.67;
+`run.sh` checks the tool version (Icarus Verilog 13.0;
 `ALLOW_TOOL_MISMATCH=1` overrides), creates `verification/.venv` with the pinned
 `cocotb==2.1.0` from `requirements.txt` (first run needs network; nothing is
 installed into the host), then runs `runner.py`.
