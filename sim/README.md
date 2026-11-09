@@ -62,6 +62,15 @@ It writes `sim/corner-verification/records/<stamp>-<rev>/record.json` (per-point
 per-fuse pass/fail against 10 mA, binding corner, negative-control validity). The sense row
 is not re-run: `record.json` quotes the committed `sim/sense-margin` record by reference.
 
+Result (record `20261108T235928Z-f6eeac7`, after the column driver `Mdrv` went from
+W = 100 um to 3 x 100 um, option (a) of the 2026-11-08 operator ruling): all 135 points pass at
+each fuse value; binding corner ss / 125 C / vdd33 2.97 V / vprog 4.5 V / 260 ohm at
+10.97 mA (>= 10 mA, A2); negative control reads fail. The earlier record
+`20261030T230649Z-f6eeac7` (8.835 mA at the same corner, 100 um driver) and the failed first
+attempt `20261108T235750Z-f6eeac7` (single 300 um device, outside the `pfet_06v0` model bin
+of W <= 100 um, so all 45 corners errored in ngspice) are kept as append-only evidence. The
+fuse range and the 20 ohm route are assumptions (A4, no documented source).
+
 ## Sense-margin bench
 
 `sim/sense-margin/run.sh` runs the committed sense path (`efuse_sense`, `efuse_comp`)
