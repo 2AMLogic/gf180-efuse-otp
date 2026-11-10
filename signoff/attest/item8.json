@@ -2,7 +2,7 @@
   "schema_version": 1,
   "kind": "t1-attestation-inventory",
   "t1_item": 8,
-  "description": "Characterization report: measurements/characterization/README.md aggregates the committed records per ratified spec row (P01-P13, C1-C3). Rows with no committed record (P08, P09, P10, C2) cite nothing, so the attestation fails on them by design; they are not given a placeholder citation. Each cited record's freshness command is a presence check only (the records are append-only evidence, not regenerated). Controller Fmax, area and power are bound per klt sta corner (power is an engine-default estimate).",
+  "description": "Characterization report: measurements/characterization/README.md aggregates the committed records per ratified spec row (P01-P13, C1-C3). P08, P09, P10 and C2 cite the graded post-#85 sense-margin corner reports (sim/sense-margin/records/20261109T002043Z-f6eeac7, margin_v >= 0 declared) and, for P10 and C2, the sense-mc klt yield reports; no placeholder citations. Each cited record's freshness command is a presence check only (the records are append-only evidence, not regenerated). Controller Fmax, area and power are bound per klt sta corner (power is an engine-default estimate).",
   "report": "measurements/characterization/README.md",
   "spec_rows": [
     "P01",
@@ -61,9 +61,29 @@
     "P07": [
       "sim/program-select/records/20261023T174839Z-f6eeac7/record.json"
     ],
-    "P08": [],
-    "P09": [],
-    "P10": [],
+    "P08": [
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf630_rr400/report.json",
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf900_rr400/report.json",
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rfopen_rr400/report.json"
+    ],
+    "P09": [
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf140_rr400/report.json",
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf200_rr400/report.json",
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf260_rr400/report.json",
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf630_rr400/report.json",
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf900_rr400/report.json",
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rfopen_rr400/report.json"
+    ],
+    "P10": [
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf140_rr400/report.json",
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf200_rr400/report.json",
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf260_rr400/report.json",
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf630_rr400/report.json",
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf900_rr400/report.json",
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rfopen_rr400/report.json",
+      "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/intact.yield.json",
+      "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/prog.yield.json"
+    ],
     "P11": [
       "sim/controller-fv/1x8_max.report.json",
       "sim/controller-fv/1x8_min.report.json",
@@ -96,7 +116,16 @@
     "C1": [
       "sim/program-select/records/20261023T174839Z-f6eeac7/record.json"
     ],
-    "C2": [],
+    "C2": [
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf140_rr400/report.json",
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf200_rr400/report.json",
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf260_rr400/report.json",
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf630_rr400/report.json",
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf900_rr400/report.json",
+      "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rfopen_rr400/report.json",
+      "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/intact.yield.json",
+      "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/prog.yield.json"
+    ],
     "C3": [
       "sim/controller-fv/1x8_max.report.json",
       "sim/controller-fv/1x8_min.report.json",
@@ -220,6 +249,62 @@
         "test",
         "-s",
         "sim/program-select/records/20261023T174839Z-f6eeac7/record.json"
+      ]
+    },
+    "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf140_rr400/report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf140_rr400/report.json"
+      ]
+    },
+    "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf200_rr400/report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf200_rr400/report.json"
+      ]
+    },
+    "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf260_rr400/report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf260_rr400/report.json"
+      ]
+    },
+    "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf630_rr400/report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf630_rr400/report.json"
+      ]
+    },
+    "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf900_rr400/report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf900_rr400/report.json"
+      ]
+    },
+    "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rfopen_rr400/report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rfopen_rr400/report.json"
+      ]
+    },
+    "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/intact.yield.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/intact.yield.json"
+      ]
+    },
+    "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/prog.yield.json": {
+      "argv": [
+        "test",
+        "-s",
+        "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/prog.yield.json"
       ]
     }
   },

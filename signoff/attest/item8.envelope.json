@@ -1,0 +1,877 @@
+{
+  "schema_version": 1,
+  "kind": "generic",
+  "status": "pass",
+  "t1_item": 8,
+  "summary": "T1 item 8 (Characterization report): 80/80 attestation checks passed (klt signoff --attest)",
+  "source": "signoff/attest/item8.json",
+  "attestation": {
+    "producer": "klt signoff --attest",
+    "inventory_schema_version": 1,
+    "hash_algorithm": "sha256-raw-bytes",
+    "check_count": 80,
+    "passed_count": 80,
+    "checks": [
+      {
+        "check": "present",
+        "role": "report",
+        "path": "measurements/characterization/README.md",
+        "passed": true,
+        "content_hash": "sha256:69843f20f7ed64ab29ed33f10ed9a5bd7a7660e3f3b49c9cea00a3149bc6e0ba"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "layout/drc-array.report.json",
+        "passed": true,
+        "content_hash": "sha256:85032a9df5787eeb6ced9d9a4cd51e4db8447ceacce05f557d4013bf6e1b6513"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "layout/drc-ctrl.report.json",
+        "passed": true,
+        "content_hash": "sha256:fb921554e9541744bfe8db3c02a9971e93f7672023362c9c01d8a11e7cccb8d0"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "layout/efuse_otp_array.report.json",
+        "passed": true,
+        "content_hash": "sha256:37a0f42e44dacf31a5cf1adfae8e7fd1fa2842a02c0a9847da0dc14d2ab3c523"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "layout/pnr-report.json",
+        "passed": true,
+        "content_hash": "sha256:f43a7c8a4888bd94f5a9ae52d8db0ec15aef8c9852b924771c44f694255727d7"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "signoff/block-manifest.signoff.json",
+        "passed": true,
+        "content_hash": "sha256:504dfe817ef8adf73ba588491f8097285bf1aba506c80815e0d3f4204409c2a3"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/controller-fv/1x8_max.report.json",
+        "passed": true,
+        "content_hash": "sha256:c3a0f083e63631e9c9d2127165eb9f5a62a14a18ab31319d4320d0a134556f76"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/controller-fv/1x8_min.report.json",
+        "passed": true,
+        "content_hash": "sha256:6ecc9bfc8785d864a1b9b0f2e0573676b7c8a7a474ddbe07fa5f30f02483e9db"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/controller-fv/1x8_nom.report.json",
+        "passed": true,
+        "content_hash": "sha256:d974553667b01deb8a987b7015e490b885b61760f7a4ca99db92dc683689f8f4"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/controller-fv/32x8_100MHz_max.report.json",
+        "passed": true,
+        "content_hash": "sha256:3193bd3cfb4cdb8c4e12aa3be87a6f45cc6e95326bb90e90bef02b9d1c1193c6"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/controller-fv/32x8_clamp_hi.report.json",
+        "passed": true,
+        "content_hash": "sha256:a489b297041479b170d7bf773c1d3cb5a7eacff671fcb969efca38d48b67a876"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/controller-fv/32x8_clamp_lo.report.json",
+        "passed": true,
+        "content_hash": "sha256:cf012b43e640d84dd0dbfd6ba824a29e56f1db7887d9b76a6124e34a4e6a767f"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/controller-fv/32x8_max.report.json",
+        "passed": true,
+        "content_hash": "sha256:ff41c8921e758a75e7a5c8f10d4344925595def9bdcd98736d00a883ff7e9d2a"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/controller-fv/32x8_min.report.json",
+        "passed": true,
+        "content_hash": "sha256:ae65855c3ce4141d842c13803b282f57f033b8a644f26d1209148ca6152c4478"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/controller-fv/32x8_nom.report.json",
+        "passed": true,
+        "content_hash": "sha256:f4da3bffb0e4b78647649f40bd8b14f1f1d0052f4f489a2542ee46ef889cc365"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/controller-sta/sta-100ns.report.json",
+        "passed": true,
+        "content_hash": "sha256:c24125785a70f6d28b2c62a06cbd45089d9a1c557d72ef2ab3bc9c142271470d"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/program-select/records/20261023T174839Z-f6eeac7/record.json",
+        "passed": true,
+        "content_hash": "sha256:e173c18590e466035fba49139752ffcd8ea56926052e46613dbe6607b98e9db0"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf140_rr400/report.json",
+        "passed": true,
+        "content_hash": "sha256:63e6252988433fc92420067a20f53dadb34ded706f39edd0b809d70c23b1e6b7"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf200_rr400/report.json",
+        "passed": true,
+        "content_hash": "sha256:d81571c1837edbead5567570b32ec48889d27a97c839ee8a8c06fcc438c6fd6f"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf260_rr400/report.json",
+        "passed": true,
+        "content_hash": "sha256:ab37716f76224b5a339d8408cb9c1150d5b85c6752310e5835e86d8b79e10928"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf630_rr400/report.json",
+        "passed": true,
+        "content_hash": "sha256:323aaf277226ca15aa995aa71ce5f8108fe942ea67d2b0dc6b785159e9545603"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf900_rr400/report.json",
+        "passed": true,
+        "content_hash": "sha256:3db749d53cdb1fc6300febd9a21edae9add019dfd93aa97c0dbbe1ecde6287f5"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rfopen_rr400/report.json",
+        "passed": true,
+        "content_hash": "sha256:6a3ba495dec04175064da443cbdd5c572342523fb02f492a8b4e5e79bf570705"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/intact.yield.json",
+        "passed": true,
+        "content_hash": "sha256:e49d4c58c65f9bbf1cc036cb46ba16ad5d66ca9b3ae4d0bf7bd332cdf936bb78"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/prog.yield.json",
+        "passed": true,
+        "content_hash": "sha256:0c4c37a9b01f80804d14f8b096a266a7f0b5428dc27986c8a22c9dd4ab4b6199"
+      },
+      {
+        "check": "citation",
+        "role": "spec_row",
+        "row": "C1",
+        "envelopes": [
+          "sim/program-select/records/20261023T174839Z-f6eeac7/record.json"
+        ],
+        "passed": true
+      },
+      {
+        "check": "citation",
+        "role": "spec_row",
+        "row": "C2",
+        "envelopes": [
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf140_rr400/report.json",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf200_rr400/report.json",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf260_rr400/report.json",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf630_rr400/report.json",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf900_rr400/report.json",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rfopen_rr400/report.json",
+          "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/intact.yield.json",
+          "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/prog.yield.json"
+        ],
+        "passed": true
+      },
+      {
+        "check": "citation",
+        "role": "spec_row",
+        "row": "C3",
+        "envelopes": [
+          "sim/controller-fv/1x8_max.report.json",
+          "sim/controller-fv/1x8_min.report.json",
+          "sim/controller-fv/1x8_nom.report.json",
+          "sim/controller-fv/32x8_100MHz_max.report.json",
+          "sim/controller-fv/32x8_clamp_hi.report.json",
+          "sim/controller-fv/32x8_clamp_lo.report.json",
+          "sim/controller-fv/32x8_max.report.json",
+          "sim/controller-fv/32x8_min.report.json",
+          "sim/controller-fv/32x8_nom.report.json"
+        ],
+        "passed": true
+      },
+      {
+        "check": "citation",
+        "role": "spec_row",
+        "row": "P01",
+        "envelopes": [
+          "layout/efuse_otp_array.report.json",
+          "sim/controller-fv/1x8_max.report.json",
+          "sim/controller-fv/1x8_min.report.json",
+          "sim/controller-fv/1x8_nom.report.json",
+          "sim/controller-fv/32x8_100MHz_max.report.json",
+          "sim/controller-fv/32x8_clamp_hi.report.json",
+          "sim/controller-fv/32x8_clamp_lo.report.json",
+          "sim/controller-fv/32x8_max.report.json",
+          "sim/controller-fv/32x8_min.report.json",
+          "sim/controller-fv/32x8_nom.report.json"
+        ],
+        "passed": true
+      },
+      {
+        "check": "citation",
+        "role": "spec_row",
+        "row": "P02",
+        "envelopes": [
+          "layout/drc-array.report.json"
+        ],
+        "passed": true
+      },
+      {
+        "check": "citation",
+        "role": "spec_row",
+        "row": "P03",
+        "envelopes": [
+          "sim/program-select/records/20261023T174839Z-f6eeac7/record.json"
+        ],
+        "passed": true
+      },
+      {
+        "check": "citation",
+        "role": "spec_row",
+        "row": "P04",
+        "envelopes": [
+          "sim/program-select/records/20261023T174839Z-f6eeac7/record.json"
+        ],
+        "passed": true
+      },
+      {
+        "check": "citation",
+        "role": "spec_row",
+        "row": "P05",
+        "envelopes": [
+          "sim/controller-fv/1x8_max.report.json",
+          "sim/controller-fv/1x8_min.report.json",
+          "sim/controller-fv/1x8_nom.report.json",
+          "sim/controller-fv/32x8_100MHz_max.report.json",
+          "sim/controller-fv/32x8_clamp_hi.report.json",
+          "sim/controller-fv/32x8_clamp_lo.report.json",
+          "sim/controller-fv/32x8_max.report.json",
+          "sim/controller-fv/32x8_min.report.json",
+          "sim/controller-fv/32x8_nom.report.json"
+        ],
+        "passed": true
+      },
+      {
+        "check": "citation",
+        "role": "spec_row",
+        "row": "P06",
+        "envelopes": [
+          "sim/program-select/records/20261023T174839Z-f6eeac7/record.json"
+        ],
+        "passed": true
+      },
+      {
+        "check": "citation",
+        "role": "spec_row",
+        "row": "P07",
+        "envelopes": [
+          "sim/program-select/records/20261023T174839Z-f6eeac7/record.json"
+        ],
+        "passed": true
+      },
+      {
+        "check": "citation",
+        "role": "spec_row",
+        "row": "P08",
+        "envelopes": [
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf630_rr400/report.json",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf900_rr400/report.json",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rfopen_rr400/report.json"
+        ],
+        "passed": true
+      },
+      {
+        "check": "citation",
+        "role": "spec_row",
+        "row": "P09",
+        "envelopes": [
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf140_rr400/report.json",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf200_rr400/report.json",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf260_rr400/report.json",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf630_rr400/report.json",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf900_rr400/report.json",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rfopen_rr400/report.json"
+        ],
+        "passed": true
+      },
+      {
+        "check": "citation",
+        "role": "spec_row",
+        "row": "P10",
+        "envelopes": [
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf140_rr400/report.json",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf200_rr400/report.json",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf260_rr400/report.json",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf630_rr400/report.json",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf900_rr400/report.json",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rfopen_rr400/report.json",
+          "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/intact.yield.json",
+          "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/prog.yield.json"
+        ],
+        "passed": true
+      },
+      {
+        "check": "citation",
+        "role": "spec_row",
+        "row": "P11",
+        "envelopes": [
+          "sim/controller-fv/1x8_max.report.json",
+          "sim/controller-fv/1x8_min.report.json",
+          "sim/controller-fv/1x8_nom.report.json",
+          "sim/controller-fv/32x8_100MHz_max.report.json",
+          "sim/controller-fv/32x8_clamp_hi.report.json",
+          "sim/controller-fv/32x8_clamp_lo.report.json",
+          "sim/controller-fv/32x8_max.report.json",
+          "sim/controller-fv/32x8_min.report.json",
+          "sim/controller-fv/32x8_nom.report.json"
+        ],
+        "passed": true
+      },
+      {
+        "check": "citation",
+        "role": "spec_row",
+        "row": "P12",
+        "envelopes": [
+          "sim/controller-fv/1x8_max.report.json",
+          "sim/controller-fv/1x8_min.report.json",
+          "sim/controller-fv/1x8_nom.report.json",
+          "sim/controller-fv/32x8_100MHz_max.report.json",
+          "sim/controller-fv/32x8_clamp_hi.report.json",
+          "sim/controller-fv/32x8_clamp_lo.report.json",
+          "sim/controller-fv/32x8_max.report.json",
+          "sim/controller-fv/32x8_min.report.json",
+          "sim/controller-fv/32x8_nom.report.json"
+        ],
+        "passed": true
+      },
+      {
+        "check": "citation",
+        "role": "spec_row",
+        "row": "P13",
+        "envelopes": [
+          "layout/drc-array.report.json",
+          "layout/drc-ctrl.report.json",
+          "layout/pnr-report.json",
+          "signoff/block-manifest.signoff.json",
+          "sim/controller-sta/sta-100ns.report.json"
+        ],
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "layout/drc-array.report.json",
+        "argv": [
+          "test",
+          "-s",
+          "layout/drc-array.report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "layout/drc-ctrl.report.json",
+        "argv": [
+          "test",
+          "-s",
+          "layout/drc-ctrl.report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "layout/efuse_otp_array.report.json",
+        "argv": [
+          "test",
+          "-s",
+          "layout/efuse_otp_array.report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "layout/pnr-report.json",
+        "argv": [
+          "test",
+          "-s",
+          "layout/pnr-report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "signoff/block-manifest.signoff.json",
+        "argv": [
+          "test",
+          "-s",
+          "signoff/block-manifest.signoff.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/controller-fv/1x8_max.report.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/controller-fv/1x8_max.report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/controller-fv/1x8_min.report.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/controller-fv/1x8_min.report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/controller-fv/1x8_nom.report.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/controller-fv/1x8_nom.report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/controller-fv/32x8_100MHz_max.report.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/controller-fv/32x8_100MHz_max.report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/controller-fv/32x8_clamp_hi.report.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/controller-fv/32x8_clamp_hi.report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/controller-fv/32x8_clamp_lo.report.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/controller-fv/32x8_clamp_lo.report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/controller-fv/32x8_max.report.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/controller-fv/32x8_max.report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/controller-fv/32x8_min.report.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/controller-fv/32x8_min.report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/controller-fv/32x8_nom.report.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/controller-fv/32x8_nom.report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/controller-sta/sta-100ns.report.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/controller-sta/sta-100ns.report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/program-select/records/20261023T174839Z-f6eeac7/record.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/program-select/records/20261023T174839Z-f6eeac7/record.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf140_rr400/report.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf140_rr400/report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf200_rr400/report.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf200_rr400/report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf260_rr400/report.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf260_rr400/report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf630_rr400/report.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf630_rr400/report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf900_rr400/report.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf900_rr400/report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rfopen_rr400/report.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rfopen_rr400/report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/intact.yield.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/intact.yield.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/prog.yield.json",
+        "argv": [
+          "test",
+          "-s",
+          "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/prog.yield.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "metric",
+        "role": "digital",
+        "corner": "ff_125C_3v60",
+        "metric": "area",
+        "envelope": "layout/pnr-report.json",
+        "field": "die_area_um2",
+        "value": 27342.3,
+        "passed": true
+      },
+      {
+        "check": "metric",
+        "role": "digital",
+        "corner": "ff_125C_3v60",
+        "metric": "fmax",
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.4.fmax_mhz",
+        "value": 215.51,
+        "passed": true
+      },
+      {
+        "check": "metric",
+        "role": "digital",
+        "corner": "ff_125C_3v60",
+        "metric": "power",
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.4.estimated_power_mw",
+        "value": 0.4519,
+        "passed": true
+      },
+      {
+        "check": "metric",
+        "role": "digital",
+        "corner": "ff_n40C_3v60",
+        "metric": "area",
+        "envelope": "layout/pnr-report.json",
+        "field": "die_area_um2",
+        "value": 27342.3,
+        "passed": true
+      },
+      {
+        "check": "metric",
+        "role": "digital",
+        "corner": "ff_n40C_3v60",
+        "metric": "fmax",
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.3.fmax_mhz",
+        "value": 316.613,
+        "passed": true
+      },
+      {
+        "check": "metric",
+        "role": "digital",
+        "corner": "ff_n40C_3v60",
+        "metric": "power",
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.3.estimated_power_mw",
+        "value": 0.4236,
+        "passed": true
+      },
+      {
+        "check": "metric",
+        "role": "digital",
+        "corner": "ss_125C_3v00",
+        "metric": "area",
+        "envelope": "layout/pnr-report.json",
+        "field": "die_area_um2",
+        "value": 27342.3,
+        "passed": true
+      },
+      {
+        "check": "metric",
+        "role": "digital",
+        "corner": "ss_125C_3v00",
+        "metric": "fmax",
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.1.fmax_mhz",
+        "value": 89.0309,
+        "passed": true
+      },
+      {
+        "check": "metric",
+        "role": "digital",
+        "corner": "ss_125C_3v00",
+        "metric": "power",
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.1.estimated_power_mw",
+        "value": 0.2932,
+        "passed": true
+      },
+      {
+        "check": "metric",
+        "role": "digital",
+        "corner": "ss_n40C_3v00",
+        "metric": "area",
+        "envelope": "layout/pnr-report.json",
+        "field": "die_area_um2",
+        "value": 27342.3,
+        "passed": true
+      },
+      {
+        "check": "metric",
+        "role": "digital",
+        "corner": "ss_n40C_3v00",
+        "metric": "fmax",
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.0.fmax_mhz",
+        "value": 130.122,
+        "passed": true
+      },
+      {
+        "check": "metric",
+        "role": "digital",
+        "corner": "ss_n40C_3v00",
+        "metric": "power",
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.0.estimated_power_mw",
+        "value": 0.2765,
+        "passed": true
+      },
+      {
+        "check": "metric",
+        "role": "digital",
+        "corner": "tt_025C_3v30",
+        "metric": "area",
+        "envelope": "layout/pnr-report.json",
+        "field": "die_area_um2",
+        "value": 27342.3,
+        "passed": true
+      },
+      {
+        "check": "metric",
+        "role": "digital",
+        "corner": "tt_025C_3v30",
+        "metric": "fmax",
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.2.fmax_mhz",
+        "value": 181.228,
+        "passed": true
+      },
+      {
+        "check": "metric",
+        "role": "digital",
+        "corner": "tt_025C_3v30",
+        "metric": "power",
+        "envelope": "sim/controller-sta/sta-100ns.report.json",
+        "field": "corners.2.estimated_power_mw",
+        "value": 0.3505,
+        "passed": true
+      }
+    ]
+  },
+  "provenance": {
+    "klt_version": "0.9.0",
+    "klayout_version": null,
+    "pdk": null,
+    "deck": null,
+    "input": {
+      "path": {
+        "path": "signoff/attest/item8.json",
+        "scope": "repo"
+      },
+      "content_hash": "sha256:b53190a572e4a902427d284a6575aee35dfc07f4f7a1270b3ef8a782234a2eec"
+    }
+  }
+}
