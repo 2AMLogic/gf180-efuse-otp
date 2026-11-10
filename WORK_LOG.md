@@ -2,6 +2,10 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-10
+
+- **PR #100**: docs: cite graded sense records and attest characterization report (item 8)
+
 ### 2026-11-09
 
 - **PR #98**: sim: declare margin_v limit in sense-margin campaign; item 5 analog grades met
