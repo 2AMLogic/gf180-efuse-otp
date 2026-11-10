@@ -5,6 +5,7 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 ### 2026-11-10
 
 - **PR #100**: docs: cite graded sense records and attest characterization report (item 8)
+- **Issue #62** (closed): T1 item 8 (characterization report): per-ratified-row report with controller Fmax/area/power, attested with --attest 8
 
 ### 2026-11-09
 
