@@ -3,7 +3,7 @@
 One row per ratified spec row (`spec/efuse-otp.md` section 2 parameters `P01`-`P13`
 and section 3 "can show" claims `C1`-`C3`), with the record each verdict rests on.
 This report **aggregates committed records; it produces no evidence and edits no
-`sim/` result.** State read at `main` `0e97c48`, 2026-10-28.
+`sim/` result.** State read at `main` `fafa4a6`, 2026-11-10.
 
 Verdict vocabulary: `met` (a committed record shows the bound over the stated
 conditions), `not met`, `partial` (record covers part of the bound), `not measured`
@@ -25,10 +25,10 @@ working value, not a fact, and a verdict against it says nothing about a real fu
 | P04 | Program supply | external, 5.0 V +/-10% (A1) | `ASSUMPTION`: swept at 4.5/5.0/5.5 V as the grid axis; not a result | n/a | no | `sim/program-select/records/20261023T174839Z-f6eeac7/record.json` |
 | P05 | Pulse width | 10 us nominal, 1-100 us (A3) | `ASSUMPTION`: controller generates 1/10/100 us pulses at 10 MHz (and 100 us at 100 MHz) in an ideal-timing RTL bench; no analog result depends on it | n/a | no | `sim/controller-fv/32x8_min.report.json`, `32x8_nom.report.json`, `32x8_max.report.json`, `32x8_100MHz_max.report.json` |
 | P06 | Required program current | >= 10 mA through the fuse at the worst corner (A2) | `ASSUMPTION` bound; met at 60 um over the 135-point grid: minimum 11.99 mA at the A4 260 ohm end, 13.66 mA at the documented 200 ohm | ss, 125 C, 4.5 V, 260 ohm | no | `sim/program-select/records/20261023T174839Z-f6eeac7/record.json`, `design/README.md` |
-| P07 | Intact range for margin | 140-260 ohm (A4) | `ASSUMPTION`: only 200 ohm is documented (PDK model, `sm141064.ngspice`); used as a bench input, not a result | n/a | no | `sim/program-select/records/20261023T174839Z-f6eeac7/record.json` (program side); sense side not measured, owning issue #34 |
-| P08 | Programmed range for margin | >= 630 ohm up to open (A5) | `ASSUMPTION`: only 900 ohm is documented; bench exists, no record | n/a | no | not measured, owning issue #34 (bench: `sim/sense-margin/`, request set validated by `--dry-run` only) |
-| P09 | Sense topology | 400 ohm reference (A6), clocked comparator, 3.3 V domain | not measured: A6 is an `ASSUMPTION`; schematic committed, no margin record | n/a | no | `design/efuse_otp_array.sch` (design only), owning issue #34 |
-| P10 | Sense margin | positive at every corner over A4/A5, incl. reference tolerance and comparator offset | not measured; tolerance and offset are also not yet simulated (no documented source) | n/a | yes, offset/tolerance need Monte Carlo | owning issues #34 (corners), #36 (Monte Carlo) |
+| P07 | Intact range for margin | 140-260 ohm (A4) | `ASSUMPTION`: only 200 ohm is documented (PDK model, `sm141064.ngspice`); used as a bench input, not a result. Sense side: 140/200/260 ohm intact points all read the correct side (see P10) | n/a | no | `sim/program-select/records/20261023T174839Z-f6eeac7/record.json` (program side); `sim/sense-margin/records/20261109T002043Z-f6eeac7/` (sense side, bench inputs) |
+| P08 | Programmed range for margin | >= 630 ohm up to open (A5) | `ASSUMPTION` bound; 630 / 900 ohm / open (1 Gohm) programmed points read the correct side at all 45 corners each (`status: pass`, 45/45); minimum signed margin 0.0260 V at 630 ohm. Only 900 ohm is documented; 630 ohm and open are assumed edges | ss, 125 C, 2.97 V, 630 ohm | no (corners only; spread in P10) | `sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf630_rr400/report.json`, `.../bench_rf900_rr400/report.json`, `.../bench_rfopen_rr400/report.json` |
+| P09 | Sense topology | 400 ohm reference (A6), clocked comparator, 3.3 V domain | `ASSUMPTION` (A6): the committed sense path with a 400 ohm reference, simulated over the decision-0005 grid (45 corners) against both populations, all 45/45 pass per fuse value. Shows the topology as built works over those ranges; says nothing about whether 400 ohm is the right reference for a real fuse. Fuse leg is an ideal resistor behind a switch (no bitline capacitance, no column-mux leakage) | ss, 125 C, 2.97 V (intact 260 ohm, margin 0.0160 V) | no | `design/efuse_otp_array.sch`, `sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf260_rr400/report.json`, `.../bench_rf630_rr400/report.json` (and the other four bench reports listed under P10) |
+| P10 | Sense margin | positive at every corner over A4/A5, incl. reference tolerance and comparator offset | `partial`, `ASSUMPTION` ranges. Corners: signed `margin_v` positive at every one of 6 fuse values x 45 corners (minimum 0.0160 V, intact 260 ohm). Monte Carlo (seed 36036, 540 samples per population, mismatch at PDK default plus 5 % relative-sigma reference tolerance): intact 260 ohm minimum 0.0122 V and programmed 630 ohm minimum 0.0223 V, 0 failing samples each; empirical yield 100 % with the honest statement "at least 99.3192 % at 95 % confidence, N = 540"; negative control detected. Pooled across corners (a worst-case envelope), normality rejected, so the parametric Cpk is indicative only. The reference-tolerance sigma is itself an assumption (no documented source) | corners: ss, 125 C, 2.97 V, intact 260 ohm; Monte Carlo: ss/125 C/2.97 V (intact), typical/125 C/2.97 V (programmed) | yes (offset, tolerance) | `sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf140_rr400/report.json`, `.../bench_rf200_rr400/report.json`, `.../bench_rf260_rr400/report.json`, `.../bench_rf630_rr400/report.json`, `.../bench_rf900_rr400/report.json`, `.../bench_rfopen_rr400/report.json`; `sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/intact.yield.json`, `.../prog.yield.json` |
 | P11 | Controller interface | synchronous: clock, address, program-enable, read-enable, data out, busy | met (RTL functional): 12/12 checks pass in all 9 parameter sets | n/a (no PVT in an RTL bench) | no | `sim/controller-fv/*.report.json` |
 | P12 | Controller behavior | arm state after reset; program drive inactive in reset and power-up; fixed settle count; address stable before enable | met (RTL functional); a negative control is defined in `verification/README.md` but no committed record of its result exists, so none is claimed | n/a (no PVT in an RTL bench) | no | `sim/controller-fv/*.report.json`, `verification/README.md` |
 | P13 | PVT corners / Signoff | corner set of decision 0005; DRC clean incl. `EF.*`; LVS with the fuse as a device; controller verified | not met: DRC clean only without `EF.*` (#60); LVS not run (#32); controller section below covers 5 of the decision-0005 corners | see Controller | no | `signoff/block-manifest.signoff.json`, `layout/drc-*.report.json`, `sim/controller-sta/*.report.json` |
@@ -38,7 +38,7 @@ working value, not a fact, and a verdict against it says nothing about a real fu
 | Row | Claim | Verdict | Binding corner | Statistical | Cited record |
 |---|---|---|---|---|---|
 | C1 | Program path delivers >= A2 into an intact fuse at every PVT corner | `ASSUMPTION` bound; met on the simulated grid (5 process x 3 T x 3 Vprog x 140/200/260 ohm, 135 points, 60 um). Routing resistance 20 ohm and gate drive = Vprog are themselves assumptions recorded there. | ss, 125 C, 4.5 V, 260 ohm: 11.99 mA | no | `sim/program-select/records/20261023T174839Z-f6eeac7/record.json` |
-| C2 | Sense path distinguishes intact and programmed populations with positive margin at every PVT corner | not measured | n/a | yes (offset, tolerance) | owning issues #34, #36 |
+| C2 | Sense path distinguishes intact and programmed populations with positive margin at every PVT corner | `partial`, `ASSUMPTION` ranges: same evidence and caveats as P10 (corner grid positive everywhere; Monte Carlo 0 failing of 540 per population over the assumed A4/A5 edge points). Does not cover a real fuse | corners: ss, 125 C, 2.97 V, intact 260 ohm | yes (offset, tolerance) | same records as P10 |
 | C3 | Controller sequencing, incl. no program activity at reset and power-up | met (RTL functional, ideal timing); gate-level / SDF timing re-run not done | n/a | no | `sim/controller-fv/*.report.json`; post-layout re-run owned by #61 |
 
 ## Controller (digital partition): Fmax, area, power
@@ -77,8 +77,9 @@ estimated by the engine). Source: `sim/controller-sta/sta-100ns.report.json`
 
 ## Rows with no record yet
 
-Not omitted, only unmeasured: P02 (#60), P08, P09, P10, C2 (#34, #36), and the
-LVS part of P13 (#32). Post-layout rows (#61) and the clock-target ratification
+Not omitted, only unmeasured: P02 (#60) and the LVS part of P13 (#32). P08, P09,
+P10 and C2 are cited above from the post-#85 corner and Monte Carlo records; they
+rest on assumptions A4-A6 and the unsourced reference-tolerance sigma. Post-layout rows (#61) and the clock-target ratification
 (decision 0006, #35) will change the controller section; update the rows then.
 
 ## Reproduce / re-derive
