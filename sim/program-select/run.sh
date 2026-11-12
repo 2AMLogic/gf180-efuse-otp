@@ -15,13 +15,7 @@ set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 source "$here/../lib/pdk_env.sh"        # refuses a tree that is not the pin
 
-dry=0
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --dry-run) dry=1; shift ;;
-    *) echo "usage: run.sh [--dry-run]" >&2; exit 2 ;;
-  esac
-done
+bench_parse_args "$@"
 
 # The batch fleet image ships variant gf180mcuD, not the pinned gf180mcuC. The
 # model files this bench reads are the same bytes in both at the pinned
@@ -39,10 +33,7 @@ FUSE_OHMS="140 200 260"                  # A4 range; only 200 ohm is documented
 # Devices (6V)" and elec_specs_7_5; IPs/IO/gf180mcu_fd_io/conditions). 6.0 V is the device class label and
 # the Idsat characterisation bias (|Vds|=|Vgs|=6V), not a rating. See design/README.md.
 VMAX_RATING=6.0
-stamp="$(date -u +%Y%m%dT%H%M%SZ)"
-rec="$here/records/$stamp-${PDK_REVISION:0:7}"
-mkdir -p "$here/records"
-mkdir "$rec"                             # fails if it exists: no overwrite
+bench_new_record_dir "$here/records" 0   # dry run also writes decks here (see below)
 
 # Fuse current = drop across the routing resistor / its value (same loop current
 # as the fuse). Plain .meas cards, not expr: the fleet runner predates
