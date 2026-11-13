@@ -2,8 +2,10 @@
 # Program-current corner verification (spec row P06 / claim C1): the real program
 # path from design/efuse_otp_array.spice (column driver + level shifter, row driver
 # + level shifter, 60 um select) delivering current into a selected cell, over the
-# decision-0005 grid: 5 process x -40/25/125 C x vdd33 2.97/3.30/3.63 V x program
-# supply 4.5/5.0/5.5 V (135 corners per request), fuse 140/200/260 ohm. One `klt sim`
+# decision-0005 grid: 5 process x -40/25/125 C x three supply pairs (vdd33, vprog) of
+# (2.97, 4.5), (3.30, 5.0), (3.63, 5.5) V -- 45 corners per request -- fuse 140/200/260
+# ohm. The two supplies step together (`klt sim` zips the supply_v axes) and are not
+# crossed, so mixed supply combinations are not covered. One `klt sim`
 # request per fuse value plus a negative control (select narrowed to 4 um), submitted
 # together with `klt sim --batch-set` (batch only, never local). Job ids land in
 # environment.remote of each report. Writes a new append-only record under
