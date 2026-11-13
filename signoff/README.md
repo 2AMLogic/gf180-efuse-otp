@@ -14,14 +14,14 @@ The block's verdict of record against the klayout-tools evidence tiers.
 | `item2-analog.attest.json` | Hand-written generic envelope for T1 item 2, analog: binds `layout/efuse_otp_array.gds` by sha256 with a regeneration claim (`layout/regen-gds.sh`); cited for `2.analog`. |
 | `item6-digital-spec.json`, `item6-digital-statement.json` | Item 6, digital: the `not_applicable` form. The spec is a verbatim extract of the digital-bearing rows of `spec/efuse-otp.md` section 2, bound to it by sha256 (`signoff/check-item6-digital.sh`, run in CI); the statement gives each row's non-statistical class and reason. Both are hash-bound in `block-manifest.json` (`6.digital`). |
 | `check-item6-digital.sh` | Fails when `spec/efuse-otp.md` changes (sha256) or an extract row no longer matches a line of it. Run after any spec change, re-derive the extract, then re-hash the manifest. |
-| `block-manifest.signoff.json` | Committed `klt signoff --manifest` output: the verdict of record. Items 1, 2, 8, 9 and 10 are `met` for both partitions; item 5 is `met` (analog); item 6 is `met` (analog) and `not_applicable` (digital); every other row is `unmet` / `no_evidence`. Item 6 analog `met` means the campaign discipline holds for the cited `margin_v` evidence (recorded seed, sufficient samples, detected negative control); it does not say the sense row is established, see `sim/sense-mc/README.md`. |
+| `block-manifest.signoff.json` | Committed `klt signoff --manifest` output: the verdict of record. Items 2, 8, 9 and 10 are `met` for both partitions; item 1 is `met` (digital) and `unmet` / `stale_evidence` (analog — the `1.analog` pin in `block-manifest.json` no longer matches the committed envelope's composite input hash); item 5 is `met` (analog); item 6 is `met` (analog) and `not_applicable` (digital); every other T1 row is `unmet` / `no_evidence`, and the T2, T3 and T4 rows are `unmet` / `tier_not_supported`. Item 6 analog `met` means the campaign discipline holds for the cited `margin_v` evidence (recorded seed, sufficient samples, detected negative control); it does not say the sense row is established, see `sim/sense-mc/README.md`. |
 | `../sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/{intact,prog}.yield.json` | Item 6, analog: the cited `klt yield` reports (`margin_v` only, post-#85 comparator), one per fuse population, cited with `rows: [P10]` in `block-manifest.json` (`6.analog`). The `*.decision.yield.json` files in the same record are not cited. Item 5 analog cites the six `bench_*` sense-margin corner reports of `sim/sense-margin/records/20261109T002043Z-f6eeac7` for P10 (they declare `margin_v >= 0`, signed so positive is the correct side; the `control_*` reports are not cited, the 260 ohm control fails by design) and reads `met`. |
 | `../layout/drc-*.report.json` | Committed `klt drc` reports for T1 item 3 (`layout/drc.sh`). Both are `status: clean` under the curated deck (deck hash `sha256:0eb6df1b...`), but `EF.*` rules are not evaluated (klayout-tools#4312, #4002), so item 3 is not cited and stays `unmet`; see `layout/README.md`, "DRC". |
 | `klt-pin.txt` | The single place the grader version is pinned. CI installs `$(cat signoff/klt-pin.txt)`. |
 | `item1-digital-inventory.json` | `t1-attestation-inventory` for T1 item 1, digital: the RTL source and the committed gate-level netlist `rtl/efuse_otp_ctrl.gl.v`, whose freshness `check` is `rtl/regen-gl.sh --check` (`local_only`: it needs Yosys and the PDK). |
-| `item1-digital.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.digital` in `block-manifest.json`, pinned by the inventory's sha256. |
+| `item1-digital.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.digital` in `block-manifest.json`, pinned by the envelope's own composite `provenance.input.content_hash` (see "Re-attest item 1 (digital)"). |
 | `item1-analog-inventory.json` | `t1-attestation-inventory` for T1 item 1, analog: the xschem schematics and cell symbols in `design/` and the netlist `design/efuse_otp_array.spice`, whose freshness `check` is `design/regen-netlist.sh --check` (`local_only`: it needs xschem). |
-| `item1-analog.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.analog`, pinned by the inventory's sha256. |
+| `item1-analog.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.analog`, pinned by the envelope's own composite `provenance.input.content_hash` (see "Re-attest item 1 (analog)"). The committed pin is stale, so `1.analog` grades `unmet` / `stale_evidence`. |
 | `design-evidence-tiers.md` | Copy of the tiers doc shipped with the pinned klt (`klayout-tools==0.9.0`, `klayout_tools/data/design-evidence-tiers.md`), so the record does not move when an installed klt bundles a different doc. |
 
 ## Regenerate the record
@@ -55,13 +55,15 @@ uvx --from "$(cat signoff/klt-pin.txt)" klt signoff --attest 1 \
 ```
 
 Then set the `content_hash` for `1.digital` in `block-manifest.json` to the
-sha256 of `item1-digital-inventory.json` (the manifest pin is the inventory's
-hash, not the envelope's), and regenerate the record as above. Verify a
-committed envelope with `klt signoff --attest 1 --inventory ... --check
-signoff/item1-digital.attest.json` (exit 3 = stale; the `local_only` freshness
-check is carried from attest time, not re-run). The item 1 inventory schema has
-no `pins` block (that is item 9), so the PDK and Yosys revision are recorded in
-the inventory `description`.
+`provenance.input.content_hash` of `item1-digital.attest.json`, and regenerate
+the record as above. From 0.9.0 that value is a composite digest over the whole
+input set (the sources plus the inventory file), **not** the sha256 of
+`item1-digital-inventory.json`; pin the inventory's own hash and the grader
+returns `unmet` / `stale_evidence`. Verify a committed envelope with
+`klt signoff --attest 1 --inventory ... --check signoff/item1-digital.attest.json`
+(exit 3 = stale; the `local_only` freshness check is carried from attest time,
+not re-run). The item 1 inventory schema has no `pins` block (that is item 9),
+so the PDK and Yosys revision are recorded in the inventory `description`.
 
 ## Re-attest item 9 (testbenches shipped)
 
@@ -105,7 +107,7 @@ uvx --from "$(cat signoff/klt-pin.txt)" klt signoff --attest 8 \
   --inventory signoff/attest/item8.json -o signoff/attest/item8.envelope.json --format json
 ```
 
-Pass `--format json`: with 0.9.0 the default text rendering of an attestation that carries `pins`-role checks raises `KeyError: 'value'` after the envelope is written (exit 1). Then set the `content_hash` for `8.analog` and `8.digital` in `block-manifest.json` to the sha256 of `attest/item8.json` and regenerate the record as above.
+Pass `--format json`: 0.9.0's text renderer has no branch for `citation` checks, so they fall through to its pin-rendering branch, which reads a `value` key a *passing* citation check does not carry — `KeyError: 'value'`, exit 1 (`klayout_tools/signoff_attest_text.py:42`). One resolving citation is enough to trigger it, so the default text format always fails for item 8. The envelope is written before the renderer runs, so the file on disk is complete and only the exit status is wrong. Fixed upstream in klayout-tools#4941, after the pinned 0.9.0; a pin bump retires this workaround. Then set the `content_hash` for `8.analog` and `8.digital` in `block-manifest.json` to the sha256 of `attest/item8.json` and regenerate the record as above.
 
 ## Re-attest item 1 (analog)
 
@@ -118,8 +120,10 @@ uvx --from "$(cat signoff/klt-pin.txt)" klt signoff --attest 1 \
   -o signoff/item1-analog.attest.json
 ```
 
-Then set the `content_hash` for `1.analog` in `block-manifest.json` to the sha256
-of `item1-analog-inventory.json` and regenerate the record as above. CI re-hashes
+Then set the `content_hash` for `1.analog` in `block-manifest.json` to the
+`provenance.input.content_hash` of `item1-analog.attest.json` — the composite over
+the input set, not the sha256 of `item1-analog-inventory.json`, the same rule as
+item 1 digital above — and regenerate the record as above. CI re-hashes
 the sources and the netlist with `--check`; it does not re-run xschem.
 
 ## Re-attest item 2 (digital)
@@ -179,20 +183,3 @@ they check that:
 
 **CI does not check that any evidence is correct.** It checks formats,
 append-only history, and that the record reproduces.
-
-## Re-attest item 8 (characterization report)
-
-```sh
-uvx --from "$(cat signoff/klt-pin.txt)" klt signoff --attest 8 \
-  --inventory signoff/attest/item8.json -o signoff/attest/item8.envelope.json --format json
-```
-
-Use `--format json`: the 0.9.0 text renderer raises `KeyError: 'value'` when a
-citation check fails. Today the command exits 3 on the four uncited rows. Once
-every row cites a record, write the envelope, cite it for `8.analog` and
-`8.digital` in `block-manifest.json` (hash = the envelope's
-`provenance.input.content_hash`) and regenerate the record.
-
-From 0.9.0 the item 1 envelope's `provenance.input.content_hash` is a composite
-over the sources, so the `content_hash` in `block-manifest.json` for `1.digital`
-and `1.analog` is that value, not the inventory's sha256.
