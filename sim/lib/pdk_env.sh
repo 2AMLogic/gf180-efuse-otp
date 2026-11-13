@@ -82,6 +82,33 @@ bench_new_record_dir() {
   fi
 }
 
+# bench_dry_run <request.json...>: validate each request against the batch
+# backend without submitting (no grid, no record). The caller owns cleanup.
+bench_dry_run() {
+  local q
+  for q in "$@"; do
+    klt sim --dry-run --format json --backend batch "$q" | jq -c '{unit_count,backend,warnings}'
+  done
+}
+
+# bench_submit_set <rec> <request.json...>: submit the set to the batch fleet,
+# report to <rec>/set-report.json, stderr to <rec>/klt.err. Sets rc: 0 = all
+# pass, 3 = some measurement failed, 4 = a request errored or was refused
+# (partial set); both are left to the caller. Any other rc is a tool failure
+# and exits. Never re-runs a failed or refused submit on local ngspice.
+bench_submit_set() {
+  local rec="$1"; shift
+  set +e
+  klt sim --batch-set "$@" --max-in-flight 4 --capacity-retries 3 --wait-for-capacity 600 \
+      -o "$rec/sets" --format json > "$rec/set-report.json" 2> "$rec/klt.err"
+  rc=$?
+  set -e
+  if [[ $rc -ne 0 && $rc -ne 3 && $rc -ne 4 ]]; then
+    echo "klt sim --batch-set failed (rc=$rc); see $rec/klt.err" >&2
+    exit "$rc"
+  fi
+}
+
 if _pdk_env_main; then
   [[ "${BASH_SOURCE[0]}" == "$0" ]] && echo "$PDK_VARIANT_DIR"
   (return 0 2>/dev/null) && return 0 || exit 0

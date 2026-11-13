@@ -69,4 +69,31 @@ check "bench_new_record_dir refuses an existing record" 1 "$?"
 out="$(CIEL_ROOT="$tmp/ok" bash -c 'source "$1"; bench_new_record_dir "$2/none" 1; [[ -d "$rec" && ! -e "$2/none" ]]' _ "$here/pdk_env.sh" "$rd" 2>&1)"
 check "bench_new_record_dir dry run uses a temp dir" 0 "$?"
 
+# bench_dry_run / bench_submit_set: a fake klt on PATH records its argv.
+fb="$tmp/fakebin"; mkdir -p "$fb"
+cat > "$fb/klt" <<'KLT'
+#!/usr/bin/env bash
+echo "$*" >> "$FAKE_KLT_LOG"
+[[ "$1" == "sim" && "$2" == "--dry-run" ]] && echo '{"unit_count":1,"backend":"batch","warnings":[]}'
+exit "${FAKE_KLT_RC:-0}"
+KLT
+chmod +x "$fb/klt"
+export FAKE_KLT_LOG="$tmp/klt.log"; : > "$FAKE_KLT_LOG"
+out="$(PATH="$fb:$PATH" CIEL_ROOT="$tmp/ok" bash -c 'source "$1"; bench_dry_run a.json b.json' _ "$here/pdk_env.sh" 2>&1)"; rc=$?
+check "bench_dry_run exits 0" 0 "$rc"
+[[ "$(grep -c -- '--dry-run --format json --backend batch' "$FAKE_KLT_LOG")" == 2 ]] || { echo "FAIL bench_dry_run argv: $(cat "$FAKE_KLT_LOG")"; fail=1; }
+[[ "$out" == *'"unit_count":1'* ]] || { echo "FAIL bench_dry_run output: $out"; fail=1; }
+for want in 0 3 4 2; do
+  : > "$FAKE_KLT_LOG"; mkdir -p "$tmp/rec$want"
+  out="$(FAKE_KLT_RC=$want PATH="$fb:$PATH" CIEL_ROOT="$tmp/ok" bash -c 'set -e; source "$1"; bench_submit_set "$2" a.json b.json; echo "rc=$rc"' _ "$here/pdk_env.sh" "$tmp/rec$want" 2>&1)"; got=$?
+  if [[ $want -eq 2 ]]; then
+    check "bench_submit_set exits on tool failure" 2 "$got"
+    [[ "$out" == *"klt sim --batch-set failed (rc=2)"* ]] || { echo "FAIL submit failure message: $out"; fail=1; }
+  else
+    check "bench_submit_set tolerates rc=$want" 0 "$got"
+    [[ "$out" == "rc=$want" ]] || { echo "FAIL submit rc=$want: $out"; fail=1; }
+  fi
+  grep -q -- "--batch-set a.json b.json --max-in-flight 4 --capacity-retries 3 --wait-for-capacity 600 -o $tmp/rec$want/sets" "$FAKE_KLT_LOG" || { echo "FAIL submit argv: $(cat "$FAKE_KLT_LOG")"; fail=1; }
+done
+
 exit "$fail"
