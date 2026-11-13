@@ -11,7 +11,7 @@ The block's verdict of record against the klayout-tools evidence tiers.
 | `attest/item9.json` | `t1-attestation-inventory` for T1 item 9, testbenches shipped: the controller, program-select and sense-margin bench files, the shared record-provenance module `sim/lib/bench_record.py` both analog summarizers import, the cold-start command `sim/cold-start.sh` (`local_only`), and the PDK and tool pins. |
 | `attest/item9.envelope.json` | Envelope emitted by `klt signoff --attest 9`; cited for `9` in `block-manifest.json`, pinned by the inventory's sha256. |
 | `block-manifest.json` | Block name, kind (`mixed-signal`), the `partition_boundary` (analog and digital nets) and the `evidence` map (`1.digital`, `1.analog`, `2.digital`, `2.analog`, `8.digital`, `8.analog`, `9`, `10`). |
-| `item2-analog.attest.json` | Hand-written generic envelope for T1 item 2, analog: binds `layout/efuse_otp_array.gds` by sha256 with a regeneration claim (`layout/regen-gds.sh`); cited for `2.analog`. |
+| `item2-analog.attest.json` | Envelope emitted by `klt signoff --attest 2 --input layout/efuse_otp_array.gds` (via `layout/attest.sh`): binds the stream by sha256 with a regeneration claim (`layout/regen-gds.sh`); cited for `2.analog`. |
 | `item6-digital-spec.json`, `item6-digital-statement.json` | Item 6, digital: the `not_applicable` form. The spec is a verbatim extract of the digital-bearing rows of `spec/efuse-otp.md` section 2, bound to it by sha256 (`signoff/check-item6-digital.sh`, run in CI); the statement gives each row's non-statistical class and reason. Both are hash-bound in `block-manifest.json` (`6.digital`). |
 | `check-item6-digital.sh` | Fails when `spec/efuse-otp.md` changes (sha256) or an extract row no longer matches a line of it. Run after any spec change, re-derive the extract, then re-hash the manifest. |
 | `block-manifest.signoff.json` | Committed `klt signoff --manifest` output: the verdict of record. Items 1, 2, 8, 9 and 10 are `met` for both partitions; item 5 is `met` (analog); item 6 is `met` (analog) and `not_applicable` (digital); every other T1 row is `unmet` / `no_evidence`, and the T2, T3 and T4 rows are `unmet` / `tier_not_supported`. Item 6 analog `met` means the campaign discipline holds for the cited `margin_v` evidence (recorded seed, sufficient samples, detected negative control); it does not say the sense row is established, see `sim/sense-mc/README.md`. |
@@ -133,45 +133,46 @@ the input set, not the sha256 of `item1-analog-inventory.json`, the same rule as
 item 1 digital above — and regenerate the record as above. CI re-hashes
 the sources and the netlist with `--check`; it does not re-run xschem.
 
-## Re-attest item 2 (digital)
+## Re-attest item 2 (both layout streams)
 
-After any change to `rtl/efuse_otp_ctrl.gl.v`, `layout/pnr-request.json` or the pin:
-
-```sh
-layout/pnr.sh
-layout/attest.sh
-```
-
-Then set the `content_hash` for `2.digital` in `block-manifest.json` to the
-`provenance.input.content_hash` in `layout/pnr.attest.json` (the GDS sha256), and
-regenerate the record as above. klt's `--attest` has no producer for item 2, so
-this envelope is written by `layout/attest.sh`; the grader checks that the GDS
-re-hashes to the pinned value and that the geometry digest matches the claim.
-It does not re-run the flow: `layout/pnr.sh --check --rerun` does.
-
-## Re-attest item 2 (analog layout)
-
-After any change to `layout/gen_efuse_otp.py`, `design/efuse_otp_array.spice` or
-the pin:
+`layout/attest.sh` writes both item 2 envelopes with the pinned klt's own
+producer, `klt signoff --attest 2 --input <stream>`: `layout/pnr.attest.json`
+from `layout/efuse_otp_ctrl.gds` and `signoff/item2-analog.attest.json` from
+`layout/efuse_otp_array.gds`. Re-attest after regenerating either stream —
+digital, after a change to `rtl/efuse_otp_ctrl.gl.v`, `layout/pnr-request.json`
+or the pin; analog, after a change to `layout/gen_efuse_otp.py`,
+`design/efuse_otp_array.spice` or the pin:
 
 ```sh
-layout/regen-gds.sh
+layout/pnr.sh        # digital: refuses to write unless the P&R response passes
+layout/regen-gds.sh  # analog
+layout/attest.sh     # rewrites both envelopes
 ```
 
-`klt signoff --attest` has no producer for item 2 (klayout-tools#4188, #4221),
-so `item2-analog.attest.json` is a hand-written generic envelope: `t1_item` 2,
-`provenance.input` the stream and its sha256, and a `provenance.regeneration`
-claim carrying the same hash (the grader never runs the generator). Set the new
-sha256 (from `layout/efuse_otp_array.gds.sha256`) in `provenance.input.content_hash`,
-in `provenance.regeneration.regenerated_hash` and as the `content_hash` for
-`2.analog` in `block-manifest.json`, then regenerate the record as above. The
-claim is the stream's existence and reproducibility only; it makes no DRC, LVS
-or connectivity statement.
+Then set the `content_hash` for `2.digital` and `2.analog` in
+`block-manifest.json` to each envelope's `provenance.input.content_hash` (the
+stream's own sha256) and regenerate the record as above. CI runs
+`layout/attest.sh --check`, which re-attests both streams and exits 3 if either
+committed envelope has drifted.
+
+Each envelope carries a `provenance.regeneration` claim naming its generator;
+the grader re-hashes the stream and compares the claim, but it never runs the
+generator. The analog claim is the stream's raw-byte sha256 (`regen-gds.sh
+--check` byte-compares). The digital claim is `hash_kind: geometry` — the
+decoded-geometry digest, so GDS write times do not matter — and klt exposes no
+public way to compute that value (klayout-tools#5551), so `layout/attest.sh`
+reads it from klt's private `_provenance`; that single line is the only
+private-API use left here, and a pin bump can break it. Neither envelope
+re-runs the flow (`layout/pnr.sh --check --rerun` does) and neither makes a DRC,
+LVS or connectivity statement: the three checks are the stream's readability, a
+non-empty top cell and an on-grid database unit. See `layout/README.md`,
+"What is not claimed".
 
 ## What CI does and does not check
 
-`.github/workflows/ci.yml` has two jobs. `harness` installs only Python and the
-pinned klt (no PDK, ngspice, xschem or klayout); `controller` builds the pinned
+`.github/workflows/ci.yml` has two jobs. `harness` installs only Python, the
+pinned klt and `uv` (no PDK, ngspice or xschem; the KLayout Python module comes
+with the pinned klt, which is how `--attest 2` reads a stream); `controller` builds the pinned
 Icarus 13.0 and Yosys 0.67 (`scripts/ci/install_eda.sh`, cached) and runs
 `verification/run.sh`, its `--negative-control` and `rtl/synth.sh`. Together
 they check that:
@@ -186,6 +187,9 @@ they check that:
   (vacuously true while there are no records);
 - files under `sim/**/records/` are only added, never modified, deleted or renamed;
 - the item 1 (analog) attestation still reproduces (`--attest 1 --check`);
+- both item 2 attestations still reproduce (`layout/attest.sh --check`, i.e.
+  `--attest 2 --check` on each stream); the generators named in their
+  regeneration claims need OpenROAD and the PDK and are not re-run;
 - the item 8 envelope's recorded hash of `block-manifest.signoff.json` is current
   (`--attest 8 --check --format json`), so regenerating the record without
   re-attesting item 8 fails;

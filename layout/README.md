@@ -9,18 +9,20 @@ analog partition is below.
 | File | Role |
 |---|---|
 | `pnr-request.json` | The `klt place-and-route` request: `gf180mcu_fd_sc_mcu7t5v0`, 40 % utilization, 10 µm core margin, explicit PDN straps and connects (the `gf180mcu_7t_6M` recipe values, written out because a preset cannot be combined with overrides, with the `split_cuts` option dropped; see DRC below), `power.tapcell.distance_um` 15, I/O pins on Metal3 (horizontal) / Metal2 (vertical), `target_stage: route`, seed 1, `portable_paths`. |
-| `pnr.sh` | Runs the flow with the pinned klt (`signoff/klt-pin.txt`), asserts `status: ok` and `power.pdn: true`, and writes the files below. `--check` runs `klt place-and-route --check` plus the GDS sha256; `--check --rerun` re-runs the flow and diffs the verdict-bearing fields. |
+| `pnr.sh` | Runs the flow with the pinned klt (`signoff/klt-pin.txt`), refuses to write anything unless the response is `status: ok`, `stage_reached: route`, `power.pdn: true` with `route_drc_violation_count` and `antenna_violation_count` both 0, and writes the files below. `--check` runs `klt place-and-route --check` plus the GDS sha256; `--check --rerun` re-runs the flow and diffs the verdict-bearing fields. |
 | `pnr-report.json` | Committed `--format json` response. Route stage reached, 0 route DRC and 0 antenna violations, `power.pdn: true`, `power.connects[].split_cuts: null`, `power.tapcell_master: gf180mcu_fd_sc_mcu7t5v0__filltie`. |
 | `efuse_otp_ctrl.gds` | Routed GDS (standard-cell GDS views merged in by klt). Its sha256 is in `efuse_otp_ctrl.gds.sha256`. |
 | `efuse_otp_ctrl.asbuilt.v` | `verilog_path` output: the as-built gate-level netlist (CTS buffers, resizes, antenna diodes included). This, not `rtl/efuse_otp_ctrl.gl.v`, is the reference for the controller LVS run. |
-| `attest.sh`, `pnr.attest.json` | The T1 item 2 (digital) attestation: a generic envelope bound to the GDS, with a `layout/pnr.sh` regeneration claim (geometry digest). klt has no `--attest 2`, so `attest.sh` assembles it from the committed report (klayout-tools issues #4188, #4221). |
+| `attest.sh` | Writes both T1 item 2 envelopes with the pinned klt's own producer, `klt signoff --attest 2 --input <stream>`: `pnr.attest.json` (digital) and `../signoff/item2-analog.attest.json` (analog). `--check` re-attests and fails (exit 3) if either committed envelope has drifted. The digital regeneration claim is a geometry digest, for which klt has no public source (klayout-tools#5551), so the script reads that one value from klt's private `_provenance`; every other field is the producer's. |
+| `pnr.attest.json` | The T1 item 2 (digital) envelope: `klt signoff --attest 2` bound to the routed GDS (readable, non-empty top cell, dbu on grid), with a `layout/pnr.sh` regeneration claim (geometry digest, so GDS write times do not matter). |
 
 ## Reproduce
 
 ```sh
 layout/pnr.sh --check            # cheap: input netlist and deck hashes, GDS sha256
 layout/pnr.sh --check --rerun    # full: re-runs OpenROAD (about 2 minutes)
-layout/pnr.sh && layout/attest.sh   # regenerate, then re-attest
+layout/pnr.sh && layout/attest.sh   # regenerate, then re-attest (both item 2 envelopes)
+layout/attest.sh --check         # exit 3 = an item 2 envelope has drifted (CI runs this)
 ```
 
 Needs `openroad` on `PATH` and the gf180mcuD PDK (`PDK_ROOT`, default `~/.ciel`).
@@ -54,6 +56,7 @@ netlist `design/efuse_otp_array.spice`.
 ```sh
 layout/regen-gds.sh           # rewrite the files
 layout/regen-gds.sh --check   # exit 3 = drifted
+layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-analog.attest.json)
 ```
 
 `sha256(efuse_otp_array.gds)` = `186be6b6e0ba5200154a20b6e66bda85b629aea378d76b6e683918dd0d412224`
@@ -183,5 +186,10 @@ row "DRC clean including every `EF.*` rule" stays `unmet`.
   rules at all (`spec/efuse-otp.md` §1.3).
 - Cell-to-cell clearance is a fixed 2 µm between bounding boxes, not a
   rule-derived spacing.
-- The `item2-analog.attest.json` envelope is hand-written: `klt signoff
-  --attest` has no producer for item 2 (klayout-tools#4188, #4221).
+- **The item 2 envelopes claim the stream, not the circuit.** Both are written by
+  `klt signoff --attest 2`, whose checks are the stream's readability, a
+  non-empty top cell and an on-grid database unit, plus the attester's
+  regeneration claim (generator and hash, never run by the grader). The
+  producer's `summary` is fixed text and says nothing about the content: for
+  `efuse_otp_array.gds` the claim is **placed hierarchy only — no DRC, LVS or
+  connectivity statement**, and neither envelope makes one for either partition.
