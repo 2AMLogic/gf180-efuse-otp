@@ -28,7 +28,10 @@ lib="$PDK_FLEET_LIB_DIR"
 KLT_PIN="$(cat "$repo/signoff/klt-pin.txt")"
 KLT_YIELD=(uvx --from "${KLT_PIN%%==*}[yield]==${KLT_PIN##*==}" klt)
 
-# ASSUMPTIONS, recorded verbatim in record.json.
+# ASSUMPTIONS, recorded verbatim in record.json from this one definition: each is either
+# passed to summarize.py below or written into the requests built here and read back
+# from them (DECISION_MIN, the corner grid). T_PRE/T_OUT reach the record directory as
+# the .meas lines of those requests, not as a record.json field.
 RREF_OHM=400                 # A6, decision 0003
 RFUSE_INTACT=260             # A4 upper edge (binding for the intact population)
 RFUSE_PROG=630               # A5 lower edge (binding for the programmed population)
@@ -140,4 +143,7 @@ echo "record: $rec"
 python3 -I "$here/summarize.py" "$rec" --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
     --ngspice "$ngspice_version" --klt "$(klt --version)" --klt-pin "$KLT_PIN" \
     --seed "$SEED" --n-nominal "$N_NOMINAL" --n-control "$N_CONTROL" --sigma-rref "$SIGMA_RREF" \
-    --mismatch-scale "$MISMATCH_SCALE" --rref "$RREF_OHM" --min-samples "$MIN_SAMPLES" --ci-halfwidth "$CI_HALFWIDTH"
+    --mismatch-scale "$MISMATCH_SCALE" --rref "$RREF_OHM" \
+    --rfuse-intact "$RFUSE_INTACT" --rfuse-prog "$RFUSE_PROG" \
+    --rref-ctl-intact "$RREF_CTL_INTACT" --rref-ctl-prog "$RREF_CTL_PROG" \
+    --min-samples "$MIN_SAMPLES" --ci-halfwidth "$CI_HALFWIDTH"
