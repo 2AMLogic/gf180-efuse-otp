@@ -10,6 +10,10 @@ import argparse
 import collections
 import json
 import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
+import bench_record  # noqa: E402  (needs the path insert above under python3 -I)
 
 
 def jl(path):
@@ -111,8 +115,8 @@ def main():
     for pop, d in pops.items():
         sets = {}
         for role in ("nominal", "control"):
-            rep = jl(os.path.join(a.rec, "sets", d[role], "report.json"))
-            jobs.add((rep.get("environment", {}).get("remote") or {}).get("job_id"))
+            rep = bench_record.collect_env(
+                jl(os.path.join(a.rec, "sets", d[role], "report.json")), None, jobs)
             sets[role] = {"stem": d[role], "corner_count": rep["corner_count"], "errored": rep["errored"],
                           "stats": set_stats(rep)}
         y = os.path.join(a.rec, "yield", ypop[pop])
@@ -124,7 +128,6 @@ def main():
             "uncited_decision_report": f"yield/{ypop[pop]}.decision.yield.json",
             "decision": graded(y + ".decision.yield.json"),
         }
-    jobs.discard(None)
 
     cited_ok = all(
         "error" not in p["cited"]
@@ -167,9 +170,7 @@ def main():
         "cited_evidence_meets_item6_discipline": cited_ok,
         "decision_path_finding": decision_finding(out_pops),
     }
-    with open(os.path.join(a.rec, "record.json"), "w") as f:
-        json.dump(rec, f, indent=1)
-        f.write("\n")
+    bench_record.write_record(a.rec, rec)
 
 
 if __name__ == "__main__":

@@ -3,14 +3,14 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 9,
-  "summary": "T1 item 9 (Testbenches shipped): 13/13 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 9 (Testbenches shipped): 14/14 attestation checks passed (klt signoff --attest)",
   "source": "signoff/attest/item9.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 13,
-    "passed_count": 13,
+    "check_count": 14,
+    "passed_count": 14,
     "checks": [
       {
         "check": "present",
@@ -18,6 +18,13 @@
         "path": "sim/cold-start.sh",
         "passed": true,
         "content_hash": "sha256:05731ef2c2e648cbf6902dfafc7e9b656c5dc981316d3b27b9150eda62187ea8"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/lib/bench_record.py",
+        "passed": true,
+        "content_hash": "sha256:535678601d29f6e418ba5d97e4e62b2e6c1a36fefc6b3b4c98eeef85534966a6"
       },
       {
         "check": "present",
@@ -38,7 +45,7 @@
         "role": "testbench",
         "path": "sim/program-select/summarize.py",
         "passed": true,
-        "content_hash": "sha256:c2011fe9aa89c86940d24a07ac8a7387d3c3b07788506e0abde4b631c37409ca"
+        "content_hash": "sha256:dc1f489bcf41f8c3a23d74aebc8e08b78f1908f7c8f5a6b51a679f2703f70d29"
       },
       {
         "check": "present",
@@ -59,7 +66,7 @@
         "role": "testbench",
         "path": "sim/sense-margin/summarize.py",
         "passed": true,
-        "content_hash": "sha256:0f235ad0337eb1d7d9547ee44ebf62b0656ca127eaf58bcec404f6cf8b111c0a"
+        "content_hash": "sha256:9068440a15d525125ef4ccdb7f5bb9539d71ce73cc47906b3998e31958c143bc"
       },
       {
         "check": "present",
@@ -128,7 +135,7 @@
         "path": "signoff/attest/item9.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:d572e75074481be1a9d7f7d7461dee7c73d26a46c393d6e3a5dce2123e320533"
+      "content_hash": "sha256:4a6a0fd83d0d56aa63ebddb4ffee3553aa68c7d11041ee74f18cfab65dcb03f1"
     }
   }
 }

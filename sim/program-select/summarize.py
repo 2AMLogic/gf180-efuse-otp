@@ -14,6 +14,10 @@ import json
 import math
 import os
 import re
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
+import bench_record  # noqa: E402  (needs the path insert above under python3 -I)
 
 
 def main():
@@ -22,26 +26,15 @@ def main():
     ap.add_argument("--ireq", type=float, required=True)
     ap.add_argument("--vmax", type=float, required=True)
     ap.add_argument("--rroute", type=float, required=True)
-    ap.add_argument("--pdk-rev", required=True)
-    ap.add_argument("--stamp", required=True)
-    ap.add_argument("--ngspice", required=True)
-    ap.add_argument("--klt", required=True)
+    bench_record.add_common_args(ap)
     a = ap.parse_args()
 
     widths = {}
     backends, jobs = set(), set()
-    expected_per_width = None
     for path in sorted(glob.glob(os.path.join(a.rec, "sets", "cell_r*_w*", "report.json"))):
         m_ = re.search(r"cell_r(\d+)_w(\d+)", path)
         fuse, wum = int(m_.group(1)), int(m_.group(2))
-        rep = json.load(open(path))
-        env = rep.get("environment", {})
-        backends.add(json.dumps(env.get("backend", {}), sort_keys=True))
-        remote = env.get("remote") or {}
-        for k in ("job_id", "job_ids"):
-            v = remote.get(k)
-            if v:
-                jobs.update(v if isinstance(v, list) else [v])
+        rep = bench_record.collect_env(json.load(open(path)), backends, jobs)
         for c in rep["corners"]:
             m = {x["name"]: x.get("value") for x in c.get("measurements", [])}
             i, vgs, vds = m.get("i_fuse"), m.get("vgs"), m.get("vds")
@@ -87,14 +80,7 @@ def main():
     chosen = cands[0]["w_um"] if cands else None
 
     rec = {
-        "pdk_revision": a.pdk_rev,
-        "variant_pinned": "gf180mcuC",
-        "variant_simulated": "gf180mcuD (fleet image; sm141064.ngspice, sm141064.spice, design.ngspice byte-identical to gf180mcuC, checked by run.sh)",
-        "timestamp_utc": a.stamp,
-        "ngspice_version_local": a.ngspice,
-        "klt_version": a.klt,
-        "backend": [json.loads(b) for b in sorted(backends)],
-        "remote_job_ids": sorted(jobs),
+        **bench_record.header(a, backends, jobs),
         "device": "nfet_06v0, L=0.7u, nf=1",
         "pvt": {"process": ["typical", "ff", "ss", "fs", "sf"],
                 "temp_c": [-40, 25, 125], "vprog_v": [4.5, 5.0, 5.5],
@@ -114,9 +100,7 @@ def main():
                     if chosen is not None else
                     "no width chosen: no swept width passes every point within the assumed limit"),
     }
-    with open(os.path.join(a.rec, "record.json"), "w") as f:
-        json.dump(rec, f, indent=1)
-        f.write("\n")
+    bench_record.write_record(a.rec, rec)
     if not complete:
         print("incomplete: some points have no current (see report_r*.json diagnostics)")
         raise SystemExit(3)

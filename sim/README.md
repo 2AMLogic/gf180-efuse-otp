@@ -13,6 +13,15 @@ file reads exactly `open_pdks <pin>`. A tree at another revision (for example a
 leftover `~/.volare`) is never used. Every simulation record names the PDK
 revision it ran under.
 
+`sim/lib/` also holds the boilerplate the benches share rather than copy:
+`pdk_env.sh` for the `bench_*` shell helpers each `run.sh` sources, and
+`bench_record.py` for the record-provenance fields each `summarize.py` writes
+(the pinned/simulated variant statement, the timestamp and tool versions, the
+backend and remote job ids, and the `record.json` writer). The variant
+statement is built from the file list `pdk_fleet_check` actually compares, so
+it cannot go stale against the check it describes. `summarize.py` runs under
+`python3 -I`, so it imports the module through an explicit `sys.path` insert.
+
 ## Cold start
 
 ```bash

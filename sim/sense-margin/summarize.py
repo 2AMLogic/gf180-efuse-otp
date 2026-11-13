@@ -24,6 +24,10 @@ import json
 import math
 import os
 import re
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
+import bench_record  # noqa: E402  (needs the path insert above under python3 -I)
 
 
 def finite(x):
@@ -91,10 +95,7 @@ def main():
     ap.add_argument("--t-pre", required=True)
     ap.add_argument("--t-out", required=True)
     ap.add_argument("--t-edge", required=True)
-    ap.add_argument("--pdk-rev", required=True)
-    ap.add_argument("--stamp", required=True)
-    ap.add_argument("--ngspice", required=True)
-    ap.add_argument("--klt", required=True)
+    bench_record.add_common_args(ap)
     a = ap.parse_args()
 
     intact = a.rfuse_intact.split()
@@ -107,13 +108,7 @@ def main():
         if not m:
             continue
         kind, rf, rr = m.group(1), m.group(2), int(m.group(3))
-        env = rep.get("environment", {})
-        backends.add(json.dumps(env.get("backend", {}), sort_keys=True))
-        remote = env.get("remote") or {}
-        for k in ("job_id", "job_ids"):
-            v = remote.get(k)
-            if v:
-                jobs.update(v if isinstance(v, list) else [v])
+        bench_record.collect_env(rep, backends, jobs)
         pts = points(rep, rf, rf in programmed)
         (bench if kind == "bench" else control)[rf] = (rr, pts)
 
@@ -140,14 +135,7 @@ def main():
     bench_decision_ok = complete and all(f["all_decisions_ok"] for f in fuses.values())
 
     rec = {
-        "pdk_revision": a.pdk_rev,
-        "variant_pinned": "gf180mcuC",
-        "variant_simulated": "gf180mcuD (fleet image; sm141064.ngspice, sm141064.spice, design.ngspice byte-identical to gf180mcuC, checked by run.sh)",
-        "timestamp_utc": a.stamp,
-        "ngspice_version_local": a.ngspice,
-        "klt_version": a.klt,
-        "backend": [json.loads(b) for b in sorted(backends)],
-        "remote_job_ids": sorted(jobs),
+        **bench_record.header(a, backends, jobs),
         "dut": "efuse_sense (with efuse_comp), extracted from design/efuse_otp_array.spice",
         "pvt": {"process": ["typical", "ff", "ss", "fs", "sf"], "temp_c": [-40, 25, 125],
                 "vdd33_v": [2.97, 3.30, 3.63], "source": "decision 0005"},
@@ -183,9 +171,7 @@ def main():
                     "analog margin positive at every point: %s; comparator decision correct and resolved at every point: %s; "
                     "negative control flips sign: %s" % (bench_margin_ok, bench_decision_ok, control_ok)),
     }
-    with open(os.path.join(a.rec, "record.json"), "w") as f:
-        json.dump(rec, f, indent=1)
-        f.write("\n")
+    bench_record.write_record(a.rec, rec)
     if not complete:
         print("incomplete: some requests or points have no values (see klt.err, set-report.json)")
         raise SystemExit(3)

@@ -13,7 +13,10 @@ import glob
 import json
 import math
 import os
-import re
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
+import bench_record  # noqa: E402  (needs the path insert above under python3 -I)
 
 SENSE_RECORD_GLOB = os.path.join("sim", "sense-margin", "records", "*", "record.json")
 
@@ -72,25 +75,15 @@ def main():
     ap.add_argument("--rroute", type=float, required=True)
     ap.add_argument("--fuse-ohms", required=True)
     ap.add_argument("--w-control", required=True)
-    ap.add_argument("--pdk-rev", required=True)
-    ap.add_argument("--stamp", required=True)
-    ap.add_argument("--ngspice", required=True)
-    ap.add_argument("--klt", required=True)
+    bench_record.add_common_args(ap)
     a = ap.parse_args()
     repo = os.path.abspath(os.path.join(a.rec, "..", "..", "..", ".."))
 
     backends, jobs = set(), set()
 
     def load(stem):
-        rep = json.load(open(os.path.join(a.rec, "sets", stem, "report.json")))
-        env = rep.get("environment", {})
-        backends.add(json.dumps(env.get("backend", {}), sort_keys=True))
-        remote = env.get("remote") or {}
-        for k in ("job_id", "job_ids"):
-            v = remote.get(k)
-            if v:
-                jobs.update(v if isinstance(v, list) else [v])
-        return rep
+        path = os.path.join(a.rec, "sets", stem, "report.json")
+        return bench_record.collect_env(json.load(open(path)), backends, jobs)
 
     fuses = {}
     for r in a.fuse_ohms.split():
@@ -104,12 +97,7 @@ def main():
     bind = min((f["binding_corner"] for f in fuses.values() if f["binding_corner"]),
                key=lambda p: p["i_fuse_a"], default=None)
     rec = {
-        "pdk_revision": a.pdk_rev,
-        "variant_pinned": "gf180mcuC",
-        "variant_simulated": "gf180mcuD (fleet image; sm141064.ngspice, sm141064.spice, design.ngspice byte-identical to gf180mcuC, checked by run.sh)",
-        "timestamp_utc": a.stamp, "ngspice_version_local": a.ngspice, "klt_version": a.klt,
-        "backend": [json.loads(b) for b in sorted(backends)],
-        "remote_job_ids": sorted(jobs),
+        **bench_record.header(a, backends, jobs),
         "dut": "efuse_coldrv + efuse_rowdrv (each with efuse_ls) + efuse_bitcell, extracted from design/efuse_otp_array.spice; one selected cell",
         "pvt": {"process": ["typical", "ff", "ss", "fs", "sf"], "temp_c": [-40, 25, 125],
                 "supplies_v": "vdd33 and vprog step together (klt sim zips supply_v axes): (2.97, 4.5), (3.30, 5.0), (3.63, 5.5)",
@@ -141,9 +129,7 @@ def main():
                            bind["process"], bind["temp_c"], bind["vdd33_v"], bind["vprog_v"], bind["fuse_ohm"], bind["i_fuse_a"] * 1e3),
                        "valid (reads fail)" if ctl_ok else "NOT VALID (did not read fail)")),
     }
-    with open(os.path.join(a.rec, "record.json"), "w") as f:
-        json.dump(rec, f, indent=1)
-        f.write("\n")
+    bench_record.write_record(a.rec, rec)
     if not complete:
         print("incomplete: some points have no current (see sets/*/report.json diagnostics)")
         raise SystemExit(3)
