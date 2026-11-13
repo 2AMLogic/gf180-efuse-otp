@@ -94,9 +94,10 @@ and never replaces a committed one.
 | Latch check | `rtl/synth.sh` | Yosys 0.67 | `Number of latches: 0`, log in `flow/build/synth.log` |
 | Signoff record | `uvx --from "$(cat signoff/klt-pin.txt)" klt signoff --manifest signoff/block-manifest.json --tiers-doc signoff/design-evidence-tiers.md --format json > signoff/block-manifest.signoff.json` | uv; exit 3 (items unmet) is expected | byte-identical to the committed `signoff/block-manifest.signoff.json` |
 
-`verification/run.sh` refuses any Icarus version other than the pinned one, and
-`rtl/synth.sh` any Yosys version other than the pinned one;
-`ALLOW_TOOL_MISMATCH=1` overrides this and is not used in CI. Details: [`verification/README.md`](verification/README.md),
+`verification/run.sh` refuses any Icarus version other than the pinned one;
+`ALLOW_TOOL_MISMATCH=1` overrides this and is not used in CI. `rtl/synth.sh`
+checks no version itself; in CI the Yosys version is fixed by
+`scripts/ci/install_eda.sh`. Details: [`verification/README.md`](verification/README.md),
 [`rtl/README.md`](rtl/README.md), [`signoff/README.md`](signoff/README.md)
 (regenerating the gate-level netlist and the item attestations).
 

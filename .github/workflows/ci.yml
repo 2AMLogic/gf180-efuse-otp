@@ -100,7 +100,7 @@ jobs:
 
       - name: Item 9 attestation is current
         # Re-hashes the bench files and re-checks the pins; the cold-start command
-        # is local_only (needs the PDK, ngspice, Icarus, Yosys) and is not re-run here.
+        # is local_only (needs the PDK, ngspice, Icarus) and is not re-run here.
         run: |
           klt signoff --attest 9 --inventory signoff/attest/item9.json \
             --check signoff/attest/item9.envelope.json
