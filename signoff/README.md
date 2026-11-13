@@ -83,7 +83,7 @@ uvx --from "$(cat signoff/klt-pin.txt)" klt signoff --attest 9 \
 ```
 
 `--attest` runs `sim/cold-start.sh` (controller bench, then `--dry-run` of the two
-analog request sets), so it needs the PDK, ngspice, Icarus and Yosys. Then set the
+analog request sets), so it needs the PDK, ngspice and Icarus. Then set the
 `content_hash` for `9` in `block-manifest.json` to the sha256 of `attest/item9.json`
 and regenerate the record as above. CI runs `--check`, which re-hashes the bench files
 and re-checks the pins but does not re-run the `local_only` cold start. The attestation
