@@ -51,6 +51,12 @@ jobs:
       - name: Install pinned klt
         run: pipx install "$(cat signoff/klt-pin.txt)"
 
+      - name: Install uv
+        # layout/attest.sh (and every other generator in this repo) reaches the
+        # pinned klt through `uvx --from "$(cat signoff/klt-pin.txt)"`, never a
+        # host-installed one, so the item 2 check step below needs uv on PATH.
+        run: pipx install uv
+
       - name: Checker self-tests
         working-directory: scripts/ci
         run: python3 -I -m unittest discover -s . -p 'test_*.py' -v
@@ -123,3 +129,15 @@ jobs:
         # already fails if the manifest, envelope and stream disagree.
         run: |
           (cd layout && sha256sum --check efuse_otp_array.gds.sha256)
+
+      - name: Item 2 attestations reproduce
+        # Both item 2 envelopes, re-attested from the committed streams and
+        # compared with `klt signoff --attest 2 --check` (exit 3 = stale). This
+        # re-reads the streams and recomputes the digital geometry digest, so
+        # editing a stream or an envelope without re-attesting fails. The
+        # generators named in the regeneration claims are not run (they need
+        # OpenROAD and the PDK); the claim stays attester-asserted, as the
+        # grader treats it. Run through layout/attest.sh, not klt directly,
+        # because the geometry digest has no public klt source
+        # (klayout-tools#5551) and the script owns the one private-API call.
+        run: layout/attest.sh --check
