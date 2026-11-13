@@ -78,26 +78,14 @@ for r in $PROGRAMMED_OHMS; do mk "bench_rf${r}_rr${RREF_OHM}" "$r" "$RREF_OHM" 1
 for r in 140 260; do mk "control_rf${r}_rr${RREF_CONTROL_OHM}" "$r" "$RREF_CONTROL_OHM" -1; done
 
 if [[ $dry -eq 1 ]]; then
-  for q in "${reqs[@]}"; do
-    klt sim --dry-run --format json --backend batch "$q" | jq -c '{unit_count,backend,warnings}'
-  done
+  bench_dry_run "${reqs[@]}"
   rm -rf "$rec"
   echo "dry run: request set validated; temp dir removed"
   exit 0
 fi
 
-# 0 = all pass, 3 = some measurement failed, 4 = a request errored or was
-# refused (partial set). Anything else is a tool failure. A failed or refused
-# submit is reported, never re-run on local ngspice.
-set +e
-klt sim --batch-set "${reqs[@]}" --max-in-flight 4 --capacity-retries 3 --wait-for-capacity 600 \
-    -o "$rec/sets" --format json > "$rec/set-report.json" 2> "$rec/klt.err"
-rc=$?
-set -e
-if [[ $rc -ne 0 && $rc -ne 3 && $rc -ne 4 ]]; then
-  echo "klt sim --batch-set failed (rc=$rc); see $rec/klt.err" >&2
-  exit "$rc"
-fi
+# rc: 0 = all pass, 3 = a measurement failed, 4 = partial set (see bench_submit_set).
+bench_submit_set "$rec" "${reqs[@]}"
 
 ngspice_version="$(ngspice -v | sed -n 's/^\*\* ngspice-\([0-9.]*\).*/\1/p' | head -1)"
 echo "record: $rec"

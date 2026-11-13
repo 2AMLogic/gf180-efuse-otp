@@ -67,25 +67,13 @@ for r in $FUSE_OHMS; do
 done
 
 if [[ $dry -eq 1 ]]; then
-  for q in "${reqs[@]}"; do
-    klt sim --dry-run --format json --backend batch "$q" | jq -c '{unit_count,backend,warnings}'
-  done
+  bench_dry_run "${reqs[@]}"
   echo "dry run: $rec holds the generated decks and requests only; delete it"
   exit 0
 fi
 
-# 0 = all pass, 3 = some measurement failed, 4 = a request errored or was
-# refused (partial set). Anything else is a tool failure. A failed or refused
-# submit is reported, never re-run on local ngspice.
-set +e
-klt sim --batch-set "${reqs[@]}" --max-in-flight 4 --capacity-retries 3 \
-    -o "$rec/sets" --format json > "$rec/set-report.json" 2> "$rec/klt.err"
-rc=$?
-set -e
-if [[ $rc -ne 0 && $rc -ne 3 && $rc -ne 4 ]]; then
-  echo "klt sim --batch-set failed (rc=$rc); see $rec/klt.err" >&2
-  exit "$rc"
-fi
+# rc: 0 = all pass, 3 = a measurement failed, 4 = partial set (see bench_submit_set).
+bench_submit_set "$rec" "${reqs[@]}"
 
 ngspice_version="$(ngspice -v | sed -n 's/^\*\* ngspice-\([0-9.]*\).*/\1/p' | head -1)"
 echo "record: $rec"
