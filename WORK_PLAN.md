@@ -55,6 +55,8 @@ Issues carrying `loom:curated`.
 ## Proposed (Architect / Hermit)
 
 - **#115**: Remove dead dry-run cleanup in sim/cold-start.sh: program-select dry runs no longer write under records/ *(hermit)*
+- **#117**: Hoist duplicated record-provenance boilerplate from sim/*/summarize.py into sim/lib *(hermit)*
+- **#118**: Make the CI record-format check read the committed sim records: its glob matches 0 of 15 and it passes vacuously *(hermit)*
 
 ## Epics
 
@@ -72,6 +74,6 @@ _None._
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 1 |
 | Curated | 2 |
-| Architect / Hermit proposals | 1 |
+| Architect / Hermit proposals | 3 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
