@@ -135,8 +135,8 @@ def main():
                 for m in p["cited"]["measurements"])
         for p in out_pops.values())
     rec = {
-        "pdk_revision": a.pdk_rev, "variant_pinned": "gf180mcuC",
-        "variant_simulated": "gf180mcuD (fleet image; model files byte-identical to gf180mcuC, checked by run.sh)",
+        "pdk_revision": a.pdk_rev, "variant_pinned": bench_record.VARIANT_PINNED,
+        "variant_simulated": bench_record.VARIANT_SIMULATED,
         "timestamp_utc": a.stamp, "ngspice_version_local": a.ngspice, "klt_sim_version": a.klt,
         "klt_yield_pin": a.klt_pin, "remote_job_ids": sorted(jobs),
         "tool_versions": {"ngspice_local": a.ngspice, "klt_sim": a.klt, "klt_yield": a.klt_pin},
