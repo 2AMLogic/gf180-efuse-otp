@@ -54,7 +54,7 @@ Issues carrying `loom:curated`.
 
 ## Proposed (Architect / Hermit)
 
-_None._
+- **#115**: Remove dead dry-run cleanup in sim/cold-start.sh: program-select dry runs no longer write under records/ *(hermit)*
 
 ## Epics
 
@@ -72,6 +72,6 @@ _None._
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 1 |
 | Curated | 2 |
-| Architect / Hermit proposals | 0 |
+| Architect / Hermit proposals | 1 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
