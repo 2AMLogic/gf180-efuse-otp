@@ -125,9 +125,11 @@ for pop in intact prog; do
   "${KLT_YIELD[@]}" yield-samples "$rec/sets/$nom/report.json" --negative-control "$rec/sets/$ctl/report.json" \
       --description "reference skewed to the wrong side of the $pop fuse population" \
       --format json > "$rec/yield/$pop.samples.json"
-  # Cited report: the analog margin only. The latched-decision measurement is graded in a
-  # separate, uncited report: the committed sense-margin record shows the comparator never
-  # resolves for a resistive fuse, so its negative control cannot discriminate (see README).
+  # Cited report: the analog margin only (margin_v, the ratified row's limit). The latched-
+  # decision measurement is graded in a separate report that block-manifest.json does not
+  # cite; see README for what each record measured (the latch resolves on the committed DUT,
+  # resized under issue 77). Whether that split should change is a signoff decision, not this
+  # script's to state a reason for.
   set +e
   "${KLT_YIELD[@]}" yield "$rec/yield/$pop.samples.json" --measurement margin_v --min-samples "$MIN_SAMPLES" \
       --target-ci-halfwidth "$CI_HALFWIDTH" --format json > "$rec/yield/$pop.yield.json" 2> "$rec/yield/$pop.yield.err"
