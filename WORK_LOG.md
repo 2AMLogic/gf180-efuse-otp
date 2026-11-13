@@ -2,6 +2,17 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-13
+
+- **PR #109**: refactor(sim): use shared bench helpers in program-select and sense-margin, re-attest item 9
+- **PR #107**: refactor(sim): hoist shared bench boilerplate into sim/lib
+- **Issue #108** (closed): Migrate sim/program-select and sim/sense-margin run.sh to shared bench helpers
+- **Issue #106** (closed): Hoist duplicated run.sh boilerplate (arg parse, sub(), record dir) into sim/lib
+
+### 2026-11-12
+
+- **PR #105**: Bump Repo Skills 0.25.10 -> 0.26.1
+
 ### 2026-11-10
 
 - **PR #100**: docs: cite graded sense records and attest characterization report (item 8)
