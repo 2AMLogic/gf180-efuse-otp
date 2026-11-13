@@ -68,7 +68,8 @@ done
 
 if [[ $dry -eq 1 ]]; then
   bench_dry_run "${reqs[@]}"
-  echo "dry run: $rec holds the generated decks and requests only; delete it"
+  rm -rf "$rec"
+  echo "dry run: request set validated; temp dir removed"
   exit 0
 fi
 
