@@ -178,9 +178,11 @@ row "DRC clean including every `EF.*` rule" stays `unmet`.
 - **No routing and no connectivity.** Devices and cells are placed; no wire
   joins them, so the stream is not a circuit and does not match the netlist
   until routing is added.
-- **No LVS, no ERC.** Those are #32 and #33. DRC is reported in the next
-  section: neither partition is clean, and `klt drc` does not run the `EF.*`
-  rules at all (`spec/efuse-otp.md` §1.3).
+- **No LVS, no ERC.** Those are #32 and #33. DRC status is not restated here:
+  the `DRC (T1 item 3)` section above is the one place it is reported. Whatever
+  it reports is clean only under the curated deck's coverage — `klt drc` does
+  not run the `EF.*` rules at all (`spec/efuse-otp.md` §1.3) — so T1 item 3
+  stays `unmet` and no envelope is cited for it.
 - Cell-to-cell clearance is a fixed 2 µm between bounding boxes, not a
   rule-derived spacing.
 - The `item2-analog.attest.json` envelope is hand-written: `klt signoff
