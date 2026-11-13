@@ -4,6 +4,8 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-13
 
+- **PR #113**: refactor(sim): hoist batch dry-run and submit blocks into pdk_env.sh
+- **Issue #112** (closed): Hoist duplicated klt batch dry-run and submit blocks from sim/*/run.sh into sim/lib
 - **PR #109**: refactor(sim): use shared bench helpers in program-select and sense-margin, re-attest item 9
 - **PR #107**: refactor(sim): hoist shared bench boilerplate into sim/lib
 - **Issue #108** (closed): Migrate sim/program-select and sim/sense-margin run.sh to shared bench helpers
