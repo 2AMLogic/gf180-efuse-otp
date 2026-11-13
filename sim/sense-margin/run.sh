@@ -22,13 +22,7 @@ here="$(cd "$(dirname "$0")" && pwd)"
 repo="$(cd "$here/../.." && pwd)"
 source "$here/../lib/pdk_env.sh"        # refuses a tree that is not the pin
 
-dry=0
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --dry-run) dry=1; shift ;;
-    *) echo "usage: run.sh [--dry-run]" >&2; exit 2 ;;
-  esac
-done
+bench_parse_args "$@"
 
 # Same fleet-image rule as sim/program-select/run.sh: the fleet ships gf180mcuD,
 # the pin is gf180mcuC; the model files read here must be byte-identical.
@@ -46,18 +40,9 @@ T_OUT=38n                                # latched sense_out read
 
 netlist="$repo/design/efuse_otp_array.spice"
 [[ -f "$netlist" ]] || { echo "run.sh: $netlist missing" >&2; exit 1; }
-sub() {                                  # print one .subckt ... .ends block from the committed netlist
-  awk -v n="$1" '$1==".subckt" && $2==n {p=1} p {print} p && $1==".ends" {exit}' "$netlist"
-}
+sub() { bench_subckt "$netlist" "$1"; }  # one .subckt ... .ends block from the committed netlist
 
-stamp="$(date -u +%Y%m%dT%H%M%SZ)"
-if [[ $dry -eq 1 ]]; then
-  rec="$(mktemp -d)"
-else
-  rec="$here/records/$stamp-${PDK_REVISION:0:7}"
-  mkdir -p "$here/records"
-  mkdir "$rec"                           # fails if it exists: no overwrite
-fi
+bench_new_record_dir "$here/records" "$dry"
 
 reqs=()
 mk() {                                   # mk <stem> <rfuse> <rref> <sign>
