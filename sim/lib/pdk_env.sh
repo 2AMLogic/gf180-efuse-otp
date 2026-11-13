@@ -48,6 +48,40 @@ pdk_fleet_check() {
   export PDK_FLEET_LIB_DIR
 }
 
+# Shared run.sh boilerplate for the sim/* benches. Defined on source, not run.
+
+# bench_parse_args "$@": sets dry=1 on --dry-run; any other argument is a usage
+# error (exit 2).
+# shellcheck disable=SC2034  # dry is read by the sourcing run.sh
+bench_parse_args() {
+  dry=0
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --dry-run) dry=1; shift ;;
+      *) echo "usage: run.sh [--dry-run]" >&2; exit 2 ;;
+    esac
+  done
+}
+
+# bench_subckt <netlist> <name>: print one .subckt ... .ends block.
+bench_subckt() {
+  awk -v n="$2" '$1==".subckt" && $2==n {p=1} p {print} p && $1==".ends" {exit}' "$1"
+}
+
+# bench_new_record_dir <records dir> <dry 0|1>: sets stamp and rec. Dry runs get
+# a temp dir; otherwise a new append-only <records dir>/<stamp>-<pdk rev:7>,
+# created with a plain mkdir so an existing record is never overwritten.
+bench_new_record_dir() {
+  stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+  if [[ "$2" -eq 1 ]]; then
+    rec="$(mktemp -d)"
+  else
+    rec="$1/$stamp-${PDK_REVISION:0:7}"
+    mkdir -p "$1"
+    mkdir "$rec"                         # fails if it exists: no overwrite
+  fi
+}
+
 if _pdk_env_main; then
   [[ "${BASH_SOURCE[0]}" == "$0" ]] && echo "$PDK_VARIANT_DIR"
   (return 0 2>/dev/null) && return 0 || exit 0

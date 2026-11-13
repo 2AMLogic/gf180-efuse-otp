@@ -20,13 +20,7 @@ here="$(cd "$(dirname "$0")" && pwd)"
 repo="$(cd "$here/../.." && pwd)"
 source "$here/../lib/pdk_env.sh"
 
-dry=0
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --dry-run) dry=1; shift ;;
-    *) echo "usage: run.sh [--dry-run]" >&2; exit 2 ;;
-  esac
-done
+bench_parse_args "$@"
 
 pdk_fleet_check || exit 1
 lib="$PDK_FLEET_LIB_DIR"
@@ -53,15 +47,14 @@ T_OUT=38n
 
 netlist="$repo/design/efuse_otp_array.spice"
 [[ -f "$netlist" ]] || { echo "run.sh: $netlist missing" >&2; exit 1; }
-sub() { awk -v n="$1" '$1==".subckt" && $2==n {p=1} p {print} p && $1==".ends" {exit}' "$netlist"; }
+sub() { bench_subckt "$netlist" "$1"; }  # one .subckt block from the committed netlist
 
 # All klt invocations run from the repo root with repo-relative record paths, so the paths
 # stored in set-report.json, set-manifest.json and the yield/samples files resolve from any
 # checkout (an absolute worktree path does not exist in CI and breaks input verification).
 cd "$repo"
-stamp="$(date -u +%Y%m%dT%H%M%SZ)"
-if [[ $dry -eq 1 ]]; then rec="$(mktemp -d)"; else
-  rec="sim/sense-mc/records/$stamp-${PDK_REVISION:0:7}"; mkdir -p "$repo/sim/sense-mc/records"; mkdir "$repo/$rec"; fi
+bench_new_record_dir "$repo/sim/sense-mc/records" "$dry"
+rec="${rec#"$repo/"}"                    # repo-relative (cwd is $repo); a dry-run temp dir is unchanged
 
 reqs=()
 # mk <stem> <kind: intact|prog> <rfuse> <rref> <n>
