@@ -9,7 +9,7 @@
   "tier": null,
   "t1_item_count": 22,
   "build_t1_item_count": 22,
-  "t1_met_count": 11,
+  "t1_met_count": 12,
   "t1_not_applicable_count": 1,
   "source_doc": "signoff/design-evidence-tiers.md",
   "source_doc_content_hash": "sha256:08dcbfd2c3f2df152868d86c0ad2aa6a43d393b1d266f0b1e914cd8f0a329c58",
@@ -31,40 +31,185 @@
       "partition_boundary": "design/efuse_otp_array.sch (array, row/column drivers with level shifters, sense path incl. comparator) is the analog partition. Boundary nets it exposes: inputs row_sel[31:0], col_sel[7:0], prog_strobe, sense_en (3.3 V, from the controller) and clk (the system clock, routed to the comparator and gated there with sense_en; the clock is a digital-side net that terminates in the analog partition); output sense_out (the comparator's latched result); supplies vdd33, vprog, vss.",
       "text": "committed schematic sources (or generator) plus the netlist derived from them, regenerated on design change.",
       "notes": [],
-      "status": "unmet",
-      "reason": "stale_evidence",
+      "status": "met",
+      "reason": null,
       "graded_by_build": true,
-      "citation": null,
-      "detail": {
-        "content_hash_pin": "stale",
-        "hash_check": {
-          "field": "provenance.input.content_hash",
-          "expected": "sha256:7fca42681c8376cb141b74af4a19ba7ddbc34e1f71a124a8e871ae95203cb5f5",
-          "actual": "sha256:599e2e73c5e86237e1a7c3ceee3ea4b090d2dd20873e33113bb4ee8e555a02b2",
-          "match": false
-        },
-        "compared_against": [
-          "design/efuse_bitcell.sch",
-          "design/efuse_bitcell.sym",
-          "design/efuse_coldrv.sch",
-          "design/efuse_coldrv.sym",
-          "design/efuse_comp.sch",
-          "design/efuse_comp.sym",
-          "design/efuse_ls.sch",
-          "design/efuse_ls.sym",
-          "design/efuse_otp_array.sch",
-          "design/efuse_otp_array.spice",
-          "design/efuse_otp_array.sym",
-          "design/efuse_prim.sym",
-          "design/efuse_row.sch",
-          "design/efuse_row.sym",
-          "design/efuse_rowdrv.sch",
-          "design/efuse_rowdrv.sym",
-          "design/efuse_sense.sch",
-          "design/efuse_sense.sym",
-          "signoff/item1-analog-inventory.json"
-        ],
-        "hint": "content_hash must be the input-set digest over the files in compared_against (provenance.input.content_hash), not the hash of the evidence envelope file"
+      "citation": {
+        "file": "signoff/item1-analog.attest.json",
+        "command": null,
+        "kind": "generic",
+        "check_status": "pass",
+        "content_hash": "sha256:599e2e73c5e86237e1a7c3ceee3ea4b090d2dd20873e33113bb4ee8e555a02b2",
+        "input_verified": true,
+        "exit_status": 0,
+        "artifact_binding": {
+          "t1_item": 1,
+          "path": null,
+          "content_hash": "sha256:599e2e73c5e86237e1a7c3ceee3ea4b090d2dd20873e33113bb4ee8e555a02b2",
+          "input_verified": true,
+          "members": [
+            {
+              "path": {
+                "path": "design/efuse_bitcell.sch",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:5a2f400a3914d8c7e14dbc9d1dd9824ba7800c140fb96d451ef2e504e8810b7e",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/efuse_bitcell.sym",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:b66f442928ad3f2ca54929a2cb428e22b78393f881a56c3a4ca2569e66a4dc1e",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/efuse_coldrv.sch",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:e856ae79cc85df5a23655639c57d81639ba4a7a00aabb64a47b3b42947e3adb7",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/efuse_coldrv.sym",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:b840cdcaba4d56172342a60e74cb9e77334e1930bb23520fcba3b2dc9c04b4ff",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/efuse_comp.sch",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:0093c5d11b4d2e015a864f2c1a616a19c72d4b96b0a5bad4a5ced02f66c54dfe",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/efuse_comp.sym",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:1463b14e318a80b7c1cd7b68503c5cac9d97d31c55a07bcbf398995cb25f3f20",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/efuse_ls.sch",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:038f414860a36a5be5921a746ee28dc3190323f7116f14e91a19c4b3ec463798",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/efuse_ls.sym",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:bd7d6d3d90636615e5b4b35da032012a61c3f1ba1bf77b053a7ad8ee6eebdced",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/efuse_otp_array.sch",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:46a9e758335ae30f2c687625b09ac904fa3322e826cd3dc45062962da3a87143",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/efuse_otp_array.spice",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:ccf79848bae16d8675004c8f5b1c9409c8335c4db9a90bc4ed4686049b2bd16e",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/efuse_otp_array.sym",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:f987db93c644a79ff18156eaeb8a927bc7837c46b8798ce7bcb5e6d2c229266b",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/efuse_prim.sym",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:156214a614f184c57981212e8b6ed5d0ee5e9e5270b5d06a2dfdb5bcf497eb12",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/efuse_row.sch",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:b208d61ca6d3796068c23bad3eafcab71477f403a63bb1bbfd26d79436461cd2",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/efuse_row.sym",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:3867080c4f1cc5fc464c8e66de966d581ba77ff96fda6a60629f396a4bdcd1f1",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/efuse_rowdrv.sch",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:4a0cc398163643085fe1d367b7b8c7cd1cd84b4f408e95da69f8d47775764081",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/efuse_rowdrv.sym",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:1fdf8ad71ea8176af3e11fffc2ab43ee469aa291d337cfd8a1eb648edbdce2a7",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/efuse_sense.sch",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:1ca53d995b61635b4166b1b7b81ed0cb4eed6ecd90e38902614d6cb4a7ecbadb",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "design/efuse_sense.sym",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:2b208f68b4807fc4b19dbfdc55c2958634c6de05b6d73ffc95f2c2ebef55d412",
+              "status": "verified"
+            },
+            {
+              "path": {
+                "path": "signoff/item1-analog-inventory.json",
+                "scope": "repo"
+              },
+              "content_hash": "sha256:93ea87453830d77b7805c42e3dca70fd6117fe2cebcb73ac83ee4a7a2e84cc46",
+              "status": "verified"
+            }
+          ],
+          "summary": "T1 item 1 (Design sources): 19/19 attestation checks passed (klt signoff --attest)",
+          "source": "signoff/item1-analog-inventory.json",
+          "attestation": {
+            "producer": "klt signoff --attest",
+            "inventory_schema_version": 1,
+            "check_count": 19,
+            "passed_count": 19
+          }
+        }
       }
     },
     {

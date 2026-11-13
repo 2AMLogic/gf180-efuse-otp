@@ -14,14 +14,14 @@ The block's verdict of record against the klayout-tools evidence tiers.
 | `item2-analog.attest.json` | Hand-written generic envelope for T1 item 2, analog: binds `layout/efuse_otp_array.gds` by sha256 with a regeneration claim (`layout/regen-gds.sh`); cited for `2.analog`. |
 | `item6-digital-spec.json`, `item6-digital-statement.json` | Item 6, digital: the `not_applicable` form. The spec is a verbatim extract of the digital-bearing rows of `spec/efuse-otp.md` section 2, bound to it by sha256 (`signoff/check-item6-digital.sh`, run in CI); the statement gives each row's non-statistical class and reason. Both are hash-bound in `block-manifest.json` (`6.digital`). |
 | `check-item6-digital.sh` | Fails when `spec/efuse-otp.md` changes (sha256) or an extract row no longer matches a line of it. Run after any spec change, re-derive the extract, then re-hash the manifest. |
-| `block-manifest.signoff.json` | Committed `klt signoff --manifest` output: the verdict of record. Items 2, 8, 9 and 10 are `met` for both partitions; item 1 is `met` (digital) and `unmet` / `stale_evidence` (analog — the `1.analog` pin in `block-manifest.json` no longer matches the committed envelope's composite input hash); item 5 is `met` (analog); item 6 is `met` (analog) and `not_applicable` (digital); every other T1 row is `unmet` / `no_evidence`, and the T2, T3 and T4 rows are `unmet` / `tier_not_supported`. Item 6 analog `met` means the campaign discipline holds for the cited `margin_v` evidence (recorded seed, sufficient samples, detected negative control); it does not say the sense row is established, see `sim/sense-mc/README.md`. |
+| `block-manifest.signoff.json` | Committed `klt signoff --manifest` output: the verdict of record. Items 1, 2, 8, 9 and 10 are `met` for both partitions; item 5 is `met` (analog); item 6 is `met` (analog) and `not_applicable` (digital); every other T1 row is `unmet` / `no_evidence`, and the T2, T3 and T4 rows are `unmet` / `tier_not_supported`. Item 6 analog `met` means the campaign discipline holds for the cited `margin_v` evidence (recorded seed, sufficient samples, detected negative control); it does not say the sense row is established, see `sim/sense-mc/README.md`. |
 | `../sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/{intact,prog}.yield.json` | Item 6, analog: the cited `klt yield` reports (`margin_v` only, post-#85 comparator), one per fuse population, cited with `rows: [P10]` in `block-manifest.json` (`6.analog`). The `*.decision.yield.json` files in the same record are not cited. Item 5 analog cites the six `bench_*` sense-margin corner reports of `sim/sense-margin/records/20261109T002043Z-f6eeac7` for P10 (they declare `margin_v >= 0`, signed so positive is the correct side; the `control_*` reports are not cited, the 260 ohm control fails by design) and reads `met`. |
 | `../layout/drc-*.report.json` | Committed `klt drc` reports for T1 item 3 (`layout/drc.sh`). Both are `status: clean` under the curated deck (deck hash `sha256:0eb6df1b...`), but `EF.*` rules are not evaluated (klayout-tools#4312, #4002), so item 3 is not cited and stays `unmet`; see `layout/README.md`, "DRC". |
 | `klt-pin.txt` | The single place the grader version is pinned. CI installs `$(cat signoff/klt-pin.txt)`. |
 | `item1-digital-inventory.json` | `t1-attestation-inventory` for T1 item 1, digital: the RTL source and the committed gate-level netlist `rtl/efuse_otp_ctrl.gl.v`, whose freshness `check` is `rtl/regen-gl.sh --check` (`local_only`: it needs Yosys and the PDK). |
 | `item1-digital.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.digital` in `block-manifest.json`, pinned by the envelope's own composite `provenance.input.content_hash` (see "Re-attest item 1 (digital)"). |
 | `item1-analog-inventory.json` | `t1-attestation-inventory` for T1 item 1, analog: the xschem schematics and cell symbols in `design/` and the netlist `design/efuse_otp_array.spice`, whose freshness `check` is `design/regen-netlist.sh --check` (`local_only`: it needs xschem). |
-| `item1-analog.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.analog`, pinned by the envelope's own composite `provenance.input.content_hash` (see "Re-attest item 1 (analog)"). The committed pin is stale, so `1.analog` grades `unmet` / `stale_evidence`. |
+| `item1-analog.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.analog`, pinned by the envelope's own composite `provenance.input.content_hash` (see "Re-attest item 1 (analog)"). |
 | `design-evidence-tiers.md` | Copy of the tiers doc shipped with the pinned klt (`klayout-tools==0.9.0`, `klayout_tools/data/design-evidence-tiers.md`), so the record does not move when an installed klt bundles a different doc. |
 
 ## Regenerate the record
@@ -37,6 +37,13 @@ uvx --from "$(cat signoff/klt-pin.txt)" klt signoff \
 
 Exit 3 means the report was produced with items unmet; that is the expected
 state. Any other non-zero exit is a failure.
+
+The item 8 envelope hashes `block-manifest.signoff.json`, so **any** regeneration
+that changes the record leaves it stale: re-attest item 8 (see "Re-attest item 8")
+afterwards, then regenerate once more and confirm the record is byte-identical.
+That second pass always is — items `8.*` are pinned by the inventory sha256, which
+a re-attest does not touch — so the two converge in one round. CI enforces this
+with an item 8 `--check` step.
 
 To bump the pin: change `klt-pin.txt`, replace `design-evidence-tiers.md` with
 the copy shipped in the new release, regenerate, and commit all three together.
@@ -179,6 +186,9 @@ they check that:
   (vacuously true while there are no records);
 - files under `sim/**/records/` are only added, never modified, deleted or renamed;
 - the item 1 (analog) attestation still reproduces (`--attest 1 --check`);
+- the item 8 envelope's recorded hash of `block-manifest.signoff.json` is current
+  (`--attest 8 --check --format json`), so regenerating the record without
+  re-attesting item 8 fails;
 - re-grading the manifest reproduces the committed record byte for byte.
 
 **CI does not check that any evidence is correct.** It checks formats,
