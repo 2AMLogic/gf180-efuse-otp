@@ -4,9 +4,12 @@
 #                                          min/nominal/max pulse width)
 #   verification/run.sh --negative-control run deliberately broken RTL variants;
 #                                          exit 0 only if every one is caught
-# Needs: python3 with venv + network for the first `pip install` (cocotb is
-# pinned in requirements.txt and installed into verification/.venv, never
-# into the host), and Icarus Verilog of the version below.
+#   verification/run.sh --reports DIR      keep each set's klt report in DIR
+# The bench runs through `klt functional-verification` from the pinned klt
+# (signoff/klt-pin.txt); the pinned cocotb (requirements.txt) is supplied to
+# klt's throwaway environment, never installed into the host.
+# Needs: python3 (standard library only), uv on PATH, network for the first
+# klt/cocotb fetch, and Icarus Verilog of the version below.
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -17,10 +20,6 @@ if [ "${ALLOW_TOOL_MISMATCH:-0}" != 1 ]; then
   [ "$ver_iv" = "$EXPECT_IVERILOG" ] || { echo "iverilog $ver_iv found, $EXPECT_IVERILOG required (ALLOW_TOOL_MISMATCH=1 to override)" >&2; exit 2; }
 fi
 
-if [ ! -x .venv/bin/python ] || ! cmp -s requirements.txt .venv/requirements.installed; then
-  python3 -m venv .venv
-  .venv/bin/python -m pip install --quiet -r requirements.txt
-  cp requirements.txt .venv/requirements.installed
-fi
+command -v uvx >/dev/null 2>&1 || { echo "uvx not found; the pinned klt in signoff/klt-pin.txt is reached through it" >&2; exit 2; }
 
-exec .venv/bin/python -I runner.py "$@"
+exec python3 -I runner.py "$@"

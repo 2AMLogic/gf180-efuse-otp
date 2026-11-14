@@ -107,6 +107,6 @@ current. The campaigns are the batch commands in the table.
 |---|---|---|---|---|
 | Program current (A2, decision 0002) | `sim/program-select/run.sh`, `cell.cir.in`, `summarize.py` | `sim/program-select/run.sh --dry-run` | `sim/program-select/run.sh` | open_pdks `f6eeac7`, ngspice 42, klt 0.8.0 |
 | Sense margin (A4/A5/A6, decision 0003) | `sim/sense-margin/run.sh`, `sense.cir.in`, `summarize.py` | `sim/sense-margin/run.sh --dry-run` | `sim/sense-margin/run.sh` | open_pdks `f6eeac7`, ngspice 42, klt 0.8.0 |
-| Controller behaviour (decision 0004) | `verification/run.sh`, `runner.py`, `test_efuse_otp_ctrl.py` | `verification/run.sh` (runs the bench itself) | `verification/run.sh --negative-control` | Icarus 13.0, cocotb 2.1.0 |
+| Controller behaviour (decision 0004) | `verification/run.sh`, `runner.py`, `test_efuse_otp_ctrl.py` | `verification/run.sh` (runs the bench itself) | `verification/run.sh --negative-control` | Icarus 13.0, cocotb 2.1.0, klt 0.9.0 |
 
 The batch campaigns need access to the batch fleet; the cold start does not run a corner.
