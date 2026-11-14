@@ -103,10 +103,15 @@ It runs the controller bench, then `--dry-run` of each analog request set. `--dr
 validates the request set only; it runs no corner and says nothing about margin or
 current. The campaigns are the batch commands in the table.
 
-| Spec row | Bench | Cold-start (validate) | Campaign (batch, writes a record) | Pinned |
-|---|---|---|---|---|
-| Program current (A2, decision 0002) | `sim/program-select/run.sh`, `cell.cir.in`, `summarize.py` | `sim/program-select/run.sh --dry-run` | `sim/program-select/run.sh` | open_pdks `f6eeac7`, ngspice 42, klt 0.8.0 |
-| Sense margin (A4/A5/A6, decision 0003) | `sim/sense-margin/run.sh`, `sense.cir.in`, `summarize.py` | `sim/sense-margin/run.sh --dry-run` | `sim/sense-margin/run.sh` | open_pdks `f6eeac7`, ngspice 42, klt 0.8.0 |
-| Controller behaviour (decision 0004) | `verification/run.sh`, `runner.py`, `test_efuse_otp_ctrl.py` | `verification/run.sh` (runs the bench itself) | `verification/run.sh --negative-control` | Icarus 13.0, cocotb 2.1.0 |
+| Spec row | Bench | Cold-start (validate) | Campaign (batch, writes a record) |
+|---|---|---|---|
+| Program current (A2, decision 0002) | `sim/program-select/run.sh`, `cell.cir.in`, `summarize.py` | `sim/program-select/run.sh --dry-run` | `sim/program-select/run.sh` |
+| Sense margin (A4/A5/A6, decision 0003) | `sim/sense-margin/run.sh`, `sense.cir.in`, `summarize.py` | `sim/sense-margin/run.sh --dry-run` | `sim/sense-margin/run.sh` |
+| Controller behaviour (decision 0004) | `verification/run.sh`, `runner.py`, `test_efuse_otp_ctrl.py` | `verification/run.sh` (runs the bench itself) | `verification/run.sh --negative-control` |
+
+This table does not restate the versions: the tool pins are the `pins` block of
+`signoff/attest/item9.json` (checked in CI) and `sim/pdk.json` (PDK revision and variant),
+and each `record.json` names the klt and ngspice that actually produced it — the analog
+benches call the `klt` on `PATH` rather than gating on the pinned release.
 
 The batch campaigns need access to the batch fleet; the cold start does not run a corner.
