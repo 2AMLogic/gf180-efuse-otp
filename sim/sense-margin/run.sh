@@ -15,8 +15,10 @@
 #
 # Exit 0 once the record is written. Pass/fail is data in record.json, not a
 # script error. A failed batch submit exits non-zero and does not fall back to a
-# local grid. --dry-run validates the request set with `klt sim --dry-run` and
-# deletes nothing it did not create (it leaves no record; it uses a temp dir).
+# local grid; a submit that left any of the eight expected reports missing or
+# without corners exits 4 from summarize.py without writing a record, because a
+# partial set is not evidence. --dry-run validates the request set with `klt sim
+# --dry-run` and deletes nothing it did not create (no record; it uses a temp dir).
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 repo="$(cd "$here/../.." && pwd)"
@@ -34,6 +36,7 @@ INTACT_OHMS="140 200 260"                # A4
 PROGRAMMED_OHMS="630 900 open"           # A5; open = 1 Gohm
 RREF_OHM=400                             # A6, decision 0003
 RREF_CONTROL_OHM=200                     # negative control: reference inside the intact range
+RFUSE_CONTROL_OHMS="140 260"             # the intact values re-read against RREF_CONTROL_OHM
 T_EDGE=15n                               # clock edge; bias and sbl/sref settle before it
 T_PRE=14.9n                              # margin read, just before the edge
 T_OUT=38n                                # latched sense_out read
@@ -75,7 +78,7 @@ mk() {                                   # mk <stem> <rfuse> <rref> <sign>
 }
 for r in $INTACT_OHMS; do mk "bench_rf${r}_rr${RREF_OHM}" "$r" "$RREF_OHM" -1; done
 for r in $PROGRAMMED_OHMS; do mk "bench_rf${r}_rr${RREF_OHM}" "$r" "$RREF_OHM" 1; done
-for r in 140 260; do mk "control_rf${r}_rr${RREF_CONTROL_OHM}" "$r" "$RREF_CONTROL_OHM" -1; done
+for r in $RFUSE_CONTROL_OHMS; do mk "control_rf${r}_rr${RREF_CONTROL_OHM}" "$r" "$RREF_CONTROL_OHM" -1; done
 
 if [[ $dry -eq 1 ]]; then
   bench_dry_run "${reqs[@]}"
@@ -91,6 +94,7 @@ ngspice_version="$(ngspice -v | sed -n 's/^\*\* ngspice-\([0-9.]*\).*/\1/p' | he
 echo "record: $rec"
 python3 -I "$here/summarize.py" "$rec" --rref "$RREF_OHM" --rref-control "$RREF_CONTROL_OHM" \
     --rfuse-intact "$INTACT_OHMS" --rfuse-programmed "$PROGRAMMED_OHMS" \
+    --rfuse-control "$RFUSE_CONTROL_OHMS" \
     --t-pre "$T_PRE" --t-out "$T_OUT" --t-edge "$T_EDGE" \
     --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
     --ngspice "$ngspice_version" --klt "$(klt --version)"

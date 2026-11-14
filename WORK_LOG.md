@@ -2,8 +2,36 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-14
+
+- **PR #152**: docs: drop the retyped tool-version column from the testbench inventory
+- **Issue #164** (closed): check_evidence_format.py grades zero sim records: the glob misses records/<stamp>/record.json and reports a vacuous pass
+- **Issue #163** (closed): Re-evaluate T1 item 3's EF coverage disclosure: the pinned klt deck gained an EF scope and now checks five eFuse-layer rules
+- **Issue #147** (closed): Remove the retyped tool versions from sim/README.md's testbench inventory: the analog rows say klt 0.8.0, the attested item 9 inventory pins 0.9.0
+
 ### 2026-11-13
 
+- **PR #143**: refactor(sense-mc): derive record.json's run constants from run.sh instead of retyping them
+- **PR #142**: fix(sense-mc): drop the non-resolving-latch reason, take variant strings from bench_record
+- **PR #141**: docs(layout): stop the "not claimed" bullet from restating DRC status
+- **PR #138**: refactor(signoff): produce both item 2 envelopes with klt signoff --attest 2
+- **PR #136**: docs: drop the Yosys version gate rtl/synth.sh never had
+- **PR #135**: docs(corner-verification): state 45 corners per request, supplies paired not crossed
+- **PR #132**: fix(signoff): re-pin 1.analog, re-attest item 8, and guard it in CI
+- **PR #127**: docs(signoff): state each re-attest procedure and the item 1 pin rule once
+- **PR #126**: build: wire check:ci to the repo's hermetic checks, drop three always-green stubs
+- **PR #123**: refactor(sim): hoist record-provenance boilerplate into sim/lib/bench_record.py
+- **PR #122**: refactor: drop dead records/ cleanup loop from sim/cold-start.sh
+- **Issue #140** (closed): Stop retyping sim/sense-mc/run.sh's run constants in summarize.py: the decision limit, fuse values, control references and corner count reach record.json as separate literals
+- **Issue #139** (closed): layout/README.md 'What is not claimed' says neither partition is DRC clean; the DRC section below it reports both clean
+- **Issue #137** (closed): Remove two stale provenance statements from sim/sense-mc: the 'comparator never resolves' reason in run.sh and the hand-typed PDK variant strings in summarize.py
+- **Issue #134** (closed): Correct the 135-corner statements for sim/corner-verification: each request runs 45 corners (supplies paired, not crossed)
+- **Issue #129** (closed): Repair the stale 1.analog manifest pin and the drifted record hash in the item 8 envelope
+- **Issue #128** (closed): Remove the documented Yosys version gate that rtl/synth.sh never had, and the leftover 'cold start needs Yosys' statements
+- **Issue #125** (closed): Remove the stale duplicate 'Re-attest item 8' section and the contradicted item 1 pin instructions from signoff/README.md
+- **Issue #124** (closed): Replace the four always-green placeholder scripts in package.json with one real check:ci
+- **Issue #117** (closed): Hoist duplicated record-provenance boilerplate from sim/*/summarize.py into sim/lib
+- **Issue #115** (closed): Remove dead dry-run cleanup in sim/cold-start.sh: program-select dry runs no longer write under records/
 - **PR #113**: refactor(sim): hoist batch dry-run and submit blocks into pdk_env.sh
 - **Issue #112** (closed): Hoist duplicated klt batch dry-run and submit blocks from sim/*/run.sh into sim/lib
 - **PR #109**: refactor(sim): use shared bench helpers in program-select and sense-margin, re-attest item 9
