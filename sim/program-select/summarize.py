@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """Fold the per-(fuse, width) klt sim reports of a program-select run into record.json.
 
-Called by run.sh with the record directory. Reads sets/cell_r<ohm>_w<um>/report.json,
-lists every PVT point per width, and names the binding corner
-(minimum fuse current) per width. A width is `all_pass` only when every point
-carries a finite current >= the requirement; `candidate` additionally needs
-every Vgs/Vds within the stated voltage limit. No width is chosen unless a
-candidate exists.
+Called by run.sh with the record directory and the grid it submitted
+(--fuse-ohms, --widths-um). Loads sets/cell_r<ohm>_w<um>/report.json for every
+expected (fuse, width) pair by name, so a request whose report never came back
+is a hard error rather than a smaller grid. Lists every PVT point and names the
+binding corner (minimum fuse current) per width. A width is `all_pass` only
+when every point carries a finite current >= the requirement; `candidate`
+additionally needs every Vgs/Vds within the stated voltage limit. No width is
+chosen unless a candidate exists.
 """
 import argparse
-import glob
 import json
 import math
 import os
-import re
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
@@ -26,14 +26,34 @@ def main():
     ap.add_argument("--ireq", type=float, required=True)
     ap.add_argument("--vmax", type=float, required=True)
     ap.add_argument("--rroute", type=float, required=True)
+    ap.add_argument("--fuse-ohms", required=True)
+    ap.add_argument("--widths-um", required=True)
     bench_record.add_common_args(ap)
     a = ap.parse_args()
+    fuse_ohms = [int(x) for x in a.fuse_ohms.split()]
+    widths_um = [int(x) for x in a.widths_um.split()]
+    if not fuse_ohms or not widths_um:
+        # An empty grid would make every verdict below vacuously true.
+        ap.error("--fuse-ohms and --widths-um must each name at least one value")
+
+    # The grid run.sh submitted, named rather than discovered. A partial set (a
+    # request errored or was refused, bench_submit_set rc=4) is not evidence, so
+    # refuse before anything is computed or written -- the same rule
+    # sim/sense-mc/run.sh applies to its own set.
+    expected = [(r, w, "cell_r%d_w%d" % (r, w)) for r in fuse_ohms for w in widths_um]
+    missing = [stem for _, _, stem in expected
+               if not os.path.isfile(os.path.join(a.rec, "sets", stem, "report.json"))]
+    if missing:
+        print("no report for %d of %d expected requests: %s"
+              % (len(missing), len(expected), " ".join(missing)), file=sys.stderr)
+        print("a partial set is not evidence; no record written (see %s/set-report.json, "
+              "%s/klt.err)" % (a.rec, a.rec), file=sys.stderr)
+        raise SystemExit(4)
 
     widths = {}
     backends, jobs, engines = set(), set(), set()
-    for path in sorted(glob.glob(os.path.join(a.rec, "sets", "cell_r*_w*", "report.json"))):
-        m_ = re.search(r"cell_r(\d+)_w(\d+)", path)
-        fuse, wum = int(m_.group(1)), int(m_.group(2))
+    for fuse, wum, stem in expected:
+        path = os.path.join(a.rec, "sets", stem, "report.json")
         rep = bench_record.collect_env(json.load(open(path)), backends, jobs, engines)
         for c in rep["corners"]:
             m = {x["name"]: x.get("value") for x in c.get("measurements", [])}
@@ -84,7 +104,7 @@ def main():
         "device": "nfet_06v0, L=0.7u, nf=1",
         "pvt": {"process": ["typical", "ff", "ss", "fs", "sf"],
                 "temp_c": [-40, 25, 125], "vprog_v": [4.5, 5.0, 5.5],
-                "fuse_ohm": [140, 200, 260]},
+                "fuse_ohm": fuse_ohms},
         "requirement": {"i_fuse_min_a": a.ireq, "source": "assumption A2, spec/efuse-otp.md section 2 (no PDK source)"},
         "assumptions": {
             "routing_resistance_ohm": {"value": a.rroute, "status": "assumption, no documented source"},
@@ -102,7 +122,8 @@ def main():
     }
     bench_record.write_record(a.rec, rec)
     if not complete:
-        print("incomplete: some points have no current (see report_r*.json diagnostics)")
+        print("incomplete: some points have no current "
+              "(see sets/cell_r<ohm>_w<um>/report.json diagnostics)")
         raise SystemExit(3)
 
 
