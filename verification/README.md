@@ -8,9 +8,16 @@ verification/run.sh --negative-control # exit 0 only if every deliberately broke
 ```
 
 `run.sh` checks the tool version (Icarus Verilog 13.0;
-`ALLOW_TOOL_MISMATCH=1` overrides), creates `verification/.venv` with the pinned
-`cocotb==2.1.0` from `requirements.txt` (first run needs network; nothing is
-installed into the host), then runs `runner.py`.
+`ALLOW_TOOL_MISMATCH=1` overrides), then runs `runner.py`, which drives every
+parameter set through `klt functional-verification` from the pinned klt
+(`signoff/klt-pin.txt`). The pinned `cocotb==2.1.0` from `requirements.txt` is
+supplied to klt's throwaway environment (first run needs network; nothing is
+installed into the host). `runner.py` itself needs only the standard library.
+
+There is one execution path: the reports CI gates on and the reports committed
+under `sim/controller-fv/` are produced by the same code, so neither can drift
+past the other. A run that cannot produce a klt report fails loudly rather than
+reporting a pass.
 
 ## Parameter sets
 
@@ -34,19 +41,30 @@ needs the 64-bit width computation).
 
 ## Negative control
 
-`--negative-control` copies the RTL into `build/`, applies one-line defects
-(arming bypassed, pulse off by one, program strobe not reset-gated) and runs the
-nominal 32 x 8 bench on each. It exits 0 only if the named check fails for every
-defect, and non-zero (including when a pattern no longer matches the RTL) otherwise.
+`--negative-control` copies the RTL into `build/mutants/`, applies one-line
+defects (arming bypassed, pulse off by one, program strobe not reset-gated) and
+runs the nominal 32 x 8 bench on each, through the same klt path as every other
+run. It reads each defect's verdict from the klt report's per-test
+`tests[].status`, and exits 0 only if the named check fails for every defect,
+and non-zero (including when a pattern no longer matches the RTL) otherwise.
 
 Expected: `ALL CHECKS PASSED` for `run.sh`, `NEGATIVE CONTROL OK` for the mode above.
 CI runs both modes in the `controller` job of `.github/workflows/ci.yml`.
 
-## klt functional-verification
+## Reports
 
-`verification/klt-fv.sh [outdir]` runs the same bench through the pinned
-`klt functional-verification`, one request per parameter set. The requests are
-generated from `CONFIGS` in `runner.py` (`runner.py --emit-klt-requests DIR`), the
-single table of parameter sets; expected pulse/settle counts are passed through the
-environment as in `runner.py`. Reports are kept in `sim/controller-fv/`
-(9 sets, 12/12 checks each).
+Every run writes one klt report per parameter set. By default they go to
+`verification/build/` (gitignored) along with the generated requests
+(`build/requests/`) and klt's run artifacts; `run.sh --reports DIR` puts the
+reports in `DIR` instead.
+
+`verification/klt-fv.sh [outdir]` is a thin wrapper over that option and is how
+the committed reports in `sim/controller-fv/` were produced (9 sets, 12/12
+checks each; default outdir `sim/controller-fv`). Those are append-only
+evidence: regenerate to a temporary directory to compare, never over the
+committed files.
+
+`runner.py --emit-klt-requests DIR` writes the requests without running
+anything. `CONFIGS` in `runner.py` is the single table of parameter sets, and
+each set's expected pulse/settle counts reach the bench through the
+environment.
