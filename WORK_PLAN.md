@@ -21,12 +21,15 @@ _None._
 
 - **#35**: T1 item 5 (corner verification, digital): klt sta and klt functional-verification for the controller
 - **#73**: Route the fuse-free analog leaf cells (efuse_ls, efuse_coldrv) and LVS-match each one
+- **#172**: Route efuse_ls in the layout generator and LVS-match it with the pinned klt (first slice of #73)
 
 ## Ready
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#161**: rtl/synth.sh reports twice the real latch count: replace the hand-rolled log scraper with a Yosys assertion
+- **#155**: sim/controller-fv reports are klt schema_version 1; the pinned klt now emits 2
+- **#167**: Single-source the fleet-checked model-file list: pdk_env.sh loops one copy while every record's variant_simulated names another
+- **#177**: Refuse an empty report in sim/program-select/summarize.py: after #146 a present-but-empty report still records complete: true and selects the narrowest width
 
 ## In Progress
 
@@ -34,20 +37,18 @@ Issues currently being built (`loom:building`).
 
 - **#35**: T1 item 5 (corner verification, digital): klt sta and klt functional-verification for the controller
 - **#144**: Remove the copied bench body and subcircuits from sim/sense-margin/probe/probe.cir.in: build the 14 probe decks from sense.cir.in and the committed netlist
-- **#146**: Remove the report glob in sim/program-select/summarize.py: a partial result set is recorded as complete and can select a narrower width
-- **#148**: Remove the second controller-bench execution path: runner.py runs cocotb directly while the committed evidence comes from klt functional-verification
-- **#149**: Correct two false statements in layout/README.md about the gf180mcu_7t_6M PDN preset: it does combine with overrides, and the pinned klt no longer emits split_cuts
 - **#150**: Remove the local ngspice -v probe from the batch benches: 4 of 14 records name ngspice 42 while every corner ran on the fleet's ngspice 46
 - **#151**: Remove the stale 'not simulated' sense statements from the corner-bench summarizers: new records still name closed #36 for effects sim/sense-mc now simulates
 - **#154**: Establish the digital stream on the pinned klt 0.9.0, folding in the hand-written PDN block -> preset: gf180mcu_7t_6M
+- **#161**: rtl/synth.sh reports twice the real latch count: replace the hand-rolled log scraper with a Yosys assertion
+- **#169**: Remove the report glob in sim/sense-margin/summarize.py: a partial set is recorded and the negative control can be graded over half its requests
+- **#175**: Wire sim/program-select/test_summarize.py into check:ci: 141 lines of regression test that nothing runs
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#157**: fix(sim): drop the stale sense "not simulated" statements from the corner-bench summarizers
-- **#162**: docs: attribute the split_cuts PDN workaround to klt 0.8.0, not the pinned preset
-- **#165**: build(layout): re-establish the digital stream on the pinned klt and route the PDN through the gf180mcu_7t_6M preset
+- **#180**: test(sim): run the program-select summarize self-test in check:ci
 
 ## Approved (Awaiting Merge)
 
@@ -56,7 +57,8 @@ PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 - **#94**: spec: ratify 10 MHz controller clock and cite STA + functional reports for item 5 digital
 - **#156**: refactor: compose probe decks from sense.cir.in and the committed netlist
 - **#158**: fix: record the simulator version that ran the corners, not the local probe
-- **#159**: fix(sim): load the program-select grid by name so a partial set is refused
+- **#171**: docs: roadmap as of 2026-11-13
+- **#178**: fix(sim): load the sense-margin request set by name so a partial set is refused
 
 ## Proposed
 
@@ -64,10 +66,10 @@ Issues carrying `loom:curated`.
 
 - **#3**: Track the gap to T1 (klayout-tools design-evidence-tiers.md) *(curated)*
 - **#73**: Route the fuse-free analog leaf cells (efuse_ls, efuse_coldrv) and LVS-match each one *(curated)*
-- **#149**: Correct two false statements in layout/README.md about the gf180mcu_7t_6M PDN preset: it does combine with overrides, and the pinned klt no longer emits split_cuts *(curated)*
+- **#133**: Root README understates which signoff checks CI runs *(curated)*
 - **#154**: Establish the digital stream on the pinned klt 0.9.0, folding in the hand-written PDN block -> preset: gf180mcu_7t_6M *(curated)*
 - **#155**: sim/controller-fv reports are klt schema_version 1; the pinned klt now emits 2 *(curated)*
-- **#160**: probe/README.md:20 claims `both` sizing is what the schematic carries; the netlist carries the 8u/2.24u pair *(curated)*
+- **#172**: Route efuse_ls in the layout generator and LVS-match it with the pinned klt (first slice of #73) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -75,6 +77,7 @@ Issues carrying `loom:curated`.
 - **#120**: Remove sim/program-select/program-select.sch: never netlisted, drifted from the simulated deck (W=10u vs 20-100 um swept) *(hermit)*
 - **#131**: Remove the vendored signoff/design-evidence-tiers.md: byte-identical to the copy the pinned klt already ships and reads by default *(hermit)*
 - **#145**: Stop sta/run.sh gating on the 10 ns headroom case: exit 0 is unreachable on the committed design *(hermit)*
+- **#179**: Hoist the last hand-copied run.sh boilerplate into sim/lib/pdk_env.sh: the ngspice-version provenance regex is byte-identical in 5 benches *(hermit)*
 
 ## Epics
 
@@ -86,12 +89,12 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 1 |
 | Very important | 0 |
-| Important | 2 |
-| Ready (`loom:issue`) | 1 |
+| Important | 3 |
+| Ready (`loom:issue`) | 3 |
 | In Progress (`loom:building`) | 8 |
-| PRs awaiting review | 3 |
-| Approved PRs awaiting merge | 4 |
+| PRs awaiting review | 1 |
+| Approved PRs awaiting merge | 5 |
 | Curated | 6 |
-| Architect / Hermit proposals | 4 |
+| Architect / Hermit proposals | 5 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
