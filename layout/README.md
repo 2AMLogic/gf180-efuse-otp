@@ -8,7 +8,7 @@ analog partition is below.
 
 | File | Role |
 |---|---|
-| `pnr-request.json` | The `klt place-and-route` request: `gf180mcu_fd_sc_mcu7t5v0`, 40 % utilization, 10 µm core margin, explicit PDN straps and connects (the `gf180mcu_7t_6M` recipe values, written out because a preset cannot be combined with overrides, with the `split_cuts` option dropped; see DRC below), `power.tapcell.distance_um` 15, I/O pins on Metal3 (horizontal) / Metal2 (vertical), `target_stage: route`, seed 1, `portable_paths`. |
+| `pnr-request.json` | The `klt place-and-route` request: `gf180mcu_fd_sc_mcu7t5v0`, 40 % utilization, 10 µm core margin, explicit PDN straps and connects (the `gf180mcu_7t_6M` recipe values with the `split_cuts` option dropped — written out for klt 0.8.0, whose preset emitted `-split_cuts {Metal3 0.128}`, because `power.preset` and explicit `power.straps` are mutually exclusive; the pinned 0.9.0 preset carries `split_cuts: null`, so #154 replaces this block with the preset. See DRC below), `power.tapcell.distance_um` 15, I/O pins on Metal3 (horizontal) / Metal2 (vertical), `target_stage: route`, seed 1, `portable_paths`. |
 | `pnr.sh` | Runs the flow with the pinned klt (`signoff/klt-pin.txt`), refuses to write anything unless the response is `status: ok`, `stage_reached: route`, `power.pdn: true` with `route_drc_violation_count` and `antenna_violation_count` both 0, and writes the files below. `--check` runs `klt place-and-route --check` plus the GDS sha256; `--check --rerun` re-runs the flow and diffs the verdict-bearing fields. |
 | `pnr-report.json` | Committed `--format json` response. Route stage reached, 0 route DRC and 0 antenna violations, `power.pdn: true`, `power.connects[].split_cuts: null`, `power.tapcell_master: gf180mcu_fd_sc_mcu7t5v0__filltie`. |
 | `efuse_otp_ctrl.gds` | Routed GDS (standard-cell GDS views merged in by klt). Its sha256 is in `efuse_otp_ctrl.gds.sha256`. |
@@ -137,14 +137,17 @@ Sources (from the reports' `source_cell`):
 
   `source_cell` names the cell whose geometry the polygon sits in, not the cause.
   Two causes in our request account for all 2525:
-  1. **PDN via stack.** The `gf180mcu_7t_6M` preset connects Metal1 to Metal4 with
-     `-split_cuts {Metal3 0.128}`. Replacing the preset with the same straps and
+  1. **PDN via stack.** The klt 0.8.0 `gf180mcu_7t_6M` preset connected Metal1 to
+     Metal4 with `-split_cuts {Metal3 0.128}`. Replacing the preset with the same straps and
      connects minus `split_cuts` (`layout/pnr-request.json`) removed every
      `metal2/3/4.ongrid.1`, `via2/3.ongrid.1` and `via2/3.width.1` hit (2022 in
      total), including the 666 (24 + 426 + 108 + 108) attributed to foundry cells: those
      polygons were the foundry cells' shapes overlaid by the oversized cuts, not
      defects of the cells. Measured: the re-run, same seed, has 0 such hits. This is
-     klayout-tools#4301 gap 1; no new tool issue is needed.
+     klayout-tools#4301 gap 1; no new tool issue is needed. That gap closed upstream on
+     2026-10-27: the preset in the pinned klt 0.9.0 (`signoff/klt-pin.txt`) carries
+     `split_cuts: null` on the same Metal1→Metal4 connect, so the hand-written block is
+     now redundant rather than load-bearing — #154 replaces it with the preset.
   2. **Tap cell pitch.** The tap-distance rules (15 µm, 5V/6V) are about the tap
      cells' placement. The default pitch is 100 µm, so 503 hits. With
      `power.tapcell.distance_um: 15` (171 tap cells instead of 19) both

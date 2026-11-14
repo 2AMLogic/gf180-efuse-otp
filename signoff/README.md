@@ -173,7 +173,8 @@ non-empty top cell and an on-grid database unit. See `layout/README.md`,
 `.github/workflows/ci.yml` has two jobs. `harness` installs only Python, the
 pinned klt and `uv` (no PDK, ngspice or xschem; the KLayout Python module comes
 with the pinned klt, which is how `--attest 2` reads a stream); `controller` builds the pinned
-Icarus 13.0 and Yosys 0.67 (`scripts/ci/install_eda.sh`, cached) and runs
+Icarus 13.0 and Yosys 0.67 (`scripts/ci/install_eda.sh`, cached), installs `uv`
+(the bench reaches the pinned klt through `uvx`) and runs
 `verification/run.sh`, its `--negative-control` and `rtl/synth.sh`. Together
 they check that:
 
