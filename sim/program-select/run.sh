@@ -10,7 +10,9 @@
 #
 # Exit 0 once the record is written. Pass/fail against 10 mA is data in
 # record.json, not a script error. A failed batch submit exits non-zero and
-# does not fall back to a local grid.
+# does not fall back to a local grid; a submit that left any expected report
+# missing exits 4 from summarize.py without writing a record, because a partial
+# set is not evidence.
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 source "$here/../lib/pdk_env.sh"        # refuses a tree that is not the pin
@@ -79,5 +81,6 @@ bench_submit_set "$rec" "${reqs[@]}"
 ngspice_version="$(ngspice -v | sed -n 's/^\*\* ngspice-\([0-9.]*\).*/\1/p' | head -1)"
 echo "record: $rec"
 python3 -I "$here/summarize.py" "$rec" --ireq "$IREQ_A" --vmax "$VMAX_RATING" \
-    --rroute "$RROUTE_OHM" --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
+    --rroute "$RROUTE_OHM" --fuse-ohms "$FUSE_OHMS" --widths-um "$WIDTHS_UM" \
+    --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
     --ngspice "$ngspice_version" --klt "$(klt --version)"
