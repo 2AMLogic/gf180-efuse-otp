@@ -1,10 +1,16 @@
 # Single-corner comparator probes (issue 77)
 
-Local single-unit `ngspice -b` runs (one corner each, not a grid), built from the
-decks in `records/20261030T223615Z-f6eeac7/` (old comparator sizes inline).
+Local single-unit `ngspice -b` runs (one corner each, not a grid). These probes began as
+the decks in `records/20261030T223615Z-f6eeac7/` (old comparator sizes inline); they are
+now composed from the committed sources instead, so they follow the design. The decks as
+they were run stay exactly where they were: in `records/`.
 
-Every probe is `probe.cir.in` with a few fields overridden; the overrides are the table in
-`gen_probe.sh`. Regenerate a deck with `./gen_probe.sh <name> > <name>.cir` and run
+Every probe is the sense-margin bench body (`../sense.cir.in`) plus the `efuse_sense` and
+`efuse_comp` subcircuits of `design/efuse_otp_array.spice`, assembled by `gen_probe.sh` the
+way `../run.sh` assembles its decks, with the comparator sizes overridden per probe from the
+table in `gen_probe.sh`. A probe is therefore the committed sense path apart from those
+sizes, and `gen_probe.sh` refuses to emit a deck if the netlist no longer carries the sizes
+the overrides rewrite. Regenerate a deck with `./gen_probe.sh <name> > <name>.cir` and run
 `ngspice -b <name>.cir` (`./gen_probe.sh --list` lists the names). The library path comes from
 `sim/lib/pdk_env.sh`.
 
