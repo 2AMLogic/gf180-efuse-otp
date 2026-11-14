@@ -45,26 +45,30 @@ foundry `EF.*` rule set, and decision 0006 is not yet ratified.
 
 ## Now
 
-1. **Replace the latch log scraper with a Yosys assertion** (#161, `loom:issue`).
-   Done when `rtl/synth.sh` fails on one inferred latch through
-   `select -assert-none` and no longer sums `stat` lines from the log.
-2. **Route `efuse_ls` in the generator and LVS-match it** (no issue yet; first
-   slice of #73, seed 1). Done when `klt lvs` of the routed cell against its
-   `.subckt` in `design/efuse_otp_array.spice` reports `status: match` and the
-   report is committed under `layout/`. The cell holds six MOS devices and no
-   fuse, so the missing eFuse device class does not block it. `klt gen-compose`
-   alone left two of seven nets unrouted in the #73 attempt.
-3. **LVS the routed controller** (no issue yet; digital half of #32, seed 2).
+1. **Replace the latch log scraper with a Yosys assertion** (#161,
+   `loom:building` — in flight, do not pick it up again). Done when
+   `rtl/synth.sh` fails on one inferred latch through `select -assert-none`
+   and no longer sums `stat` lines from the log.
+2. **Route `efuse_ls` in the generator and LVS-match it** (#172,
+   `loom:triage`; first slice of #73). Done when `klt lvs` of the routed cell
+   against its `.subckt` in `design/efuse_otp_array.spice` reports
+   `status: match` and the report is committed under `layout/`. The cell holds
+   six MOS devices and no fuse, so the missing eFuse device class does not
+   block it. `klt gen-compose` alone left two of seven nets unrouted in the
+   #73 attempt.
+3. **LVS the routed controller** (#173, `loom:triage`; digital half of #32).
    Done when `klt lvs` of `layout/efuse_otp_ctrl.gds` against
    `layout/efuse_otp_ctrl.asbuilt.v` is committed with `status: match`. The
    controller draws no fuse. Re-run if #154 lands after: reports are hash-pinned.
-4. **SDF-annotated controller re-run** (no issue yet; digital half of #61,
-   seed 3). Done when a `klt functional-verification` report on the as-built
+4. **SDF-annotated controller re-run** (#174, `loom:triage`; digital half of
+   #61). Done when a `klt functional-verification` report on the as-built
    netlist with `environment.sdf.annotated: true` is committed and every test
    passes. The committed reports carry `"sdf": null`. Same hash note as item 3.
 
-In flight, not to be picked up twice: #154 (digital stream re-established on the
-pinned klt), PRs #153, #156, #157, #158, #159, #162, and curated #155 and #160.
+In flight, not to be picked up twice: #161 (Now item 1), #154 (digital stream
+re-established on the pinned klt), PRs #153, #156, #157, #158, #159, #162, and
+curated #155 and #160. Issue and label state in this section is as read on
+2026-11-14; the evidence claims elsewhere stand at the sha in the header.
 
 ## Next
 
@@ -104,8 +108,10 @@ pinned klt), PRs #153, #156, #157, #158, #159, #162, and curated #155 and #160.
 On the operator:
 
 - **PR #94** ratifies decision 0006 (10 MHz controller clock). Judge-approved,
-  under a ratification hold, and now conflicting with `main` in four `signoff/`
-  files. It gates 5.digital (#35) and #145.
+  under a ratification hold, and now conflicting with `main` in two `signoff/`
+  files — `signoff/README.md` and `signoff/block-manifest.signoff.json`. Two
+  further `signoff/` files are in the merge and auto-merge clean. It gates
+  5.digital (#35) and #145.
 - **Item 3 disclosure wording** (#60). Under klt 0.9.0 the deck checks seven
   eFuse-layer rules but still lists all 24 foundry `EF.*` IDs as unmodeled.
   Whether item 3 may be cited with a partial-coverage statement, and whether
