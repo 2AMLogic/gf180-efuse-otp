@@ -178,7 +178,7 @@ Icarus 13.0 and Yosys 0.67 (`scripts/ci/install_eda.sh`, cached) and runs
 they check that:
 
 - the controller bench passes, the negative control catches every seeded
-  defect, and synthesis reports zero latches;
+  defect, and no latch cell survives generic synthesis;
 - the committed item 10 and item 9 envelopes match a fresh attestation;
 
 - the checker self-tests still reject seeded-bad input;
