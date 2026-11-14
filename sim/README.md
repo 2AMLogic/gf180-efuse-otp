@@ -19,8 +19,13 @@ revision it ran under.
 (the pinned/simulated variant statement, the timestamp and tool versions, the
 backend and remote job ids, and the `record.json` writer). The variant
 statement is built from the file list `pdk_fleet_check` actually compares, so
-it cannot go stale against the check it describes. `summarize.py` runs under
-`python3 -I`, so it imports the module through an explicit `sys.path` insert.
+it cannot go stale against the check it describes. The simulator version
+(`engine_versions`) is collected from the `environment.engine_version` of the
+reports in the record, not probed on the submitting host: these campaigns are
+batch only, so the host's own `ngspice` runs no corner. It is a sorted list, so
+a set whose corners ran on more than one engine version stays visible.
+`summarize.py` runs under `python3 -I`, so it imports the module through an
+explicit `sys.path` insert.
 
 ## Cold start
 

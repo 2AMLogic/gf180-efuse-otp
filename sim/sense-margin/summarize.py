@@ -101,14 +101,14 @@ def main():
     intact = a.rfuse_intact.split()
     programmed = a.rfuse_programmed.split()
     bench, control = {}, {}
-    backends, jobs = set(), set()
+    backends, jobs, engines = set(), set(), set()
     reports = load(a.rec, "*")
     for stem, rep in reports.items():
         m = re.match(r"(bench|control)_rf(\w+)_rr(\d+)$", stem)
         if not m:
             continue
         kind, rf, rr = m.group(1), m.group(2), int(m.group(3))
-        bench_record.collect_env(rep, backends, jobs)
+        bench_record.collect_env(rep, backends, jobs, engines)
         pts = points(rep, rf, rf in programmed)
         (bench if kind == "bench" else control)[rf] = (rr, pts)
 
@@ -135,7 +135,7 @@ def main():
     bench_decision_ok = complete and all(f["all_decisions_ok"] for f in fuses.values())
 
     rec = {
-        **bench_record.header(a, backends, jobs),
+        **bench_record.header(a, backends, jobs, engines),
         "dut": "efuse_sense (with efuse_comp), extracted from design/efuse_otp_array.spice",
         "pvt": {"process": ["typical", "ff", "ss", "fs", "sf"], "temp_c": [-40, 25, 125],
                 "vdd33_v": [2.97, 3.30, 3.63], "source": "decision 0005"},

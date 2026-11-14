@@ -87,10 +87,9 @@ fi
 # rc: 0 = all pass, 3 = a measurement failed, 4 = partial set (see bench_submit_set).
 bench_submit_set "$rec" "${reqs[@]}"
 
-ngspice_version="$(ngspice -v | sed -n 's/^\*\* ngspice-\([0-9.]*\).*/\1/p' | head -1)"
 echo "record: $rec"
 python3 -I "$here/summarize.py" "$rec" --rref "$RREF_OHM" --rref-control "$RREF_CONTROL_OHM" \
     --rfuse-intact "$INTACT_OHMS" --rfuse-programmed "$PROGRAMMED_OHMS" \
     --t-pre "$T_PRE" --t-out "$T_OUT" --t-edge "$T_EDGE" \
     --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
-    --ngspice "$ngspice_version" --klt "$(klt --version)"
+    --klt "$(klt --version)"

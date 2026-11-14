@@ -30,11 +30,11 @@ def main():
     a = ap.parse_args()
 
     widths = {}
-    backends, jobs = set(), set()
+    backends, jobs, engines = set(), set(), set()
     for path in sorted(glob.glob(os.path.join(a.rec, "sets", "cell_r*_w*", "report.json"))):
         m_ = re.search(r"cell_r(\d+)_w(\d+)", path)
         fuse, wum = int(m_.group(1)), int(m_.group(2))
-        rep = bench_record.collect_env(json.load(open(path)), backends, jobs)
+        rep = bench_record.collect_env(json.load(open(path)), backends, jobs, engines)
         for c in rep["corners"]:
             m = {x["name"]: x.get("value") for x in c.get("measurements", [])}
             i, vgs, vds = m.get("i_fuse"), m.get("vgs"), m.get("vds")
@@ -80,7 +80,7 @@ def main():
     chosen = cands[0]["w_um"] if cands else None
 
     rec = {
-        **bench_record.header(a, backends, jobs),
+        **bench_record.header(a, backends, jobs, engines),
         "device": "nfet_06v0, L=0.7u, nf=1",
         "pvt": {"process": ["typical", "ff", "ss", "fs", "sf"],
                 "temp_c": [-40, 25, 125], "vprog_v": [4.5, 5.0, 5.5],
