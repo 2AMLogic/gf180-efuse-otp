@@ -64,7 +64,6 @@ def sense_citation(repo):
         "decision_correct_everywhere": r.get("decision_correct_everywhere"),
         "negative_control_flips_sign": (r.get("negative_control") or {}).get("demonstrates_bench_can_fail"),
         "verdict": r.get("verdict"),
-        "not_simulated": "reference tolerance and comparator offset (no documented source; statistical, owning issue #36)",
     }
 
 
