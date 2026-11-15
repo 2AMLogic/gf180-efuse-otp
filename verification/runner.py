@@ -9,11 +9,6 @@
                                        committed sim/controller-fv/ reports are
                                        produced); the negative control always
                                        writes under verification/build/
-  python runner.py --emit-klt-requests DIR
-                                       write one `klt functional-verification`
-                                       request per CONFIGS row into DIR and print
-                                       "name rows cols pulse settle" per row,
-                                       without running anything
 
 Every run goes through `klt functional-verification` from the pinned klt
 (signoff/klt-pin.txt), with the pinned cocotb supplied to klt's throwaway
@@ -85,15 +80,6 @@ def klt_request(c, rtl=RTL):
     }
 
 
-def emit_klt_requests(outdir):
-    outdir = Path(outdir)
-    outdir.mkdir(parents=True, exist_ok=True)
-    for c in CONFIGS:
-        (outdir / f"fv-{c['name']}.json").write_text(
-            json.dumps(klt_request(c), indent=2) + "\n")
-        print(c["name"], c["rows"], c["cols"], c["expect_n"], c["settle"])
-
-
 def run_cfg(c, rtl, tag, outdir, reqdir):
     """Run one parameter set through the pinned `klt functional-verification`.
 
@@ -140,11 +126,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--negative-control", action="store_true")
     ap.add_argument("--reports", metavar="DIR")
-    ap.add_argument("--emit-klt-requests", metavar="DIR")
     args = ap.parse_args()
-    if args.emit_klt_requests:
-        emit_klt_requests(args.emit_klt_requests)
-        return 0
     BUILD.mkdir(exist_ok=True)
     reqdir = BUILD / "requests"
 
