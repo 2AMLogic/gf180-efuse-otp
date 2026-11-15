@@ -132,13 +132,26 @@ each checked live:
 
    It exits 0 and writes a well-formed SPEF, but the gf180mcu extraction deck
    does not recognize the placed standard cells — the run flattens them to
-   3106 transistor devices with no cell instance — so no design net name
-   survives: **855 `*D_NET` entries, all anonymous `$N`** (a numbering klt
-   itself documents as unstable across klayout versions or hosts —
-   klayout-tools#1063), and **0 of the design's 228 nets**
-   (`layout/efuse_otp_ctrl.asbuilt.v`) match any of them, exact-name or
-   bus-normalized. Pin-label names of the form `A1|A2|ZN` are that run's
-   SPICE netlist (`-o`) node names, not `*D_NET` names. `read_spef` would
+   3106 transistor devices with no cell instance — so design net names do not
+   survive intact (full-file classification of all 855 `*D_NET` records,
+   2026-11-15): **532 escaped-anonymous `\$N`** (a numbering klt itself
+   documents as unstable across klayout versions or hosts —
+   klayout-tools#1063), **285 `|`-joined merged-label compounds** (99
+   distinct names, exactly the run's compound `*PORTS` entries), and **38
+   bare labels** (`VDD`, `VSS`, `Z`, `ZN`, …). The compounds show the
+   mechanism rather than contradict it: cell-internal pin labels and
+   top-level routing labels land on one electrical net and KLayout joins
+   them — the deck's own report, from this run: "net 'I1|Z|row_sel[7]'
+   merges 3 distinct labels (I1, Z, row_sel[7]) onto one net"; a label
+   drawn on unconnected shapes splits across hundreds of nets instead
+   ("label 'ZN' is drawn on 154 separate nets"), and 6 layers carrying 375
+   shapes sit outside the deck's connectivity graph entirely. Splitting each
+   compound on `|` and bus-base-normalizing, **12 design identifiers** appear
+   as merge components (`busy clk dout prog_en prog_strobe rd_en rst
+   sense_en sense_in addr col_sel row_sel`) — but only inside merged labels,
+   never as net names: **0 of the design's 228 nets**
+   (`layout/efuse_otp_ctrl.asbuilt.v`) match any `*D_NET` name, exact-name
+   or bus-normalized. `read_spef` would
    annotate no nets, so an SDF from that session would look like a
    post-route measurement while carrying no routed parasitics — filed
    generically as
@@ -159,7 +172,8 @@ the SDF's `typ` corner (the P&R flow's timing deck, `tt_025C_1v80`, is
 expected to write identical min/typ/max triples from one session), and use
 `options.sdf.entries: "interconnect"` — klt's validated net-delay
 back-annotation mode (klayout-tools#2364 found IOPATH annotation kills a
-design at any clock period). The annotated run must also obey the bench's own
+design at any clock period — a sky130/Icarus-13 finding, and `interconnect`
+is the conservative choice either way). The annotated run must also obey the bench's own
 timing: `test_efuse_otp_ctrl.py` clocks the DUT at 10 ns, and
 `sim/controller-sta/sta-10ns.report.json` measures +4.48 ns setup slack at
 `tt_025C_3v30` (the 100 MHz case fails only at `ss_125C_3v00`), so the run is
