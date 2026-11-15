@@ -80,11 +80,13 @@ mk() {
   jq -n --arg net "$stem.cir" --arg lib "libs.tech/ngspice/sm141064.ngspice" \
         --arg tpre "$T_PRE" --arg tout "$T_OUT" --arg margin "$margin" --arg dec "$dec" \
         --argjson n "$n" --argjson seed "$SEED" --argjson sigma "$SIGMA_RREF" \
-        --argjson ms "$MISMATCH_SCALE" --argjson dmin "$DECISION_MIN" --arg q "'" '
+        --argjson ms "$MISMATCH_SCALE" --argjson dmin "$DECISION_MIN" --arg q "'" \
+        --argjson pvt_proc "$PVT_PROCESSES" --argjson pvt_temp "$PVT_TEMPERATURES_C" \
+        --argjson pvt_3v3 "$PVT_SUPPLY_3V3" '
     {netlist:$net, engine:"ngspice",
      models:{lib:$lib, pdk:"gf180mcuD"},
-     corners:{process:(["typical","ff","ss","fs","sf"]|map({name:., sections:[.]})),
-              supply_v:{vdd33:[2.97,3.30,3.63]}, temperature_c:[-40,25,125]},
+     corners:{process:($pvt_proc|map({name:., sections:[.]})),
+              supply_v:{vdd33:$pvt_3v3}, temperature_c:$pvt_temp},
      monte_carlo:{n:$n, seed:$seed, vary:"mismatch", seed_scope:"point",
                   mismatch_scale:$ms,
                   injected:[{instance:"Rref", parameter:"r", relative_sigma:$sigma, distribution:"gaussian"}]},
