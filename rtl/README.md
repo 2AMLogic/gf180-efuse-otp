@@ -53,11 +53,14 @@ elaborations, not a runtime port (decision 0004 defines no such port).
 ## Synthesis check
 
 ```sh
-rtl/synth.sh        # plain Yosys: synth + check -assert + stat; log in flow/build/synth.log
+rtl/synth.sh        # plain Yosys: synth + check -assert + no-latch assertion; log in flow/build/synth.log
 ```
 
-Last result (Yosys 0.67): completes, prints `Number of latches: 0` (the script
-counts latch cell types in the `stat` table and exits non-zero otherwise).
+Last result (Yosys 0.67): completes and exits 0, printing nothing. The gate is
+an assertion, not a count: `rtl/synth.ys` ends with `select -assert-none
+t:$_DLATCH_* t:$_SR_* t:$dlatch t:$dlatchsr`, so the run fails if any latch
+cell survives generic synthesis, and Yosys names the offending cells on the way
+out. (`check -assert` alone does not assert on latches.)
 
 Mapped gate-level netlist (committed as `efuse_otp_ctrl.gl.v`), for
 `gf180mcu_fd_sc_mcu7t5v0` at 32 x 8 (`synth-request.json` states `ROWS`, `COLS`,
