@@ -22,9 +22,13 @@
 #   KLT_YIELD      the pin with the [yield] extra spliced in, as an array --
 #                  "uvx --from klayout-tools[yield]==<pin version> klt" -- for
 #                  the klt yield grading
-# Source with KLT_NO_FUNCTION=1 to skip the klt() and klt_python() facets: the
-# sim/* benches call a bare host klt (sim/lib/pdk_env.sh) and must keep doing
-# so, but still need KLT_PIN and KLT_YIELD.
+# Source with a sourcing-local KLT_NO_FUNCTION=1 -- a plain assignment
+# immediately before the source line -- to skip the klt() and klt_python()
+# facets: the sim/* benches call a bare host klt (sim/lib/pdk_env.sh) and must
+# keep doing so, but still need KLT_PIN and KLT_YIELD. An inherited (exported)
+# KLT_NO_FUNCTION is ignored with a warning on stderr: a value picked up from
+# the environment must not be able to switch a signoff script off the pinned
+# klt.
 #
 # verification/run.sh keeps its own inline preflight by design: it is the
 # exemplar this message was taken from, and it is a content-hashed attestation
@@ -38,8 +42,21 @@ KLT_PIN="$(cat "$_klt_root/signoff/klt-pin.txt")"
 export KLT_PIN
 KLT_ARGV="uvx --from $KLT_PIN klt"
 KLT_YIELD=(uvx --from "${KLT_PIN%%==*}[yield]==${KLT_PIN##*==}" klt)
-if [[ "${KLT_NO_FUNCTION:-0}" != 1 ]]; then
+# The opt-out is honored only as a sourcing-local assignment. An exported
+# (inherited) KLT_NO_FUNCTION is warned about and ignored, so an environment
+# variable cannot take a signoff script off the pinned klt. declare -p rather
+# than the ${KLT_NO_FUNCTION@a} attribute transformation: the latter needs
+# bash 5.1+.
+_klt_nofunc=0
+if [[ -n "${KLT_NO_FUNCTION+x}" ]]; then
+  if [[ "$(declare -p KLT_NO_FUNCTION 2>/dev/null)" == "declare -x"* ]]; then
+    echo "signoff/klt.sh: ignoring KLT_NO_FUNCTION inherited from the environment; the opt-out must be a sourcing-local assignment" >&2
+  elif [[ "$KLT_NO_FUNCTION" == 1 ]]; then
+    _klt_nofunc=1
+  fi
+fi
+if [[ "$_klt_nofunc" != 1 ]]; then
   klt() { uvx --from "$KLT_PIN" klt "$@"; }
   klt_python() { uvx --from "$KLT_PIN" python "$@"; }
 fi
-unset _klt_root
+unset _klt_root _klt_nofunc
