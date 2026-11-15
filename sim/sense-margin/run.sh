@@ -15,8 +15,10 @@
 #
 # Exit 0 once the record is written. Pass/fail is data in record.json, not a
 # script error. A failed batch submit exits non-zero and does not fall back to a
-# local grid. --dry-run validates the request set with `klt sim --dry-run` and
-# deletes nothing it did not create (it leaves no record; it uses a temp dir).
+# local grid; a submit that left any of the eight expected reports missing or
+# without corners exits 4 from summarize.py without writing a record, because a
+# partial set is not evidence. --dry-run validates the request set with `klt sim
+# --dry-run` and deletes nothing it did not create (no record; it uses a temp dir).
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 repo="$(cd "$here/../.." && pwd)"
@@ -34,6 +36,7 @@ INTACT_OHMS="140 200 260"                # A4
 PROGRAMMED_OHMS="630 900 open"           # A5; open = 1 Gohm
 RREF_OHM=400                             # A6, decision 0003
 RREF_CONTROL_OHM=200                     # negative control: reference inside the intact range
+RFUSE_CONTROL_OHMS="140 260"             # the intact values re-read against RREF_CONTROL_OHM
 T_EDGE=15n                               # clock edge; bias and sbl/sref settle before it
 T_PRE=14.9n                              # margin read, just before the edge
 T_OUT=38n                                # latched sense_out read
@@ -56,11 +59,13 @@ mk() {                                   # mk <stem> <rfuse> <rref> <sign>
   } > "$rec/$stem.cir"
   grep -q "^Rref sref rn1 $rr " "$rec/$stem.cir" || { echo "run.sh: Rref line not found in efuse_sense" >&2; exit 1; }
   jq -n --arg net "$stem.cir" --arg lib "libs.tech/ngspice/sm141064.ngspice" \
-        --arg tpre "$T_PRE" --arg tout "$T_OUT" --arg sgn "$sgn" '
+        --arg tpre "$T_PRE" --arg tout "$T_OUT" --arg sgn "$sgn" \
+        --argjson pvt_proc "$PVT_PROCESSES" --argjson pvt_temp "$PVT_TEMPERATURES_C" \
+        --argjson pvt_3v3 "$PVT_SUPPLY_3V3" '
     {netlist:$net, engine:"ngspice",
      models:{lib:$lib, pdk:"gf180mcuD"},
-     corners:{process:(["typical","ff","ss","fs","sf"]|map({name:., sections:[.]})),
-              supply_v:{vdd33:[2.97,3.30,3.63]}, temperature_c:[-40,25,125]},
+     corners:{process:($pvt_proc|map({name:., sections:[.]})),
+              supply_v:{vdd33:$pvt_3v3}, temperature_c:$pvt_temp},
      analysis:{kind:"tran", args:"20p 40n"},  # 100p under-resolves the 200p edge: decisions flipped with the step (issue 77)
      measurements:[
        {name:"margin_v", spice:(".meas tran margin_v find par(\u0027" + $sgn + "*(v(sbl)-v(xsa.sref))\u0027) at=" + $tpre), unit:"V", limits:{min:0}},
@@ -75,7 +80,7 @@ mk() {                                   # mk <stem> <rfuse> <rref> <sign>
 }
 for r in $INTACT_OHMS; do mk "bench_rf${r}_rr${RREF_OHM}" "$r" "$RREF_OHM" -1; done
 for r in $PROGRAMMED_OHMS; do mk "bench_rf${r}_rr${RREF_OHM}" "$r" "$RREF_OHM" 1; done
-for r in 140 260; do mk "control_rf${r}_rr${RREF_CONTROL_OHM}" "$r" "$RREF_CONTROL_OHM" -1; done
+for r in $RFUSE_CONTROL_OHMS; do mk "control_rf${r}_rr${RREF_CONTROL_OHM}" "$r" "$RREF_CONTROL_OHM" -1; done
 
 if [[ $dry -eq 1 ]]; then
   bench_dry_run "${reqs[@]}"
@@ -90,6 +95,7 @@ bench_submit_set "$rec" "${reqs[@]}"
 echo "record: $rec"
 python3 -I "$here/summarize.py" "$rec" --rref "$RREF_OHM" --rref-control "$RREF_CONTROL_OHM" \
     --rfuse-intact "$INTACT_OHMS" --rfuse-programmed "$PROGRAMMED_OHMS" \
+    --rfuse-control "$RFUSE_CONTROL_OHMS" \
     --t-pre "$T_PRE" --t-out "$T_OUT" --t-edge "$T_EDGE" \
     --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
     --klt "$(klt --version)"

@@ -89,7 +89,7 @@ and never replaces a committed one.
 |---|---|---|---|
 | PDK smoke | `sim/pdk-smoke/run.sh` | ngspice, jq, ciel 2.6.1 with the PDK pinned in `sim/pdk.json`; cold start in [`sim/README.md`](sim/README.md) | new `sim/pdk-smoke/records/<stamp>-<rev>/` |
 | Program-select width sweep | `sim/program-select/run.sh` | the same PDK tree, plus the klt batch fleet (15 `klt sim` requests; a failed submit is reported, not re-run locally) | new `sim/program-select/records/<stamp>-<rev>/record.json`; result in [`design/README.md`](design/README.md) |
-| Controller bench | `verification/run.sh` | python3 with venv, network for the pinned cocotb, Icarus Verilog 13.0 | `ALL CHECKS PASSED` |
+| Controller bench | `verification/run.sh` | python3, uv, network for the pinned klt and cocotb, Icarus Verilog 13.0 | `ALL CHECKS PASSED` |
 | Controller negative control | `verification/run.sh --negative-control` | same | `NEGATIVE CONTROL OK` (exit 0 only if every seeded defect is caught) |
 | Latch check | `rtl/synth.sh` | Yosys 0.67 | `Number of latches: 0`, log in `flow/build/synth.log` |
 | Signoff record | `uvx --from "$(cat signoff/klt-pin.txt)" klt signoff --manifest signoff/block-manifest.json --tiers-doc signoff/design-evidence-tiers.md --format json > signoff/block-manifest.signoff.json` | uv; exit 3 (items unmet) is expected | byte-identical to the committed `signoff/block-manifest.signoff.json` |
@@ -108,10 +108,13 @@ attestation check. It does not run the ngspice flow (it needs the PDK).
 
 `npm run -s check:ci` is the local pre-flight: the subset of those checks that
 needs nothing but python3, bash and jq — the checker self-tests, the
-evidence-format check, the item 6 spec-binding check and the `pdk_env.sh`
-self-test (`sim/lib/test_pdk_env.sh`, which the workflow does not run). It
-deliberately leaves out every check that needs an EDA tool, the PDK or a diff
-base, so a green `check:ci` is not a prediction that CI will pass.
+evidence-format check, the item 6 spec-binding check, the `pdk_env.sh`
+self-test (`sim/lib/test_pdk_env.sh`) and the program-select summarize
+self-test (`sim/program-select/test_summarize.py`, which pins that the record
+describes the submitted grid rather than whatever reports are present). The
+workflow runs neither of those last two. It deliberately leaves out every
+check that needs an EDA tool, the PDK or a diff base, so a green `check:ci` is
+not a prediction that CI will pass.
 
 ## Repo layout
 

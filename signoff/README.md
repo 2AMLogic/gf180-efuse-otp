@@ -16,7 +16,7 @@ The block's verdict of record against the klayout-tools evidence tiers.
 | `check-item6-digital.sh` | Fails when `spec/efuse-otp.md` changes (sha256) or an extract row no longer matches a line of it. Run after any spec change, re-derive the extract, then re-hash the manifest. |
 | `block-manifest.signoff.json` | Committed `klt signoff --manifest` output: the verdict of record. Items 1, 2, 8, 9 and 10 are `met` for both partitions; item 5 is `met` (analog); item 6 is `met` (analog) and `not_applicable` (digital); every other T1 row is `unmet` / `no_evidence`, and the T2, T3 and T4 rows are `unmet` / `tier_not_supported`. Item 6 analog `met` means the campaign discipline holds for the cited `margin_v` evidence (recorded seed, sufficient samples, detected negative control); it does not say the sense row is established, see `sim/sense-mc/README.md`. |
 | `../sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/{intact,prog}.yield.json` | Item 6, analog: the cited `klt yield` reports (`margin_v` only, post-#85 comparator), one per fuse population, cited with `rows: [P10]` in `block-manifest.json` (`6.analog`). The `*.decision.yield.json` files in the same record are not cited. Item 5 analog cites the six `bench_*` sense-margin corner reports of `sim/sense-margin/records/20261109T002043Z-f6eeac7` for P10 (they declare `margin_v >= 0`, signed so positive is the correct side; the `control_*` reports are not cited, the 260 ohm control fails by design) and reads `met`. |
-| `../layout/drc-*.report.json` | Committed `klt drc` reports for T1 item 3 (`layout/drc.sh`). Both are `status: clean` under the curated deck (deck hash `sha256:0eb6df1b...`), but `EF.*` rules are not evaluated (klayout-tools#4312, #4002), so item 3 is not cited and stays `unmet`; see `layout/README.md`, "DRC". |
+| `../layout/drc-*.report.json` | Committed `klt drc` reports for T1 item 3 (`layout/drc.sh`). Both are `status: clean` under the curated deck (deck hash `sha256:cf44de63...`, klt 0.9.0 — the pin). The 0.9.0 deck gained an `EF` `deck_scope` entry and checks seven eFuse-layer rules on the analog partition, but all 24 foundry `EF.01`–`EF.22b` IDs remain under `coverage.unmodeled_rules` (klayout-tools#4312, #4002), so item 3 is still not cited and stays `unmet`; see `layout/README.md`, "DRC", and #60. |
 | `klt-pin.txt` | The single place the grader version is pinned. CI installs `$(cat signoff/klt-pin.txt)`. |
 | `item1-digital-inventory.json` | `t1-attestation-inventory` for T1 item 1, digital: the RTL source and the committed gate-level netlist `rtl/efuse_otp_ctrl.gl.v`, whose freshness `check` is `rtl/regen-gl.sh --check` (`local_only`: it needs Yosys and the PDK). |
 | `item1-digital.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.digital` in `block-manifest.json`, pinned by the envelope's own composite `provenance.input.content_hash` (see "Re-attest item 1 (digital)"). |
@@ -173,7 +173,8 @@ non-empty top cell and an on-grid database unit. See `layout/README.md`,
 `.github/workflows/ci.yml` has two jobs. `harness` installs only Python, the
 pinned klt and `uv` (no PDK, ngspice or xschem; the KLayout Python module comes
 with the pinned klt, which is how `--attest 2` reads a stream); `controller` builds the pinned
-Icarus 13.0 and Yosys 0.67 (`scripts/ci/install_eda.sh`, cached) and runs
+Icarus 13.0 and Yosys 0.67 (`scripts/ci/install_eda.sh`, cached), installs `uv`
+(the bench reaches the pinned klt through `uvx`) and runs
 `verification/run.sh`, its `--negative-control` and `rtl/synth.sh`. Together
 they check that:
 

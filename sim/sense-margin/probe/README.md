@@ -1,18 +1,24 @@
 # Single-corner comparator probes (issue 77)
 
-Local single-unit `ngspice -b` runs (one corner each, not a grid), built from the
-decks in `records/20261030T223615Z-f6eeac7/` (old comparator sizes inline).
+Local single-unit `ngspice -b` runs (one corner each, not a grid). These probes began as
+the decks in `records/20261030T223615Z-f6eeac7/` (old comparator sizes inline); they are
+now composed from the committed sources instead, so they follow the design. The decks as
+they were run stay exactly where they were: in `records/`.
 
-Every probe is `probe.cir.in` with a few fields overridden; the overrides are the table in
-`gen_probe.sh`. Regenerate a deck with `./gen_probe.sh <name> > <name>.cir` and run
+Every probe is the sense-margin bench body (`../sense.cir.in`) plus the `efuse_sense` and
+`efuse_comp` subcircuits of `design/efuse_otp_array.spice`, assembled by `gen_probe.sh` the
+way `../run.sh` assembles its decks, with the comparator sizes overridden per probe from the
+table in `gen_probe.sh`. A probe is therefore the committed sense path apart from those
+sizes, and `gen_probe.sh` refuses to emit a deck if the netlist no longer carries the sizes
+the overrides rewrite. Regenerate a deck with `./gen_probe.sh <name> > <name>.cir` and run
 `ngspice -b <name>.cir` (`./gen_probe.sh --list` lists the names). The library path comes from
 `sim/lib/pdk_env.sh`.
 
 | Probe (`gen_probe.sh` name) | Corner | What it shows |
 |---|---|---|
 | `probe_rf260`, `probe_rf630` | typical / 25 C / 3.30 V | Old sizes. `clkn` falls 3.3 V -> 0 (clocking is fine, not a bench-edge problem). `sbl` ~0.2 V, tail ~2.6 V, `cp`/`cn` both ~2.1 V: latch never regenerates. |
-| `v_mx8_*`, `v_pair2_*`, `v_both_*` (each `_260` and `_630`) | typical / 25 C / 3.30 V | Latch NMOS 2u -> 8u, input pair 8u -> 2u, both. Each regenerates to the correct bit (260 ohm -> 0, 630 ohm -> 1). Root cause: the on-state PMOS input pair out-pulls the 2u latch. `both` is what the schematic now carries. |
-| `probe_new_ff_rf140` / `probe_new_ff_rf140_100p` | ff / 25 C / 3.30 V | New sizes, 140 ohm. Same deck at a 20 ps vs 100 ps step gives opposite decisions: the 100 ps step under-resolves the 200 ps edge and its 40-60 mV kickback. `run.sh` now uses 20 ps. |
+| `v_mx8_*`, `v_pair2_*`, `v_both_*` (each `_260` and `_630`) | typical / 25 C / 3.30 V | Latch NMOS 2u -> 8u, input pair 8u -> 2u, both. Each regenerates to the correct bit (260 ohm -> 0, 630 ohm -> 1). Root cause: the on-state PMOS input pair out-pulls the 2u latch. Of this sweep's changes only the latch 8u survives in the committed netlist; the input pair was resized twice afterwards (4u/1.12u, then 8u/2.24u) — see the `new_2p24_*` row for the pair sizing the netlist holds. |
+| `probe_new_ff_rf140` / `probe_new_ff_rf140_100p` | ff / 25 C / 3.30 V | Input pair 2u/0.28u, latch 8u (the `v_both_*` sizing), 140 ohm. Same deck at a 20 ps vs 100 ps step gives opposite decisions: the 100 ps step under-resolves the 200 ps edge and its 40-60 mV kickback. `run.sh` now uses 20 ps. |
 
 Decks are probes, not results: the evidence of record is `records/`.
 

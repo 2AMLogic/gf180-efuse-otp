@@ -96,4 +96,31 @@ for want in 0 3 4 2; do
   grep -q -- "--batch-set a.json b.json --max-in-flight 4 --capacity-retries 3 --wait-for-capacity 600 -o $tmp/rec$want/sets" "$FAKE_KLT_LOG" || { echo "FAIL submit argv: $(cat "$FAKE_KLT_LOG")"; fail=1; }
 done
 
+# The decision-0005 grid constants (pdk_env.sh): each bench interpolates them
+# into its request builder with jq --argjson and keeps its own supply-axis
+# names and sections map, so every emitted corners: object must be byte for
+# byte the hand-typed one it replaced. The expected literals are the corners
+# of the committed pre-refactor requests (e.g.
+# sim/corner-verification/records/20261108T235928Z-f6eeac7/prog_rf140.json).
+corners_case() { # name efuse-json want-json jq-program
+  local name="$1" efuse="$2" want="$3" prog="$4" out
+  out="$(CIEL_ROOT="$tmp/ok" bash -c 'source "$1"; jq -cn \
+    --argjson p "$PVT_PROCESSES" --argjson t "$PVT_TEMPERATURES_C" \
+    --argjson v33 "$PVT_SUPPLY_3V3" --argjson v5 "$PVT_SUPPLY_5V0" \
+    --argjson efuse "$3" "$2"' _ "$here/pdk_env.sh" "$prog" "$efuse" 2>&1)"
+  if [[ "$out" == "$want" ]]; then echo "PASS corners $name"; else echo "FAIL corners $name: $out"; fail=1; fi
+}
+corners_case sense true \
+  '{"process":[{"name":"typical","sections":["typical"]},{"name":"ff","sections":["ff"]},{"name":"ss","sections":["ss"]},{"name":"fs","sections":["fs"]},{"name":"sf","sections":["sf"]}],"supply_v":{"vdd33":[2.97,3.30,3.63]},"temperature_c":[-40,25,125]}' \
+  '{process:($p|map({name:., sections:[.]})), supply_v:{vdd33:$v33}, temperature_c:$t}'
+corners_case program-select true \
+  '{"process":[{"name":"typical","sections":["typical","efuse"]},{"name":"ff","sections":["ff","efuse"]},{"name":"ss","sections":["ss","efuse"]},{"name":"fs","sections":["fs","efuse"]},{"name":"sf","sections":["sf","efuse"]}],"supply_v":{"vdd":[4.5,5.0,5.5]},"temperature_c":[-40,25,125]}' \
+  '{process:($p|map({name:., sections:[., "efuse"]})), supply_v:{vdd:$v5}, temperature_c:$t}'
+corners_case corner-verification-efuse true \
+  '{"process":[{"name":"typical","sections":["typical","efuse"]},{"name":"ff","sections":["ff","efuse"]},{"name":"ss","sections":["ss","efuse"]},{"name":"fs","sections":["fs","efuse"]},{"name":"sf","sections":["sf","efuse"]}],"supply_v":{"vdd33":[2.97,3.30,3.63],"vprog":[4.5,5.0,5.5]},"temperature_c":[-40,25,125]}' \
+  '{process:($p|map({name:., sections:([.] + (if $efuse then ["efuse"] else [] end))})), supply_v:{vdd33:$v33, vprog:$v5}, temperature_c:$t}'
+corners_case corner-verification-no-efuse false \
+  '{"process":[{"name":"typical","sections":["typical"]},{"name":"ff","sections":["ff"]},{"name":"ss","sections":["ss"]},{"name":"fs","sections":["fs"]},{"name":"sf","sections":["sf"]}],"supply_v":{"vdd33":[2.97,3.30,3.63],"vprog":[4.5,5.0,5.5]},"temperature_c":[-40,25,125]}' \
+  '{process:($p|map({name:., sections:([.] + (if $efuse then ["efuse"] else [] end))})), supply_v:{vdd33:$v33, vprog:$v5}, temperature_c:$t}'
+
 exit "$fail"

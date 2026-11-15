@@ -109,6 +109,17 @@ bench_submit_set() {
   fi
 }
 
+# The ratified decision-0005 PVT corner grid (spec/decisions/0005-pvt-corner-set.md):
+# process typical/ff/ss/fs/sf, temperature -40/25/125 C, logic/sense supply
+# 3.3 V +-10%, program supply 5.0 V +-10%. JSON literals, passed to the request
+# builders with jq --argjson; each bench names its own supply axes and maps its
+# own model sections from these values.
+PVT_PROCESSES='["typical","ff","ss","fs","sf"]'
+PVT_TEMPERATURES_C='[-40,25,125]'
+PVT_SUPPLY_3V3='[2.97,3.30,3.63]'
+PVT_SUPPLY_5V0='[4.5,5.0,5.5]'
+export PVT_PROCESSES PVT_TEMPERATURES_C PVT_SUPPLY_3V3 PVT_SUPPLY_5V0
+
 if _pdk_env_main; then
   [[ "${BASH_SOURCE[0]}" == "$0" ]] && echo "$PDK_VARIANT_DIR"
   (return 0 2>/dev/null) && return 0 || exit 0

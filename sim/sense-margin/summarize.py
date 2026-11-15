@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Fold the per-fuse-value klt sim reports of a sense-margin run into record.json.
 
-Called by run.sh with the record directory. Reads sets/<stem>/report.json for the
-bench requests (bench_rf<ohm|open>_rr<ref>) and the negative control
-(control_rf<ohm>_rr<ref>). Per PVT point:
+Called by run.sh with the record directory and the requests it submitted
+(--rfuse-intact, --rfuse-programmed, --rfuse-control with --rref/--rref-control).
+Reads sets/bench_rf<ohm|open>_rr<ref>/report.json for every bench request and
+sets/control_rf<ohm>_rr<ref>/report.json for every negative control, by name, so
+a request whose report never came back -- or came back with no corners -- is a
+hard error rather than a smaller set. Per PVT point:
 
   margin_v          v(sbl) - v(sref) just before the clock edge (programmed fuse
                     should read positive, intact negative)
@@ -19,11 +22,9 @@ Pass/fail is data here, not an exit status. The negative control flips sign when
 intact control point reads the wrong side while the same bench corner read the right one.
 """
 import argparse
-import glob
 import json
 import math
 import os
-import re
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
@@ -34,11 +35,14 @@ def finite(x):
     return x is not None and isinstance(x, (int, float)) and math.isfinite(x)
 
 
-def load(rec, pattern):
-    out = {}
-    for path in sorted(glob.glob(os.path.join(rec, "sets", pattern, "report.json"))):
-        out[os.path.basename(os.path.dirname(path))] = json.load(open(path))
-    return out
+def ohms(x):
+    """A resistance as run.sh spells it: 200, not 200.0, when it is integral.
+
+    run.sh passes --rref/--rref-control as whole ohms and names each request
+    stem with that same value, so the reference carried into flipped_points
+    keeps the stem's form rather than argparse's float.
+    """
+    return int(x) if float(x).is_integer() else x
 
 
 def points(rep, rfuse, programmed):
@@ -92,6 +96,7 @@ def main():
     ap.add_argument("--rref-control", type=float, required=True)
     ap.add_argument("--rfuse-intact", required=True)
     ap.add_argument("--rfuse-programmed", required=True)
+    ap.add_argument("--rfuse-control", required=True)
     ap.add_argument("--t-pre", required=True)
     ap.add_argument("--t-out", required=True)
     ap.add_argument("--t-edge", required=True)
@@ -100,22 +105,60 @@ def main():
 
     intact = a.rfuse_intact.split()
     programmed = a.rfuse_programmed.split()
+    controls = a.rfuse_control.split()
+    if not intact or not programmed or not controls:
+        # An empty request list would make the verdicts below vacuously true:
+        # with no controls, demonstrates_bench_can_fail is asserted over nothing.
+        ap.error("--rfuse-intact, --rfuse-programmed and --rfuse-control must "
+                 "each name at least one fuse value")
+
+    # The requests run.sh submitted, named rather than discovered. A partial set
+    # (a request errored or was refused, bench_submit_set rc=4) is not evidence,
+    # so refuse before anything is computed or written -- the same rule
+    # sim/program-select/summarize.py and sim/sense-mc/run.sh apply to their own
+    # sets. The reference comes from the flag run.sh patched the deck with, so a
+    # report is read at the reference it was asked for rather than at whatever
+    # its directory name says.
+    requests = [("bench", rf, ohms(a.rref), "bench_rf%s_rr%g" % (rf, a.rref))
+                for rf in intact + programmed]
+    requests += [("control", rf, ohms(a.rref_control),
+                  "control_rf%s_rr%g" % (rf, a.rref_control)) for rf in controls]
+    reports, absent, hollow = {}, [], []
+    for kind, rf, rr, stem in requests:
+        path = os.path.join(a.rec, "sets", stem, "report.json")
+        if not os.path.isfile(path):
+            absent.append(stem)
+            continue
+        rep = json.load(open(path))
+        # Present is not populated: a report that came back carrying no corners,
+        # or fewer than it counted, grades nothing and is not evidence either.
+        n = len(rep.get("corners") or [])
+        if not n or rep.get("corner_count") != n:
+            hollow.append("%s (corner_count=%r, corners=%d)"
+                          % (stem, rep.get("corner_count"), n))
+            continue
+        reports[stem] = rep
+    if absent or hollow:
+        if absent:
+            print("no report for %d of %d expected requests: %s"
+                  % (len(absent), len(requests), " ".join(absent)), file=sys.stderr)
+        if hollow:
+            print("no usable corners in %d of %d expected reports: %s"
+                  % (len(hollow), len(requests), " ".join(hollow)), file=sys.stderr)
+        print("a partial set is not evidence; no record written (see %s/set-report.json, "
+              "%s/klt.err)" % (a.rec, a.rec), file=sys.stderr)
+        raise SystemExit(4)
+
     bench, control = {}, {}
     backends, jobs, engines = set(), set(), set()
-    reports = load(a.rec, "*")
-    for stem, rep in reports.items():
-        m = re.match(r"(bench|control)_rf(\w+)_rr(\d+)$", stem)
-        if not m:
-            continue
-        kind, rf, rr = m.group(1), m.group(2), int(m.group(3))
-        bench_record.collect_env(rep, backends, jobs, engines)
+    for kind, rf, rr, stem in requests:
+        rep = bench_record.collect_env(reports[stem], backends, jobs, engines)
         pts = points(rep, rf, rf in programmed)
         (bench if kind == "bench" else control)[rf] = (rr, pts)
 
     fuses = {}
     for rf in intact + programmed:
-        if rf in bench:
-            fuses[rf] = dict(per_fuse(bench[rf][1]), population="programmed (A5)" if rf in programmed else "intact (A4)")
+        fuses[rf] = dict(per_fuse(bench[rf][1]), population="programmed (A5)" if rf in programmed else "intact (A4)")
 
     flips = []
     for rf, (rr, pts) in sorted(control.items()):
@@ -129,8 +172,9 @@ def main():
                               "control_signed_margin_v": p["signed_margin_v"]})
     control_ok = bool(flips)
 
-    expected = len(intact) + len(programmed)
-    complete = len(fuses) == expected and all(f["complete"] for f in fuses.values()) and bool(control)
+    # Every bench request and every control is present with corners (refused
+    # above otherwise), so completeness is now only about the points' values.
+    complete = all(f["complete"] for f in fuses.values())
     bench_margin_ok = complete and all(f["all_margin_positive"] for f in fuses.values())
     bench_decision_ok = complete and all(f["all_decisions_ok"] for f in fuses.values())
 
@@ -173,7 +217,8 @@ def main():
     }
     bench_record.write_record(a.rec, rec)
     if not complete:
-        print("incomplete: some requests or points have no values (see klt.err, set-report.json)")
+        print("incomplete: some points have no values "
+              "(see sets/<request>/report.json diagnostics, klt.err, set-report.json)")
         raise SystemExit(3)
 
 

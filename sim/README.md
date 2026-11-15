@@ -97,8 +97,8 @@ and the record layout: `sim/sense-margin/README.md`.
 ## Testbench inventory
 
 The item-9 inventory is `signoff/attest/item9.json`. Cold start for all of it, from a
-fresh clone with the pinned tools installed (above, plus Icarus Verilog 13.0 and
-network for the first `pip install` of the pinned cocotb):
+fresh clone with the pinned tools installed (above, plus Icarus Verilog 13.0, `uv`
+on PATH, and network for the first fetch of the pinned klt and cocotb):
 
 ```bash
 sim/cold-start.sh
