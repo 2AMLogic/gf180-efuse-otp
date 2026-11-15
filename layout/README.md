@@ -15,6 +15,8 @@ analog partition is below.
 | `efuse_otp_ctrl.asbuilt.v` | `verilog_path` output: the as-built gate-level netlist (CTS buffers, resizes, antenna diodes included). This, not `rtl/efuse_otp_ctrl.gl.v`, is the reference for the controller LVS run. |
 | `attest.sh` | Writes both T1 item 2 envelopes with the pinned klt's own producer, `klt signoff --attest 2 --input <stream>`: `pnr.attest.json` (digital) and `../signoff/item2-analog.attest.json` (analog). `--check` re-attests and fails (exit 3) if either committed envelope has drifted. The digital regeneration claim is a geometry digest, for which klt has no public source (klayout-tools#5551), so the script reads that one value from klt's private `_provenance`; every other field is the producer's. |
 | `pnr.attest.json` | The T1 item 2 (digital) envelope: `klt signoff --attest 2` bound to the routed GDS (readable, non-empty top cell, dbu on grid), with a `layout/pnr.sh` regeneration claim (geometry digest, so GDS write times do not matter). |
+| `lvs.sh` | Runs `klt lvs` with the pinned klt (`signoff/klt-pin.txt`) on `efuse_otp_ctrl.gds` against `efuse_otp_ctrl.asbuilt.v` and keeps the JSON report as found. `--check` re-hashes the stream, the netlist and the deck against the committed report (`--rerun` re-runs the compare). Unlike `drc.sh` this needs the PDK, not only the pinned klt: the gate-level reference resolves each standard cell's pin order from the library's own spice/cdl under `<PDK_ROOT>/gf180mcuD/libs.ref` (`PDK_ROOT`, default `~/.ciel`, passed to klt as `reference.pdk_root`), so CI (which installs no PDK) cannot run it. |
+| `lvs-ctrl.report.json` | Committed `--format json` LVS report (T1 item 4, digital): `status: match`, `power_connectivity.status: match` — see "LVS" below. |
 
 ## Reproduce
 
@@ -23,6 +25,7 @@ layout/pnr.sh --check            # cheap: input netlist and deck hashes, GDS sha
 layout/pnr.sh --check --rerun    # full: re-runs OpenROAD (about 2 minutes)
 layout/pnr.sh && layout/attest.sh   # regenerate, then re-attest (both item 2 envelopes)
 layout/attest.sh --check         # exit 3 = an item 2 envelope has drifted (CI runs this)
+layout/lvs.sh --check            # LVS report input hashes current (exit 3 = drifted)
 ```
 
 Needs `openroad` on `PATH` and the gf180mcuD PDK (`PDK_ROOT`, default `~/.ciel`).
@@ -210,12 +213,76 @@ of a deck that must be assembled with the registry; klayout-tools#4002). The spe
 row "DRC clean including every `EF.*` rule" therefore stays `unmet`. Whether the
 new coverage changes what item 3 can claim is #60's call, not settled here.
 
+## LVS (T1 item 4, digital): the routed controller matches its as-built netlist
+
+`layout/lvs.sh` runs `klt lvs` (the pinned klt, `signoff/klt-pin.txt`) on
+`layout/efuse_otp_ctrl.gds` — extracted inline under the curated `gf180mcu`
+deck — against `layout/efuse_otp_ctrl.asbuilt.v` (`reference.form:
+"gate-level-verilog"`, `reference.library: gf180mcu_fd_sc_mcu7t5v0`) and keeps
+the report as found: `layout/lvs-ctrl.report.json`. It needs the PDK, unlike
+`drc.sh` above; the script header and `signoff/README.md` ("Re-run the
+controller LVS") say why and how the root is pinned.
+
+Verdict, klt 0.9.0 (deck content hash
+`sha256:cf44de63f0a5b01c1d09c4d58e0535e990aa4b070bcaae17fd3a94a67a1d97e1`,
+klayout engine 0.30.13 — the same engine-dependence caveat as DRC above):
+**`status: match` and `power_connectivity.status: match`**, `error_count: 0`.
+It is cited for `4.digital` in `signoff/block-manifest.json` and the record
+reads `met`. Digests, both recorded in the report: layout
+`sha256:574c94b191ddb5592f230aa6cfb32bcde5f1ee8c1707d820c3bce5c73bb4f21a` —
+the report's `provenance.input.content_hash`, equal to
+`efuse_otp_ctrl.gds.sha256`; reference
+`sha256:921a3d477c8b10a67554b086d478bcd9a360b1a961fcd3c893bcde01c9da1628` —
+`environment.reference_sha256`, `sha256 efuse_otp_ctrl.asbuilt.v`.
+
+How the compare is shaped (this is not the extraction's default):
+
+- The request sets `layout.abstract_cells: gf180mcu_fd_sc_mcu7t5v0__*`, so
+  every standard cell extracts as a pin-only black box instead of flattening
+  to its transistors, matching the gate-level reference's granularity. Pins
+  resolved from the cells' own label text (`resolution_source:
+  in_cell_labels`, no LEF needed). Without it the extraction is
+  transistor-level and the compare is a measured hierarchy mismatch (3106
+  layout devices vs 0 reference, `status: mismatch`,
+  `topology.hierarchy_mismatch`) — the un-abstracted request is the wrong
+  shape for this reference, not a finding about the stream.
+- The power/ground half runs (`power_connectivity` is on by default for this
+  reference form; `unchecked` would mean it never asked): `expected_nets`
+  maps the library's four PG pins (`VDD VNW VPW VSS`, the `.SUBCKT` pin order)
+  onto the PDN's two rails (`power_net: VDD`, `ground_net: VSS` in
+  `pnr-report.json`; the well taps land `VNW`→`VDD`, `VPW`→`VSS`). Result:
+  1421 instances checked, 0 findings, derivation
+  `declared-by-every-instantiated-master` corroborated across all 34
+  instantiated masters. `body_verification: verified` with `device_count: 0`
+  — every cell was abstracted, so there were no extracted devices to
+  body-verify; the verdict covers the instances' pin correspondence, not the
+  cells' transistor-level internals (which are the foundry library's, not
+  this stream's).
+- **What the check reaches** (T1 item 4's own caveat, restated so the
+  `match` cannot be over-read): per-standard-cell-instance *pin-to-net*
+  correctness on the extracted stream. It is **not** geometric rail or grid
+  continuity — whether a rail is unbroken, or carries the current, is
+  `klt ring-check`/`klt power` and the DRC deck's business, and nothing here
+  claims it.
+
+Warnings-only mismatches, listed with the claim as item 4 requires (all
+`severity: warning`, none affects the verdict): 36 × `topology` "nets were
+paired ambiguously; the comparer resolved it structurally"; 1 ×
+`topology.power_only_pruned` (layout-side power-only circuits — the tap
+cells, which the gate-level reference never instantiates — removed before
+the compare); 1 × `topology.top_level_pins_anchored` (the 57 top-level pin
+names declared on both sides anchored by name first).
+
 ## What is not claimed
 
-- **No routing and no connectivity.** Devices and cells are placed; no wire
-  joins them, so the stream is not a circuit and does not match the netlist
-  until routing is added.
-- **No LVS, no ERC.** Those are #32 and #33. DRC status is not restated here:
+- **No routing and no connectivity in the analog stream.** Devices and cells
+  are placed; no wire joins them, so `efuse_otp_array.gds` is not a circuit
+  and does not match the netlist until routing is added. The digital stream
+  is the opposite case: it is routed, and its per-instance connectivity is
+  the LVS run above.
+- **No LVS for the analog partition, no ERC.** The LVS section above covers
+  item 4's digital half only; the analog half needs the fuse as a device
+  (#32), and ERC is #33. DRC status is not restated here:
   the `DRC (T1 item 3)` section above is the one place it is reported. Whatever
   it reports is clean only under the curated deck's coverage — `klt drc` does
   not run the `EF.*` rules at all (`spec/efuse-otp.md` §1.3) — so T1 item 3
