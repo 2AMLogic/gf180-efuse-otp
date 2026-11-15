@@ -4,7 +4,15 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-14
 
+- **PR #153**: verification: run the controller bench only through klt functional-verification
+- **PR #170**: docs(sim): anchor probe-table sizing claims to their gen_probe.sh rows
+- **PR #162**: docs: attribute the split_cuts PDN workaround to klt 0.8.0, not the pinned preset
+- **PR #159**: fix(sim): load the program-select grid by name so a partial set is refused
 - **PR #152**: docs: drop the retyped tool-version column from the testbench inventory
+- **Issue #148** (closed): Remove the second controller-bench execution path: runner.py runs cocotb directly while the committed evidence comes from klt functional-verification
+- **Issue #160** (closed): probe/README.md:20 claims `both` sizing is what the schematic carries; the netlist carries the 8u/2.24u pair
+- **Issue #149** (closed): Correct two false statements in layout/README.md about the gf180mcu_7t_6M PDN preset: it does combine with overrides, and the pinned klt no longer emits split_cuts
+- **Issue #146** (closed): Remove the report glob in sim/program-select/summarize.py: a partial result set is recorded as complete and can select a narrower width
 - **Issue #164** (closed): check_evidence_format.py grades zero sim records: the glob misses records/<stamp>/record.json and reports a vacuous pass
 - **Issue #163** (closed): Re-evaluate T1 item 3's EF coverage disclosure: the pinned klt deck gained an EF scope and now checks five eFuse-layer rules
 - **Issue #147** (closed): Remove the retyped tool versions from sim/README.md's testbench inventory: the analog rows say klt 0.8.0, the attested item 9 inventory pins 0.9.0

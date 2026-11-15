@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Self-test for summarize.py: the record describes the submitted grid, not
-whatever reports happen to be present.
+whatever reports happen to be present, and not whatever those reports happen
+to contain.
 
 Fixture is the newest committed record under records/ (read-only; reports are
 copied into a temp directory and the committed record is never touched). The
@@ -29,6 +30,21 @@ RECORDS = os.path.join(HERE, "records")
 def load_json(path):
     with open(path) as f:
         return json.load(f)
+
+
+def empty_corners(rep):
+    """A report that came back present but measured nothing.
+
+    `corner_count` is left as klt declared it, so the report contradicts
+    itself -- the shape the summarizer's cross-check is aimed at.
+    """
+    rep["corners"] = []
+
+
+def empty_corners_and_count(rep):
+    """The same, self-consistently: no corners and none declared."""
+    rep["corners"] = []
+    rep["corner_count"] = 0
 
 
 def newest_record():
@@ -60,9 +76,10 @@ class Test(unittest.TestCase):
             "--klt", cls.committed["klt_version"],
         ]
 
-    def run_case(self, drop=(), edit=None, args=None):
-        """Copy the fixture's reports (minus `drop`), optionally edit one, summarize.
+    def run_case(self, drop=(), edit=None, edits=(), args=None):
+        """Copy the fixture's reports (minus `drop`), optionally edit some, summarize.
 
+        `edit` is a single (stem, mutate) pair; `edits` an iterable of them.
         Returns (completed process, record dict or None).
         """
         rec = tempfile.mkdtemp(prefix="program-select-test-")
@@ -74,8 +91,7 @@ class Test(unittest.TestCase):
             os.makedirs(dst)
             shutil.copyfile(os.path.join(self.src, "sets", stem, "report.json"),
                             os.path.join(dst, "report.json"))
-        if edit is not None:
-            stem, mutate = edit
+        for stem, mutate in (list(edits) + ([edit] if edit is not None else [])):
             path = os.path.join(rec, "sets", stem, "report.json")
             rep = load_json(path)
             mutate(rep)
@@ -135,6 +151,45 @@ class Test(unittest.TestCase):
                 p, rec = self.run_case(args=args)
                 self.assertEqual(p.returncode, 2, p.stdout + p.stderr)
                 self.assertIsNone(rec, "an empty grid must not be recorded")
+
+    def test_f_every_report_present_but_empty_is_refused(self):
+        """All 15 reports present with no corners: nothing was measured.
+
+        Two shapes. `declared` leaves klt's own `corner_count` in place, so the
+        report contradicts itself; `zeroed` is self-consistent, so only the
+        non-empty test catches it. Before this guard both wrote a record with
+        `complete: true` and exited 0 (#177 case A).
+        """
+        for shape, mutate in (("declared", empty_corners),
+                              ("zeroed", empty_corners_and_count)):
+            with self.subTest(shape=shape):
+                p, rec = self.run_case(edits=[(s, mutate) for s in self.stems])
+                self.assertEqual(p.returncode, 4, p.stdout + p.stderr)
+                self.assertIsNone(rec, "an empty set must not be recorded")
+                self.assertIn("a partial set is not evidence", p.stderr)
+                for stem in self.stems:
+                    self.assertIn(stem, p.stderr)
+
+    def test_g_one_full_width_with_the_rest_empty_is_refused(self):
+        """The reachable case: the narrowest width folds, the others vanish.
+
+        Before this guard this exact fixture exited 0 and wrote a record with
+        `complete: true` describing one of its five widths, the other four
+        absent with no diagnostic -- and with a requirement near the narrow
+        widths' boundary the same shape moves `chosen_w_um` (#177 case B; the
+        PR records a 40 um -> 20 um flip from emptying one report). The widths
+        that returned nothing must be named, and no record may be written.
+        """
+        keep = min(self.widths_um)
+        kept = ["cell_r%d_w%d" % (r, keep) for r in self.fuse_ohms]
+        emptied = [s for s in self.stems if s not in kept]
+        p, rec = self.run_case(edits=[(s, empty_corners) for s in emptied])
+        self.assertEqual(p.returncode, 4, p.stdout + p.stderr)
+        self.assertIsNone(rec, "a set missing four of five widths must not be recorded")
+        for stem in emptied:
+            self.assertIn(stem, p.stderr)
+        for stem in kept:
+            self.assertNotIn(stem, p.stderr)
 
 
 if __name__ == "__main__":
