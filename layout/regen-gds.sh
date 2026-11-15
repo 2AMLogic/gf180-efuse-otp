@@ -9,12 +9,13 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=../sim/lib/pdk_env.sh
 . "$root/sim/lib/pdk_env.sh"
-pin="$(cat "$root/signoff/klt-pin.txt")"
+# shellcheck source=../signoff/klt.sh
+. "$root/signoff/klt.sh"
 fuse="$PDK_VARIANT_DIR/libs.ref/gf180mcu_fd_pr/gds/efuse.gds"
 tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
 
-uvx --from "$pin" python -I "$root/layout/gen_efuse_otp.py" \
-  --klt "uvx --from $pin klt" --netlist "$root/design/efuse_otp_array.spice" \
+klt_python -I "$root/layout/gen_efuse_otp.py" \
+  --klt "$KLT_ARGV" --netlist "$root/design/efuse_otp_array.spice" \
   --pdk "$(jq -er .variant "$root/sim/pdk.json")" --pdk-root "$PDK_ROOT" \
   --fuse-gds "$fuse" -o "$tmp/efuse_otp_array.gds" --report "$tmp/report.json" >/dev/null
 sha="$(sha256sum "$tmp/efuse_otp_array.gds" | cut -d' ' -f1)"

@@ -25,8 +25,10 @@ bench_parse_args "$@"
 pdk_fleet_check || exit 1
 lib="$PDK_FLEET_LIB_DIR"
 
-KLT_PIN="$(cat "$repo/signoff/klt-pin.txt")"
-KLT_YIELD=(uvx --from "${KLT_PIN%%==*}[yield]==${KLT_PIN##*==}" klt)
+# Pinned-klt facets for the yield grading below (no function facets: this
+# bench's own klt invocations -- klt sim, klt --version -- stay on the host klt).
+KLT_NO_FUNCTION=1
+. "$repo/signoff/klt.sh"
 
 # ASSUMPTIONS, recorded verbatim in record.json from this one definition: each is either
 # passed to summarize.py below or written into the requests built here and read back

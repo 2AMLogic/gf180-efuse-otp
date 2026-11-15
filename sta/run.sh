@@ -8,6 +8,8 @@
 # (sta-negative-control-1ns) must show negative slack, else exit 1.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+# shellcheck source=../signoff/klt.sh
+. signoff/klt.sh
 export PDK="${PDK:-gf180mcuD}" PDK_ROOT="${PDK_ROOT:-$HOME/.ciel}"
 out="${1:-sim/controller-sta}"
 mkdir -p "$out"
@@ -15,7 +17,7 @@ def=layout/.klt/place-and-route/efuse_otp_ctrl.def
 [ -f "$def" ] || { echo "$def missing: run layout/pnr.sh first" >&2; exit 2; }
 rc=0
 for n in sta-100ns sta-10ns sta-negative-control-1ns; do
-  uvx --from "$(cat signoff/klt-pin.txt)" klt sta "sta/$n.json" --format json > "$out/$n.report.json"
+  klt sta "sta/$n.json" --format json > "$out/$n.report.json"
   python3 -I - "$out/$n.report.json" "$n" <<'PY' || rc=1
 import json, sys
 d = json.load(open(sys.argv[1])); name = sys.argv[2]
