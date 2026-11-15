@@ -24,9 +24,14 @@ import os
 
 # The model files pdk_fleet_check() in sim/lib/pdk_env.sh compares between the
 # pinned gf180mcuC tree and the gf180mcuD fleet image. VARIANT_SIMULATED below
-# is a provenance statement about exactly that check, so it is built from this
-# list rather than restating it: change the check, change the statement.
-FLEET_CHECKED_MODEL_FILES = ("sm141064.ngspice", "sm141064.spice", "design.ngspice")
+# is a provenance statement about exactly that check, so it is built from the
+# fleet_checked_model_files list in sim/pdk.json — the one list pdk_fleet_check()
+# loops: change the check, change the statement.
+_pdk_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "pdk.json")
+with open(_pdk_json) as _f:
+    FLEET_CHECKED_MODEL_FILES = tuple(json.load(_f)["fleet_checked_model_files"])
+if not FLEET_CHECKED_MODEL_FILES:
+    raise SystemExit("bench_record: fleet_checked_model_files in sim/pdk.json is empty")
 
 VARIANT_PINNED = "gf180mcuC"
 

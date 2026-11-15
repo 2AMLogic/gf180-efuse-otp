@@ -12,8 +12,12 @@ extra=()
 [ "${1:-}" = "--check" ] && extra=(--check)
 # shellcheck source=../sim/lib/pdk_env.sh
 . "$root/sim/lib/pdk_env.sh"
+# shellcheck source=../signoff/klt.sh
+. "$root/signoff/klt.sh"
 cd "$root/design"
-exec uvx --from "$(cat "$root/signoff/klt-pin.txt")" klt netlist efuse_otp_array.sch \
+# klt is a sourced function and exec cannot run one; as the last command its
+# exit status is still the script's, as the exec form's was.
+klt netlist efuse_otp_array.sch \
   -o "$root/design/efuse_otp_array.spice" "${extra[@]}" \
   --rcfile "$PDK_VARIANT_DIR/libs.tech/xschem/xschemrc" \
   --pdk "$(jq -er .variant "$root/sim/pdk.json")" --pdk-root "$PDK_ROOT"

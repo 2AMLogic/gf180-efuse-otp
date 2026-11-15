@@ -38,7 +38,8 @@ Done and merged since the spec was ratified (decisions 0001 to 0005):
 - DRC clean on both partitions under the curated deck (#48, #49); item 8
   report attested (#62, #100); evidence-hygiene fixes #106 to #152.
 
-The README's "Current position: spec ratified" line is older than this record.
+The README's current-position line now reads "sense path simulated across PVT"
+(#181), matching this record.
 The remaining nine unmet items reduce to four causes: the analog stream is not
 routed, `klt` has no eFuse device class for LVS, `klt drc` does not model the
 foundry `EF.*` rule set, and decision 0006 is not yet ratified.
