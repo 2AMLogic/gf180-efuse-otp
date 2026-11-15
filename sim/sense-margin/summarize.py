@@ -150,9 +150,9 @@ def main():
         raise SystemExit(4)
 
     bench, control = {}, {}
-    backends, jobs = set(), set()
+    backends, jobs, engines = set(), set(), set()
     for kind, rf, rr, stem in requests:
-        rep = bench_record.collect_env(reports[stem], backends, jobs)
+        rep = bench_record.collect_env(reports[stem], backends, jobs, engines)
         pts = points(rep, rf, rf in programmed)
         (bench if kind == "bench" else control)[rf] = (rr, pts)
 
@@ -179,7 +179,7 @@ def main():
     bench_decision_ok = complete and all(f["all_decisions_ok"] for f in fuses.values())
 
     rec = {
-        **bench_record.header(a, backends, jobs),
+        **bench_record.header(a, backends, jobs, engines),
         "dut": "efuse_sense (with efuse_comp), extracted from design/efuse_otp_array.spice",
         "pvt": {"process": ["typical", "ff", "ss", "fs", "sf"], "temp_c": [-40, 25, 125],
                 "vdd33_v": [2.97, 3.30, 3.63], "source": "decision 0005"},
@@ -190,7 +190,7 @@ def main():
             "fuse_model": "plain resistor of the stated value behind a series switch + select replica (nfet_06v0 4u / 60u, as in the reference leg); no bitline capacitance, no column-mux leakage",
             "program_supply_v": {"value": 5.0, "status": "assumption, held fixed; it only gates the 6 V select devices in this bench"},
             "clock": f"one rising edge at {a.t_edge}, amplitude tracks vdd33; sense_en held asserted",
-            "not_simulated": "reference tolerance and comparator offset (spec sense-margin row); no documented source for either; Monte Carlo is a separate issue",
+            "not_simulated": "reference tolerance and comparator offset (spec sense-margin row); no documented source for either; not varied by this bench's corners, see sim/sense-mc",
         },
         "measurement_times": {"margin_read": a.t_pre, "decision_read": a.t_out},
         "definitions": {

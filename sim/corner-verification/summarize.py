@@ -64,7 +64,6 @@ def sense_citation(repo):
         "decision_correct_everywhere": r.get("decision_correct_everywhere"),
         "negative_control_flips_sign": (r.get("negative_control") or {}).get("demonstrates_bench_can_fail"),
         "verdict": r.get("verdict"),
-        "not_simulated": "reference tolerance and comparator offset (no documented source; statistical, owning issue #36)",
     }
 
 
@@ -79,11 +78,11 @@ def main():
     a = ap.parse_args()
     repo = os.path.abspath(os.path.join(a.rec, "..", "..", "..", ".."))
 
-    backends, jobs = set(), set()
+    backends, jobs, engines = set(), set(), set()
 
     def load(stem):
         path = os.path.join(a.rec, "sets", stem, "report.json")
-        return bench_record.collect_env(json.load(open(path)), backends, jobs)
+        return bench_record.collect_env(json.load(open(path)), backends, jobs, engines)
 
     fuses = {}
     for r in a.fuse_ohms.split():
@@ -97,7 +96,7 @@ def main():
     bind = min((f["binding_corner"] for f in fuses.values() if f["binding_corner"]),
                key=lambda p: p["i_fuse_a"], default=None)
     rec = {
-        **bench_record.header(a, backends, jobs),
+        **bench_record.header(a, backends, jobs, engines),
         "dut": "efuse_coldrv + efuse_rowdrv (each with efuse_ls) + efuse_bitcell, extracted from design/efuse_otp_array.spice; one selected cell",
         "pvt": {"process": ["typical", "ff", "ss", "fs", "sf"], "temp_c": [-40, 25, 125],
                 "supplies_v": "vdd33 and vprog step together (klt sim zips supply_v axes): (2.97, 4.5), (3.30, 5.0), (3.63, 5.5)",
