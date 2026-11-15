@@ -250,10 +250,23 @@ How the compare is shaped (this is not the extraction's default):
   reference form; `unchecked` would mean it never asked): `expected_nets`
   maps the library's four PG pins (`VDD VNW VPW VSS`, the `.SUBCKT` pin order)
   onto the PDN's two rails (`power_net: VDD`, `ground_net: VSS` in
-  `pnr-report.json`; the well taps land `VNW`→`VDD`, `VPW`→`VSS`). Result:
-  1421 instances checked, 0 findings, derivation
+  `pnr-report.json`). Result: 1421 instances checked, 0 findings, derivation
   `declared-by-every-instantiated-master` corroborated across all 34
-  instantiated masters. `body_verification: verified` with `device_count: 0`
+  instantiated masters — but only half the mapping produced evidence: the
+  report's `power_pins` is `["VDD", "VSS"]` and its `unchecked_expected_pins`
+  is `["VNW", "VPW"]`. The abstracted cells resolve 4 of the library's 6
+  `.SUBCKT` pins from their in-cell labels (`VNW`/`VPW` carry none), and the
+  circuits that would carry the well connections (`filltie`, `endcap`,
+  `fill_*`) are power-only-pruned before the compare (warning below), so
+  those two keys matched zero checkable rows and produced no findings and no
+  evidence — a key that resolves no pin is indistinguishable, in
+  `finding_count`, from one checked and found correct, which is exactly what
+  `unchecked_expected_pins` exists to disambiguate. The tap mapping is
+  therefore an asserted intent, not a checked result: it is declared so a
+  well-tap disagreement *would* render as a finding, but no instance pin
+  resolved on either `VNW` or `VPW`, so their correspondence
+  (`VNW`→`VDD`, `VPW`→`VSS`) is not evidence this run provides.
+  `body_verification: verified` with `device_count: 0`
   — every cell was abstracted, so there were no extracted devices to
   body-verify; the verdict covers the instances' pin correspondence, not the
   cells' transistor-level internals (which are the foundry library's, not
@@ -270,7 +283,9 @@ Warnings-only mismatches, listed with the claim as item 4 requires (all
 paired ambiguously; the comparer resolved it structurally"; 1 ×
 `topology.power_only_pruned` (layout-side power-only circuits — the tap
 cells, which the gate-level reference never instantiates — removed before
-the compare); 1 × `topology.top_level_pins_anchored` (the 57 top-level pin
+the compare; those are also the circuits that would have carried the well
+connections, which is why `VNW`/`VPW` appear under `unchecked_expected_pins`
+in the power bullet above); 1 × `topology.top_level_pins_anchored` (the 57 top-level pin
 names declared on both sides anchored by name first).
 
 ## What is not claimed
