@@ -25,8 +25,10 @@ bench_parse_args "$@"
 pdk_fleet_check || exit 1
 lib="$PDK_FLEET_LIB_DIR"
 
-KLT_PIN="$(cat "$repo/signoff/klt-pin.txt")"
-KLT_YIELD=(uvx --from "${KLT_PIN%%==*}[yield]==${KLT_PIN##*==}" klt)
+# Pinned-klt facets for the yield grading below (no function facets: this
+# bench's own klt invocations -- klt sim, klt --version -- stay on the host klt).
+KLT_NO_FUNCTION=1
+. "$repo/signoff/klt.sh"
 
 # ASSUMPTIONS, recorded verbatim in record.json from this one definition: each is either
 # passed to summarize.py below or written into the requests built here and read back
@@ -80,11 +82,13 @@ mk() {
   jq -n --arg net "$stem.cir" --arg lib "libs.tech/ngspice/sm141064.ngspice" \
         --arg tpre "$T_PRE" --arg tout "$T_OUT" --arg margin "$margin" --arg dec "$dec" \
         --argjson n "$n" --argjson seed "$SEED" --argjson sigma "$SIGMA_RREF" \
-        --argjson ms "$MISMATCH_SCALE" --argjson dmin "$DECISION_MIN" --arg q "'" '
+        --argjson ms "$MISMATCH_SCALE" --argjson dmin "$DECISION_MIN" --arg q "'" \
+        --argjson pvt_proc "$PVT_PROCESSES" --argjson pvt_temp "$PVT_TEMPERATURES_C" \
+        --argjson pvt_3v3 "$PVT_SUPPLY_3V3" '
     {netlist:$net, engine:"ngspice",
      models:{lib:$lib, pdk:"gf180mcuD"},
-     corners:{process:(["typical","ff","ss","fs","sf"]|map({name:., sections:[.]})),
-              supply_v:{vdd33:[2.97,3.30,3.63]}, temperature_c:[-40,25,125]},
+     corners:{process:($pvt_proc|map({name:., sections:[.]})),
+              supply_v:{vdd33:$pvt_3v3}, temperature_c:$pvt_temp},
      monte_carlo:{n:$n, seed:$seed, vary:"mismatch", seed_scope:"point",
                   mismatch_scale:$ms,
                   injected:[{instance:"Rref", parameter:"r", relative_sigma:$sigma, distribution:"gaussian"}]},
@@ -140,10 +144,9 @@ for pop in intact prog; do
   set -e
 done
 
-ngspice_version="$(ngspice -v | sed -n 's/^\*\* ngspice-\([0-9.]*\).*/\1/p' | head -1)"
 echo "record: $rec"
 python3 -I "$here/summarize.py" "$rec" --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
-    --ngspice "$ngspice_version" --klt "$(klt --version)" --klt-pin "$KLT_PIN" \
+    --klt "$(klt --version)" --klt-pin "$KLT_PIN" \
     --seed "$SEED" --n-nominal "$N_NOMINAL" --n-control "$N_CONTROL" --sigma-rref "$SIGMA_RREF" \
     --mismatch-scale "$MISMATCH_SCALE" --rref "$RREF_OHM" \
     --rfuse-intact "$RFUSE_INTACT" --rfuse-prog "$RFUSE_PROG" \

@@ -10,7 +10,8 @@
 # pinned klt (the curated deck needs no PDK or standalone klayout).
 set -euo pipefail
 cd "$(dirname "$0")/.."
-klt() { uvx --from "$(cat signoff/klt-pin.txt)" klt "$@"; }
+# shellcheck source=../signoff/klt.sh
+. signoff/klt.sh
 parts=(array:efuse_otp_array ctrl:efuse_otp_ctrl)
 if [ "${1:-}" = "--check" ]; then
   shift

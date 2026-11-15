@@ -2,9 +2,37 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-15
+
+- **PR #199**: refactor(signoff): single-source the pinned-klt uvx incantation in signoff/klt.sh
+- **PR #190**: refactor(sim): single-source the decision-0005 PVT corner grid in sim/lib/pdk_env.sh
+- **PR #184**: fix(sim): refuse a present-but-empty program-select report before folding
+- **PR #180**: test(sim): run the program-select summarize self-test in check:ci
+- **PR #171**: docs: roadmap as of 2026-11-13
+- **PR #194**: refactor(verification): drop the caller-less --emit-klt-requests mode
+- **PR #165**: build(layout): re-establish the digital stream on the pinned klt and route the PDN through the gf180mcu_7t_6M preset
+- **Issue #191** (closed): Remove dead --emit-klt-requests mode from verification/runner.py: no caller since #148
+- **Issue #188** (closed): Single-source the pinned-klt incantation: 8 scripts hand-roll it in 4 shapes and 8 of 9 give no diagnosable error when uvx is absent
+- **Issue #187** (closed): Single-source the ratified decision-0005 PVT grid: four benches retype the corner set with no binding to the spec
+- **Issue #177** (closed): Refuse an empty report in sim/program-select/summarize.py: after #146 a present-but-empty report still records complete: true and selects the narrowest width
+- **Issue #175** (closed): Wire sim/program-select/test_summarize.py into check:ci: 141 lines of regression test that nothing runs
+- **Issue #154** (closed): Establish the digital stream on the pinned klt 0.9.0, folding in the hand-written PDN block -> preset: gf180mcu_7t_6M
+
 ### 2026-11-14
 
+- **PR #178**: fix(sim): load the sense-margin request set by name so a partial set is refused
+- **PR #156**: refactor: compose probe decks from sense.cir.in and the committed netlist
+- **Issue #169** (closed): Remove the report glob in sim/sense-margin/summarize.py: a partial set is recorded and the negative control can be graded over half its requests
+- **Issue #144** (closed): Remove the copied bench body and subcircuits from sim/sense-margin/probe/probe.cir.in: build the 14 probe decks from sense.cir.in and the committed netlist
+- **PR #153**: verification: run the controller bench only through klt functional-verification
+- **PR #170**: docs(sim): anchor probe-table sizing claims to their gen_probe.sh rows
+- **PR #162**: docs: attribute the split_cuts PDN workaround to klt 0.8.0, not the pinned preset
+- **PR #159**: fix(sim): load the program-select grid by name so a partial set is refused
 - **PR #152**: docs: drop the retyped tool-version column from the testbench inventory
+- **Issue #148** (closed): Remove the second controller-bench execution path: runner.py runs cocotb directly while the committed evidence comes from klt functional-verification
+- **Issue #160** (closed): probe/README.md:20 claims `both` sizing is what the schematic carries; the netlist carries the 8u/2.24u pair
+- **Issue #149** (closed): Correct two false statements in layout/README.md about the gf180mcu_7t_6M PDN preset: it does combine with overrides, and the pinned klt no longer emits split_cuts
+- **Issue #146** (closed): Remove the report glob in sim/program-select/summarize.py: a partial result set is recorded as complete and can select a narrower width
 - **Issue #164** (closed): check_evidence_format.py grades zero sim records: the glob misses records/<stamp>/record.json and reports a vacuous pass
 - **Issue #163** (closed): Re-evaluate T1 item 3's EF coverage disclosure: the pinned klt deck gained an EF scope and now checks five eFuse-layer rules
 - **Issue #147** (closed): Remove the retyped tool versions from sim/README.md's testbench inventory: the analog rows say klt 0.8.0, the attested item 9 inventory pins 0.9.0

@@ -53,11 +53,13 @@ for r in $FUSE_OHMS; do
         -e "s#@RROUTE@#$RROUTE_OHM#" -e "s#@FUSE@#$fuse#" -e "s#@WSEL@#${w}u#" \
         "$here/cell.cir.in" > "$rec/$stem.cir"
     jq -n --arg net "$stem.cir" --arg lib "libs.tech/ngspice/sm141064.ngspice" \
-          --argjson ireq "$IREQ_A" --arg iexpr "(v(nb)-v(d))/$RROUTE_OHM" '
+          --argjson ireq "$IREQ_A" --arg iexpr "(v(nb)-v(d))/$RROUTE_OHM" \
+          --argjson pvt_proc "$PVT_PROCESSES" --argjson pvt_temp "$PVT_TEMPERATURES_C" \
+          --argjson pvt_5v "$PVT_SUPPLY_5V0" '
       {netlist:$net, engine:"ngspice",
        models:{lib:$lib, pdk:"gf180mcuD"},
-       corners:{process:(["typical","ff","ss","fs","sf"]|map({name:., sections:[., "efuse"]})),
-                supply_v:{vdd:[4.5,5.0,5.5]}, temperature_c:[-40,25,125]},
+       corners:{process:($pvt_proc|map({name:., sections:[., "efuse"]})),
+                supply_v:{vdd:$pvt_5v}, temperature_c:$pvt_temp},
        analysis:{kind:"dc", args:"Vdmy 0 1 1"},
        measurements:[
          {name:"i_fuse", spice:(".meas dc i_fuse find par(\u0027" + $iexpr + "\u0027) at=0"), unit:"A", limits:{min:$ireq}},
@@ -78,9 +80,8 @@ fi
 # rc: 0 = all pass, 3 = a measurement failed, 4 = partial set (see bench_submit_set).
 bench_submit_set "$rec" "${reqs[@]}"
 
-ngspice_version="$(ngspice -v | sed -n 's/^\*\* ngspice-\([0-9.]*\).*/\1/p' | head -1)"
 echo "record: $rec"
 python3 -I "$here/summarize.py" "$rec" --ireq "$IREQ_A" --vmax "$VMAX_RATING" \
     --rroute "$RROUTE_OHM" --fuse-ohms "$FUSE_OHMS" --widths-um "$WIDTHS_UM" \
     --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
-    --ngspice "$ngspice_version" --klt "$(klt --version)"
+    --klt "$(klt --version)"

@@ -2,7 +2,7 @@
 # Resolve the pinned gf180mcu variant directory; refuse any other revision.
 #
 # Source it (exports PDK_ROOT, PDK_VARIANT_DIR, PDK_REVISION) or run it
-# (prints the variant directory). The pin lives only in sim/pdk.json.
+# (prints the variant directory).
 #
 #   CIEL_ROOT   ciel root, default $HOME/.ciel
 #
@@ -34,16 +34,23 @@ _pdk_env_main() {
 }
 
 # Fleet-image rule: the fleet ships gf180mcuD, the pin is gf180mcuC. The model
-# files the benches read must be byte-identical in both. Defined on source, not
-# run on source. On success exports PDK_FLEET_LIB_DIR (the D ngspice dir);
-# returns 1 if a file differs or is missing.
+# files the benches read must be byte-identical in both; which files is
+# fleet_checked_model_files in sim/pdk.json, the one list bench_record.py
+# renders into variant_simulated. Defined on source, not run on source. On
+# success exports PDK_FLEET_LIB_DIR (the D ngspice dir); returns 1 if a file
+# differs or is missing.
 pdk_fleet_check() {
-  local libc lib f
+  local here libc lib f files
+  here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   libc="$PDK_VARIANT_DIR/libs.tech/ngspice"
   lib="$PDK_ROOT/gf180mcuD/libs.tech/ngspice"
-  for f in sm141064.ngspice sm141064.spice design.ngspice; do
+  files="$(jq -r '.fleet_checked_model_files[]' "$here/../pdk.json")" \
+    || { echo "pdk_fleet_check: cannot read fleet_checked_model_files from sim/pdk.json" >&2; return 1; }
+  [[ -n "$files" ]] \
+    || { echo "pdk_fleet_check: fleet_checked_model_files in sim/pdk.json is empty" >&2; return 1; }
+  while IFS= read -r f; do
     cmp -s "$libc/$f" "$lib/$f" || { echo "run.sh: $f differs between gf180mcuC and gf180mcuD" >&2; return 1; }
-  done
+  done <<< "$files"
   PDK_FLEET_LIB_DIR="$lib"
   export PDK_FLEET_LIB_DIR
 }
@@ -108,6 +115,17 @@ bench_submit_set() {
     exit "$rc"
   fi
 }
+
+# The ratified decision-0005 PVT corner grid (spec/decisions/0005-pvt-corner-set.md):
+# process typical/ff/ss/fs/sf, temperature -40/25/125 C, logic/sense supply
+# 3.3 V +-10%, program supply 5.0 V +-10%. JSON literals, passed to the request
+# builders with jq --argjson; each bench names its own supply axes and maps its
+# own model sections from these values.
+PVT_PROCESSES='["typical","ff","ss","fs","sf"]'
+PVT_TEMPERATURES_C='[-40,25,125]'
+PVT_SUPPLY_3V3='[2.97,3.30,3.63]'
+PVT_SUPPLY_5V0='[4.5,5.0,5.5]'
+export PVT_PROCESSES PVT_TEMPERATURES_C PVT_SUPPLY_3V3 PVT_SUPPLY_5V0
 
 if _pdk_env_main; then
   [[ "${BASH_SOURCE[0]}" == "$0" ]] && echo "$PDK_VARIANT_DIR"

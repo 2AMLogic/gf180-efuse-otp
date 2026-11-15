@@ -62,11 +62,13 @@ mk() {                                   # mk <stem> <fuse ohm> <select width|ke
     echo; sub efuse_ls
   } > "$rec/$stem.cir"
   jq -n --arg net "$stem.cir" --arg lib "libs.tech/ngspice/sm141064.ngspice" \
-        --argjson ireq "$IREQ_A" --arg r "$r" --argjson efuse "$efuse" '
+        --argjson ireq "$IREQ_A" --arg r "$r" --argjson efuse "$efuse" \
+        --argjson pvt_proc "$PVT_PROCESSES" --argjson pvt_temp "$PVT_TEMPERATURES_C" \
+        --argjson pvt_3v3 "$PVT_SUPPLY_3V3" --argjson pvt_5v "$PVT_SUPPLY_5V0" '
     {netlist:$net, engine:"ngspice",
      models:{lib:$lib, pdk:"gf180mcuD"},
-     corners:{process:(["typical","ff","ss","fs","sf"]|map({name:., sections:([.] + (if $efuse then ["efuse"] else [] end))})),
-              supply_v:{vdd33:[2.97,3.30,3.63], vprog:[4.5,5.0,5.5]}, temperature_c:[-40,25,125]},
+     corners:{process:($pvt_proc|map({name:., sections:([.] + (if $efuse then ["efuse"] else [] end))})),
+              supply_v:{vdd33:$pvt_3v3, vprog:$pvt_5v}, temperature_c:$pvt_temp},
      analysis:{kind:"dc", args:"Vdmy 0 1 1"},
      measurements:[
        {name:"i_fuse", spice:(".meas dc i_fuse find par(\u0027(v(blc)-v(xcell.n))/" + $r + "\u0027) at=0"), unit:"A", limits:{min:$ireq}},
@@ -89,9 +91,8 @@ fi
 # rc: 0 = all pass, 3 = a measurement failed, 4 = partial set (see bench_submit_set).
 bench_submit_set "$rec" "${reqs[@]}"
 
-ngspice_version="$(ngspice -v | sed -n 's/^\*\* ngspice-\([0-9.]*\).*/\1/p' | head -1)"
 echo "record: $rec"
 python3 -I "$here/summarize.py" "$rec" --ireq "$IREQ_A" --rroute "$RROUTE_OHM" \
     --fuse-ohms "$FUSE_OHMS" --w-control "$W_CONTROL" \
     --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
-    --ngspice "$ngspice_version" --klt "$(klt --version)"
+    --klt "$(klt --version)"

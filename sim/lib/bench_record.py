@@ -18,15 +18,25 @@ The three corner benches (program-select, corner-verification, sense-margin)
 share all four helpers and emit a byte-identical record header. sim/sense-mc
 shares only collect_env() and write_record(): its header names different tool
 keys (klt_sim_version, klt_yield_pin, no backend).
+
+The simulator version in a record is the one that ran the corners, read from the
+reports (`environment.engine_version`), not a probe of whatever simulator the
+submitting host happens to carry: these campaigns are batch only, so a local
+`ngspice -v` names a binary that executed nothing.
 """
 import json
 import os
 
 # The model files pdk_fleet_check() in sim/lib/pdk_env.sh compares between the
 # pinned gf180mcuC tree and the gf180mcuD fleet image. VARIANT_SIMULATED below
-# is a provenance statement about exactly that check, so it is built from this
-# list rather than restating it: change the check, change the statement.
-FLEET_CHECKED_MODEL_FILES = ("sm141064.ngspice", "sm141064.spice", "design.ngspice")
+# is a provenance statement about exactly that check, so it is built from the
+# fleet_checked_model_files list in sim/pdk.json — the one list pdk_fleet_check()
+# loops: change the check, change the statement.
+_pdk_json = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "pdk.json")
+with open(_pdk_json) as _f:
+    FLEET_CHECKED_MODEL_FILES = tuple(json.load(_f)["fleet_checked_model_files"])
+if not FLEET_CHECKED_MODEL_FILES:
+    raise SystemExit("bench_record: fleet_checked_model_files in sim/pdk.json is empty")
 
 VARIANT_PINNED = "gf180mcuC"
 
@@ -40,18 +50,20 @@ def add_common_args(ap):
     """Add the provenance arguments every bench summarizer takes from run.sh."""
     ap.add_argument("--pdk-rev", required=True)
     ap.add_argument("--stamp", required=True)
-    ap.add_argument("--ngspice", required=True)
     ap.add_argument("--klt", required=True)
     return ap
 
 
-def collect_env(rep, backends, jobs):
-    """Accumulate one klt sim report's backend and remote job ids.
+def collect_env(rep, backends, jobs, engines):
+    """Accumulate one klt sim report's backend, remote job ids and engine version.
 
     backends: set of json.dumps(backend, sort_keys=True) strings, or None for a
               bench whose record has no `backend` key (sim/sense-mc).
     jobs:     set of remote job id strings; both the single `job_id` and the
               `job_ids` list form are read, and a missing one adds nothing.
+    engines:  set of `environment.engine_version` strings -- the simulator that
+              ran this report's corners. A report without one adds nothing, so
+              an empty set reads as an empty list rather than a guessed version.
 
     Returns the report, so a caller can load and collect in one expression.
     """
@@ -63,20 +75,26 @@ def collect_env(rep, backends, jobs):
         v = remote.get(k)
         if v:
             jobs.update(v if isinstance(v, list) else [v])
+    engine_version = env.get("engine_version")
+    if engine_version:
+        engines.add(str(engine_version))
     return rep
 
 
-def header(a, backends, jobs):
+def header(a, backends, jobs, engines):
     """The provenance header of a corner bench's record.json, in record order.
 
-    `a` is the parsed namespace holding the add_common_args() values.
+    `a` is the parsed namespace holding the add_common_args() values. `engines`
+    is the collect_env() set of engine versions; it is emitted sorted, so a set
+    whose corners ran on more than one simulator version stays visible instead
+    of collapsing to one value.
     """
     return {
         "pdk_revision": a.pdk_rev,
         "variant_pinned": VARIANT_PINNED,
         "variant_simulated": VARIANT_SIMULATED,
         "timestamp_utc": a.stamp,
-        "ngspice_version_local": a.ngspice,
+        "engine_versions": sorted(engines),
         "klt_version": a.klt,
         "backend": [json.loads(b) for b in sorted(backends)],
         "remote_job_ids": sorted(jobs),

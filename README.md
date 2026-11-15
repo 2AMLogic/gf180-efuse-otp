@@ -10,7 +10,9 @@ for the analog paths and Yosys/OpenROAD for the controller.
 **Private repo.** Visibility is an operator decision; nothing here is
 published.
 
-**Status: spec ratified.** Committed on `main`:
+**Status: sense path simulated across PVT** (on assumed ranges — the current
+position under [Target specification](#target-specification) carries the
+caveats). Committed on `main`:
 
 - the PDK smoke record and the program-select width sweep record;
 - the controller RTL with its cocotb bench and negative control, and a mapped
@@ -77,7 +79,18 @@ PVT corner set, and the limits of pre-silicon evidence. Decision records are in
 Maturity ladder: spec ratified → cell and program path simulated across PVT
 → sense path simulated across PVT → array DRC/LVS-clean → controller
 verified → assembled and LVS-clean → shuttle seat → measured silicon.
-**Current position: spec ratified.**
+**Current position: sense path simulated across PVT** — reading the ladder
+sequentially, the last rung reached with no gap beneath it. Verdict of record:
+[`signoff/block-manifest.signoff.json`](signoff/block-manifest.signoff.json);
+the rung's evidence is the 45-corner sense-margin sweeps and the Monte Carlo
+record under `sim/sense-margin/` and `sim/sense-mc/`. That claim rests on the
+**assumed** intact/programmed ranges A4/A5 and an unsourced
+reference-tolerance sigma — rows P10/C2 grade `partial` in
+[`measurements/characterization/README.md`](measurements/characterization/README.md)
+— not on a real fuse's margins. The next rung (array DRC/LVS-clean) is **not**
+reached: DRC is clean but uncited (#60 — the curated deck does not evaluate
+the foundry `EF.*` set) and LVS is `unmet` (#32), so the block is not an
+LVS-clean array.
 
 ## Reproduce
 
@@ -91,7 +104,7 @@ and never replaces a committed one.
 | Program-select width sweep | `sim/program-select/run.sh` | the same PDK tree, plus the klt batch fleet (15 `klt sim` requests; a failed submit is reported, not re-run locally) | new `sim/program-select/records/<stamp>-<rev>/record.json`; result in [`design/README.md`](design/README.md) |
 | Controller bench | `verification/run.sh` | python3, uv, network for the pinned klt and cocotb, Icarus Verilog 13.0 | `ALL CHECKS PASSED` |
 | Controller negative control | `verification/run.sh --negative-control` | same | `NEGATIVE CONTROL OK` (exit 0 only if every seeded defect is caught) |
-| Latch check | `rtl/synth.sh` | Yosys 0.67 | `Number of latches: 0`, log in `flow/build/synth.log` |
+| Latch check | `rtl/synth.sh` | Yosys 0.67 | exit 0 and no output; Yosys asserts no latch cell survives synthesis and names any it finds. Log in `flow/build/synth.log` |
 | Signoff record | `uvx --from "$(cat signoff/klt-pin.txt)" klt signoff --manifest signoff/block-manifest.json --tiers-doc signoff/design-evidence-tiers.md --format json > signoff/block-manifest.signoff.json` | uv; exit 3 (items unmet) is expected | byte-identical to the committed `signoff/block-manifest.signoff.json` |
 
 `verification/run.sh` refuses any Icarus version other than the pinned one;
@@ -108,10 +121,13 @@ not check". It does not run the ngspice flow (it needs the PDK).
 
 `npm run -s check:ci` is the local pre-flight: the subset of those checks that
 needs nothing but python3, bash and jq — the checker self-tests, the
-evidence-format check, the item 6 spec-binding check and the `pdk_env.sh`
-self-test (`sim/lib/test_pdk_env.sh`, which the workflow does not run). It
-deliberately leaves out every check that needs an EDA tool, the PDK or a diff
-base, so a green `check:ci` is not a prediction that CI will pass.
+evidence-format check, the item 6 spec-binding check, the `pdk_env.sh`
+self-test (`sim/lib/test_pdk_env.sh`) and the program-select summarize
+self-test (`sim/program-select/test_summarize.py`, which pins that the record
+describes the submitted grid rather than whatever reports are present). The
+workflow runs neither of those last two. It deliberately leaves out every
+check that needs an EDA tool, the PDK or a diff base, so a green `check:ci` is
+not a prediction that CI will pass.
 
 ## Repo layout
 

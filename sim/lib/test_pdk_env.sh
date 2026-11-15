@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-# Self-test for pdk_env.sh: pin matches, SOURCES at another revision, no tree.
+# Self-test for pdk_env.sh: pin matches, SOURCES at another revision, no tree,
+# the fleet check against fake C and D trees (every listed file compared,
+# nothing beyond the list, a missing or empty list fails), and the provenance
+# statement naming exactly the files the check compares.
 # Uses a fake tree under a temp CIEL_ROOT; the fake revision is a fixture only.
 set -u
 here="$(cd "$(dirname "$0")" && pwd)"
 pin="$(jq -er .open_pdks_revision "$here/../pdk.json")"
 variant="$(jq -er .variant "$here/../pdk.json")"
+mapfile -t fleet_files < <(jq -r '.fleet_checked_model_files[]' "$here/../pdk.json")
 FIXTURE_OTHER_REV=0000000000000000000000000000000000000000   # fixture, never a real pin
 tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
 fail=0
@@ -34,18 +38,66 @@ fleet_case() { # name want-rc want-substr setup-fn
   local name="$1" want="$2" sub="$3" setup="$4" root="$tmp/fleet-$1" vdir out rc f
   vdir="$root/ciel/gf180mcu/versions/$pin/$variant/libs.tech/ngspice"
   mkdir -p "$vdir"; echo "open_pdks $pin" > "$root/ciel/gf180mcu/versions/$pin/$variant/SOURCES"
-  for f in sm141064.ngspice sm141064.spice design.ngspice; do echo "$f" > "$vdir/$f"; done
+  for f in "${fleet_files[@]}"; do echo "$f" > "$vdir/$f"; done
   "$setup" "$root/ciel/gf180mcu/versions/$pin/gf180mcuD/libs.tech/ngspice" "$vdir"
   out="$(CIEL_ROOT="$root" bash -c 'source "$1" && pdk_fleet_check && echo "LIB=$PDK_FLEET_LIB_DIR"' _ "$here/pdk_env.sh" 2>&1)"; rc=$?
   check "fleet $name" "$want" "$rc"
   [[ "$out" == *"$sub"* ]] || { echo "FAIL fleet $name message: $out"; fail=1; }
 }
 copy_d() { mkdir -p "$1"; cp "$2"/* "$1"/; }
-differ_d() { copy_d "$1" "$2"; echo changed > "$1/design.ngspice"; }
+differ_d() { copy_d "$1" "$2"; echo changed > "$1/${fleet_files[0]}"; }
 no_d() { :; }
 fleet_case match 0 "LIB=$tmp/fleet-match/ciel/gf180mcu/versions/$pin/gf180mcuD/libs.tech/ngspice" copy_d
-fleet_case differ 1 "design.ngspice differs between gf180mcuC and gf180mcuD" differ_d
+fleet_case differ 1 "${fleet_files[0]} differs between gf180mcuC and gf180mcuD" differ_d
 fleet_case missing-d 1 "differs between gf180mcuC and gf180mcuD" no_d
+# every listed file is really compared: corrupting any one of them in D fails,
+# naming it
+for f in "${fleet_files[@]}"; do
+  root="$tmp/fleet-each-$f"
+  vdir="$root/ciel/gf180mcu/versions/$pin/$variant/libs.tech/ngspice"
+  ddir="$root/ciel/gf180mcu/versions/$pin/gf180mcuD/libs.tech/ngspice"
+  mkdir -p "$vdir"; echo "open_pdks $pin" > "$root/ciel/gf180mcu/versions/$pin/$variant/SOURCES"
+  for g in "${fleet_files[@]}"; do echo "$g" > "$vdir/$g"; done
+  copy_d "$ddir" "$vdir"; echo changed > "$ddir/$f"
+  out="$(CIEL_ROOT="$root" bash -c 'source "$1" && pdk_fleet_check' _ "$here/pdk_env.sh" 2>&1)"; rc=$?
+  check "fleet compares $f" 1 "$rc"
+  [[ "$out" == *"$f differs between gf180mcuC and gf180mcuD"* ]] || { echo "FAIL fleet compares $f message: $out"; fail=1; }
+done
+# and nothing beyond the list: a differing file not in it must not fail the
+# check (it would if the loop restated its own list)
+root="$tmp/fleet-decoy"
+vdir="$root/ciel/gf180mcu/versions/$pin/$variant/libs.tech/ngspice"
+ddir="$root/ciel/gf180mcu/versions/$pin/gf180mcuD/libs.tech/ngspice"
+mkdir -p "$vdir"; echo "open_pdks $pin" > "$root/ciel/gf180mcu/versions/$pin/$variant/SOURCES"
+for g in "${fleet_files[@]}"; do echo "$g" > "$vdir/$g"; done
+echo decoy > "$vdir/zz-decoy-not-checked.spice"
+copy_d "$ddir" "$vdir"; echo decoy-changed > "$ddir/zz-decoy-not-checked.spice"
+out="$(CIEL_ROOT="$root" bash -c 'source "$1" && pdk_fleet_check' _ "$here/pdk_env.sh" 2>&1)"
+check "fleet ignores files outside the list" 0 "$?"
+# a missing or empty list must fail the check, not pass it vacuously; run
+# against a fixture copy of pdk_env.sh with its own pdk.json
+list_case() { # name jq-expr want-rc want-substr
+  local name="$1" expr="$2" want="$3" sub="$4" d="$tmp/list-$1" out rc
+  mkdir -p "$d/lib"; cp "$here/pdk_env.sh" "$d/lib/pdk_env.sh"
+  jq "$expr" "$here/../pdk.json" > "$d/pdk.json"
+  out="$(CIEL_ROOT="$tmp/ok" bash -c 'source "$1" && pdk_fleet_check' _ "$d/lib/pdk_env.sh" 2>&1)"; rc=$?
+  check "fleet list $name" "$want" "$rc"
+  [[ "$out" == *"$sub"* ]] || { echo "FAIL fleet list $name message: $out"; fail=1; }
+}
+list_case empty '.fleet_checked_model_files = []' 1 "fleet_checked_model_files in sim/pdk.json is empty"
+list_case missing 'del(.fleet_checked_model_files)' 1 "cannot read fleet_checked_model_files"
+# the provenance statement and the check must name exactly the same files: the
+# one list in sim/pdk.json drives both, so rendered == listed == compared
+python3 - "$here" "$here/../pdk.json" <<'PYEOF' || { echo "FAIL variant_simulated names the compared files"; fail=1; }
+import json, sys
+sys.path.insert(0, sys.argv[1])
+import bench_record
+listed = json.load(open(sys.argv[2]))["fleet_checked_model_files"]
+names = bench_record.VARIANT_SIMULATED.split("(fleet image; ", 1)[1].split(" byte-identical", 1)[0].split(", ")
+if names != list(listed):
+    print(f"variant_simulated names {names}, pdk.json lists {listed}")
+    sys.exit(1)
+PYEOF
 # sourcing alone must not require a D tree (tree "ok" above has none)
 CIEL_ROOT="$tmp/ok" bash -c 'source "$1"' _ "$here/pdk_env.sh" >/dev/null 2>&1; check "source without D tree exits 0" 0 "$?"
 
@@ -95,5 +147,32 @@ for want in 0 3 4 2; do
   fi
   grep -q -- "--batch-set a.json b.json --max-in-flight 4 --capacity-retries 3 --wait-for-capacity 600 -o $tmp/rec$want/sets" "$FAKE_KLT_LOG" || { echo "FAIL submit argv: $(cat "$FAKE_KLT_LOG")"; fail=1; }
 done
+
+# The decision-0005 grid constants (pdk_env.sh): each bench interpolates them
+# into its request builder with jq --argjson and keeps its own supply-axis
+# names and sections map, so every emitted corners: object must be byte for
+# byte the hand-typed one it replaced. The expected literals are the corners
+# of the committed pre-refactor requests (e.g.
+# sim/corner-verification/records/20261108T235928Z-f6eeac7/prog_rf140.json).
+corners_case() { # name efuse-json want-json jq-program
+  local name="$1" efuse="$2" want="$3" prog="$4" out
+  out="$(CIEL_ROOT="$tmp/ok" bash -c 'source "$1"; jq -cn \
+    --argjson p "$PVT_PROCESSES" --argjson t "$PVT_TEMPERATURES_C" \
+    --argjson v33 "$PVT_SUPPLY_3V3" --argjson v5 "$PVT_SUPPLY_5V0" \
+    --argjson efuse "$3" "$2"' _ "$here/pdk_env.sh" "$prog" "$efuse" 2>&1)"
+  if [[ "$out" == "$want" ]]; then echo "PASS corners $name"; else echo "FAIL corners $name: $out"; fail=1; fi
+}
+corners_case sense true \
+  '{"process":[{"name":"typical","sections":["typical"]},{"name":"ff","sections":["ff"]},{"name":"ss","sections":["ss"]},{"name":"fs","sections":["fs"]},{"name":"sf","sections":["sf"]}],"supply_v":{"vdd33":[2.97,3.30,3.63]},"temperature_c":[-40,25,125]}' \
+  '{process:($p|map({name:., sections:[.]})), supply_v:{vdd33:$v33}, temperature_c:$t}'
+corners_case program-select true \
+  '{"process":[{"name":"typical","sections":["typical","efuse"]},{"name":"ff","sections":["ff","efuse"]},{"name":"ss","sections":["ss","efuse"]},{"name":"fs","sections":["fs","efuse"]},{"name":"sf","sections":["sf","efuse"]}],"supply_v":{"vdd":[4.5,5.0,5.5]},"temperature_c":[-40,25,125]}' \
+  '{process:($p|map({name:., sections:[., "efuse"]})), supply_v:{vdd:$v5}, temperature_c:$t}'
+corners_case corner-verification-efuse true \
+  '{"process":[{"name":"typical","sections":["typical","efuse"]},{"name":"ff","sections":["ff","efuse"]},{"name":"ss","sections":["ss","efuse"]},{"name":"fs","sections":["fs","efuse"]},{"name":"sf","sections":["sf","efuse"]}],"supply_v":{"vdd33":[2.97,3.30,3.63],"vprog":[4.5,5.0,5.5]},"temperature_c":[-40,25,125]}' \
+  '{process:($p|map({name:., sections:([.] + (if $efuse then ["efuse"] else [] end))})), supply_v:{vdd33:$v33, vprog:$v5}, temperature_c:$t}'
+corners_case corner-verification-no-efuse false \
+  '{"process":[{"name":"typical","sections":["typical"]},{"name":"ff","sections":["ff"]},{"name":"ss","sections":["ss"]},{"name":"fs","sections":["fs"]},{"name":"sf","sections":["sf"]}],"supply_v":{"vdd33":[2.97,3.30,3.63],"vprog":[4.5,5.0,5.5]},"temperature_c":[-40,25,125]}' \
+  '{process:($p|map({name:., sections:([.] + (if $efuse then ["efuse"] else [] end))})), supply_v:{vdd33:$v33, vprog:$v5}, temperature_c:$t}'
 
 exit "$fail"
