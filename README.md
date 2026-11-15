@@ -108,10 +108,13 @@ attestation check. It does not run the ngspice flow (it needs the PDK).
 
 `npm run -s check:ci` is the local pre-flight: the subset of those checks that
 needs nothing but python3, bash and jq — the checker self-tests, the
-evidence-format check, the item 6 spec-binding check and the `pdk_env.sh`
-self-test (`sim/lib/test_pdk_env.sh`, which the workflow does not run). It
-deliberately leaves out every check that needs an EDA tool, the PDK or a diff
-base, so a green `check:ci` is not a prediction that CI will pass.
+evidence-format check, the item 6 spec-binding check, the `pdk_env.sh`
+self-test (`sim/lib/test_pdk_env.sh`) and the program-select summarize
+self-test (`sim/program-select/test_summarize.py`, which pins that the record
+describes the submitted grid rather than whatever reports are present). The
+workflow runs neither of those last two. It deliberately leaves out every
+check that needs an EDA tool, the PDK or a diff base, so a green `check:ci` is
+not a prediction that CI will pass.
 
 ## Repo layout
 

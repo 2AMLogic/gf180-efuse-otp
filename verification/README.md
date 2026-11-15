@@ -64,7 +64,5 @@ checks each; default outdir `sim/controller-fv`). Those are append-only
 evidence: regenerate to a temporary directory to compare, never over the
 committed files.
 
-`runner.py --emit-klt-requests DIR` writes the requests without running
-anything. `CONFIGS` in `runner.py` is the single table of parameter sets, and
-each set's expected pulse/settle counts reach the bench through the
-environment.
+`CONFIGS` in `runner.py` is the single table of parameter sets, and each
+set's expected pulse/settle counts reach the bench through the environment.

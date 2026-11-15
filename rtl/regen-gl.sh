@@ -8,13 +8,15 @@
 # scan of the netlist for latch cell types).
 set -euo pipefail
 cd "$(dirname "$0")/.."
+# shellcheck source=../signoff/klt.sh
+. signoff/klt.sh
 mode=write
 [ "${1:-}" = "--check" ] && mode=check
 export PDK="${PDK:-gf180mcuD}" PDK_ROOT="${PDK_ROOT:-$HOME/.ciel}"
 gl=rtl/efuse_otp_ctrl.gl.v
 report=$(mktemp)
 trap 'rm -f "$report" "${tmp:-}"' EXIT
-uvx --from "$(cat signoff/klt-pin.txt)" klt synthesize rtl/synth-request.json \
+klt synthesize rtl/synth-request.json \
   --format json > "$report"
 tmp=$(mktemp)
 python3 -I - "$report" "$tmp" <<'PY'
