@@ -108,7 +108,10 @@ attestation check. It does not run the ngspice flow (it needs the PDK).
 
 `npm run -s check:ci` is the local pre-flight: the subset of those checks that
 needs nothing but python3, bash and jq — the checker self-tests, the
-evidence-format check, the item 6 spec-binding check, the `pdk_env.sh`
+evidence-format check, the attestation-envelope pin check
+(`scripts/ci/check_attest_pins.py`, which re-hashes every attested path pin,
+composite and manifest binding in the repo and names the "Re-attest item N"
+procedure when one has drifted), the item 6 spec-binding check, the `pdk_env.sh`
 self-test (`sim/lib/test_pdk_env.sh`) and the program-select summarize
 self-test (`sim/program-select/test_summarize.py`, which pins that the record
 describes the submitted grid rather than whatever reports are present). The
