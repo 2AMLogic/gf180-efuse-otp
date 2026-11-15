@@ -14,7 +14,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 export PDK="${PDK:-gf180mcuD}" PDK_ROOT="${PDK_ROOT:-$HOME/.ciel}"
-klt() { uvx --from "$(cat signoff/klt-pin.txt)" klt "$@"; }
+# shellcheck source=../signoff/klt.sh
+. signoff/klt.sh
 req=layout/pnr-request.json report=layout/pnr-report.json
 gds=layout/efuse_otp_ctrl.gds asbuilt=layout/efuse_otp_ctrl.asbuilt.v
 if [ "${1:-}" = "--check" ]; then
