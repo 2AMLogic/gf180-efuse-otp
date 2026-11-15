@@ -119,7 +119,7 @@ def decision_finding(pops):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("rec")
-    for a in ("pdk-rev", "stamp", "ngspice", "klt", "klt-pin"):
+    for a in ("pdk-rev", "stamp", "klt", "klt-pin"):
         ap.add_argument("--" + a, required=True)
     ap.add_argument("--seed", type=int, required=True)
     ap.add_argument("--n-nominal", type=int, required=True)
@@ -160,12 +160,12 @@ def main():
     midpoint = 0.5
 
     ypop = {"intact": "intact", "programmed": "prog"}
-    jobs, out_pops = set(), {}
+    jobs, engines, out_pops = set(), set(), {}
     for pop, d in pops.items():
         sets = {}
         for role in ("nominal", "control"):
             rep = bench_record.collect_env(
-                jl(os.path.join(a.rec, "sets", d[role], "report.json")), None, jobs)
+                jl(os.path.join(a.rec, "sets", d[role], "report.json")), None, jobs, engines)
             sets[role] = {"stem": d[role], "corner_count": rep["corner_count"], "errored": rep["errored"],
                           "stats": set_stats(rep)}
         y = os.path.join(a.rec, "yield", ypop[pop])
@@ -186,9 +186,9 @@ def main():
     rec = {
         "pdk_revision": a.pdk_rev, "variant_pinned": bench_record.VARIANT_PINNED,
         "variant_simulated": bench_record.VARIANT_SIMULATED,
-        "timestamp_utc": a.stamp, "ngspice_version_local": a.ngspice, "klt_sim_version": a.klt,
+        "timestamp_utc": a.stamp, "engine_versions": sorted(engines), "klt_sim_version": a.klt,
         "klt_yield_pin": a.klt_pin, "remote_job_ids": sorted(jobs),
-        "tool_versions": {"ngspice_local": a.ngspice, "klt_sim": a.klt, "klt_yield": a.klt_pin},
+        "tool_versions": {"klt_sim": a.klt, "klt_yield": a.klt_pin},
         "dut": "efuse_sense (with efuse_comp), extracted from design/efuse_otp_array.spice",
         "corners": f"{n_corners} per request: {len(process)} process x {len(temps)} temperature"
                    f" x {len(vdd)} vdd33 (decision 0005); see pvt",

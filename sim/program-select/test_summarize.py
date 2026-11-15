@@ -73,7 +73,6 @@ class Test(unittest.TestCase):
             "--widths-um", " ".join(str(w) for w in cls.widths_um),
             "--pdk-rev", cls.committed["pdk_revision"],
             "--stamp", cls.committed["timestamp_utc"],
-            "--ngspice", cls.committed["ngspice_version_local"],
             "--klt", cls.committed["klt_version"],
         ]
 

@@ -80,9 +80,8 @@ fi
 # rc: 0 = all pass, 3 = a measurement failed, 4 = partial set (see bench_submit_set).
 bench_submit_set "$rec" "${reqs[@]}"
 
-ngspice_version="$(ngspice -v | sed -n 's/^\*\* ngspice-\([0-9.]*\).*/\1/p' | head -1)"
 echo "record: $rec"
 python3 -I "$here/summarize.py" "$rec" --ireq "$IREQ_A" --vmax "$VMAX_RATING" \
     --rroute "$RROUTE_OHM" --fuse-ohms "$FUSE_OHMS" --widths-um "$WIDTHS_UM" \
     --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
-    --ngspice "$ngspice_version" --klt "$(klt --version)"
+    --klt "$(klt --version)"
