@@ -144,10 +144,9 @@ for pop in intact prog; do
   set -e
 done
 
-ngspice_version="$(ngspice -v | sed -n 's/^\*\* ngspice-\([0-9.]*\).*/\1/p' | head -1)"
 echo "record: $rec"
 python3 -I "$here/summarize.py" "$rec" --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
-    --ngspice "$ngspice_version" --klt "$(klt --version)" --klt-pin "$KLT_PIN" \
+    --klt "$(klt --version)" --klt-pin "$KLT_PIN" \
     --seed "$SEED" --n-nominal "$N_NOMINAL" --n-control "$N_CONTROL" --sigma-rref "$SIGMA_RREF" \
     --mismatch-scale "$MISMATCH_SCALE" --rref "$RREF_OHM" \
     --rfuse-intact "$RFUSE_INTACT" --rfuse-prog "$RFUSE_PROG" \
