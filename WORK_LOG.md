@@ -4,6 +4,13 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-15
 
+- **PR #210**: ci(harness): drop redundant item 2 stream-hash step
+- **PR #197**: docs: state the README position as sense path simulated across PVT
+- **PR #189**: refactor(sim): single-source the fleet-checked model-file list in sim/pdk.json
+- **PR #186**: docs(sim): record klt 0.8.0 provenance of the committed controller-fv reports
+- **PR #168**: fix(rtl): assert no latch survives synthesis instead of scraping the Yosys log
+- **PR #158**: fix: record the simulator version that ran the corners, not the local probe
+- **PR #157**: fix(sim): drop the stale sense "not simulated" statements from the corner-bench summarizers
 - **PR #199**: refactor(signoff): single-source the pinned-klt uvx incantation in signoff/klt.sh
 - **PR #190**: refactor(sim): single-source the decision-0005 PVT corner grid in sim/lib/pdk_env.sh
 - **PR #184**: fix(sim): refuse a present-but-empty program-select report before folding
@@ -11,6 +18,14 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 - **PR #171**: docs: roadmap as of 2026-11-13
 - **PR #194**: refactor(verification): drop the caller-less --emit-klt-requests mode
 - **PR #165**: build(layout): re-establish the digital stream on the pinned klt and route the PDN through the gf180mcu_7t_6M preset
+- **Issue #205** (closed): CI never runs the sim/* summarizer unit tests (discovery is scoped to scripts/ci)
+- **Issue #182** (closed): Drop the redundant 'Item 2 (analog) stream matches its record' CI step: layout/attest.sh --check already covers both its failure modes
+- **Issue #181** (closed): README still reads "spec ratified" at both line 13 and line 80 — the committed evidence reaches the "sense path simulated across PVT" rung
+- **Issue #167** (closed): Single-source the fleet-checked model-file list: pdk_env.sh loops one copy while every record's variant_simulated names another
+- **Issue #161** (closed): rtl/synth.sh reports twice the real latch count: replace the hand-rolled log scraper with a Yosys assertion
+- **Issue #155** (closed): sim/controller-fv reports are klt schema_version 1; the pinned klt now emits 2
+- **Issue #151** (closed): Remove the stale 'not simulated' sense statements from the corner-bench summarizers: new records still name closed #36 for effects sim/sense-mc now simulates
+- **Issue #150** (closed): Remove the local ngspice -v probe from the batch benches: 4 of 14 records name ngspice 42 while every corner ran on the fleet's ngspice 46
 - **Issue #191** (closed): Remove dead --emit-klt-requests mode from verification/runner.py: no caller since #148
 - **Issue #188** (closed): Single-source the pinned-klt incantation: 8 scripts hand-roll it in 4 shapes and 8 of 9 give no diagnosable error when uvx is absent
 - **Issue #187** (closed): Single-source the ratified decision-0005 PVT grid: four benches retype the corner set with no binding to the spec
