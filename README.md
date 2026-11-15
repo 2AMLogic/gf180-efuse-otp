@@ -10,7 +10,9 @@ for the analog paths and Yosys/OpenROAD for the controller.
 **Private repo.** Visibility is an operator decision; nothing here is
 published.
 
-**Status: spec ratified.** Committed on `main`:
+**Status: sense path simulated across PVT** (on assumed ranges — the current
+position under [Target specification](#target-specification) carries the
+caveats). Committed on `main`:
 
 - the PDK smoke record and the program-select width sweep record;
 - the controller RTL with its cocotb bench and negative control, and a mapped
@@ -77,7 +79,18 @@ PVT corner set, and the limits of pre-silicon evidence. Decision records are in
 Maturity ladder: spec ratified → cell and program path simulated across PVT
 → sense path simulated across PVT → array DRC/LVS-clean → controller
 verified → assembled and LVS-clean → shuttle seat → measured silicon.
-**Current position: spec ratified.**
+**Current position: sense path simulated across PVT** — reading the ladder
+sequentially, the last rung reached with no gap beneath it. Verdict of record:
+[`signoff/block-manifest.signoff.json`](signoff/block-manifest.signoff.json);
+the rung's evidence is the 45-corner sense-margin sweeps and the Monte Carlo
+record under `sim/sense-margin/` and `sim/sense-mc/`. That claim rests on the
+**assumed** intact/programmed ranges A4/A5 and an unsourced
+reference-tolerance sigma — rows P10/C2 grade `partial` in
+[`measurements/characterization/README.md`](measurements/characterization/README.md)
+— not on a real fuse's margins. The next rung (array DRC/LVS-clean) is **not**
+reached: DRC is clean but uncited (#60 — the curated deck does not evaluate
+the foundry `EF.*` set) and LVS is `unmet` (#32), so the block is not an
+LVS-clean array.
 
 ## Reproduce
 
