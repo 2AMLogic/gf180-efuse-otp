@@ -173,7 +173,8 @@ non-empty top cell and an on-grid database unit. See `layout/README.md`,
 ## What CI does and does not check
 
 `.github/workflows/ci.yml` has two jobs. `harness` installs only Python, the
-pinned klt and `uv` (no PDK, ngspice or xschem; the KLayout Python module comes
+pinned klt, `uv` and `jq`
+(no PDK, ngspice or xschem; the KLayout Python module comes
 with the pinned klt, which is how `--attest 2` reads a stream); `controller` builds the pinned
 Icarus 13.0 and Yosys 0.67 (`scripts/ci/install_eda.sh`, cached), installs `uv`
 (the bench reaches the pinned klt through `uvx`) and runs
@@ -185,6 +186,11 @@ they check that:
 - the committed item 10 and item 9 envelopes match a fresh attestation;
 
 - the checker self-tests still reject seeded-bad input;
+- the `decision-0005` PVT corner grid exported by `sim/lib/pdk_env.sh` still
+  matches the ratified `pvt-corners` row of the spec, parsed through the item 6
+  extract (`signoff/check-pvt-grid.sh`);
+- the `pdk_env.sh` self-test still passes (`sim/lib/test_pdk_env.sh`, hermetic
+  fake trees and a stubbed `klt` on `PATH`);
 - each evidence directory has a `README.md`, and any `sim/**/records/*.json`
   has the required fields, a PDK revision, and repo-relative paths only
   (vacuously true while there are no records);
