@@ -15,12 +15,13 @@
 # refuses to write the report or the GDS unless they hold.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-pin="$(cat signoff/klt-pin.txt)"
+# shellcheck source=../signoff/klt.sh
+. signoff/klt.sh
 mode=(-o)
 [ "${1:-}" = "--check" ] && mode=(--check)
 
 # The only private-API use left in this repo; see klayout-tools#5551.
-geometry_digest=$(uvx --from "$pin" python -I -c '
+geometry_digest=$(klt_python -I -c '
 import sys
 from klayout_tools._provenance import layout_geometry_digest
 digest = layout_geometry_digest(sys.argv[1])
@@ -29,13 +30,13 @@ if digest is None:
 print(digest)
 ' layout/efuse_otp_ctrl.gds)
 
-uvx --from "$pin" klt signoff --attest 2 \
+klt signoff --attest 2 \
   --input layout/efuse_otp_ctrl.gds \
   --generator layout/pnr.sh \
   --regenerated-hash "$geometry_digest" --hash-kind geometry \
   "${mode[@]}" layout/pnr.attest.json --no-color
 
-uvx --from "$pin" klt signoff --attest 2 \
+klt signoff --attest 2 \
   --input layout/efuse_otp_array.gds \
   --generator layout/regen-gds.sh \
   --regenerated-hash "sha256:$(cut -d' ' -f1 < layout/efuse_otp_array.gds.sha256)" \

@@ -10,7 +10,9 @@
 #
 # Exit 0 once the record is written. Pass/fail against 10 mA is data in
 # record.json, not a script error. A failed batch submit exits non-zero and
-# does not fall back to a local grid.
+# does not fall back to a local grid; a submit that left any expected report
+# missing exits 4 from summarize.py without writing a record, because a partial
+# set is not evidence.
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 source "$here/../lib/pdk_env.sh"        # refuses a tree that is not the pin
@@ -51,11 +53,13 @@ for r in $FUSE_OHMS; do
         -e "s#@RROUTE@#$RROUTE_OHM#" -e "s#@FUSE@#$fuse#" -e "s#@WSEL@#${w}u#" \
         "$here/cell.cir.in" > "$rec/$stem.cir"
     jq -n --arg net "$stem.cir" --arg lib "libs.tech/ngspice/sm141064.ngspice" \
-          --argjson ireq "$IREQ_A" --arg iexpr "(v(nb)-v(d))/$RROUTE_OHM" '
+          --argjson ireq "$IREQ_A" --arg iexpr "(v(nb)-v(d))/$RROUTE_OHM" \
+          --argjson pvt_proc "$PVT_PROCESSES" --argjson pvt_temp "$PVT_TEMPERATURES_C" \
+          --argjson pvt_5v "$PVT_SUPPLY_5V0" '
       {netlist:$net, engine:"ngspice",
        models:{lib:$lib, pdk:"gf180mcuD"},
-       corners:{process:(["typical","ff","ss","fs","sf"]|map({name:., sections:[., "efuse"]})),
-                supply_v:{vdd:[4.5,5.0,5.5]}, temperature_c:[-40,25,125]},
+       corners:{process:($pvt_proc|map({name:., sections:[., "efuse"]})),
+                supply_v:{vdd:$pvt_5v}, temperature_c:$pvt_temp},
        analysis:{kind:"dc", args:"Vdmy 0 1 1"},
        measurements:[
          {name:"i_fuse", spice:(".meas dc i_fuse find par(\u0027" + $iexpr + "\u0027) at=0"), unit:"A", limits:{min:$ireq}},
@@ -79,5 +83,6 @@ bench_submit_set "$rec" "${reqs[@]}"
 ngspice_version="$(ngspice -v | sed -n 's/^\*\* ngspice-\([0-9.]*\).*/\1/p' | head -1)"
 echo "record: $rec"
 python3 -I "$here/summarize.py" "$rec" --ireq "$IREQ_A" --vmax "$VMAX_RATING" \
-    --rroute "$RROUTE_OHM" --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
+    --rroute "$RROUTE_OHM" --fuse-ohms "$FUSE_OHMS" --widths-um "$WIDTHS_UM" \
+    --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
     --ngspice "$ngspice_version" --klt "$(klt --version)"

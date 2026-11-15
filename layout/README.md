@@ -8,9 +8,9 @@ analog partition is below.
 
 | File | Role |
 |---|---|
-| `pnr-request.json` | The `klt place-and-route` request: `gf180mcu_fd_sc_mcu7t5v0`, 40 % utilization, 10 µm core margin, explicit PDN straps and connects (the `gf180mcu_7t_6M` recipe values, written out because a preset cannot be combined with overrides, with the `split_cuts` option dropped; see DRC below), `power.tapcell.distance_um` 15, I/O pins on Metal3 (horizontal) / Metal2 (vertical), `target_stage: route`, seed 1, `portable_paths`. |
+| `pnr-request.json` | The `klt place-and-route` request: `gf180mcu_fd_sc_mcu7t5v0`, 40 % utilization, 10 µm core margin, PDN by platform recipe (`power.preset: gf180mcu_7t_6M`; see DRC below), `power.tapcell.distance_um` 15, I/O pins on Metal3 (horizontal) / Metal2 (vertical), `target_stage: route`, seed 1, `portable_paths`. The straps and connects were spelled out by hand until #154, for klt 0.8.0, whose preset emitted `-split_cuts {Metal3 0.128}`; the pinned 0.9.0 preset carries `split_cuts: null`, so the hand copy was redundant. `power.preset` and explicit `power.straps` are mutually exclusive, which is why the override had to be a full copy rather than a patch. |
 | `pnr.sh` | Runs the flow with the pinned klt (`signoff/klt-pin.txt`), refuses to write anything unless the response is `status: ok`, `stage_reached: route`, `power.pdn: true` with `route_drc_violation_count` and `antenna_violation_count` both 0, and writes the files below. `--check` runs `klt place-and-route --check` plus the GDS sha256; `--check --rerun` re-runs the flow and diffs the verdict-bearing fields. |
-| `pnr-report.json` | Committed `--format json` response. Route stage reached, 0 route DRC and 0 antenna violations, `power.pdn: true`, `power.connects[].split_cuts: null`, `power.tapcell_master: gf180mcu_fd_sc_mcu7t5v0__filltie`. |
+| `pnr-report.json` | Committed `--format json` response. Route stage reached, 0 route DRC and 0 antenna violations, `power.pdn: true`, `power.preset: gf180mcu_7t_6M`, `power.connects_overridden: false`, `power.connects[].split_cuts: null`, `power.tapcell_master: gf180mcu_fd_sc_mcu7t5v0__filltie`, `power.placed.tapcells: 171`. |
 | `efuse_otp_ctrl.gds` | Routed GDS (standard-cell GDS views merged in by klt). Its sha256 is in `efuse_otp_ctrl.gds.sha256`. |
 | `efuse_otp_ctrl.asbuilt.v` | `verilog_path` output: the as-built gate-level netlist (CTS buffers, resizes, antenna diodes included). This, not `rtl/efuse_otp_ctrl.gl.v`, is the reference for the controller LVS run. |
 | `attest.sh` | Writes both T1 item 2 envelopes with the pinned klt's own producer, `klt signoff --attest 2 --input <stream>`: `pnr.attest.json` (digital) and `../signoff/item2-analog.attest.json` (analog). `--check` re-attests and fails (exit 3) if either committed envelope has drifted. The digital regeneration claim is a geometry digest, for which klt has no public source (klayout-tools#5551), so the script reads that one value from klt's private `_provenance`; every other field is the producer's. |
@@ -91,14 +91,20 @@ the check is a byte compare.
   `rsh_ppolyf_u` = 350 Ω/sq, snapped to the 0.005 µm grid. The 1 µm width is an assumption, not a sourced
   value.
 
-## DRC (T1 item 3): both partitions clean, `EF.*` not evaluated
+## DRC (T1 item 3): both partitions clean, no `EF.*` rule modelled
 
 `layout/drc.sh` runs `klt drc --deck gf180mcu --top <top>` (the pinned klt,
 `signoff/klt-pin.txt`) on each GDS and keeps the reports as found:
 `layout/drc-array.report.json`, `layout/drc-ctrl.report.json`. `--check` re-hashes
 the input and the deck against them (`--rerun` re-runs). Deck content hash, both
-runs: `sha256:0eb6df1bafc5106ec50bd58479dbd7cda36bb685f1ef18cd3a2244a6e7e48666`
-(klt 0.8.0, klayout 0.30.12). **Item 3 stays `unmet` (`EF.*` is not evaluated, see below); no envelope is cited for it.** Both partitions are clean under the curated deck.
+runs: `sha256:cf44de63f0a5b01c1d09c4d58e0535e990aa4b070bcaae17fd3a94a67a1d97e1`
+(klt 0.9.0, klayout 0.30.13 — the pin; #154 re-ran both partitions under it).
+That hash is engine-dependent and `signoff/klt-pin.txt` does not constrain the
+klayout engine, so a future install of the same pin can resolve a different
+engine and make `layout/drc.sh --check` report `drifted` with nothing else
+changed (klayout-tools#5601). CI does not run `drc.sh --check`, so this is a
+local-reproducibility caveat, not a CI gate.
+**Item 3 stays `unmet` (every `EF.01`–`EF.22b` is unmodelled, see below); no envelope is cited for it.** Both partitions are clean under the curated deck.
 
 | Partition | status | violations |
 |---|---|---|
@@ -119,7 +125,9 @@ Sources (from the reports' `source_cell`):
   (`ohms_drawn` in `efuse_otp_array.report.json`; the 350 Ω/sq and 1 µm width
   remain assumptions). The fuse cell's geometry is unchanged
   (`verify_fuse` against the PDK stream passes). Clean means clean under the
-  curated deck's coverage below, which has no `EF.*` rules.
+  curated deck's coverage below, which models no `EF.*` rule — though the pinned
+  deck does check seven eFuse-layer rules of its own on this partition, five of
+  them new at klt 0.9.0 (below).
 - **Digital, classification of the 2525 hits before the fix** (sum 2525; counts
   from the previous `layout/drc-ctrl.report.json`, `source_cell` of the hit):
 
@@ -137,14 +145,20 @@ Sources (from the reports' `source_cell`):
 
   `source_cell` names the cell whose geometry the polygon sits in, not the cause.
   Two causes in our request account for all 2525:
-  1. **PDN via stack.** The `gf180mcu_7t_6M` preset connects Metal1 to Metal4 with
-     `-split_cuts {Metal3 0.128}`. Replacing the preset with the same straps and
-     connects minus `split_cuts` (`layout/pnr-request.json`) removed every
+  1. **PDN via stack.** Stated as history: the klt 0.8.0 `gf180mcu_7t_6M` preset
+     connected Metal1 to Metal4 with `-split_cuts {Metal3 0.128}`. Replacing that
+     preset with the same straps and connects minus `split_cuts` removed every
      `metal2/3/4.ongrid.1`, `via2/3.ongrid.1` and `via2/3.width.1` hit (2022 in
      total), including the 666 (24 + 426 + 108 + 108) attributed to foundry cells: those
      polygons were the foundry cells' shapes overlaid by the oversized cuts, not
      defects of the cells. Measured: the re-run, same seed, has 0 such hits. This is
-     klayout-tools#4301 gap 1; no new tool issue is needed.
+     klayout-tools#4301 gap 1; no new tool issue is needed. That gap closed upstream on
+     2026-10-27, so the pinned klt 0.9.0 preset carries `split_cuts: null` on the same
+     Metal1→Metal4 connect and the hand-written block became redundant: #154 restored
+     `power.preset: gf180mcu_7t_6M` in `layout/pnr-request.json`, and the stream it
+     produces is byte-identical to the hand-written form's (same GDS sha256, same 20
+     generated OpenROAD Tcl scripts). The 0 hits above are therefore unchanged by that
+     restoration.
   2. **Tap cell pitch.** The tap-distance rules (15 µm, 5V/6V) are about the tap
      cells' placement. The default pitch is 100 µm, so 503 hits. With
      `power.tapcell.distance_um: 15` (171 tap cells instead of 19) both
@@ -164,17 +178,37 @@ Coverage, quoted from the reports (`coverage.*`):
 
 | | analog | digital |
 |---|---|---|
-| `layers_in_stream_without_rules` | `34/10`, `100/8` | `0/0`, `21/10`, `34/10`, `36/10`, `63/63`, `81/10`, `204/10` |
-| `rules_skipped` | 64 rules, none `EF.*`; `efuse_mk.ongrid.1`/`plfuse.ongrid.1` are checked | 42 rules, including `efuse_mk.ongrid.1`, `plfuse.ongrid.1` |
-| `deck_scope` | both: 10.4.2 MIM Option B, 10.7 DRC_BJT Mark Layer, 7.12 Contact, 7.13 Metaln, 7.14 Vian, 7.15 MetalTop, 7.4 Nwell, 7.5 Comp, 7.7 Poly2, 7.8 Nplus, 7.9 Pplus, 9.1 Bond Pad, ESD, GR, OFFGRID, SB | |
+| `rules_checked` | 55 rules | 72 rules |
+| `layers_in_stream_without_rules` | `34/10` | `0/0`, `21/10`, `34/10`, `36/10`, `63/63`, `81/10`, `204/10` |
+| `rules_skipped` | 71 rules; the eFuse-layer rules `efuse_mk.enclosing.lvs_source.1`, `efuse_mk.ongrid.1`, `efuse_mk.space.1`, `plfuse.ongrid.1`, `plfuse.separation.comp.1`, `plfuse.separation.nplus.1`, `plfuse.separation.sab.1` are **checked**; `plfuse.separation.esd.1` and `plfuse.separation.resistor.1` are skipped | 54 rules, including all nine eFuse-layer rules (the digital partition draws no `PLFUSE`/`EFUSE_MK`) |
+| `deck_scope` | both: 10.4.2 MIM Option B, 10.7 DRC_BJT Mark Layer, 7.12 Contact, 7.13 Metaln, 7.14 Vian, 7.15 MetalTop, 7.4 Nwell, 7.5 Comp, 7.7 Poly2, 7.8 Nplus, 7.9 Pplus, 9.1 Bond Pad, EF, ESD, GR, MDN, MDP, OFFGRID, SB | |
 
-**`EF.*` rules are not evaluated.** Neither report's `coverage.rules_checked`
-carries an `EF.*` rule: the curated deck has none (klayout-tools#4312). The route
-via the PDK's own `efuse.rb` also fails: `klt drc --engine klayout --deck-file
-<PDK>/libs.tech/klayout/tech/drc/rule_decks/efuse.rb` exits 1 with
+**No foundry `EF.*` rule is modelled, but the pinned deck is no longer blind to
+the eFuse layers.** Two facts, measured from the reports under the pin and worth
+keeping apart:
+
+- Neither report's `coverage.rules_checked` carries a rule named `EF.*`, and both
+  reports list every one of `EF.01`, `EF.02`, `EF.03`, `EF.04a`–`EF.04d`, `EF.05`–
+  `EF.13`, `EF.15`, `EF.16a`/`EF.16b`, `EF.18`, `EF.19`, `EF.21`, `EF.22a`/`EF.22b`
+  (24 rules) under `coverage.unmodeled_rules`. The exact-value `EF.*` set is still
+  not run (klayout-tools#4312).
+- The pinned klt 0.9.0 deck did gain an `EF` entry in `coverage.deck_scope` and
+  now checks five eFuse-layer rules on the analog partition that klt 0.8.0 did
+  not: `efuse_mk.enclosing.lvs_source.1`, `efuse_mk.space.1`,
+  `plfuse.separation.comp.1`, `plfuse.separation.nplus.1` and
+  `plfuse.separation.sab.1` (on top of the two `*.ongrid.1` rules 0.8.0 already
+  ran). `efuse_otp_array` is clean under all seven. Two more,
+  `plfuse.separation.esd.1` and `plfuse.separation.resistor.1`, remain skipped.
+  These are klt's own layer-named rules, not the foundry's `EF.*` IDs, and no
+  mapping between the two is published — so they are additional coverage, not
+  evidence for any `EF.*` row.
+
+The route via the PDK's own `efuse.rb` also still fails: `klt drc --engine klayout
+--deck-file <PDK>/libs.tech/klayout/tech/drc/rule_decks/efuse.rb` exits 1 with
 `NameError: uninitialized constant GF180_DRC_REGISTRY` (the file is one fragment
 of a deck that must be assembled with the registry; klayout-tools#4002). The spec
-row "DRC clean including every `EF.*` rule" stays `unmet`.
+row "DRC clean including every `EF.*` rule" therefore stays `unmet`. Whether the
+new coverage changes what item 3 can claim is #60's call, not settled here.
 
 ## What is not claimed
 

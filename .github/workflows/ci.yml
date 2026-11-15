@@ -32,6 +32,14 @@ jobs:
         run: PREFIX="$HOME/eda" scripts/ci/install_eda.sh
       - name: Put pinned tools on PATH
         run: echo "$HOME/eda/bin" >> "$GITHUB_PATH"
+      - name: Install uv
+        # verification/run.sh runs the bench through `uvx --from "$(cat
+        # signoff/klt-pin.txt)" klt functional-verification`, never a
+        # host-installed klt, so the two bench steps below need uv on PATH.
+        # Fetching klt and the pinned cocotb needs network at job time; a fetch
+        # failure must fail the step, so there is no retry or fallback here.
+        run: pipx install uv
+
       - name: Controller bench
         run: verification/run.sh
       - name: Controller negative control
