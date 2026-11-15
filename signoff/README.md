@@ -181,12 +181,18 @@ they check that:
 - the controller bench passes, the negative control catches every seeded
   defect, and synthesis reports zero latches;
 - the committed item 10 and item 9 envelopes match a fresh attestation;
-
 - the checker self-tests still reject seeded-bad input;
 - each evidence directory has a `README.md`, and any `sim/**/records/*.json`
   has the required fields, a PDK revision, and repo-relative paths only
   (vacuously true while there are no records);
 - files under `sim/**/records/` are only added, never modified, deleted or renamed;
+- the item 6 digital extract is still bound to the ratified
+  `spec/efuse-otp.md` (`signoff/check-item6-digital.sh`): the spec's sha256
+  matches the extract's recorded hash and every quoted row still appears
+  verbatim; the digital flow that produced the item is not re-run;
+- the item 2 (analog) stream matches its record
+  (`sha256sum --check layout/efuse_otp_array.gds.sha256`); the regeneration,
+  `layout/regen-gds.sh --check`, needs the PDK and is not re-run;
 - the item 1 (analog) attestation still reproduces (`--attest 1 --check`);
 - both item 2 attestations still reproduce (`layout/attest.sh --check`, i.e.
   `--attest 2 --check` on each stream); the generators named in their
