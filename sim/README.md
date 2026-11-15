@@ -117,14 +117,26 @@ each checked live:
    The two request flags must stay out of `layout/pnr-request.json` until a pin
    carries the bridge entry: at 0.9.0 they make `layout/pnr.sh` fail.
 
-2. **A standalone SPEF cannot substitute.** `klt extract --parasitics --deck
-   gf180mcu` on the routed `layout/efuse_otp_ctrl.gds` exits 0 and writes a
-   well-formed SPEF, but the gf180mcu extraction deck does not recognize the
-   placed standard cells: the 635 `*D_NET` names are connected-pin labels
-   (`A1|A2|ZN`, `CLK|I|Z`, ...), and **0 of the design's 228 nets** appear in
-   the SPEF. `read_spef` would annotate no nets, so an SDF from that session
-   would look like a post-route measurement while carrying no routed
-   parasitics — filed generically as
+2. **A standalone SPEF cannot substitute.** The exact invocation, re-run at
+   the pin 2026-11-15 (identical result bare and with `--top-cell-pins`):
+
+   ```
+   klt extract layout/efuse_otp_ctrl.gds --deck gf180mcu --parasitics \
+       --top efuse_otp_ctrl --spef out.spef -o out.cir
+   ```
+
+   It exits 0 and writes a well-formed SPEF, but the gf180mcu extraction deck
+   does not recognize the placed standard cells — the run flattens them to
+   3106 transistor devices with no cell instance — so no design net name
+   survives: **855 `*D_NET` entries, all anonymous `$N`** (a numbering klt
+   itself documents as unstable across klayout versions or hosts —
+   klayout-tools#1063), and **0 of the design's 228 nets**
+   (`layout/efuse_otp_ctrl.asbuilt.v`) match any of them, exact-name or
+   bus-normalized. Pin-label names of the form `A1|A2|ZN` are that run's
+   SPICE netlist (`-o`) node names, not `*D_NET` names. `read_spef` would
+   annotate no nets, so an SDF from that session would look like a
+   post-route measurement while carrying no routed parasitics — filed
+   generically as
    [klayout-tools#5826](https://github.com/2AMLogic/klayout-tools/issues/5826).
 
 3. **`klt sta` cannot fall back to an estimate-parasitics SDF.** Its
@@ -138,8 +150,8 @@ and an SDF whose instance paths match its own `asbuilt.v`), teach
 `layout/pnr.sh` to copy `spef_sta.sdf_path` out beside the stream, and drive
 `verification/runner.py`'s gate-level request with `options.sdf`. Two
 decisions already made for that run, so they need not be re-derived: annotate
-the SDF's `typ` corner (the P&R flow's timing deck, `tt_025C_1v80`, writes
-identical min/typ/max triples from one session), and use
+the SDF's `typ` corner (the P&R flow's timing deck, `tt_025C_1v80`, is
+expected to write identical min/typ/max triples from one session), and use
 `options.sdf.entries: "interconnect"` — klt's validated net-delay
 back-annotation mode (klayout-tools#2364 found IOPATH annotation kills a
 design at any clock period). The annotated run must also obey the bench's own
