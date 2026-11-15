@@ -144,14 +144,6 @@ jobs:
           klt signoff --attest 1 --inventory signoff/item1-analog-inventory.json \
             --check signoff/item1-analog.attest.json
 
-      - name: Item 2 (analog) stream matches its record
-        # The stream is re-hashed against the hash recorded in the sha256 file
-        # and the attestation; the regeneration (layout/regen-gds.sh --check)
-        # needs the PDK and is not re-run here. The re-graded record above
-        # already fails if the manifest, envelope and stream disagree.
-        run: |
-          (cd layout && sha256sum --check efuse_otp_array.gds.sha256)
-
       - name: Item 2 attestations reproduce
         # Both item 2 envelopes, re-attested from the committed streams and
         # compared with `klt signoff --attest 2 --check` (exit 3 = stale). This
