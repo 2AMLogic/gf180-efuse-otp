@@ -94,6 +94,14 @@ jobs:
         # "What CI does and does not check".
         run: python3 scripts/ci/check_report_inputs.py
 
+      - name: check:ci step coverage
+        # check:ci chains scripts/ci/check_ci_yml_binding.py; run it here so a
+        # check:ci term with no matching step in this file fails CI instead of
+        # only the local gate. Which checks CI runs is out of scope by design:
+        # steps with no check:ci term (this one, the klt attestation steps,
+        # Sim records append-only) are not the checker's concern.
+        run: python3 scripts/ci/check_ci_yml_binding.py
+
       - name: Sim records append-only
         env:
           EVENT: ${{ github.event_name }}
