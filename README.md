@@ -124,7 +124,12 @@ needs nothing but python3, bash and jq — the checker self-tests, the
 evidence-format check, the attestation-envelope pin check
 (`scripts/ci/check_attest_pins.py`, which re-hashes every attested path pin,
 composite and manifest binding in the repo and names the "Re-attest item N"
-procedure when one has drifted), the item 6 spec-binding check, the
+procedure when one has drifted), the ci.yml step-binding check
+(`scripts/ci/check_ci_yml_binding.py`, which parses this very term list and
+fails when a term has no matching step in `.github/workflows/ci.yml`, with a
+documented `EXEMPT_TERMS` list for terms CI deliberately skips — the
+term list and the CI step list can no longer drift by hand, #217, #230,
+#231), the item 6 spec-binding check, the
 decision-0005 PVT grid binding check, the `pdk_env.sh` self-test
 (`sim/lib/test_pdk_env.sh`), the klt helper self-test (`signoff/test-klt.sh`,
 which fakes `uvx` on `PATH` and asserts on the argv the pinned-klt facets emit,
