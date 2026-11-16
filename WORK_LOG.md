@@ -4,6 +4,20 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-16
 
+- **PR #232**: ci: refuse unsupported hash_algorithm in attestation pin check
+- **PR #230**: ci: run every uncovered check:ci term in the harness job
+- **PR #228**: fix(rtl): broaden the latch-gate glob to catch fine-grain $_DLATCHSR_* cells
+- **PR #227**: signoff: pin layout/lvs-ctrl.report.json in the item 8 attestation
+- **PR #220**: docs: add the klt helper self-test to README's check:ci pre-flight list
+- **PR #216**: refactor(sim): single-source the corner benches' refuse-a-partial-set report loading
+- **PR #212**: fix: gate the signoff klt opt-out on the export attribute, assert the export
+- **Issue #222** (closed): Item 8 envelope does not hash layout/lvs-ctrl.report.json
+- **Issue #218** (closed): README's check:ci enumeration omits the klt helper self-test (signoff/test-klt.sh)
+- **Issue #217** (closed): The sim summarizer self-tests never run in GitHub CI: only the local npm check:ci gate invokes them, so they can go red with CI green
+- **Issue #211** (closed): check_attest_pins.py never reads attestation.hash_algorithm, so a klt hash-kind change reports 87 false 'drift' lines with unfixable remediation
+- **Issue #208** (closed): Hoist the absent/hollow report guard from sim/*/summarize.py into bench_record: two copies drifted, a third bench has none
+- **Issue #200** (closed): signoff/klt.sh: KLT_NO_FUNCTION is honored from the ambient environment, and its self-test asserts 'set' where it says 'exported'
+- **Issue #193** (closed): rtl/synth.ys latch assertion does not cover the fine-grain $_DLATCHSR_* cell type
 - **PR #219**: ci(rtl): add a committed negative control proving the latch gate can fail
 - **PR #198**: check:ci: add attestation-envelope pin pre-flight
 - **Issue #204** (closed): The latch gate has no committed negative control: a typo'd select pattern would make CI's only latch check silently permanent-green
