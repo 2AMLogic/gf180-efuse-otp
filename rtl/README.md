@@ -53,14 +53,28 @@ elaborations, not a runtime port (decision 0004 defines no such port).
 ## Synthesis check
 
 ```sh
-rtl/synth.sh        # plain Yosys: synth + check -assert + no-latch assertion; log in flow/build/synth.log
+rtl/synth.sh                     # gate: synth + check -assert + no-latch assertion; log in flow/build/synth.log
+rtl/synth.sh --negative-control  # control: proves the gate can fail; log in flow/build/synth-negctl.log
 ```
 
 Last result (Yosys 0.67): completes and exits 0, printing nothing. The gate is
-an assertion, not a count: `rtl/synth.ys` ends with `select -assert-none
-t:$_DLATCH_* t:$_SR_* t:$dlatch t:$dlatchsr`, so the run fails if any latch
-cell survives generic synthesis, and Yosys names the offending cells on the way
-out. (`check -assert` alone does not assert on latches.)
+an assertion, not a count: `rtl/synth.ys` ends by `script`-including
+`rtl/latch-assert.ys`, so the run fails if any latch cell survives generic
+synthesis, and Yosys names the offending cells on the way out. (`check -assert`
+alone does not assert on latches.)
+
+`rtl/latch-assert.ys` is the single source of the asserted pattern set: the
+real gate and the negative control (`rtl/synth-negctl.ys`) both `script`-include
+it, so a typo in the patterns blinds both gates together. The control
+synthesizes the committed fixture `rtl/latch-negative-control.v` — one
+deliberately observable level-sensitive assignment; it is a negative control,
+never design RTL — through that same text, and `rtl/synth.sh
+--negative-control` exits 0 only if the assertion fires, naming the fixture's
+inferred latch cell. A gate that has gone blind (a typo'd pattern, a Yosys
+renaming the latch cells) leaves the fixture synthesizing clean and fails the
+control, the same way "Controller negative control" keeps the bench from
+passing vacuously. Last control result (Yosys 0.67): exits 0 with the
+fixture's `$_DLATCH_P_` cell named in `flow/build/synth-negctl.log`.
 
 Mapped gate-level netlist (committed as `efuse_otp_ctrl.gl.v`), for
 `gf180mcu_fd_sc_mcu7t5v0` at 32 x 8 (`synth-request.json` states `ROWS`, `COLS`,

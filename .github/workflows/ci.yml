@@ -46,6 +46,11 @@ jobs:
         run: verification/run.sh --negative-control
       - name: Latch check
         run: rtl/synth.sh
+      - name: Latch negative control
+        # Proves the latch gate can fail: synthesizes the committed
+        # latch-bearing fixture through the same rtl/latch-assert.ys text the
+        # gate asserts, and passes only if the assertion fires.
+        run: rtl/synth.sh --negative-control
 
   harness:
     runs-on: ubuntu-latest

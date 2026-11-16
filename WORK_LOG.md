@@ -2,8 +2,23 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-16
+
+- **PR #215**: test: assert engine_versions provenance in the program-select summarizer self-test
+- **PR #209**: ci: run the sense-margin summarize self-test in check:ci
+- **PR #206**: ci: bind the decision-0005 PVT grid to the spec, run the pdk_env self-test in CI
+- **PR #202**: docs(sim): record why the controller SDF cannot be produced at the pinned klt (7.digital stays uncited)
+- **Issue #201** (closed): Wire sim/sense-margin/test_summarize.py into check:ci: 209 lines of green regression test whose docstring cites a stale 'not run' precedent
+- **Issue #196** (closed): Bind the decision-0005 PVT grid in sim/lib/pdk_env.sh to the spec in CI, as check-item6-digital.sh does for the digital extract
+- **Issue #176** (closed): Assert engine_versions in the program-select summarizer self-test: an empty list is the silent failure mode of the new provenance field
+- **Issue #174** (closed): T1 item 7 (digital): SDF-annotated klt functional-verification re-run on the as-built controller netlist
+
 ### 2026-11-15
 
+- **PR #207**: feat(layout): klt lvs the routed controller against its as-built netlist
+- **PR #192**: docs: point the root README CI list at signoff/README.md and complete that list
+- **Issue #173** (closed): T1 item 4 (digital): klt lvs of the routed controller against its as-built netlist
+- **Issue #133** (closed): Root README understates which signoff checks CI runs
 - **PR #210**: ci(harness): drop redundant item 2 stream-hash step
 - **PR #197**: docs: state the README position as sense path simulated across PVT
 - **PR #189**: refactor(sim): single-source the fleet-checked model-file list in sim/pdk.json

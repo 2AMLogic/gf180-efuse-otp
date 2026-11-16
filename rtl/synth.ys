@@ -8,4 +8,7 @@ check -assert
 # selection must be empty. On failure Yosys names the offending cells and exits
 # non-zero. `synth` already prints a statistics block into the log, so no extra
 # `stat` is needed (a second one would double every cell count in the log).
-select -assert-none t:$_DLATCH_* t:$_SR_* t:$dlatch t:$dlatchsr
+# The asserted pattern line lives in rtl/latch-assert.ys, script-included
+# here — the same text the negative control (rtl/synth-negctl.ys) asserts, so
+# a typo breaks both gates together and the control notices.
+script rtl/latch-assert.ys

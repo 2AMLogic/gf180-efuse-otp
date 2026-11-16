@@ -1,0 +1,12 @@
+# Negative control for the rtl latch gate. Reads the committed latch-bearing
+# fixture (rtl/latch-negative-control.v), synthesizes it, then script-includes
+# rtl/latch-assert.ys — the SAME asserted pattern text rtl/synth.ys runs on the
+# real design — so this control can only stay green while the real gate's
+# patterns still match. Run it through `rtl/synth.sh --negative-control`,
+# which inverts the exit status: the control passes only if this script FAILS
+# with the selection assertion.
+read_verilog rtl/latch-negative-control.v
+hierarchy -check -top latch_negative_control
+synth -top latch_negative_control
+check -assert
+script rtl/latch-assert.ys
