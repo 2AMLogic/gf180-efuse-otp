@@ -129,6 +129,12 @@ jobs:
         # regression in that behaviour fails CI.
         run: python3 -I sim/sense-margin/test_summarize.py
 
+      - name: bench_record load_reports self-test
+        # check:ci chains sim/lib/test_bench_record.py, which pins that a
+        # partial report set is refused before anything is returned; run it
+        # here so a regression in that refusal fails CI.
+        run: python3 -I sim/lib/test_bench_record.py
+
       - name: Re-grade signoff record
         run: |
           rc=0

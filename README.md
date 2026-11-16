@@ -128,7 +128,9 @@ procedure when one has drifted), the item 6 spec-binding check, the
 decision-0005 PVT grid binding check, the `pdk_env.sh` self-test
 (`sim/lib/test_pdk_env.sh`), the klt helper self-test (`signoff/test-klt.sh`,
 which fakes `uvx` on `PATH` and asserts on the argv the pinned-klt facets emit,
-so it never invokes a real `klt`), the program-select summarize self-test
+so it never invokes a real `klt`), the bench-record loader self-test
+(`sim/lib/test_bench_record.py`, which pins that a partial report set is
+refused before anything is returned), the program-select summarize self-test
 (`sim/program-select/test_summarize.py`, which pins that the record describes
 the submitted grid rather than whatever reports are present) and the
 sense-margin summarize self-test (`sim/sense-margin/test_summarize.py`, which

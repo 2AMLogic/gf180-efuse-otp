@@ -223,6 +223,10 @@ they check that:
 - the klt helper self-test still passes (`signoff/test-klt.sh`, hermetic: it
   fakes `uvx` on `PATH` and asserts on the argv the pinned-klt facets emit, so
   it never invokes a real `klt`);
+- the bench-record loader self-test still passes
+  (`sim/lib/test_bench_record.py`, hermetic: hand-built fixtures in a temp
+  directory, pins that a partial report set is refused with exit 4 before
+  anything is returned);
 - the program-select summarize self-test still passes
   (`sim/program-select/test_summarize.py`, hermetic, pins that the record
   describes the submitted grid rather than whatever reports are present);
