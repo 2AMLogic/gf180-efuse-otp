@@ -13,7 +13,6 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 
 `loom:very-important` (one counts per workspace); every stage takes these first.
 
-- **#130**: Replace the last private klt call in layout/attest.sh (layout_geometry_digest) with the public digest source once klayout-tools#5551 ships
 - **#172**: Route efuse_ls in the layout generator and LVS-match it with the pinned klt (first slice of #73)
 
 ## Important
@@ -27,6 +26,7 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 
 Human-approved issues ready for implementation (`loom:issue`).
 
+- **#130**: Replace the last private klt call in layout/attest.sh (layout_geometry_digest) with the public digest source once klayout-tools#5551 ships
 - **#172**: Route efuse_ls in the layout generator and LVS-match it with the pinned klt (first slice of #73)
 - **#221**: check_attest_pins.py manifest layer binds against untracked cited files, and NO_HASH_KINDS is dead
 - **#233**: scripts/ci: bind check:ci's term list to ci.yml step coverage
