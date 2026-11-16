@@ -15,11 +15,13 @@ envelope. For each envelope three pin shapes are verified:
      ``"{hex}  {path}\\n"`` lines built from the freshly hashed members, in
      stored order.
 
-``hash_algorithm: "sha256-raw-bytes"`` is assumed to be plain sha256 over the
+``hash_algorithm: "sha256-raw-bytes"`` (``HASH_ALGORITHM``) is assumed to be plain sha256 over the
 file's bytes and the composite recipe above is assumed to be what klt computes;
 both assumptions are pinned by ``test_check_attest_pins.py``, so a future klt
 hash-kind or envelope-shape change breaks a named test instead of quietly
-disagreeing with CI. This checker mirrors what ``klt signoff --check`` reports;
+disagreeing with CI. An envelope that declares any other ``hash_algorithm`` is
+refused with one named problem and its pins are skipped (not reported as drift);
+an absent field keeps the plain-sha256 behaviour. This checker mirrors what ``klt signoff --check`` reports;
 CI stays the authority and this is strictly the earlier, cheaper local signal.
 
 Finally, every ``signoff/block-manifest.json`` ``evidence[]`` entry carrying a
@@ -43,6 +45,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+HASH_ALGORITHM = "sha256-raw-bytes"
 MANIFEST = Path("signoff") / "block-manifest.json"
 SKIP_WALK = {".git", ".loom", "node_modules", "__pycache__"}
 NO_HASH_KINDS = ("command", "citation", "metric", "pin", "dbu_on_grid",
@@ -180,6 +183,11 @@ def check_envelope(env, data, root):
     problems = []
     pins = composites = skipped = 0
     att = data["attestation"]
+    if "hash_algorithm" in att and att["hash_algorithm"] != HASH_ALGORITHM:
+        return [(f"{env}: attestation.hash_algorithm is "
+                 f"{att['hash_algorithm']!r}, but this checker only computes "
+                 f"{HASH_ALGORITHM!r}; its pins cannot be verified here "
+                 "(teach check_attest_pins.py that hash kind)", None)], 0, 0, 0
     checks = att.get("checks", [])
     if not isinstance(checks, list):
         return [(f"{env}: attestation.checks must be a list", None)], 0, 0, 0
