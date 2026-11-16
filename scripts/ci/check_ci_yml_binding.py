@@ -14,9 +14,16 @@ catches). This checker parses both sides mechanically:
   - terms whose command word is ``echo`` are skipped: they print the summary
     line and assert nothing;
   - ci.yml is walked for job steps, and a step's invocation text is its
-    ``run:`` value (block scalars dedented, full-line ``#`` comment lines
-    dropped so a stale mention inside a run comment cannot satisfy a term)
-    plus its ``working-directory:``;
+    ``run:`` value (block scalars dedented, with full-line ``#`` comment
+    lines dropped and trailing ``#`` comments cut -- a mention in a comment
+    is not an invocation) plus its ``working-directory:``; on a plain
+    single-line ``run:`` the YAML comment rule applies (cut at the first
+    whitespace-preceded ``#``), while a quoted ``run:`` value is YAML
+    content and is kept verbatim, ``#`` and all;
+  - a step gated by an ``if:`` condition does not cover a term: it does not
+    run on every CI event, so it cannot be what binds check:ci to CI, and a
+    term whose keys appear only in conditional step(s) is reported unbound
+    with those steps named;
   - a term is covered when some single step's invocation text contains every
     path-like token of the term -- words containing ``/`` or ending in
     ``.py``/``.sh``. Interpreter and flag words (``python3``, ``-I``,
@@ -122,14 +129,53 @@ def _indent(line):
     return len(line) - len(line.lstrip(" "))
 
 
+def _is_quoted(value):
+    return len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"')
+
+
 def _plain_value(value):
-    if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
-        return value[1:-1]
+    return value[1:-1] if _is_quoted(value) else value
+
+
+def _strip_inline_yaml_comment(value):
+    """Plain single-line YAML scalar: cut at the first '# ...' comment.
+
+    This is the YAML comment rule for plain scalars (a '#' at the start of
+    the value or preceded by whitespace begins a comment), so what remains
+    is what Actions actually executes. '#' with no preceding whitespace is
+    part of the value (``a#b``) and is kept.
+    """
+    i = value.find("#")
+    while i != -1:
+        if i == 0 or value[i - 1] in " \t":
+            return value[:i].rstrip()
+        i = value.find("#", i + 1)
     return value
 
 
+def _strip_shell_trailing_comment(line):
+    """One shell line: cut a trailing '# ...' comment outside shell quotes.
+
+    A '#' preceded by whitespace starts a shell comment unless it sits
+    inside a single- or double-quoted string; quotes are tracked with a
+    simple toggle (shell comment parsing inside quoted values is out of
+    scope for single-line ``run:`` values, which are YAML content).
+    """
+    quote = None
+    for i, ch in enumerate(line):
+        if quote is not None:
+            if ch == quote:
+                quote = None
+        elif ch in ("'", '"'):
+            quote = ch
+        elif ch == "#" and (i == 0 or line[i - 1] in " \t"):
+            return line[:i].rstrip()
+    return line
+
+
 def _strip_run_comments(run_text):
-    return "\n".join(l for l in run_text.split("\n")
+    return "\n".join(_strip_shell_trailing_comment(l)
+                     for l in run_text.split("\n")
                      if not l.lstrip().startswith("#"))
 
 
@@ -159,7 +205,10 @@ def _read_block_scalar(lines, key_i, key_indent):
 
 
 def parse_workflow_steps(text):
-    """Return [{"job", "name", "run", "working_directory"}] for every job step.
+    """Return [{"job", "name", "run", "working_directory", "if"}] per job step.
+
+    ``if`` is the step's ``if:`` condition (``None`` when unconditional);
+    ``check()`` never lets a conditional step cover a term.
 
     Walks the indentation shape GitHub Actions workflow files use here --
     top-level ``jobs:``, job keys at indent 2, ``steps:`` at indent 4, step
@@ -266,7 +315,7 @@ def _parse_steps(lines, starts, sig, skip_step_subblock, steps_i, job, steps):
         value = value.strip()
         if j in starts:
             cur = {"job": job, "name": None, "run": None,
-                   "working_directory": None}
+                   "working_directory": None, "if": None}
             steps.append(cur)
         if cur is None:
             raise WorkflowParseError(
@@ -290,7 +339,28 @@ def _parse_steps(lines, starts, sig, skip_step_subblock, steps_i, job, steps):
                 cur[field] = _strip_run_comments(content)
                 j = after
                 continue
-            cur[field] = _strip_run_comments(_plain_value(value))
+            if key == "run":
+                if _is_quoted(value):
+                    # a quoted value is YAML content: its '#'s are data and it
+                    # is kept verbatim; a plain value gets the comment rule.
+                    cur[field] = _plain_value(value)
+                else:
+                    cur[field] = _strip_inline_yaml_comment(value)
+            else:
+                cur[field] = _strip_run_comments(_plain_value(value))
+        elif key == "if":
+            if cur["if"] is not None:
+                raise WorkflowParseError(
+                    "line %d: duplicate 'if' in one step" % (j + 1))
+            if not value:
+                raise WorkflowParseError(
+                    "line %d: 'if' has no value" % (j + 1))
+            if value[0] in "|>":
+                content, after = _read_block_scalar(lines, j, 8)
+                cur["if"] = content
+                j = after
+                continue
+            cur["if"] = _strip_inline_yaml_comment(_plain_value(value))
         elif not value:
             j = skip_step_subblock(j + 1)
             if j is None:
@@ -325,7 +395,10 @@ def check(pkg_path=PACKAGE, yml_path=WORKFLOW, exempt=None):
     stats["steps"] = len(steps)
     stats["jobs"] = len({s["job"] for s in steps})
     step_texts = [(s["run"] or "") + "\n" + (s["working_directory"] or "")
-                  for s in steps]
+                  for s in steps if s["if"] is None]
+    gated_texts = [(s["job"], s["name"], s["if"],
+                    (s["run"] or "") + "\n" + (s["working_directory"] or ""))
+                   for s in steps if s["if"] is not None]
     try:
         terms = split_terms(script)
     except BindError as e:
@@ -335,6 +408,10 @@ def check(pkg_path=PACKAGE, yml_path=WORKFLOW, exempt=None):
            "checker steps), or -- only if CI deliberately skips the term -- add "
            "its normalized form to EXEMPT_TERMS in "
            "scripts/ci/check_ci_yml_binding.py with a reason")
+    gated_fix = ("make the step unconditional (drop its if:) so it runs on "
+                 "every CI event, or -- only if CI deliberately skips the term "
+                 "-- add its normalized form to EXEMPT_TERMS in "
+                 "scripts/ci/check_ci_yml_binding.py with a reason")
     for term in terms:
         stats["terms"] += 1
         try:
@@ -358,10 +435,28 @@ def check(pkg_path=PACKAGE, yml_path=WORKFLOW, exempt=None):
                 "with a reason" % term, None))
             continue
         if not any(all(k in text_ for k in keys) for text_ in step_texts):
-            problems.append((
-                "check:ci term %r has no matching step in %s: no single step's "
-                "run/working-directory contains all of %s"
-                % (term, yml_path, ", ".join(repr(k) for k in keys)), fix))
+            gated = [(job, name, cond)
+                     for job, name, cond, text_ in gated_texts
+                     if all(k in text_ for k in keys)]
+            if gated:
+                named = "; ".join(
+                    "step %r in job %r (if: %s)"
+                    % (name or "<unnamed step>", job, cond)
+                    for job, name, cond in gated)
+                problems.append((
+                    "check:ci term %r has no matching step in %s: no single "
+                    "unconditional step's run/working-directory contains all of "
+                    "%s -- the keys appear only in conditional step(s) %s, and "
+                    "a step gated by an if: condition does not cover a term; "
+                    "make the step unconditional or exempt the term in "
+                    "EXEMPT_TERMS"
+                    % (term, yml_path, ", ".join(repr(k) for k in keys), named),
+                    gated_fix))
+            else:
+                problems.append((
+                    "check:ci term %r has no matching step in %s: no single step's "
+                    "run/working-directory contains all of %s"
+                    % (term, yml_path, ", ".join(repr(k) for k in keys)), fix))
         else:
             stats["matched"] += 1
     return problems, stats
