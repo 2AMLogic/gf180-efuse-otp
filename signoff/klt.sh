@@ -22,13 +22,15 @@
 #   KLT_YIELD      the pin with the [yield] extra spliced in, as an array --
 #                  "uvx --from klayout-tools[yield]==<pin version> klt" -- for
 #                  the klt yield grading
-# Source with a sourcing-local KLT_NO_FUNCTION=1 -- a plain assignment
-# immediately before the source line -- to skip the klt() and klt_python()
-# facets: the sim/* benches call a bare host klt (sim/lib/pdk_env.sh) and must
-# keep doing so, but still need KLT_PIN and KLT_YIELD. An inherited (exported)
-# KLT_NO_FUNCTION is ignored with a warning on stderr: a value picked up from
-# the environment must not be able to switch a signoff script off the pinned
-# klt.
+# Source with the --no-function argument -- ". signoff/klt.sh --no-function"
+# -- to skip the klt() and klt_python() facets: the sim/* benches call a bare
+# host klt (sim/lib/pdk_env.sh) and must keep doing so, but still need KLT_PIN
+# and KLT_YIELD. The opt-out is an argument, not an environment variable: a
+# source-time argument cannot be inherited, so no environment state can switch
+# a signoff script off the pinned klt. It is read from $1: sourcing with an
+# argument sets the positional parameters for the sourced file alone (bash
+# restores the caller's afterwards); sourced without an argument, $1 is the
+# caller's own first parameter, and no caller passes --no-function as one.
 #
 # verification/run.sh keeps its own inline preflight by design: it is the
 # exemplar this message was taken from, and it is a content-hashed attestation
@@ -42,19 +44,15 @@ KLT_PIN="$(cat "$_klt_root/signoff/klt-pin.txt")"
 export KLT_PIN
 KLT_ARGV="uvx --from $KLT_PIN klt"
 KLT_YIELD=(uvx --from "${KLT_PIN%%==*}[yield]==${KLT_PIN##*==}" klt)
-# The opt-out is honored only as a sourcing-local assignment. An exported
-# (inherited) KLT_NO_FUNCTION is warned about and ignored, so an environment
-# variable cannot take a signoff script off the pinned klt. declare -p rather
-# than the ${KLT_NO_FUNCTION@a} attribute transformation: the latter needs
-# bash 5.1+.
+# The opt-out is the source-time argument --no-function, not an environment
+# variable: an argument is passed to this file's execution alone and cannot be
+# inherited, so an exported KLT_NO_FUNCTION of any value leaves both facets
+# defined. No attribute introspection is needed -- the previous declare -p
+# prefix test misjudged an exported variable reassigned sourcing-locally
+# (it keeps the -x attribute) and a declare -ix export (not a prefix match),
+# and its ${var@a} alternative needs bash 5.1+.
 _klt_nofunc=0
-if [[ -n "${KLT_NO_FUNCTION+x}" ]]; then
-  if [[ "$(declare -p KLT_NO_FUNCTION 2>/dev/null)" == "declare -x"* ]]; then
-    echo "signoff/klt.sh: ignoring KLT_NO_FUNCTION inherited from the environment; the opt-out must be a sourcing-local assignment" >&2
-  elif [[ "$KLT_NO_FUNCTION" == 1 ]]; then
-    _klt_nofunc=1
-  fi
-fi
+if [[ "${1-}" == "--no-function" ]]; then _klt_nofunc=1; fi
 if [[ "$_klt_nofunc" != 1 ]]; then
   klt() { uvx --from "$KLT_PIN" klt "$@"; }
   klt_python() { uvx --from "$KLT_PIN" python "$@"; }
