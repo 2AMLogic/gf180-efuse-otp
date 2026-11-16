@@ -150,9 +150,9 @@ def main():
         raise SystemExit(4)
 
     bench, control = {}, {}
-    backends, jobs = set(), set()
+    backends, jobs, engines = set(), set(), set()
     for kind, rf, rr, stem in requests:
-        rep = bench_record.collect_env(reports[stem], backends, jobs)
+        rep = bench_record.collect_env(reports[stem], backends, jobs, engines)
         pts = points(rep, rf, rf in programmed)
         (bench if kind == "bench" else control)[rf] = (rr, pts)
 
@@ -179,7 +179,7 @@ def main():
     bench_decision_ok = complete and all(f["all_decisions_ok"] for f in fuses.values())
 
     rec = {
-        **bench_record.header(a, backends, jobs),
+        **bench_record.header(a, backends, jobs, engines),
         "dut": "efuse_sense (with efuse_comp), extracted from design/efuse_otp_array.spice",
         "pvt": {"process": ["typical", "ff", "ss", "fs", "sf"], "temp_c": [-40, 25, 125],
                 "vdd33_v": [2.97, 3.30, 3.63], "source": "decision 0005"},

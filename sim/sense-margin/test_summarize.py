@@ -92,7 +92,6 @@ class Test(unittest.TestCase):
             "--t-edge", t_edge,
             "--pdk-rev", cls.committed["pdk_revision"],
             "--stamp", cls.committed["timestamp_utc"],
-            "--ngspice", cls.committed["ngspice_version_local"],
             "--klt", cls.committed["klt_version"],
         ]
 
@@ -132,10 +131,21 @@ class Test(unittest.TestCase):
         self.assertEqual(p.returncode, 0, p.stderr)
         self.assertIsNotNone(raw)
         rec = json.loads(raw.decode())
-        self.assertEqual(loaded(rec), loaded(self.committed),
+        # The provenance header is the one deliberate difference: committed
+        # records keep `ngspice_version_local` (a probe this batch-only bench
+        # never ran); a regenerated record names the engines that ran the
+        # corners. Strip both provenance keys and the loaded data must match.
+        def data(r):
+            return {k: v for k, v in loaded(r).items()
+                    if k not in ("ngspice_version_local", "engine_versions")}
+        self.assertEqual(data(rec), data(self.committed),
                          "the named load must reproduce the committed record's data")
+        engines = sorted({load_json(os.path.join(self.src, "sets", s, "report.json"))
+                          .get("environment", {}).get("engine_version")
+                          for s in self.stems} - {None})
+        self.assertEqual(rec["engine_versions"], engines)
         drifted = [k for k in PROSE if rec.get(k) != self.committed.get(k)]
-        if not drifted:
+        if not drifted and "engine_versions" in self.committed:
             self.assertEqual(raw, self.committed_bytes,
                              "no prose drift, so the re-summarize must be byte-identical")
 

@@ -104,7 +104,7 @@ and never replaces a committed one.
 | Program-select width sweep | `sim/program-select/run.sh` | the same PDK tree, plus the klt batch fleet (15 `klt sim` requests; a failed submit is reported, not re-run locally) | new `sim/program-select/records/<stamp>-<rev>/record.json`; result in [`design/README.md`](design/README.md) |
 | Controller bench | `verification/run.sh` | python3, uv, network for the pinned klt and cocotb, Icarus Verilog 13.0 | `ALL CHECKS PASSED` |
 | Controller negative control | `verification/run.sh --negative-control` | same | `NEGATIVE CONTROL OK` (exit 0 only if every seeded defect is caught) |
-| Latch check | `rtl/synth.sh` | Yosys 0.67 | `Number of latches: 0`, log in `flow/build/synth.log` |
+| Latch check | `rtl/synth.sh` | Yosys 0.67 | exit 0 and no output; Yosys asserts no latch cell survives synthesis and names any it finds. Log in `flow/build/synth.log` |
 | Signoff record | `uvx --from "$(cat signoff/klt-pin.txt)" klt signoff --manifest signoff/block-manifest.json --tiers-doc signoff/design-evidence-tiers.md --format json > signoff/block-manifest.signoff.json` | uv; exit 3 (items unmet) is expected | byte-identical to the committed `signoff/block-manifest.signoff.json` |
 
 `verification/run.sh` refuses any Icarus version other than the pinned one;
@@ -115,9 +115,9 @@ checks no version itself; in CI the Yosys version is fixed by
 (regenerating the gate-level netlist and the item attestations).
 
 CI (`.github/workflows/ci.yml`) re-runs the controller bench, its negative
-control, the latch check, the checker self-tests, the evidence-format check, the
-append-only check on `sim/` records, the signoff re-grade and the item 10
-attestation check. It does not run the ngspice flow (it needs the PDK).
+control and the latch check; the `harness` job's signoff and attestation checks
+are listed in [`signoff/README.md`](signoff/README.md), "What CI does and does
+not check". It does not run the ngspice flow (it needs the PDK).
 
 `npm run -s check:ci` is the local pre-flight: the subset of those checks that
 needs nothing but python3, bash and jq — the checker self-tests, the
