@@ -70,6 +70,14 @@ jobs:
         # host-installed one, so the item 2 check step below needs uv on PATH.
         run: pipx install uv
 
+      - name: Install jq
+        # sim/lib/test_pdk_env.sh (and the pdk_env.sh it exercises) parse JSON
+        # with jq; no other harness step uses it, so install it explicitly
+        # rather than assuming the runner image ships it.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends jq
+
       - name: Checker self-tests
         working-directory: scripts/ci
         run: python3 -I -m unittest discover -s . -p 'test_*.py' -v
@@ -92,6 +100,12 @@ jobs:
 
       - name: Item 6 digital extract bound to the spec
         run: signoff/check-item6-digital.sh
+
+      - name: decision-0005 PVT grid bound to the spec
+        run: signoff/check-pvt-grid.sh
+
+      - name: pdk_env.sh self-test
+        run: sim/lib/test_pdk_env.sh
 
       - name: Re-grade signoff record
         run: |
