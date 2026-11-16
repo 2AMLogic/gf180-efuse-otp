@@ -22,7 +22,6 @@ Pass/fail is data here, not an exit status. The negative control flips sign when
 intact control point reads the wrong side while the same bench corner read the right one.
 """
 import argparse
-import json
 import math
 import os
 import sys
@@ -112,9 +111,9 @@ def main():
         ap.error("--rfuse-intact, --rfuse-programmed and --rfuse-control must "
                  "each name at least one fuse value")
 
-    # The requests run.sh submitted, named rather than discovered. A partial set
-    # (a request errored or was refused, bench_submit_set rc=4) is not evidence,
-    # so refuse before anything is computed or written -- the same rule
+    # The requests run.sh submitted, named rather than discovered; load_reports
+    # refuses a partial set (a request errored or was refused, bench_submit_set
+    # rc=4) before anything is computed or written -- the same rule
     # sim/program-select/summarize.py and sim/sense-mc/run.sh apply to their own
     # sets. The reference comes from the flag run.sh patched the deck with, so a
     # report is read at the reference it was asked for rather than at whatever
@@ -123,31 +122,7 @@ def main():
                 for rf in intact + programmed]
     requests += [("control", rf, ohms(a.rref_control),
                   "control_rf%s_rr%g" % (rf, a.rref_control)) for rf in controls]
-    reports, absent, hollow = {}, [], []
-    for kind, rf, rr, stem in requests:
-        path = os.path.join(a.rec, "sets", stem, "report.json")
-        if not os.path.isfile(path):
-            absent.append(stem)
-            continue
-        rep = json.load(open(path))
-        # Present is not populated: a report that came back carrying no corners,
-        # or fewer than it counted, grades nothing and is not evidence either.
-        n = len(rep.get("corners") or [])
-        if not n or rep.get("corner_count") != n:
-            hollow.append("%s (corner_count=%r, corners=%d)"
-                          % (stem, rep.get("corner_count"), n))
-            continue
-        reports[stem] = rep
-    if absent or hollow:
-        if absent:
-            print("no report for %d of %d expected requests: %s"
-                  % (len(absent), len(requests), " ".join(absent)), file=sys.stderr)
-        if hollow:
-            print("no usable corners in %d of %d expected reports: %s"
-                  % (len(hollow), len(requests), " ".join(hollow)), file=sys.stderr)
-        print("a partial set is not evidence; no record written (see %s/set-report.json, "
-              "%s/klt.err)" % (a.rec, a.rec), file=sys.stderr)
-        raise SystemExit(4)
+    reports = bench_record.load_reports(a.rec, [stem for _, _, _, stem in requests])
 
     bench, control = {}, {}
     backends, jobs, engines = set(), set(), set()
