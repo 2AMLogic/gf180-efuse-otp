@@ -10,13 +10,14 @@ The block's verdict of record against the klayout-tools evidence tiers.
 | `attest/item8.envelope.json` | Envelope emitted by `klt signoff --attest 8`; cited for `8.analog` and `8.digital` in `block-manifest.json`, pinned by the inventory's sha256. |
 | `attest/item9.json` | `t1-attestation-inventory` for T1 item 9, testbenches shipped: the controller, program-select and sense-margin bench files, the shared record-provenance module `sim/lib/bench_record.py` both analog summarizers import, the cold-start command `sim/cold-start.sh` (`local_only`), and the PDK and tool pins. |
 | `attest/item9.envelope.json` | Envelope emitted by `klt signoff --attest 9`; cited for `9` in `block-manifest.json`, pinned by the inventory's sha256. |
-| `block-manifest.json` | Block name, kind (`mixed-signal`), the `partition_boundary` (analog and digital nets) and the `evidence` map (`1.digital`, `1.analog`, `2.digital`, `2.analog`, `8.digital`, `8.analog`, `9`, `10`). |
+| `block-manifest.json` | Block name, kind (`mixed-signal`), the `partition_boundary` (analog and digital nets) and the `evidence` map (`1.digital`, `1.analog`, `2.digital`, `2.analog`, `4.digital`, `8.digital`, `8.analog`, `9`, `10`). |
 | `item2-analog.attest.json` | Envelope emitted by `klt signoff --attest 2 --input layout/efuse_otp_array.gds` (via `layout/attest.sh`): binds the stream by sha256 with a regeneration claim (`layout/regen-gds.sh`); cited for `2.analog`. |
 | `item6-digital-spec.json`, `item6-digital-statement.json` | Item 6, digital: the `not_applicable` form. The spec is a verbatim extract of the digital-bearing rows of `spec/efuse-otp.md` section 2, bound to it by sha256 (`signoff/check-item6-digital.sh`, run in CI); the statement gives each row's non-statistical class and reason. Both are hash-bound in `block-manifest.json` (`6.digital`). |
 | `check-item6-digital.sh` | Fails when `spec/efuse-otp.md` changes (sha256) or an extract row no longer matches a line of it. Run after any spec change, re-derive the extract, then re-hash the manifest. |
-| `block-manifest.signoff.json` | Committed `klt signoff --manifest` output: the verdict of record. Items 1, 2, 8, 9 and 10 are `met` for both partitions; item 5 is `met` (analog); item 6 is `met` (analog) and `not_applicable` (digital); every other T1 row is `unmet` / `no_evidence`, and the T2, T3 and T4 rows are `unmet` / `tier_not_supported`. Item 6 analog `met` means the campaign discipline holds for the cited `margin_v` evidence (recorded seed, sufficient samples, detected negative control); it does not say the sense row is established, see `sim/sense-mc/README.md`. |
+| `block-manifest.signoff.json` | Committed `klt signoff --manifest` output: the verdict of record. Items 1, 2, 8, 9 and 10 are `met` for both partitions; item 5 is `met` (analog); item 6 is `met` (analog) and `not_applicable` (digital); item 4 is `met` (digital, cited `layout/lvs-ctrl.report.json`); every other T1 row is `unmet` / `no_evidence`, and the T2, T3 and T4 rows are `unmet` / `tier_not_supported`. Item 6 analog `met` means the campaign discipline holds for the cited `margin_v` evidence (recorded seed, sufficient samples, detected negative control); it does not say the sense row is established, see `sim/sense-mc/README.md`. |
 | `../sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/{intact,prog}.yield.json` | Item 6, analog: the cited `klt yield` reports (`margin_v` only, post-#85 comparator), one per fuse population, cited with `rows: [P10]` in `block-manifest.json` (`6.analog`). The `*.decision.yield.json` files in the same record are not cited. Item 5 analog cites the six `bench_*` sense-margin corner reports of `sim/sense-margin/records/20261109T002043Z-f6eeac7` for P10 (they declare `margin_v >= 0`, signed so positive is the correct side; the `control_*` reports are not cited, the 260 ohm control fails by design) and reads `met`. |
 | `../layout/drc-*.report.json` | Committed `klt drc` reports for T1 item 3 (`layout/drc.sh`). Both are `status: clean` under the curated deck (deck hash `sha256:cf44de63...`, klt 0.9.0 — the pin). The 0.9.0 deck gained an `EF` `deck_scope` entry and checks seven eFuse-layer rules on the analog partition, but all 24 foundry `EF.01`–`EF.22b` IDs remain under `coverage.unmodeled_rules` (klayout-tools#4312, #4002), so item 3 is still not cited and stays `unmet`; see `layout/README.md`, "DRC", and #60. |
+| `../layout/lvs-ctrl.report.json` | Committed `klt lvs` report for T1 item 4, digital (`layout/lvs.sh`): `status: match` with `power_connectivity.status: match` against `layout/efuse_otp_ctrl.asbuilt.v` under the curated deck (same deck hash as the DRC reports, klt 0.9.0 — the pin), cited for `4.digital`. What the `match` reaches (and does not) is in `layout/README.md`, "LVS"; the re-run procedure is below. |
 | `klt-pin.txt` | The single place the grader version is pinned. CI installs `$(cat signoff/klt-pin.txt)`. |
 | `klt.sh` | The single sourced definition of how the scripts reach the pinned klt: reads `klt-pin.txt` once (resolved from its own location, not cwd), preflights `uvx` (exit 2), and defines `klt`, `klt_python`, `KLT_PIN`, `KLT_ARGV` and the `[yield]`-extras `KLT_YIELD` array. `verification/run.sh` keeps its own inline preflight by design: it is the exemplar and a content-hashed attestation input. |
 | `test-klt.sh` | Self-test for `klt.sh` (run in `check:ci`): the `uvx`-absent exit 2 and message, the `[yield]` splice, `klt`/`klt_python` argv through a fake `uvx`, the pin read exactly once, `KLT_NO_FUNCTION=1`, and pin resolution from a foreign cwd. |
@@ -170,6 +171,32 @@ LVS or connectivity statement: the three checks are the stream's readability, a
 non-empty top cell and an on-grid database unit. See `layout/README.md`,
 "What is not claimed".
 
+## Re-run the controller LVS (item 4, digital)
+
+`layout/lvs.sh` runs `klt lvs` on `layout/efuse_otp_ctrl.gds` against the
+as-built netlist `layout/efuse_otp_ctrl.asbuilt.v` with the pinned klt and
+keeps the report (`layout/lvs-ctrl.report.json`) as found; `--check` re-hashes
+the stream, the netlist and the deck against the committed report (`--rerun`
+re-runs the compare). Unlike `layout/drc.sh` it needs the PDK, not only the
+pinned klt: the gate-level reference resolves each standard cell's pin order
+from the library's own spice/cdl under `<PDK_ROOT>/gf180mcuD/libs.ref`, so
+CI (which installs no PDK) cannot run it — the same local-only class as
+`rtl/regen-gl.sh`. `PDK_ROOT` defaults to `~/.ciel`, `layout/pnr.sh`'s
+default, and is passed to klt explicitly (`reference.pdk_root`) so the
+report records one resolved install instead of an ambiguous search.
+
+Re-run it after anything that changes the routed stream or the as-built
+netlist (i.e. after `layout/pnr.sh` writes new ones). If the fresh report is
+again `status: match` with `power_connectivity.status: match`, update the
+`4.digital` `content_hash` in `block-manifest.json` to the report's
+`provenance.input.content_hash` — the stream's own sha256, **not** the report
+file's own digest, the same rule every other entry follows — and regenerate
+the record. That changes the record, so finish with the item 8 round trip
+under "Regenerate the record" (re-attest item 8, regenerate once more,
+byte-identical). A `status: mismatch` report is committed uncited instead,
+`4.digital` stays `unmet`, and the mismatch classes are listed in
+`layout/README.md`, "LVS".
+
 ## What CI does and does not check
 
 `.github/workflows/ci.yml` has two jobs. `harness` installs only Python, the
@@ -184,7 +211,6 @@ they check that:
 - the controller bench passes, the negative control catches every seeded
   defect, and no latch cell survives generic synthesis;
 - the committed item 10 and item 9 envelopes match a fresh attestation;
-
 - the checker self-tests still reject seeded-bad input;
 - the `decision-0005` PVT corner grid exported by `sim/lib/pdk_env.sh` still
   matches the ratified `pvt-corners` row of the spec, parsed through the item 6
@@ -195,6 +221,10 @@ they check that:
   has the required fields, a PDK revision, and repo-relative paths only
   (vacuously true while there are no records);
 - files under `sim/**/records/` are only added, never modified, deleted or renamed;
+- the item 6 digital extract is still bound to the ratified
+  `spec/efuse-otp.md` (`signoff/check-item6-digital.sh`): the spec's sha256
+  matches the extract's recorded hash and every quoted row still appears
+  verbatim; the digital flow that produced the item is not re-run;
 - the item 1 (analog) attestation still reproduces (`--attest 1 --check`);
 - both item 2 attestations still reproduce (`layout/attest.sh --check`, i.e.
   `--attest 2 --check` on each stream); the generators named in their
