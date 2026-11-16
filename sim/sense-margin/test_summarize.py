@@ -9,9 +9,10 @@ this test does not restate them.
 
     python3 -I sim/sense-margin/test_summarize.py
 
-Exit 0 = all cases pass. Not run in CI: like sim/program-select/test_summarize.py
-and sim/lib/test_pdk_env.sh it is a local self-test, and it needs a committed
-record to read.
+Exit 0 = all cases pass. Run by the local hermetic gate `npm run -s check:ci`,
+alongside sim/program-select/test_summarize.py and sim/lib/test_pdk_env.sh.
+Not run by the GitHub workflow, whose only unittest discovery step is scoped
+to scripts/ci.
 """
 import json
 import os

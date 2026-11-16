@@ -115,19 +115,21 @@ checks no version itself; in CI the Yosys version is fixed by
 (regenerating the gate-level netlist and the item attestations).
 
 CI (`.github/workflows/ci.yml`) re-runs the controller bench, its negative
-control, the latch check, the checker self-tests, the evidence-format check, the
-append-only check on `sim/` records, the signoff re-grade and the item 10
-attestation check. It does not run the ngspice flow (it needs the PDK).
+control and the latch check; the `harness` job's signoff and attestation checks
+are listed in [`signoff/README.md`](signoff/README.md), "What CI does and does
+not check". It does not run the ngspice flow (it needs the PDK).
 
 `npm run -s check:ci` is the local pre-flight: the subset of those checks that
 needs nothing but python3, bash and jq — the checker self-tests, the
 evidence-format check, the item 6 spec-binding check, the `pdk_env.sh`
-self-test (`sim/lib/test_pdk_env.sh`) and the program-select summarize
+self-test (`sim/lib/test_pdk_env.sh`), the program-select summarize
 self-test (`sim/program-select/test_summarize.py`, which pins that the record
-describes the submitted grid rather than whatever reports are present). The
-workflow runs neither of those last two. It deliberately leaves out every
-check that needs an EDA tool, the PDK or a diff base, so a green `check:ci` is
-not a prediction that CI will pass.
+describes the submitted grid rather than whatever reports are present) and the
+sense-margin summarize self-test (`sim/sense-margin/test_summarize.py`, which
+pins that the record describes the submitted request set rather than whatever
+reports are present). The workflow runs none of those last three. It
+deliberately leaves out every check that needs an EDA tool, the PDK or a diff
+base, so a green `check:ci` is not a prediction that CI will pass.
 
 ## Repo layout
 
