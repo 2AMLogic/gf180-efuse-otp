@@ -27,7 +27,6 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 Human-approved issues ready for implementation (`loom:issue`).
 
 - **#172**: Route efuse_ls in the layout generator and LVS-match it with the pinned klt (first slice of #73)
-- **#214**: Neither signoff bash checker has a self-test: check-pvt-grid.sh and check-item6-digital.sh can go vacuous with CI green
 - **#221**: check_attest_pins.py manifest layer binds against untracked cited files, and NO_HASH_KINDS is dead
 - **#233**: scripts/ci: bind check:ci's term list to ci.yml step coverage
 - **#237**: signoff/klt.sh: the --no-function opt-out is read from $1, so a caller's own first argument can silently drop the pin
@@ -58,7 +57,6 @@ Issues carrying `loom:curated`.
 - **#73**: Route the fuse-free analog leaf cells (efuse_ls, efuse_coldrv) and LVS-match each one *(curated)*
 - **#172**: Route efuse_ls in the layout generator and LVS-match it with the pinned klt (first slice of #73) *(curated)*
 - **#195**: CI never compares a committed DRC report's recorded input hash to the stream it describes, so a stale report passes every gate *(curated)*
-- **#214**: Neither signoff bash checker has a self-test: check-pvt-grid.sh and check-item6-digital.sh can go vacuous with CI green *(curated)*
 - **#221**: check_attest_pins.py manifest layer binds against untracked cited files, and NO_HASH_KINDS is dead *(curated)*
 - **#233**: scripts/ci: bind check:ci's term list to ci.yml step coverage *(curated)*
 - **#237**: signoff/klt.sh: the --no-function opt-out is read from $1, so a caller's own first argument can silently drop the pin *(curated)*
@@ -82,11 +80,11 @@ _None._
 | Operator merge-risk holds | 1 |
 | Very important | 1 |
 | Important | 2 |
-| Ready (`loom:issue`) | 5 |
+| Ready (`loom:issue`) | 4 |
 | In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 1 |
-| Curated | 8 |
+| Curated | 7 |
 | Architect / Hermit proposals | 5 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->

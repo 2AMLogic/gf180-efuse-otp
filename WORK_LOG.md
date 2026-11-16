@@ -4,6 +4,8 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-16
 
+- **PR #241**: test: pin check-pvt-grid.sh's ValueError temperature-parse reason
+- **Issue #240** (closed): check-pvt-grid.sh: the ValueError temperature-parse reason has no self-test (sibling of the one #214 covered)
 - **PR #239**: test: pin signoff checker failure modes with seeded-bad-input self-tests
 - **Issue #214** (closed): Neither signoff bash checker has a self-test: check-pvt-grid.sh and check-item6-digital.sh can go vacuous with CI green
 - **PR #236**: fix(signoff): opt out of the klt facets with a --no-function source argument
