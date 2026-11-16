@@ -13,6 +13,7 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 
 `loom:very-important` (one counts per workspace); every stage takes these first.
 
+- **#130**: Replace the last private klt call in layout/attest.sh (layout_geometry_digest) with the public digest source once klayout-tools#5551 ships
 - **#172**: Route efuse_ls in the layout generator and LVS-match it with the pinned klt (first slice of #73)
 
 ## Important
@@ -41,7 +42,7 @@ Issues currently being built (`loom:building`).
 
 PRs waiting on Judge (`loom:review-requested`).
 
-_None._
+- **#223**: ci: gate each layout report's input hash against the stream it names
 
 ## Approved (Awaiting Merge)
 
@@ -80,9 +81,9 @@ _None._
 | Operator merge-risk holds | 1 |
 | Very important | 1 |
 | Important | 2 |
-| Ready (`loom:issue`) | 4 |
+| Ready (`loom:issue`) | 5 |
 | In Progress (`loom:building`) | 1 |
-| PRs awaiting review | 0 |
+| PRs awaiting review | 1 |
 | Approved PRs awaiting merge | 1 |
 | Curated | 7 |
 | Architect / Hermit proposals | 5 |
