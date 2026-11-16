@@ -142,6 +142,55 @@ class Test(unittest.TestCase):
         self.assertEqual(stats["pins"], 1)
         self.assertEqual(stats["skipped"], 1)
 
+    # -- hash_algorithm guard ------------------------------------------------
+
+    def _env_with_algorithm(self, root, **kw):
+        write_bytes(root, "README.md", b"x\n")
+        env = envelope(checks=[present("README.md", sha_of(root, "README.md"))])
+        if "algo" in kw:
+            env["attestation"]["hash_algorithm"] = kw["algo"]
+        else:
+            del env["attestation"]["hash_algorithm"]
+        self.put_envelope(root, "signoff/attest/x.envelope.json", env)
+
+    def test_unsupported_hash_algorithm_is_named_not_reported_as_drift(self):
+        root = make_root()
+        write_bytes(root, "README.md", b"x\n")
+        # a stale pin: under the old behaviour this would be reported as drift
+        env = envelope(checks=[present("README.md", "sha256:" + "0" * 64)])
+        env["attestation"]["hash_algorithm"] = "sha256-truncated-128"
+        self.put_envelope(root, "signoff/attest/x.envelope.json", env)
+        problems, stats = self.run_check(root)
+        self.assertEqual(len(problems), 1)
+        msg, fix = problems[0]
+        self.assertIn("sha256-truncated-128", msg)
+        self.assertIn(cap.HASH_ALGORITHM, msg)
+        self.assertNotIn("committed", msg)
+        self.assertIsNone(fix)
+        self.assertEqual(stats["pins"], 0)
+
+    def test_non_string_or_null_hash_algorithm_is_refused_not_a_crash(self):
+        for bad in (None, 7, ["sha256-raw-bytes"]):
+            root = make_root()
+            self._env_with_algorithm(root, algo=bad)
+            problems, stats = self.run_check(root)
+            self.assertEqual(len(problems), 1, bad)
+            self.assertEqual(stats["pins"], 0)
+
+    def test_absent_hash_algorithm_checks_pins_as_before(self):
+        root = make_root()
+        self._env_with_algorithm(root)
+        problems, stats = self.run_check(root)
+        self.assertEqual(problems, [])
+        self.assertEqual(stats["pins"], 1)
+
+    def test_declared_supported_hash_algorithm_checks_pins(self):
+        root = make_root()
+        self._env_with_algorithm(root, algo=cap.HASH_ALGORITHM)
+        problems, stats = self.run_check(root)
+        self.assertEqual(problems, [])
+        self.assertEqual(stats["pins"], 1)
+
     # -- the two klt assumptions, pinned by name -----------------------------
 
     def test_assumption_sha256_raw_bytes_is_plain_file_sha256(self):
