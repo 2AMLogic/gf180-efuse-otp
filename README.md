@@ -115,9 +115,9 @@ checks no version itself; in CI the Yosys version is fixed by
 (regenerating the gate-level netlist and the item attestations).
 
 CI (`.github/workflows/ci.yml`) re-runs the controller bench, its negative
-control, the latch check, the checker self-tests, the evidence-format check, the
-append-only check on `sim/` records, the signoff re-grade and the item 10
-attestation check. It does not run the ngspice flow (it needs the PDK).
+control and the latch check; the `harness` job's signoff and attestation checks
+are listed in [`signoff/README.md`](signoff/README.md), "What CI does and does
+not check". It does not run the ngspice flow (it needs the PDK).
 
 `npm run -s check:ci` is the local pre-flight: the subset of those checks that
 needs nothing but python3, bash and jq — the checker self-tests, the
