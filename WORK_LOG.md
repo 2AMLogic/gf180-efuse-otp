@@ -4,6 +4,10 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-16
 
+- **PR #219**: ci(rtl): add a committed negative control proving the latch gate can fail
+- **PR #198**: check:ci: add attestation-envelope pin pre-flight
+- **Issue #204** (closed): The latch gate has no committed negative control: a typo'd select pattern would make CI's only latch check silently permanent-green
+- **Issue #185** (closed): check:ci has no attestation-drift pre-flight: editing any item-10 hygiene artifact fails CI two steps deep with a green local gate
 - **PR #215**: test: assert engine_versions provenance in the program-select summarizer self-test
 - **PR #209**: ci: run the sense-margin summarize self-test in check:ci
 - **PR #206**: ci: bind the decision-0005 PVT grid to the spec, run the pdk_env self-test in CI
