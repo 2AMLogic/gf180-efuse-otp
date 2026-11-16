@@ -93,13 +93,14 @@ class Test(unittest.TestCase):
         self.assertIn("4 report input hash(es) match", out)
         self.assertIn("1 skipped", out)
 
-    def test_real_tree_passes(self):
-        # On an unchanged tree all four gated pairs match, so the checker --
-        # and check:ci, which runs this unittest -- is green with nothing
-        # seeded. A stream regenerated without re-running its report fails
-        # here before CI does.
+    def test_empty_tree_passes_vacuously(self):
+        # An empty tree gates nothing, so main() takes its vacuous-pass
+        # branch and check:ci is green with nothing seeded. No gated pair
+        # is exercised here -- the real-tree pin lives in
+        # test_real_tree_gates_four_reports.
         rc, out = self.run_main({})
         self.assertEqual(rc, 0, out)
+        self.assertIn("passes vacuously", out)
 
     def test_real_tree_gates_four_reports(self):
         problems, gated, skipped = cri.check(REPO_ROOT)
