@@ -126,13 +126,17 @@ evidence-format check, the attestation-envelope pin check
 composite and manifest binding in the repo and names the "Re-attest item N"
 procedure when one has drifted), the item 6 spec-binding check, the
 decision-0005 PVT grid binding check, the `pdk_env.sh` self-test
-(`sim/lib/test_pdk_env.sh`), the program-select summarize self-test
+(`sim/lib/test_pdk_env.sh`), the klt helper self-test (`signoff/test-klt.sh`,
+which fakes `uvx` on `PATH` and asserts on the argv the pinned-klt facets emit,
+so it never invokes a real `klt`), the program-select summarize self-test
 (`sim/program-select/test_summarize.py`, which pins that the record describes
 the submitted grid rather than whatever reports are present) and the
 sense-margin summarize self-test (`sim/sense-margin/test_summarize.py`, which
 pins that the record describes the submitted request set rather than whatever
-reports are present). The workflow runs the PVT grid binding check and the
-`pdk_env.sh` self-test but neither summarize self-test. It deliberately leaves
+reports are present). The workflow runs the checker self-tests, the
+evidence-format check, the item 6 spec-binding check, the decision-0005 PVT
+grid binding check and the `pdk_env.sh` self-test, but neither the
+attestation-envelope pin check nor those last three. It deliberately leaves
 out every check that needs an EDA tool, the PDK or a diff base, so a green
 `check:ci` is not a prediction that CI will pass.
 
