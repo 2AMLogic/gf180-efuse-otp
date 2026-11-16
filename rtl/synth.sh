@@ -20,6 +20,7 @@ if [ "${1:-}" = "--negative-control" ]; then
   # (fixture missing or empty, broken script) proves nothing about the gate.
   log=flow/build/synth-negctl.log
   rc=0
+  rm -f "$log"   # a stale log from an earlier run must never feed the verdict
   yosys -q -l "$log" rtl/synth-negctl.ys || rc=$?
   if grep -q "selection is not empty" "$log" 2>/dev/null; then
     echo "negative control ok: the latch gate fired on rtl/latch-negative-control.v (yosys exit $rc)"
