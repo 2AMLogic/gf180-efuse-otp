@@ -23,8 +23,11 @@ disagreeing with CI. This checker mirrors what ``klt signoff --check`` reports;
 CI stays the authority and this is strictly the earlier, cheaper local signal.
 
 Finally, every ``signoff/block-manifest.json`` ``evidence[]`` entry carrying a
-``content_hash`` must equal the cited envelope's ``provenance.input.content_hash``
-(entries without a hash are skipped).
+``content_hash`` must equal the cited tracked file's ``provenance.input.content_hash``
+(entries without a hash are skipped). The cited file need not be a discovered
+envelope — any tracked JSON carrying that field binds the same way (e.g. the
+``4.digital`` LVS report, whose binding is the routed stream's sha256, per
+``signoff/README.md``); a cited file without it is reported.
 
 On drift the checker names the offending path, its committed and fresh hash, and
 the per-item "Re-attest item N" remediation from ``signoff/README.md`` — item 1
@@ -51,7 +54,7 @@ _REGRADE = (f'{_ATTEST} --manifest signoff/block-manifest.json \\\n'
 
 MANIFEST_FIX = (
     'set evidence["{key}"].content_hash in signoff/block-manifest.json to the cited\n'
-    "envelope's provenance.input.content_hash, then regenerate the signoff record and\n"
+    "file's provenance.input.content_hash, then regenerate the signoff record and\n"
     'cmp it against signoff/block-manifest.signoff.json (CI\'s "Re-grade signoff\n'
     'record" step):\n'
     f'    {_REGRADE}')
@@ -258,7 +261,7 @@ def _check_paths(env, inp, members, root, fresh):
     return problems, pins, composites
 
 
-def check_manifest(root, envs):
+def check_manifest(root):
     problems = []
     manifest_pins = 0
     try:
@@ -273,21 +276,21 @@ def check_manifest(root, envs):
             continue
         manifest_pins += 1
         cite = entry.get("file")
-        if not isinstance(cite, str) or cite not in envs:
-            problems.append(
-                (f'{MANIFEST}: evidence["{key}"] cites {cite!r}, which is not a '
-                 'tracked attestation envelope', None))
-            continue
-        bound = json.loads((root / cite).read_text(encoding="utf-8")).get(
-            "provenance", {}).get("input", {}).get("content_hash")
+        bound = None
+        if isinstance(cite, str):
+            try:
+                bound = json.loads((root / cite).read_text(encoding="utf-8")).get(
+                    "provenance", {}).get("input", {}).get("content_hash")
+            except (OSError, ValueError):
+                bound = None
         if bound is None:
             problems.append(
-                (f'{MANIFEST}: evidence["{key}"] -> {cite}: envelope carries no '
+                (f'{MANIFEST}: evidence["{key}"] cites {cite!r}, which carries no '
                  'provenance.input.content_hash to bind against', None))
         elif bound != entry["content_hash"]:
             problems.append(
                 (f'{MANIFEST}: evidence["{key}"] -> {cite}: committed '
-                 f'{entry["content_hash"]} != envelope provenance.input.content_hash {bound}',
+                 f'{entry["content_hash"]} != cited file provenance.input.content_hash {bound}',
                  MANIFEST_FIX.format(key=key)))
     return problems, manifest_pins
 
@@ -316,7 +319,7 @@ def check(root):
         pins += n
         composites += c
         skipped += s
-    mp, manifest_pins = check_manifest(root, envelopes)
+    mp, manifest_pins = check_manifest(root)
     problems.extend(mp)
     stats = {"envelopes": len(envelopes), "pins": pins, "composites": composites,
              "manifest_pins": manifest_pins, "skipped": skipped}

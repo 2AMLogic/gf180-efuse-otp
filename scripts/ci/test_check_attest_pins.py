@@ -305,7 +305,7 @@ class Test(unittest.TestCase):
         self.assertEqual(problems, [])
         self.assertEqual(stats["manifest_pins"], 0)
 
-    def test_manifest_citing_non_envelope_reported(self):
+    def test_manifest_citing_file_without_provenance_reported(self):
         root = make_root()
         write(root, "signoff/block-manifest.json", json.dumps({
             "kind": "block-manifest",
@@ -313,7 +313,37 @@ class Test(unittest.TestCase):
                                "content_hash": "sha256:" + "3" * 64}}}))
         problems, _ = self.run_check(root)
         msgs = [m for m, _ in problems]
-        self.assertTrue(any("gone.envelope.json" in m for m in msgs), msgs)
+        self.assertTrue(any("gone.envelope.json" in m and "provenance" in m
+                            for m in msgs), msgs)
+
+    def test_manifest_binds_provenance_bearing_non_envelope(self):
+        root = make_root()
+        write(root, "layout/report.json", json.dumps({
+            "schema_version": 2,
+            "provenance": {"input": {"content_hash": "sha256:" + "4" * 64}},
+        }))
+        write(root, "signoff/block-manifest.json", json.dumps({
+            "kind": "block-manifest",
+            "evidence": {"4.digital": {"file": "layout/report.json",
+                                       "content_hash": "sha256:" + "4" * 64}}}))
+        problems, stats = self.run_check(root)
+        self.assertEqual(problems, [])
+        self.assertEqual(stats["manifest_pins"], 1)
+
+    def test_manifest_stale_non_envelope_binding_reported(self):
+        root = make_root()
+        write(root, "layout/report.json", json.dumps({
+            "schema_version": 2,
+            "provenance": {"input": {"content_hash": "sha256:" + "4" * 64}},
+        }))
+        write(root, "signoff/block-manifest.json", json.dumps({
+            "kind": "block-manifest",
+            "evidence": {"4.digital": {"file": "layout/report.json",
+                                       "content_hash": "sha256:" + "5" * 64}}}))
+        problems, stats = self.run_check(root)
+        self.assertEqual(stats["manifest_pins"], 1)
+        msgs = [m for m, _ in problems]
+        self.assertTrue(any('evidence["4.digital"]' in m for m in msgs), msgs)
 
     # -- repo-root requirement and discovery ---------------------------------
 
