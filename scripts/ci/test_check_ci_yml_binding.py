@@ -140,6 +140,160 @@ class Test(unittest.TestCase):
         self.assertEqual(len(msgs), 1)
         self.assertIn("check-pvt-grid.sh", msgs[0])
 
+    # -- conditional steps do not cover a term (#249) --------------------------
+
+    def test_if_false_step_does_not_cover_term(self):
+        yml = CI_CLEAN.replace(
+            "      - name: Evidence format\n"
+            "        # a stale YAML-comment mention must not satisfy a term\n"
+            "        run: python3 scripts/ci/check_evidence_format.py",
+            "      - name: Evidence format\n"
+            "        # a stale YAML-comment mention must not satisfy a term\n"
+            "        if: false\n"
+            "        run: python3 scripts/ci/check_evidence_format.py")
+        problems, stats = self.run_check(yml=yml)
+        self.assertEqual(len(problems), 1)
+        msg, fix = problems[0]
+        self.assertIn("no matching step", msg)
+        self.assertIn("Evidence format", msg)
+        self.assertIn("if: false", msg)
+        self.assertIn("unconditional", msg)
+        self.assertIn("EXEMPT_TERMS", msg)
+        self.assertIn("make the step unconditional", fix)
+        self.assertIn("EXEMPT_TERMS", fix)
+        self.assertEqual(stats["matched"], 3)
+        self.assertEqual(stats["steps"], 6)
+
+    def test_if_event_condition_step_does_not_cover_term(self):
+        yml = CI_CLEAN.replace(
+            "      - name: Evidence format\n",
+            "      - name: Evidence format\n"
+            "        if: github.event_name == 'push'\n")
+        problems, _ = self.run_check(yml=yml)
+        msgs = [m for m, _ in problems]
+        self.assertEqual(len(msgs), 1)
+        self.assertIn("Evidence format", msgs[0])
+        self.assertIn("github.event_name == 'push'", msgs[0])
+
+    def test_conditional_plus_unconditional_pair_binds(self):
+        yml = CI_CLEAN.replace(
+            "      - name: Evidence format\n"
+            "        # a stale YAML-comment mention must not satisfy a term\n"
+            "        run: python3 scripts/ci/check_evidence_format.py",
+            "      - name: Evidence format\n"
+            "        if: false\n"
+            "        run: python3 scripts/ci/check_evidence_format.py\n"
+            "      - name: Evidence format again\n"
+            "        run: python3 scripts/ci/check_evidence_format.py")
+        problems, stats = self.run_check(yml=yml)
+        self.assertEqual([m for m, _ in problems], [])
+        self.assertEqual(stats["matched"], 4)
+        self.assertEqual(stats["steps"], 7)
+
+    def test_if_block_scalar_counts_as_present(self):
+        yml = CI_CLEAN.replace(
+            "      - name: Evidence format\n",
+            "      - name: Evidence format\n"
+            "        if: >-\n"
+            "          github.event_name == 'push'\n")
+        problems, _ = self.run_check(yml=yml)
+        msgs = [m for m, _ in problems]
+        self.assertEqual(len(msgs), 1)
+        self.assertIn("Evidence format", msgs[0])
+
+    def test_if_with_trailing_yaml_comment_counts_as_present(self):
+        yml = CI_CLEAN.replace(
+            "      - name: Evidence format\n",
+            "      - name: Evidence format\n"
+            "        if: false  # disabled until the EDA cache lands\n")
+        problems, _ = self.run_check(yml=yml)
+        msgs = [m for m, _ in problems]
+        self.assertEqual(len(msgs), 1)
+        self.assertIn("if: false", msgs[0])
+
+    def test_duplicate_if_in_one_step_is_reported(self):
+        yml = CI_CLEAN.replace(
+            "      - name: Evidence format\n",
+            "      - name: Evidence format\n"
+            "        if: false\n"
+            "        if: true\n")
+        problems, _ = self.run_check(yml=yml)
+        msgs = [m for m, _ in problems]
+        self.assertEqual(len(msgs), 1)
+        self.assertIn("duplicate 'if'", msgs[0])
+
+    def test_value_less_if_is_reported(self):
+        yml = CI_CLEAN.replace(
+            "      - name: Evidence format\n",
+            "      - name: Evidence format\n"
+            "        if:\n")
+        problems, _ = self.run_check(yml=yml)
+        msgs = [m for m, _ in problems]
+        self.assertEqual(len(msgs), 1)
+        self.assertIn("'if' has no value", msgs[0])
+
+    def test_parse_records_if_field(self):
+        yml = CI_CLEAN.replace(
+            "      - name: Evidence format\n",
+            "      - name: Evidence format\n"
+            "        if: ${{ github.event_name == 'push' }}\n")
+        steps = ccb.parse_workflow_steps(yml)
+        gated = [s for s in steps if s["if"] is not None]
+        self.assertEqual(len(gated), 1)
+        self.assertIn("github.event_name", gated[0]["if"])
+        self.assertIn("Evidence format", gated[0]["name"])
+        self.assertTrue(all(s["if"] is None for s in steps
+                            if s["name"] != "Evidence format"))
+
+    # -- inline comments are not invocation text (#249) -----------------------
+
+    def test_plain_run_trailing_comment_does_not_satisfy_term(self):
+        yml = CI_CLEAN.replace(
+            "        run: python3 scripts/ci/check_evidence_format.py",
+            "        run: true  # python3 scripts/ci/check_evidence_format.py")
+        problems, _ = self.run_check(yml=yml)
+        msgs = [m for m, _ in problems]
+        self.assertEqual(len(msgs), 1)
+        self.assertIn("check_evidence_format.py", msgs[0])
+
+    def test_block_scalar_trailing_comment_does_not_satisfy_term(self):
+        yml = CI_CLEAN.replace(
+            "          signoff/check-pvt-grid.sh || rc=$?",
+            "          true  # signoff/check-pvt-grid.sh || rc=$?")
+        problems, _ = self.run_check(yml=yml)
+        msgs = [m for m, _ in problems]
+        self.assertEqual(len(msgs), 1)
+        self.assertIn("check-pvt-grid.sh", msgs[0])
+
+    def test_plain_run_hash_without_whitespace_still_binds(self):
+        yml = CI_CLEAN.replace(
+            "        run: python3 scripts/ci/check_evidence_format.py",
+            "        run: echo a#b; python3 scripts/ci/check_evidence_format.py")
+        problems, _ = self.run_check(yml=yml)
+        self.assertEqual([m for m, _ in problems], [])
+
+    def test_quoted_run_with_hash_still_binds_verbatim(self):
+        yml = CI_CLEAN.replace(
+            "        run: python3 scripts/ci/check_evidence_format.py",
+            '        run: "python3 scripts/ci/check_evidence_format.py'
+            '  # quoted: YAML content, kept verbatim"')
+        problems, _ = self.run_check(yml=yml)
+        self.assertEqual([m for m, _ in problems], [])
+
+    def test_block_scalar_hash_inside_quotes_still_binds(self):
+        yml = CI_CLEAN.replace(
+            "          signoff/check-pvt-grid.sh || rc=$?",
+            '          echo "todo # signoff/check-pvt-grid.sh"')
+        problems, _ = self.run_check(yml=yml)
+        self.assertEqual([m for m, _ in problems], [])
+
+    def test_block_scalar_hash_without_whitespace_still_binds(self):
+        yml = CI_CLEAN.replace(
+            "          signoff/check-pvt-grid.sh || rc=$?",
+            "          echo a#b && signoff/check-pvt-grid.sh || rc=$?")
+        problems, _ = self.run_check(yml=yml)
+        self.assertEqual([m for m, _ in problems], [])
+
     def test_working_directory_binds_the_cd_term_only_with_the_run(self):
         problems, _ = self.run_check(yml=CI_CLEAN.replace(
             "-p 'test_*.py'", "-p 'other_*.py'"))
