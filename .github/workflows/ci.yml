@@ -85,6 +85,15 @@ jobs:
       - name: Evidence format
         run: python3 scripts/ci/check_evidence_format.py
 
+      - name: Report input hashes
+        # layout/*report*.json must still describe the stream committed beside
+        # them (provenance.input.content_hash vs the sha256 of the stream the
+        # report names). Hermetic: python3 stdlib only, like Evidence format.
+        # It does not re-run any flow and does not check the deck hash
+        # (klayout-tools#5601); see signoff/README.md,
+        # "What CI does and does not check".
+        run: python3 scripts/ci/check_report_inputs.py
+
       - name: Sim records append-only
         env:
           EVENT: ${{ github.event_name }}
