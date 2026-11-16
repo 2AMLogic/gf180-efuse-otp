@@ -107,6 +107,28 @@ jobs:
       - name: pdk_env.sh self-test
         run: sim/lib/test_pdk_env.sh
 
+      - name: Attestation pin check
+        # check:ci chains scripts/ci/check_attest_pins.py; run it here so a
+        # drifted attested-path pin fails CI instead of only the local gate.
+        run: python3 scripts/ci/check_attest_pins.py
+
+      - name: klt helper self-test
+        # check:ci chains signoff/test-klt.sh; it is hermetic (it fakes uvx on
+        # PATH and never invokes a real klt), so the runner needs no extra tool.
+        run: signoff/test-klt.sh
+
+      - name: program-select summarize self-test
+        # check:ci chains sim/program-select/test_summarize.py, which pins that
+        # the record describes the submitted grid; run it here so a regression
+        # in the refuse-a-partial-set behaviour fails CI.
+        run: python3 -I sim/program-select/test_summarize.py
+
+      - name: sense-margin summarize self-test
+        # check:ci chains sim/sense-margin/test_summarize.py, which pins that
+        # the record describes the submitted request set; run it here so a
+        # regression in that behaviour fails CI.
+        run: python3 -I sim/sense-margin/test_summarize.py
+
       - name: Re-grade signoff record
         run: |
           rc=0

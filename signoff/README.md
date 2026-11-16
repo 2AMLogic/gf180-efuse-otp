@@ -217,6 +217,18 @@ they check that:
   extract (`signoff/check-pvt-grid.sh`);
 - the `pdk_env.sh` self-test still passes (`sim/lib/test_pdk_env.sh`, hermetic
   fake trees and a stubbed `klt` on `PATH`);
+- the attestation-envelope pin check still passes
+  (`scripts/ci/check_attest_pins.py` re-hashes every attested path pin,
+  composite and manifest binding);
+- the klt helper self-test still passes (`signoff/test-klt.sh`, hermetic: it
+  fakes `uvx` on `PATH` and asserts on the argv the pinned-klt facets emit, so
+  it never invokes a real `klt`);
+- the program-select summarize self-test still passes
+  (`sim/program-select/test_summarize.py`, hermetic, pins that the record
+  describes the submitted grid rather than whatever reports are present);
+- the sense-margin summarize self-test still passes
+  (`sim/sense-margin/test_summarize.py`, hermetic, pins that the record
+  describes the submitted request set rather than whatever reports are present);
 - each evidence directory has a `README.md`, and any `sim/**/records/*.json`
   has the required fields, a PDK revision, and repo-relative paths only
   (vacuously true while there are no records);
