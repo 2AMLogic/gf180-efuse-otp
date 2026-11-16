@@ -221,6 +221,16 @@ they check that:
   has the required fields, a PDK revision, and repo-relative paths only
   (vacuously true while there are no records);
 - files under `sim/**/records/` are only added, never modified, deleted or renamed;
+- each `layout/*report*.json` that records a `provenance.input.content_hash`
+  still names a stream whose sha256 equals it
+  (`scripts/ci/check_report_inputs.py`), so a report that was not re-run
+  after its stream was regenerated fails. The step reads the report's own
+  `provenance.input.role` to find the stream (`.file.path`, `.layout.path`
+  or `.netlist.path`); it does not re-run `layout/drc.sh`, `layout/pnr.sh`
+  or any flow, and it does not check the deck hash -- the deck hash is
+  engine-dependent while `signoff/klt-pin.txt` does not constrain the
+  engine (klayout-tools#5601), so only the engine-independent input hash is
+  gated;
 - the item 6 digital extract is still bound to the ratified
   `spec/efuse-otp.md` (`signoff/check-item6-digital.sh`): the spec's sha256
   matches the extract's recorded hash and every quoted row still appears
