@@ -3,7 +3,9 @@
 
 Called by run.sh with the record directory. Reads sets/<stem>/report.json for the
 three program-current requests (prog_rf<ohm>) and the negative control
-(control_rf260_w<width>); lists every PVT point, names the binding corner (minimum
+(control_rf260_w<width>); a report that never came back, or came back with no
+corners or fewer than its corner_count, is refused with exit 4 rather than folded
+as a smaller set. Lists every PVT point, names the binding corner (minimum
 fuse current) per fuse value, and reports per-row pass/fail. The sense-margin row is
 not run here: its verdict is read from the committed sim/sense-margin record and
 quoted, never recomputed. Pass/fail is data in the record, not an exit status.
@@ -78,11 +80,18 @@ def main():
     a = ap.parse_args()
     repo = os.path.abspath(os.path.join(a.rec, "..", "..", "..", ".."))
 
+    # The requests run.sh submitted, named rather than discovered; load_reports
+    # refuses a partial set before any grading, so a report that never came
+    # back -- or came back with no corners, or fewer than its corner_count --
+    # cannot fold a smaller set into `complete: true`.
+    stems = ["prog_rf" + r for r in a.fuse_ohms.split()]
+    stems.append("control_rf260_w" + a.w_control)
+    reports = bench_record.load_reports(a.rec, stems)
+
     backends, jobs, engines = set(), set(), set()
 
     def load(stem):
-        path = os.path.join(a.rec, "sets", stem, "report.json")
-        return bench_record.collect_env(json.load(open(path)), backends, jobs, engines)
+        return bench_record.collect_env(reports[stem], backends, jobs, engines)
 
     fuses = {}
     for r in a.fuse_ohms.split():
