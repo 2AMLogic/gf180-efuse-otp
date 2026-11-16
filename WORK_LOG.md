@@ -4,6 +4,10 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-16
 
+- **PR #236**: fix(signoff): opt out of the klt facets with a --no-function source argument
+- **PR #234**: ci: run the bench_record load_reports self-test in the harness job
+- **Issue #231** (closed): check:ci's sim/lib/test_bench_record.py term has no ci.yml step: the gap #217 closed reopened one merge later
+- **Issue #225** (closed): signoff/klt.sh: the declare -x proxy for 'inherited' has two residual shapes where the sourcing-local contract is not honored
 - **PR #232**: ci: refuse unsupported hash_algorithm in attestation pin check
 - **PR #230**: ci: run every uncovered check:ci term in the harness job
 - **PR #228**: fix(rtl): broaden the latch-gate glob to catch fine-grain $_DLATCHSR_* cells

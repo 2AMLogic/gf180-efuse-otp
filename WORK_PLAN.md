@@ -28,34 +28,27 @@ Human-approved issues ready for implementation (`loom:issue`).
 
 - **#172**: Route efuse_ls in the layout generator and LVS-match it with the pinned klt (first slice of #73)
 - **#214**: Neither signoff bash checker has a self-test: check-pvt-grid.sh and check-item6-digital.sh can go vacuous with CI green
+- **#221**: check_attest_pins.py manifest layer binds against untracked cited files, and NO_HASH_KINDS is dead
+- **#233**: scripts/ci: bind check:ci's term list to ci.yml step coverage
+- **#237**: signoff/klt.sh: the --no-function opt-out is read from $1, so a caller's own first argument can silently drop the pin
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#193**: rtl/synth.ys latch assertion does not cover the fine-grain $_DLATCHSR_* cell type
 - **#195**: CI never compares a committed DRC report's recorded input hash to the stream it describes, so a stale report passes every gate
-- **#200**: signoff/klt.sh: KLT_NO_FUNCTION is honored from the ambient environment, and its self-test asserts 'set' where it says 'exported'
-- **#208**: Hoist the absent/hollow report guard from sim/*/summarize.py into bench_record: two copies drifted, a third bench has none
-- **#218**: README's check:ci enumeration omits the klt helper self-test (signoff/test-klt.sh)
-- **#222**: Item 8 envelope does not hash layout/lvs-ctrl.report.json
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#223**: ci: gate each layout report's input hash against the stream it names
-- **#228**: fix(rtl): broaden the latch-gate glob to catch fine-grain $_DLATCHSR_* cells
+_None._
 
 ## Approved (Awaiting Merge)
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
 - **#94**: spec: ratify 10 MHz controller clock and cite STA + functional reports for item 5 digital
-- **#212**: fix: gate the signoff klt opt-out on the export attribute, assert the export
-- **#216**: refactor(sim): single-source the corner benches' refuse-a-partial-set report loading
-- **#220**: docs: add the klt helper self-test to README's check:ci pre-flight list
-- **#227**: signoff: pin layout/lvs-ctrl.report.json in the item 8 attestation
 
 ## Proposed
 
@@ -64,14 +57,11 @@ Issues carrying `loom:curated`.
 - **#3**: Track the gap to T1 (klayout-tools design-evidence-tiers.md) *(curated)*
 - **#73**: Route the fuse-free analog leaf cells (efuse_ls, efuse_coldrv) and LVS-match each one *(curated)*
 - **#172**: Route efuse_ls in the layout generator and LVS-match it with the pinned klt (first slice of #73) *(curated)*
-- **#193**: rtl/synth.ys latch assertion does not cover the fine-grain $_DLATCHSR_* cell type *(curated)*
 - **#195**: CI never compares a committed DRC report's recorded input hash to the stream it describes, so a stale report passes every gate *(curated)*
-- **#200**: signoff/klt.sh: KLT_NO_FUNCTION is honored from the ambient environment, and its self-test asserts 'set' where it says 'exported' *(curated)*
-- **#208**: Hoist the absent/hollow report guard from sim/*/summarize.py into bench_record: two copies drifted, a third bench has none *(curated)*
 - **#214**: Neither signoff bash checker has a self-test: check-pvt-grid.sh and check-item6-digital.sh can go vacuous with CI green *(curated)*
-- **#217**: The sim summarizer self-tests never run in GitHub CI: only the local npm check:ci gate invokes them, so they can go red with CI green *(curated)*
-- **#218**: README's check:ci enumeration omits the klt helper self-test (signoff/test-klt.sh) *(curated)*
-- **#222**: Item 8 envelope does not hash layout/lvs-ctrl.report.json *(curated)*
+- **#221**: check_attest_pins.py manifest layer binds against untracked cited files, and NO_HASH_KINDS is dead *(curated)*
+- **#233**: scripts/ci: bind check:ci's term list to ci.yml step coverage *(curated)*
+- **#237**: signoff/klt.sh: the --no-function opt-out is read from $1, so a caller's own first argument can silently drop the pin *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -92,11 +82,11 @@ _None._
 | Operator merge-risk holds | 1 |
 | Very important | 1 |
 | Important | 2 |
-| Ready (`loom:issue`) | 2 |
-| In Progress (`loom:building`) | 6 |
-| PRs awaiting review | 2 |
-| Approved PRs awaiting merge | 5 |
-| Curated | 11 |
+| Ready (`loom:issue`) | 5 |
+| In Progress (`loom:building`) | 1 |
+| PRs awaiting review | 0 |
+| Approved PRs awaiting merge | 1 |
+| Curated | 8 |
 | Architect / Hermit proposals | 5 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
