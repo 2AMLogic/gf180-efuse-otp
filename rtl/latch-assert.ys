@@ -1,0 +1,6 @@
+# The asserted no-latch pattern set: the single source of truth, shared by the
+# real latch gate (rtl/synth.ys, run on the design) and its negative control
+# (rtl/synth-negctl.ys, run on rtl/latch-negative-control.v). Both
+# script-include this file, so a typo here blinds both gates at once and the
+# negative control fails — never copy the patterns into another file.
+select -assert-none t:$_DLATCH_* t:$_SR_* t:$dlatch t:$dlatchsr
