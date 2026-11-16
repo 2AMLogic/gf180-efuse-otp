@@ -109,6 +109,7 @@
     "P13": [
       "layout/drc-array.report.json",
       "layout/drc-ctrl.report.json",
+      "layout/lvs-ctrl.report.json",
       "layout/pnr-report.json",
       "signoff/block-manifest.signoff.json",
       "sim/controller-sta/sta-100ns.report.json"
@@ -158,6 +159,13 @@
         "test",
         "-s",
         "layout/efuse_otp_array.report.json"
+      ]
+    },
+    "layout/lvs-ctrl.report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "layout/lvs-ctrl.report.json"
       ]
     },
     "layout/pnr-report.json": {

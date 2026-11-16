@@ -27,40 +27,28 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 Human-approved issues ready for implementation (`loom:issue`).
 
 - **#172**: Route efuse_ls in the layout generator and LVS-match it with the pinned klt (first slice of #73)
-- **#182**: Drop the redundant 'Item 2 (analog) stream matches its record' CI step: layout/attest.sh --check already covers both its failure modes
-- **#201**: Wire sim/sense-margin/test_summarize.py into check:ci: 209 lines of green regression test whose docstring cites a stale 'not run' precedent
+- **#214**: Neither signoff bash checker has a self-test: check-pvt-grid.sh and check-item6-digital.sh can go vacuous with CI green
+- **#221**: check_attest_pins.py manifest layer binds against untracked cited files, and NO_HASH_KINDS is dead
+- **#233**: scripts/ci: bind check:ci's term list to ci.yml step coverage
+- **#237**: signoff/klt.sh: the --no-function opt-out is read from $1, so a caller's own first argument can silently drop the pin
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#35**: T1 item 5 (corner verification, digital): klt sta and klt functional-verification for the controller
-- **#133**: Root README understates which signoff checks CI runs
-- **#150**: Remove the local ngspice -v probe from the batch benches: 4 of 14 records name ngspice 42 while every corner ran on the fleet's ngspice 46
-- **#151**: Remove the stale 'not simulated' sense statements from the corner-bench summarizers: new records still name closed #36 for effects sim/sense-mc now simulates
-- **#155**: sim/controller-fv reports are klt schema_version 1; the pinned klt now emits 2
-- **#161**: rtl/synth.sh reports twice the real latch count: replace the hand-rolled log scraper with a Yosys assertion
-- **#167**: Single-source the fleet-checked model-file list: pdk_env.sh loops one copy while every record's variant_simulated names another
-- **#174**: T1 item 7 (digital): SDF-annotated klt functional-verification re-run on the as-built controller netlist
-- **#181**: README still reads "spec ratified" at both line 13 and line 80 — the committed evidence reaches the "sense path simulated across PVT" rung
-- **#185**: check:ci has no attestation-drift pre-flight: editing any item-10 hygiene artifact fails CI two steps deep with a green local gate
+- **#195**: CI never compares a committed DRC report's recorded input hash to the stream it describes, so a stale report passes every gate
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#157**: fix(sim): drop the stale sense "not simulated" statements from the corner-bench summarizers
-- **#168**: fix(rtl): assert no latch survives synthesis instead of scraping the Yosys log
-- **#202**: docs(sim): record why the controller SDF cannot be produced at the pinned klt (7.digital stays uncited)
+_None._
 
 ## Approved (Awaiting Merge)
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
 - **#94**: spec: ratify 10 MHz controller clock and cite STA + functional reports for item 5 digital
-- **#186**: docs(sim): record klt 0.8.0 provenance of the committed controller-fv reports
-- **#189**: refactor(sim): single-source the fleet-checked model-file list in sim/pdk.json
-- **#197**: docs: state the README position as sense path simulated across PVT
 
 ## Proposed
 
@@ -68,16 +56,12 @@ Issues carrying `loom:curated`.
 
 - **#3**: Track the gap to T1 (klayout-tools design-evidence-tiers.md) *(curated)*
 - **#73**: Route the fuse-free analog leaf cells (efuse_ls, efuse_coldrv) and LVS-match each one *(curated)*
-- **#133**: Root README understates which signoff checks CI runs *(curated)*
-- **#155**: sim/controller-fv reports are klt schema_version 1; the pinned klt now emits 2 *(curated)*
 - **#172**: Route efuse_ls in the layout generator and LVS-match it with the pinned klt (first slice of #73) *(curated)*
-- **#173**: T1 item 4 (digital): klt lvs of the routed controller against its as-built netlist *(curated)*
-- **#174**: T1 item 7 (digital): SDF-annotated klt functional-verification re-run on the as-built controller netlist *(curated)*
-- **#181**: README still reads "spec ratified" at both line 13 and line 80 — the committed evidence reaches the "sense path simulated across PVT" rung *(curated)*
-- **#182**: Drop the redundant 'Item 2 (analog) stream matches its record' CI step: layout/attest.sh --check already covers both its failure modes *(curated)*
-- **#185**: check:ci has no attestation-drift pre-flight: editing any item-10 hygiene artifact fails CI two steps deep with a green local gate *(curated)*
 - **#195**: CI never compares a committed DRC report's recorded input hash to the stream it describes, so a stale report passes every gate *(curated)*
-- **#200**: signoff/klt.sh: KLT_NO_FUNCTION is honored from the ambient environment, and its self-test asserts 'set' where it says 'exported' *(curated)*
+- **#214**: Neither signoff bash checker has a self-test: check-pvt-grid.sh and check-item6-digital.sh can go vacuous with CI green *(curated)*
+- **#221**: check_attest_pins.py manifest layer binds against untracked cited files, and NO_HASH_KINDS is dead *(curated)*
+- **#233**: scripts/ci: bind check:ci's term list to ci.yml step coverage *(curated)*
+- **#237**: signoff/klt.sh: the --no-function opt-out is read from $1, so a caller's own first argument can silently drop the pin *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -98,11 +82,11 @@ _None._
 | Operator merge-risk holds | 1 |
 | Very important | 1 |
 | Important | 2 |
-| Ready (`loom:issue`) | 3 |
-| In Progress (`loom:building`) | 10 |
-| PRs awaiting review | 3 |
-| Approved PRs awaiting merge | 4 |
-| Curated | 12 |
+| Ready (`loom:issue`) | 5 |
+| In Progress (`loom:building`) | 1 |
+| PRs awaiting review | 0 |
+| Approved PRs awaiting merge | 1 |
+| Curated | 8 |
 | Architect / Hermit proposals | 5 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->

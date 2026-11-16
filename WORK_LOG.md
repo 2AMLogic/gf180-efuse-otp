@@ -4,6 +4,30 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-16
 
+- **PR #239**: test: pin signoff checker failure modes with seeded-bad-input self-tests
+- **Issue #214** (closed): Neither signoff bash checker has a self-test: check-pvt-grid.sh and check-item6-digital.sh can go vacuous with CI green
+- **PR #236**: fix(signoff): opt out of the klt facets with a --no-function source argument
+- **PR #234**: ci: run the bench_record load_reports self-test in the harness job
+- **Issue #231** (closed): check:ci's sim/lib/test_bench_record.py term has no ci.yml step: the gap #217 closed reopened one merge later
+- **Issue #225** (closed): signoff/klt.sh: the declare -x proxy for 'inherited' has two residual shapes where the sourcing-local contract is not honored
+- **PR #232**: ci: refuse unsupported hash_algorithm in attestation pin check
+- **PR #230**: ci: run every uncovered check:ci term in the harness job
+- **PR #228**: fix(rtl): broaden the latch-gate glob to catch fine-grain $_DLATCHSR_* cells
+- **PR #227**: signoff: pin layout/lvs-ctrl.report.json in the item 8 attestation
+- **PR #220**: docs: add the klt helper self-test to README's check:ci pre-flight list
+- **PR #216**: refactor(sim): single-source the corner benches' refuse-a-partial-set report loading
+- **PR #212**: fix: gate the signoff klt opt-out on the export attribute, assert the export
+- **Issue #222** (closed): Item 8 envelope does not hash layout/lvs-ctrl.report.json
+- **Issue #218** (closed): README's check:ci enumeration omits the klt helper self-test (signoff/test-klt.sh)
+- **Issue #217** (closed): The sim summarizer self-tests never run in GitHub CI: only the local npm check:ci gate invokes them, so they can go red with CI green
+- **Issue #211** (closed): check_attest_pins.py never reads attestation.hash_algorithm, so a klt hash-kind change reports 87 false 'drift' lines with unfixable remediation
+- **Issue #208** (closed): Hoist the absent/hollow report guard from sim/*/summarize.py into bench_record: two copies drifted, a third bench has none
+- **Issue #200** (closed): signoff/klt.sh: KLT_NO_FUNCTION is honored from the ambient environment, and its self-test asserts 'set' where it says 'exported'
+- **Issue #193** (closed): rtl/synth.ys latch assertion does not cover the fine-grain $_DLATCHSR_* cell type
+- **PR #219**: ci(rtl): add a committed negative control proving the latch gate can fail
+- **PR #198**: check:ci: add attestation-envelope pin pre-flight
+- **Issue #204** (closed): The latch gate has no committed negative control: a typo'd select pattern would make CI's only latch check silently permanent-green
+- **Issue #185** (closed): check:ci has no attestation-drift pre-flight: editing any item-10 hygiene artifact fails CI two steps deep with a green local gate
 - **PR #215**: test: assert engine_versions provenance in the program-select summarizer self-test
 - **PR #209**: ci: run the sense-margin summarize self-test in check:ci
 - **PR #206**: ci: bind the decision-0005 PVT grid to the spec, run the pdk_env self-test in CI

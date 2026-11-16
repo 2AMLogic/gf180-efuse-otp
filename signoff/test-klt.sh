@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 # Self-test for klt.sh: the uvx-absent preflight (exit 2, message), the [yield]
 # extras splice, klt()/klt_python() argv passthrough and KLT_ARGV through a fake
-# uvx, the pin read exactly once, KLT_NO_FUNCTION=1 (no function facets: the sim
-# benches keep their bare host-klt calls), and pin resolution from a foreign cwd
-# (BASH_SOURCE, not cwd). Modelled on sim/lib/test_pdk_env.sh.
+# uvx, the pin read exactly once and actually exported (the declare -x
+# attribute, not mere set-ness, observed with any inherited exported KLT_PIN
+# scrubbed from the probe's environment), the --no-function source argument
+# skipping the function facets (no klt()/klt_python(): the sim benches keep
+# their bare host-klt calls) while every inherited KLT_NO_FUNCTION shape -- a
+# plain export, an export reassigned sourcing-locally, a declare -ix export --
+# stays ignored, and pin resolution from a foreign cwd (BASH_SOURCE, not cwd).
+# Modelled on sim/lib/test_pdk_env.sh.
 set -u
 here="$(cd "$(dirname "$0")" && pwd)"
 pin="$(cat "$here/klt-pin.txt")"
@@ -22,17 +27,22 @@ lit_not() { # name string haystack  (fails when the string IS found)
 }
 bash_bin="$(command -v bash)"
 
-# source defines every facet; KLT_PIN is exported.
-out="$(bash -c '. "$1"; echo "pin=$KLT_PIN"; echo "argv=$KLT_ARGV";
+# source defines every facet; KLT_PIN is exported (the declare -x attribute --
+# [[ -n ${KLT_PIN+x} ]] is true for any set variable, exported or not). The
+# probe scrubs an inherited exported KLT_PIN from its environment so the
+# attribute observed is klt.sh's own export, not the invoking shell's:
+# klt.sh's documented usage (". signoff/klt.sh") is exactly what leaves
+# KLT_PIN exported in the shell that then runs this suite.
+out="$(env -u KLT_PIN bash -c '. "$1"; echo "pin=$KLT_PIN"; echo "argv=$KLT_ARGV";
   echo "yield=${KLT_YIELD[*]}"; echo "klt=$(type -t klt)"; echo "py=$(type -t klt_python)";
-  [[ -n "${KLT_PIN+x}" ]] && echo exported' _ "$here/klt.sh" 2>&1)"; rc=$?
+  declare -p KLT_PIN' _ "$here/klt.sh" 2>&1)"; rc=$?
 check "source exits 0" 0 "$rc"
 lit "pin facet" "pin=$pin" "$out"
 lit "argv facet" "argv=uvx --from $pin klt" "$out"
 lit "yield facet" "yield=uvx --from klayout-tools[yield]==$version klt" "$out"
 lit "klt facet" "klt=function" "$out"
 lit "klt_python facet" "py=function" "$out"
-lit "KLT_PIN exported" "exported" "$out"
+lit "KLT_PIN exported" "declare -x KLT_PIN" "$out"
 
 # uvx absent: exit 2 with the verification/run.sh message, before anything else.
 nb="$tmp/nouvx"; mkdir -p "$nb"
@@ -71,15 +81,64 @@ chmod +x "$cc/cat"; : > "$tmp/cat.log"
 PATH="$cc:$PATH" bash -c '. "$1"' _ "$here/klt.sh" 2>&1; check "source with counting cat exits 0" 0 "$?"
 [[ "$(wc -l < "$tmp/cat.log")" == 1 ]] || { echo "FAIL pin read $(wc -l < "$tmp/cat.log") times: $(cat "$tmp/cat.log")"; fail=1; }
 
-# KLT_NO_FUNCTION=1: no function facets, pin and extras still defined.
-out="$(PATH="$fb:$PATH" bash -c 'KLT_NO_FUNCTION=1; . "$1";
+# the opt-out is a source-time argument: ". klt.sh --no-function" defines no
+# function facets; pin and extras still defined.
+out="$(PATH="$fb:$PATH" bash -c '. "$1" --no-function;
   echo "klt=$(type -t klt)"; echo "py=$(type -t klt_python)"; echo "pin=$KLT_PIN"; echo "yield=${KLT_YIELD[*]}"' \
   _ "$here/klt.sh" 2>&1)"; rc=$?
-check "KLT_NO_FUNCTION source exits 0" 0 "$rc"
-lit_not "klt defined despite KLT_NO_FUNCTION" "klt=function" "$out"
-lit_not "klt_python defined despite KLT_NO_FUNCTION" "py=function" "$out"
-lit "KLT_NO_FUNCTION pin" "pin=$pin" "$out"
-lit "KLT_NO_FUNCTION yield" "yield=uvx --from klayout-tools[yield]==$version klt" "$out"
+check "--no-function source exits 0" 0 "$rc"
+lit_not "klt defined despite --no-function" "klt=function" "$out"
+lit_not "klt_python defined despite --no-function" "py=function" "$out"
+lit "--no-function pin" "pin=$pin" "$out"
+lit "--no-function yield" "yield=uvx --from klayout-tools[yield]==$version klt" "$out"
+
+# a source argument other than --no-function (and no argument at all) keeps
+# both facets.
+out="$(PATH="$fb:$PATH" bash -c '. "$1" --other-argument;
+  echo "klt=$(type -t klt)"; echo "py=$(type -t klt_python)"' \
+  _ "$here/klt.sh" 2>&1)"; rc=$?
+check "non-opt-out source argument exits 0" 0 "$rc"
+lit "non-opt-out argument klt facet" "klt=function" "$out"
+lit "non-opt-out argument klt_python facet" "py=function" "$out"
+out="$(bash -c '. "$1"; echo "klt=$(type -t klt)"; echo "py=$(type -t klt_python)"' \
+  _ "$here/klt.sh" 2>&1)"; rc=$?
+check "plain source exits 0" 0 "$rc"
+lit "plain source klt facet" "klt=function" "$out"
+lit "plain source klt_python facet" "py=function" "$out"
+
+# issue #225's two shapes cannot take the script off the pin: the environment
+# variable path is gone, so an exported KLT_NO_FUNCTION reassigned
+# sourcing-locally (shape 1), a declare -ix export (shape 2), and a plain
+# inherited export of any value (empty, 0, 1) all leave the facets defined,
+# silently -- an inherited exported variable never removes the pinned
+# functions (the #200 property).
+out="$(KLT_NO_FUNCTION=0 bash -c 'set -euo pipefail; KLT_NO_FUNCTION=1; . "$1";
+  echo "klt=$(type -t klt)"; echo "py=$(type -t klt_python)"; echo "pin=$KLT_PIN"' \
+  _ "$here/klt.sh" 2>&1)"; rc=$?
+check "shape 1 (exported, reassigned local) exits 0" 0 "$rc"
+lit "shape 1 klt facet" "klt=function" "$out"
+lit "shape 1 klt_python facet" "py=function" "$out"
+lit "shape 1 pin" "pin=$pin" "$out"
+lit_not "shape 1 silent" "ignoring KLT_NO_FUNCTION" "$out"
+out="$(bash -c 'declare -ix KLT_NO_FUNCTION=1; set -u; . "$1";
+  echo "klt=$(type -t klt)"; echo "py=$(type -t klt_python)"' \
+  _ "$here/klt.sh" 2>&1)"; rc=$?
+check "shape 2 (declare -ix) exits 0" 0 "$rc"
+lit "shape 2 klt facet" "klt=function" "$out"
+lit "shape 2 klt_python facet" "py=function" "$out"
+out="$(KLT_NO_FUNCTION=1 bash -c 'set -u; . "$1";
+  echo "klt=$(type -t klt)"; echo "py=$(type -t klt_python)"; echo "pin=$KLT_PIN"' \
+  _ "$here/klt.sh" 2>&1)"; rc=$?
+check "exported KLT_NO_FUNCTION source exits 0" 0 "$rc"
+lit "exported KLT_NO_FUNCTION klt facet" "klt=function" "$out"
+lit "exported KLT_NO_FUNCTION klt_python facet" "py=function" "$out"
+lit "exported KLT_NO_FUNCTION pin" "pin=$pin" "$out"
+out="$(KLT_NO_FUNCTION='' bash -c '. "$1"; echo "klt=$(type -t klt)"' _ "$here/klt.sh" 2>&1)"; rc=$?
+check "exported empty KLT_NO_FUNCTION exits 0" 0 "$rc"
+lit "exported empty KLT_NO_FUNCTION ignored" "klt=function" "$out"
+out="$(KLT_NO_FUNCTION=0 bash -c '. "$1"; echo "klt=$(type -t klt)"' _ "$here/klt.sh" 2>&1)"; rc=$?
+check "exported 0 KLT_NO_FUNCTION exits 0" 0 "$rc"
+lit "exported 0 KLT_NO_FUNCTION ignored" "klt=function" "$out"
 
 # the pin resolves from BASH_SOURCE: source from a cwd that is not the repo root.
 out="$(cd "$tmp" && bash -c '. "$1"; echo "$KLT_PIN"' _ "$here/klt.sh" 2>&1)"; rc=$?

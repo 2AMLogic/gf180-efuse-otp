@@ -19,8 +19,8 @@ The block's verdict of record against the klayout-tools evidence tiers.
 | `../layout/drc-*.report.json` | Committed `klt drc` reports for T1 item 3 (`layout/drc.sh`). Both are `status: clean` under the curated deck (deck hash `sha256:cf44de63...`, klt 0.9.0 — the pin). The 0.9.0 deck gained an `EF` `deck_scope` entry and checks seven eFuse-layer rules on the analog partition, but all 24 foundry `EF.01`–`EF.22b` IDs remain under `coverage.unmodeled_rules` (klayout-tools#4312, #4002), so item 3 is still not cited and stays `unmet`; see `layout/README.md`, "DRC", and #60. |
 | `../layout/lvs-ctrl.report.json` | Committed `klt lvs` report for T1 item 4, digital (`layout/lvs.sh`): `status: match` with `power_connectivity.status: match` against `layout/efuse_otp_ctrl.asbuilt.v` under the curated deck (same deck hash as the DRC reports, klt 0.9.0 — the pin), cited for `4.digital`. What the `match` reaches (and does not) is in `layout/README.md`, "LVS"; the re-run procedure is below. |
 | `klt-pin.txt` | The single place the grader version is pinned. CI installs `$(cat signoff/klt-pin.txt)`. |
-| `klt.sh` | The single sourced definition of how the scripts reach the pinned klt: reads `klt-pin.txt` once (resolved from its own location, not cwd), preflights `uvx` (exit 2), and defines `klt`, `klt_python`, `KLT_PIN`, `KLT_ARGV` and the `[yield]`-extras `KLT_YIELD` array. `verification/run.sh` keeps its own inline preflight by design: it is the exemplar and a content-hashed attestation input. |
-| `test-klt.sh` | Self-test for `klt.sh` (run in `check:ci`): the `uvx`-absent exit 2 and message, the `[yield]` splice, `klt`/`klt_python` argv through a fake `uvx`, the pin read exactly once, `KLT_NO_FUNCTION=1`, and pin resolution from a foreign cwd. |
+| `klt.sh` | The single sourced definition of how the scripts reach the pinned klt: reads `klt-pin.txt` once (resolved from its own location, not cwd), preflights `uvx` (exit 2), and defines `klt`, `klt_python`, `KLT_PIN`, `KLT_ARGV` and the `[yield]`-extras `KLT_YIELD` array. The `--no-function` source argument (`. signoff/klt.sh --no-function`; skip the functions, keep `KLT_PIN`/`KLT_YIELD` -- the shape `sim/sense-mc/run.sh` uses) is the opt-out: an argument is passed to the sourced file alone and cannot be inherited, so no environment variable can take a signoff script off the pinned klt. `verification/run.sh` keeps its own inline preflight by design: it is the exemplar and a content-hashed attestation input. |
+| `test-klt.sh` | Self-test for `klt.sh` (run in `check:ci`): the `uvx`-absent exit 2 and message, the `[yield]` splice, `klt`/`klt_python` argv through a fake `uvx`, the pin read exactly once and actually exported (the `declare -x` attribute, not mere set-ness), the `--no-function` source argument versus a non-opt-out argument and no argument, and the issue-#225 env-var shapes (an export, an export reassigned sourcing-locally, a `declare -ix` export, empty and `0`) proved unable to remove the function facets, and pin resolution from a foreign cwd. |
 | `item1-digital-inventory.json` | `t1-attestation-inventory` for T1 item 1, digital: the RTL source and the committed gate-level netlist `rtl/efuse_otp_ctrl.gl.v`, whose freshness `check` is `rtl/regen-gl.sh --check` (`local_only`: it needs Yosys and the PDK). |
 | `item1-digital.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.digital` in `block-manifest.json`, pinned by the envelope's own composite `provenance.input.content_hash` (see "Re-attest item 1 (digital)"). |
 | `item1-analog-inventory.json` | `t1-attestation-inventory` for T1 item 1, analog: the xschem schematics and cell symbols in `design/` and the netlist `design/efuse_otp_array.spice`, whose freshness `check` is `design/regen-netlist.sh --check` (`local_only`: it needs xschem). |
@@ -217,6 +217,22 @@ they check that:
   extract (`signoff/check-pvt-grid.sh`);
 - the `pdk_env.sh` self-test still passes (`sim/lib/test_pdk_env.sh`, hermetic
   fake trees and a stubbed `klt` on `PATH`);
+- the attestation-envelope pin check still passes
+  (`scripts/ci/check_attest_pins.py` re-hashes every attested path pin,
+  composite and manifest binding);
+- the klt helper self-test still passes (`signoff/test-klt.sh`, hermetic: it
+  fakes `uvx` on `PATH` and asserts on the argv the pinned-klt facets emit, so
+  it never invokes a real `klt`);
+- the bench-record loader self-test still passes
+  (`sim/lib/test_bench_record.py`, hermetic: hand-built fixtures in a temp
+  directory, pins that a partial report set is refused with exit 4 before
+  anything is returned);
+- the program-select summarize self-test still passes
+  (`sim/program-select/test_summarize.py`, hermetic, pins that the record
+  describes the submitted grid rather than whatever reports are present);
+- the sense-margin summarize self-test still passes
+  (`sim/sense-margin/test_summarize.py`, hermetic, pins that the record
+  describes the submitted request set rather than whatever reports are present);
 - each evidence directory has a `README.md`, and any `sim/**/records/*.json`
   has the required fields, a PDK revision, and repo-relative paths only
   (vacuously true while there are no records);

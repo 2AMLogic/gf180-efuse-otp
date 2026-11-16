@@ -15,9 +15,11 @@ insert:
     import bench_record
 
 The three corner benches (program-select, corner-verification, sense-margin)
-share all four helpers and emit a byte-identical record header. sim/sense-mc
-shares only collect_env() and write_record(): its header names different tool
-keys (klt_sim_version, klt_yield_pin, no backend).
+share all five helpers -- including load_reports(), the refuse-a-partial-set
+report-loading step each summarizer used to hand-roll (the guard that has
+drifted #146 -> #177 -> #169) -- and emit a byte-identical record header.
+sim/sense-mc shares only collect_env() and write_record(): its header names
+different tool keys (klt_sim_version, klt_yield_pin, no backend).
 
 The simulator version in a record is the one that ran the corners, read from the
 reports (`environment.engine_version`), not a probe of whatever simulator the
@@ -26,6 +28,7 @@ submitting host happens to carry: these campaigns are batch only, so a local
 """
 import json
 import os
+import sys
 
 # The model files pdk_fleet_check() in sim/lib/pdk_env.sh compares between the
 # pinned gf180mcuC tree and the gf180mcuD fleet image. VARIANT_SIMULATED below
@@ -52,6 +55,55 @@ def add_common_args(ap):
     ap.add_argument("--stamp", required=True)
     ap.add_argument("--klt", required=True)
     return ap
+
+
+def load_reports(rec, stems):
+    """Load every expected request's sets/<stem>/report.json, or refuse a partial set.
+
+    stems: the request stems run.sh submitted, named rather than discovered.
+    Returns {stem: parsed report}. Two ways a set can be partial, both refused
+    with one SystemExit(4) before anything is computed or written:
+
+    absent  the report file is not there (the request errored or was refused,
+            bench_submit_set rc=4);
+    hollow  the report is present but carries no corners, or fewer than the
+            top-level `corner_count` klt itself declared -- it grades nothing
+            and would fold the set smaller with no diagnostic. A report with
+            no `corner_count` cannot be cross-checked at all and is hollow
+            too.
+
+    Both lists accumulate over the whole set, so one refusal shows the
+    operator everything wrong with it: the absent block, then the hollow
+    block, then the shared `a partial set is not evidence` trailer, then exit
+    4 and no record. The wording is operator-facing and shared by all three
+    corner benches; "expected reports" is the phrasing that is true of every
+    bench's request list ("the grid" is program-select's vocabulary).
+    """
+    reports, absent, hollow = {}, [], []
+    for stem in stems:
+        path = os.path.join(rec, "sets", stem, "report.json")
+        if not os.path.isfile(path):
+            absent.append(stem)
+            continue
+        with open(path) as f:
+            rep = json.load(f)
+        n = len(rep.get("corners") or [])
+        if not n or rep.get("corner_count") != n:
+            hollow.append("%s (corner_count=%r, corners=%d)"
+                          % (stem, rep.get("corner_count"), n))
+            continue
+        reports[stem] = rep
+    if absent or hollow:
+        if absent:
+            print("no report for %d of %d expected requests: %s"
+                  % (len(absent), len(stems), " ".join(absent)), file=sys.stderr)
+        if hollow:
+            print("no usable corners in %d of %d expected reports: %s"
+                  % (len(hollow), len(stems), " ".join(hollow)), file=sys.stderr)
+        print("a partial set is not evidence; no record written (see %s/set-report.json, "
+              "%s/klt.err)" % (rec, rec), file=sys.stderr)
+        raise SystemExit(4)
+    return reports
 
 
 def collect_env(rep, backends, jobs, engines):

@@ -14,7 +14,6 @@ additionally needs every Vgs/Vds within the stated voltage limit. No width is
 chosen unless a candidate exists.
 """
 import argparse
-import json
 import math
 import os
 import sys
@@ -41,47 +40,15 @@ def main():
 
     # The grid run.sh submitted, named rather than discovered. A partial set (a
     # request errored or was refused, bench_submit_set rc=4) is not evidence, so
-    # refuse before anything is computed or written -- the same rule
-    # sim/sense-mc/run.sh applies to its own set.
+    # load_reports refuses before anything is computed or written -- the same
+    # rule sim/sense-mc/run.sh applies to its own set.
     expected = [(r, w, "cell_r%d_w%d" % (r, w)) for r in fuse_ohms for w in widths_um]
-    missing = [stem for _, _, stem in expected
-               if not os.path.isfile(os.path.join(a.rec, "sets", stem, "report.json"))]
-    if missing:
-        print("no report for %d of %d expected requests: %s"
-              % (len(missing), len(expected), " ".join(missing)), file=sys.stderr)
-        print("a partial set is not evidence; no record written (see %s/set-report.json, "
-              "%s/klt.err)" % (a.rec, a.rec), file=sys.stderr)
-        raise SystemExit(4)
-
-    reports = [(fuse, wum, stem,
-                json.load(open(os.path.join(a.rec, "sets", stem, "report.json"))))
-               for fuse, wum, stem in expected]
-
-    # File presence is not content. A report that is present but carries no
-    # corners folds into nothing: its width never becomes a key in `widths`, so
-    # it leaves the grid with no diagnostic and the verdicts below are computed
-    # over whatever did fold. The authoritative count is already in every
-    # report -- klt emits a top-level `corner_count` -- so cross-check it here
-    # and refuse under the same rule and the same exit code as a missing
-    # report. A report with no `corner_count` cannot be cross-checked at all
-    # and is refused too.
-    short = []
-    for _, _, stem, rep in reports:
-        got, declared = len(rep.get("corners") or []), rep.get("corner_count")
-        if got == 0 or got != declared:
-            short.append("%s (corners=%d, corner_count=%r)" % (stem, got, declared))
-    if short:
-        print("report present but its corners do not support the grid for %d of %d "
-              "expected requests: %s"
-              % (len(short), len(expected), " ".join(short)), file=sys.stderr)
-        print("a partial set is not evidence; no record written (see %s/set-report.json, "
-              "%s/klt.err)" % (a.rec, a.rec), file=sys.stderr)
-        raise SystemExit(4)
+    reports = bench_record.load_reports(a.rec, [stem for _, _, stem in expected])
 
     widths = {}
     backends, jobs, engines = set(), set(), set()
-    for fuse, wum, stem, rep in reports:
-        bench_record.collect_env(rep, backends, jobs, engines)
+    for fuse, wum, stem in expected:
+        rep = bench_record.collect_env(reports[stem], backends, jobs, engines)
         for c in rep["corners"]:
             m = {x["name"]: x.get("value") for x in c.get("measurements", [])}
             i, vgs, vds = m.get("i_fuse"), m.get("vgs"), m.get("vds")
@@ -99,19 +66,6 @@ def main():
                 "pass": bool(ok and i >= a.ireq),
             }
             widths.setdefault(wum * 1e-6, []).append(pt)
-
-    # Belt and braces for the check above: every swept width must have
-    # contributed at least one point, so no width can be absent from the record
-    # that the grid names. Refused, not reported as failing: a width nothing
-    # was measured for is not a width that failed.
-    dropped = [w for w in widths_um if w * 1e-6 not in widths]
-    if dropped:
-        print("no point folded for %d of %d swept widths: %s um"
-              % (len(dropped), len(widths_um), " ".join(str(w) for w in dropped)),
-              file=sys.stderr)
-        print("a partial set is not evidence; no record written (see %s/set-report.json, "
-              "%s/klt.err)" % (a.rec, a.rec), file=sys.stderr)
-        raise SystemExit(4)
 
     out_w = []
     for w in sorted(widths):

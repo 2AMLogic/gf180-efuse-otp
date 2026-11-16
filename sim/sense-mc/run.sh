@@ -26,9 +26,9 @@ pdk_fleet_check || exit 1
 lib="$PDK_FLEET_LIB_DIR"
 
 # Pinned-klt facets for the yield grading below (no function facets: this
-# bench's own klt invocations -- klt sim, klt --version -- stay on the host klt).
-KLT_NO_FUNCTION=1
-. "$repo/signoff/klt.sh"
+# bench's own klt invocations -- klt sim, klt --version -- stay on the host
+# klt; the --no-function source argument skips them).
+. "$repo/signoff/klt.sh" --no-function
 
 # ASSUMPTIONS, recorded verbatim in record.json from this one definition: each is either
 # passed to summarize.py below or written into the requests built here and read back
