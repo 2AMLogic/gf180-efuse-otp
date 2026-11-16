@@ -7,7 +7,8 @@
 # skipping the function facets (no klt()/klt_python(): the sim benches keep
 # their bare host-klt calls) while every inherited KLT_NO_FUNCTION shape -- a
 # plain export, an export reassigned sourcing-locally, a declare -ix export --
-# stays ignored, and pin resolution from a foreign cwd (BASH_SOURCE, not cwd).
+# stays ignored, the no-caller-passes-it-as-$1 invariant (with a negative
+# control), and pin resolution from a foreign cwd (BASH_SOURCE, not cwd).
 # Modelled on sim/lib/test_pdk_env.sh.
 set -u
 here="$(cd "$(dirname "$0")" && pwd)"
@@ -144,5 +145,52 @@ lit "exported 0 KLT_NO_FUNCTION ignored" "klt=function" "$out"
 out="$(cd "$tmp" && bash -c '. "$1"; echo "$KLT_PIN"' _ "$here/klt.sh" 2>&1)"; rc=$?
 check "foreign cwd source exits 0" 0 "$rc"
 [[ "$out" == "$pin" ]] || { echo "FAIL foreign cwd pin: $out"; fail=1; }
+
+# the "no caller passes --no-function as its own first parameter" claim in
+# klt.sh's header (the opt-out is read from $1, so a caller's own first
+# argument would silently drop the pin when it sources without an argument)
+# is a checked invariant, not just a comment. A caller is any shell file with
+# a source line naming signoff/klt.sh (klt.sh, this test and docs excluded);
+# it violates the invariant when a non-comment line other than a klt.sh source
+# line mentions --no-function (a case arm, a [[ $1 == ... ]] test, a getopts
+# loop). The explicit ". \"$repo/signoff/klt.sh\" --no-function" source line
+# is the sanctioned opt-out and is not flagged.
+src_re='^[[:space:]]*(\.|source)[[:space:]].*signoff/klt\.sh'
+list_callers() { # root -> files (relative) with a klt.sh source line
+  local f
+  while IFS= read -r f; do
+    case "$f" in signoff/klt.sh|signoff/test-klt.sh) continue;; esac
+    grep -qE -- "$src_re" "$1/$f" && echo "$f"
+  done < <(cd "$1" && find . \( -name .git -o -name .loom -o -name node_modules \) -prune \
+             -o -type f -name '*.sh' -print | sed 's|^\./||' | sort)
+}
+scan_callers() { # root -> prints "file:line" for each own --no-function use
+  local f
+  while IFS= read -r f; do
+    grep -nE -- '--no-function' "$1/$f" | grep -vE -- '^[0-9]+:[[:space:]]*#' \
+      | grep -vE -- "^[0-9]+:${src_re#^}" | sed "s|^|$f:|"
+  done < <(list_callers "$1")
+}
+root="$(cd "$here/.." && pwd)"
+callers="$(list_callers "$root")"
+lit "callers enumerated (non-vacuous): sense-mc opt-out caller" "sim/sense-mc/run.sh" "$callers"
+lit "callers enumerated: a bare-source caller" "layout/drc.sh" "$callers"
+out="$(scan_callers "$root")"
+[[ -z "$out" ]] && echo "PASS no caller handles --no-function itself" \
+  || { echo "FAIL caller handles --no-function itself: $out"; fail=1; }
+# negative control: a fixture tree whose caller handles --no-function (case
+# arm, and a test on $1) while sourcing bare must be flagged, alongside a
+# sanctioned explicit opt-out (both path forms) and a comment, which must not.
+fx="$tmp/fx"; mkdir -p "$fx/signoff" "$fx/a" "$fx/b"
+cp "$here/klt.sh" "$fx/signoff/klt.sh"
+printf '%s\n' '. "$root/signoff/klt.sh"' 'case "$1" in --no-function) x=1;; esac' > "$fx/a/bad-case.sh"
+printf '%s\n' '. signoff/klt.sh' '[[ "${1:-}" == --no-function ]] && x=1' > "$fx/a/bad-test.sh"
+printf '%s\n' '# the --no-function source argument' '. "$repo/signoff/klt.sh" --no-function' > "$fx/b/ok-optout.sh"
+printf '%s\n' '. "$root/signoff/klt.sh" --no-function' > "$fx/b/ok-root.sh"
+out="$(scan_callers "$fx")"
+lit "negative control flags case-arm caller" "a/bad-case.sh:2:" "$out"
+lit "negative control flags \$1-test caller" "a/bad-test.sh:2:" "$out"
+lit_not "explicit opt-out (repo form) not flagged" "ok-optout.sh" "$out"
+lit_not "explicit opt-out (root form) not flagged" "ok-root.sh" "$out"
 
 exit "$fail"
