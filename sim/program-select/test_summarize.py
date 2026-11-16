@@ -47,6 +47,15 @@ def empty_corners_and_count(rep):
     rep["corner_count"] = 0
 
 
+def drop_engine_version(rep):
+    """A report that does not name the simulator that ran it.
+
+    The documented collect_env() behaviour: such a report adds nothing to
+    the record's engine_versions (#176).
+    """
+    rep.get("environment", {}).pop("engine_version", None)
+
+
 def newest_record():
     """The newest records/<stamp>-<rev> directory holding a record.json."""
     stamps = sorted(d for d in os.listdir(RECORDS)
@@ -190,6 +199,68 @@ class Test(unittest.TestCase):
             self.assertIn(stem, p.stderr)
         for stem in kept:
             self.assertNotIn(stem, p.stderr)
+
+    def test_h_engine_versions_is_the_sorted_set_the_reports_carry(self):
+        """The provenance header names every engine version that ran the grid.
+
+        The expectation is derived from the fixture's own reports, never a
+        retyped literal, so a fixture bump cannot strand the assertion (#176).
+        """
+        p, rec = self.run_case()
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertIsNotNone(rec)
+        engines = sorted({load_json(os.path.join(self.src, "sets", s, "report.json"))
+                          .get("environment", {}).get("engine_version")
+                          for s in self.stems} - {None})
+        self.assertEqual(rec["engine_versions"], engines)
+
+    def test_i_two_engine_versions_are_both_recorded_sorted(self):
+        """A mixed set stays visible instead of collapsing to one value.
+
+        All committed reports carry one version, so the second value only
+        exists via the mutation -- deriving it from the reports' own value
+        keeps the case literal-free (#176).
+        """
+        versions = {load_json(os.path.join(self.src, "sets", s, "report.json"))
+                    .get("environment", {}).get("engine_version")
+                    for s in self.stems} - {None}
+        other = max(versions) + "-other"
+
+        def set_other(rep):
+            rep["environment"]["engine_version"] = other
+
+        p, rec = self.run_case(edit=(self.stems[0], set_other))
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertIsNotNone(rec)
+        self.assertEqual(rec["engine_versions"], sorted(versions | {other}))
+
+    def test_j_a_report_without_a_version_adds_nothing(self):
+        """One engine_version dropped: the remaining reports still name theirs.
+
+        The per-report "a report without one adds nothing" behaviour is the
+        documented design, not an accident (#176).
+        """
+        dropped = self.stems[0]
+        kept = [s for s in self.stems if s != dropped]
+        engines = sorted({load_json(os.path.join(self.src, "sets", s, "report.json"))
+                          .get("environment", {}).get("engine_version")
+                          for s in kept} - {None})
+        p, rec = self.run_case(edit=(dropped, drop_engine_version))
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertIsNotNone(rec)
+        self.assertEqual(rec["engine_versions"], engines)
+
+    def test_k_no_report_naming_a_version_records_an_empty_list(self):
+        """A wholesale rename of environment.engine_version reads as [] at exit 0.
+
+        The silent failure mode this field's design accepts (#150) -- pinned
+        here as the documented behaviour so a rename cannot pass unnoticed (#176).
+        """
+        p, rec = self.run_case(
+            edits=[(s, drop_engine_version) for s in self.stems])
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertIsNotNone(rec)
+        self.assertEqual(rec["engine_versions"], [])
 
 
 if __name__ == "__main__":
