@@ -2,7 +2,8 @@
 # Self-test for klt.sh: the uvx-absent preflight (exit 2, message), the [yield]
 # extras splice, klt()/klt_python() argv passthrough and KLT_ARGV through a fake
 # uvx, the pin read exactly once and actually exported (the declare -x
-# attribute, not mere set-ness), KLT_NO_FUNCTION=1 as a sourcing-local
+# attribute, not mere set-ness, observed with any inherited exported KLT_PIN
+# scrubbed from the probe's environment), KLT_NO_FUNCTION=1 as a sourcing-local
 # assignment (no function facets: the sim benches keep their bare host-klt
 # calls) with its exported form ignored under a warning, and pin resolution
 # from a foreign cwd (BASH_SOURCE, not cwd). Modelled on sim/lib/test_pdk_env.sh.
@@ -25,8 +26,12 @@ lit_not() { # name string haystack  (fails when the string IS found)
 bash_bin="$(command -v bash)"
 
 # source defines every facet; KLT_PIN is exported (the declare -x attribute --
-# [[ -n ${KLT_PIN+x} ]] is true for any set variable, exported or not).
-out="$(bash -c '. "$1"; echo "pin=$KLT_PIN"; echo "argv=$KLT_ARGV";
+# [[ -n ${KLT_PIN+x} ]] is true for any set variable, exported or not). The
+# probe scrubs an inherited exported KLT_PIN from its environment so the
+# attribute observed is klt.sh's own export, not the invoking shell's:
+# klt.sh's documented usage (". signoff/klt.sh") is exactly what leaves
+# KLT_PIN exported in the shell that then runs this suite.
+out="$(env -u KLT_PIN bash -c '. "$1"; echo "pin=$KLT_PIN"; echo "argv=$KLT_ARGV";
   echo "yield=${KLT_YIELD[*]}"; echo "klt=$(type -t klt)"; echo "py=$(type -t klt_python)";
   declare -p KLT_PIN' _ "$here/klt.sh" 2>&1)"; rc=$?
 check "source exits 0" 0 "$rc"
