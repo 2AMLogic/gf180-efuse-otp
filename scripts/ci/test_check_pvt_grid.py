@@ -30,6 +30,7 @@ def sub(text, old, new):
 # checker gets past its verbatim gate and the parse/compare under test runs.
 ROW_NO_PROCESS = re.sub(r"Process (?:`[^`]+`(?:, )?)+; ", "", ORIG_ROW)
 ROW_NO_TEMPS = re.sub(r"T = [^;]+ °C; ", "", ORIG_ROW)
+ROW_UNCONVERTIBLE_TEMPS = re.sub(r"T = [^;]+ °C", "T = cold, warm, hot °C", ORIG_ROW)
 ROW_SPACED_TRIPLETS = re.sub(
     r"\((\d+(?:\.\d+)?(?:/\d+(?:\.\d+)?)+) V\)",
     lambda m: "(" + m.group(1).replace("/", " / ") + " V)", ORIG_ROW)
@@ -122,6 +123,16 @@ class Test(unittest.TestCase):
         p = self.check(spec_row=ROW_NO_TEMPS, extract_row=ROW_NO_TEMPS)
         self.assertEqual(p.returncode, 1)
         self.assertIn("cannot parse the temperature list from the pvt-corners row", p.stderr)
+
+    def test_unconvertible_temperature_list_rejected(self):
+        # The T = ... °C span matches the regex but float() raises ValueError:
+        # the sibling reason of test_unparseable_temperature_list_rejected.
+        self.assertNotEqual(ROW_UNCONVERTIBLE_TEMPS, ORIG_ROW)
+        p = self.check(spec_row=ROW_UNCONVERTIBLE_TEMPS,
+                       extract_row=ROW_UNCONVERTIBLE_TEMPS)
+        self.assertEqual(p.returncode, 1)
+        self.assertIn("cannot parse the temperature list 'cold, warm, hot' "
+                      "from the pvt-corners row", p.stderr)
 
     def test_unparseable_supply_triplets_rejected(self):
         self.assertNotEqual(ROW_SPACED_TRIPLETS, ORIG_ROW)
