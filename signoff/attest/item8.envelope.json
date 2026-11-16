@@ -3,14 +3,14 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 8,
-  "summary": "T1 item 8 (Characterization report): 80/80 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 8 (Characterization report): 82/82 attestation checks passed (klt signoff --attest)",
   "source": "signoff/attest/item8.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 80,
-    "passed_count": 80,
+    "check_count": 82,
+    "passed_count": 82,
     "checks": [
       {
         "check": "present",
@@ -43,6 +43,13 @@
       {
         "check": "present",
         "role": "evidence",
+        "path": "layout/lvs-ctrl.report.json",
+        "passed": true,
+        "content_hash": "sha256:35f4fa446b12fb8f5f3b11e6d3a353feeb868ed280509ff76cb63c99c4939e02"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
         "path": "layout/pnr-report.json",
         "passed": true,
         "content_hash": "sha256:ccd846040a984e915b567ed3c9cc6b783c37245ea6bb1d018bdd9a9654d06756"
@@ -52,7 +59,7 @@
         "role": "evidence",
         "path": "signoff/block-manifest.signoff.json",
         "passed": true,
-        "content_hash": "sha256:fc1823d1cb14f0faf7fee1eb84704443ca23db3dd0eadcdea28ecca9c3b6a93b"
+        "content_hash": "sha256:c4fbfb675e6435db518ab3e7059c832b4a3b903f543ce43f63090104b288b921"
       },
       {
         "check": "present",
@@ -391,6 +398,7 @@
         "envelopes": [
           "layout/drc-array.report.json",
           "layout/drc-ctrl.report.json",
+          "layout/lvs-ctrl.report.json",
           "layout/pnr-report.json",
           "signoff/block-manifest.signoff.json",
           "sim/controller-sta/sta-100ns.report.json"
@@ -431,6 +439,19 @@
           "test",
           "-s",
           "layout/efuse_otp_array.report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "layout/lvs-ctrl.report.json",
+        "argv": [
+          "test",
+          "-s",
+          "layout/lvs-ctrl.report.json"
         ],
         "cwd": ".",
         "exit_status": 0,
@@ -871,7 +892,7 @@
         "path": "signoff/attest/item8.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:b53190a572e4a902427d284a6575aee35dfc07f4f7a1270b3ef8a782234a2eec"
+      "content_hash": "sha256:32ce6ba0c388613b09175442c236de533b37b54f21ef7c2a52a7cf915890cd85"
     }
   }
 }
