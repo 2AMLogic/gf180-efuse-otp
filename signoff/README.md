@@ -162,10 +162,8 @@ Each envelope carries a `provenance.regeneration` claim naming its generator;
 the grader re-hashes the stream and compares the claim, but it never runs the
 generator. The analog claim is the stream's raw-byte sha256 (`regen-gds.sh
 --check` byte-compares). The digital claim is `hash_kind: geometry` — the
-decoded-geometry digest, so GDS write times do not matter — and klt exposes no
-public way to compute that value (klayout-tools#5551), so `layout/attest.sh`
-reads it from klt's private `_provenance`; that single line is the only
-private-API use left here, and a pin bump can break it. Neither envelope
+decoded-geometry digest that `klt stats --format json` reports as
+`geometry_digest`, so GDS write times do not matter. Neither envelope
 re-runs the flow (`layout/pnr.sh --check --rerun` does) and neither makes a DRC,
 LVS or connectivity statement: the three checks are the stream's readability, a
 non-empty top cell and an on-grid database unit. See `layout/README.md`,
