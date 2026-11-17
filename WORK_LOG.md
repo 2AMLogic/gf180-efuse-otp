@@ -4,6 +4,10 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-17
 
+- **PR #259**: build(signoff): bump klt pin to klayout-tools==0.9.2, regenerate drifted artifacts, re-attest items 1/2/8/9
+- **PR #260**: ci: bind the README check:ci enumeration to the term list
+- **Issue #246** (closed): Bump signoff/klt-pin.txt to klayout-tools==0.9.2 (ships the klt stats geometry_digest fix, unblocks #130)
+- **Issue #250** (closed): Bind the README check:ci enumeration to the check:ci term list
 - **PR #251**: fix: report untracked manifest cites in check_attest_pins; drop dead NO_HASH_KINDS
 - **PR #255**: docs: name the report-input check in the check:ci enumeration
 - **Issue #221** (closed): check_attest_pins.py manifest layer binds against untracked cited files, and NO_HASH_KINDS is dead
