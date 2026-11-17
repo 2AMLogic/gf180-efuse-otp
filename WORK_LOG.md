@@ -4,6 +4,14 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-17
 
+- **PR #266**: feat(layout): route efuse_ls in the generator, DRC/LVS the routed cell
+- **PR #265**: docs: drop stale klayout-tools#5551 references from ROADMAP
+- **PR #264**: ci: retire the item 8 attest --format json workaround at pin 0.9.2
+- **PR #262**: fix(layout): read the item 2 geometry digest from the public klt stats digest
+- **Issue #263** (closed): ROADMAP.md still names klayout-tools#5551 as a live dependency of #130
+- **Issue #257** (closed): Retire the item 8 --format json workaround now that the pin is klayout-tools==0.9.2
+- **Issue #172** (closed): Route efuse_ls in the layout generator and LVS-match it with the pinned klt (first slice of #73)
+- **Issue #130** (closed): Replace the last private klt call in layout/attest.sh (layout_geometry_digest) with the public digest source once klayout-tools#5551 ships
 - **PR #259**: build(signoff): bump klt pin to klayout-tools==0.9.2, regenerate drifted artifacts, re-attest items 1/2/8/9
 - **PR #260**: ci: bind the README check:ci enumeration to the term list
 - **Issue #246** (closed): Bump signoff/klt-pin.txt to klayout-tools==0.9.2 (ships the klt stats geometry_digest fix, unblocks #130)
