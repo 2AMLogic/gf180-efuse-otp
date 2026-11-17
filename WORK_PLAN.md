@@ -20,7 +20,7 @@ _None._
 `loom:important`; taken before unlabelled work.
 
 - **#35**: T1 item 5 (corner verification, digital): klt sta and klt functional-verification for the controller
-- **#73**: Route the fuse-free analog leaf cells (efuse_ls, efuse_coldrv) and LVS-match each one
+- **#73**: Route the fuse-free analog leaf cells (efuse_ls, efuse_coldrv) and LVS-match each one *(held)*
 - **#268**: Route efuse_coldrv (and the efuse_rowdrv wrapper) in the layout generator and LVS-match them (second slice of #73)
 
 ## Ready
@@ -52,17 +52,17 @@ PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 Issues carrying `loom:curated`.
 
 - **#3**: Track the gap to T1 (klayout-tools design-evidence-tiers.md) *(curated)*
-- **#73**: Route the fuse-free analog leaf cells (efuse_ls, efuse_coldrv) and LVS-match each one *(curated)*
+- **#73**: Route the fuse-free analog leaf cells (efuse_ls, efuse_coldrv) and LVS-match each one *(curated)* *(held)*
 - **#268**: Route efuse_coldrv (and the efuse_rowdrv wrapper) in the layout generator and LVS-match them (second slice of #73) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-- **#118**: Make the CI record-format check read the committed sim records: its glob matches 0 of 15 and it passes vacuously *(hermit)*
-- **#120**: Remove sim/program-select/program-select.sch: never netlisted, drifted from the simulated deck (W=10u vs 20-100 um swept) *(hermit)*
-- **#131**: Remove the vendored signoff/design-evidence-tiers.md: byte-identical to the copy the pinned klt already ships and reads by default *(hermit)*
-- **#145**: Stop sta/run.sh gating on the 10 ns headroom case: exit 0 is unreachable on the committed design *(hermit)*
-- **#179**: Hoist the last hand-copied run.sh boilerplate into sim/lib/pdk_env.sh: the ngspice-version provenance regex is byte-identical in 5 benches *(hermit)*
-- **#267**: Single-source the check:ci list and drop the two drift-binding checkers (~1,240 lines) *(hermit)*
+- **#118**: Make the CI record-format check read the committed sim records: its glob matches 0 of 15 and it passes vacuously *(hermit)* *(held)*
+- **#120**: Remove sim/program-select/program-select.sch: never netlisted, drifted from the simulated deck (W=10u vs 20-100 um swept) *(hermit)* *(held)*
+- **#131**: Remove the vendored signoff/design-evidence-tiers.md: byte-identical to the copy the pinned klt already ships and reads by default *(hermit)* *(held)*
+- **#145**: Stop sta/run.sh gating on the 10 ns headroom case: exit 0 is unreachable on the committed design *(hermit)* *(held)*
+- **#179**: Hoist the last hand-copied run.sh boilerplate into sim/lib/pdk_env.sh: the ngspice-version provenance regex is byte-identical in 5 benches *(hermit)* *(held)*
+- **#267**: Single-source the check:ci list and drop the two drift-binding checkers (~1,240 lines) *(hermit)* *(held)*
 
 ## Epics
 
