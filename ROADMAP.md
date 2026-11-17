@@ -86,8 +86,7 @@ curated #155 and #160. Issue and label state in this section is as read on
 - **Rebase PR #94 and cite 5.digital** once the operator releases the
   ratification hold (see below). Done when 5.digital reads `met`.
 - **Make `sta/run.sh` report the 10 ns case without gating on it** (#145),
-  after PR #94. **Drop the private klt call in `layout/attest.sh`** (#130),
-  after klayout-tools#5551 ships in the pinned release.
+  after PR #94.
 
 ## Later
 
@@ -127,7 +126,7 @@ On upstream klayout-tools:
 - klayout-tools#4312, eFuse device class for LVS: blocks 4.analog (#32) and,
   behind it, 7.analog and 11.analog.
 - klayout-tools#4312 and klayout-tools#4002, `EF.*` rule evaluation: block
-  item 3 on both partitions (#60). klayout-tools#5551 blocks #130.
+  item 3 on both partitions (#60).
 
 ## Not planned
 
