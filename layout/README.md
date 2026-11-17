@@ -65,9 +65,16 @@ layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-an
 `sha256(efuse_otp_array.gds)` = `a48866157cd4753e17e112eab70e1e39128ee1c0085e3d311d890a6aaee8fafc`
 (klt 0.9.2, `gf180mcuC` at open_pdks `f6eeac7`; re-run at the 2026-11-17 pin bump —
 the decoded geometry is unchanged, verified equal by the public
-`klt stats --format json` `geometry_digest` (klayout-tools#5551), the container
-bytes differ because 0.9.2's generated streams no longer carry KLayout's
-`$$$CONTEXT_INFO$$$` structure). The 0.8.0 stream hashed to
+`klt stats --format json` `geometry_digest` (klayout-tools#5551)). The 0.9.2
+container bytes differ from the 0.8.0 stream only in record order: both files
+hold the identical multiset of 6559 GDS records, every record byte-identical,
+with the layer/record emission order permuted — neither stream carries
+KLayout's `$$$CONTEXT_INFO$$$` structure. The order moved because 0.9.2 stops
+writing that structure (klayout-tools#5499, `write_context_info = False`): a
+stream without it is read back as proxy cells that re-link to the live library
+and re-inherit its process-global layer order, which reaches the committed
+stream through the per-device `klt gen` intermediate streams the generator
+imports. The 0.8.0 stream hashed to
 `186be6b6e0ba5200154a20b6e66bda85b629aea378d76b6e683918dd0d412224`. Streams
 carry no write time, so the check is a byte compare.
 
