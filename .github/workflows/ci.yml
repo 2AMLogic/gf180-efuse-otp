@@ -209,7 +209,7 @@ jobs:
         # editing a stream or an envelope without re-attesting fails. The
         # generators named in the regeneration claims are not run (they need
         # OpenROAD and the PDK); the claim stays attester-asserted, as the
-        # grader treats it. Run through layout/attest.sh, not klt directly,
-        # because the geometry digest has no public klt source
-        # (klayout-tools#5551) and the script owns the one private-API call.
+        # grader treats it. Run through layout/attest.sh, which reads the
+        # digest from the pinned klt's own `klt stats --format json` and
+        # attests both envelopes in one step.
         run: layout/attest.sh --check

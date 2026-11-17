@@ -14,8 +14,8 @@
 #                  recorded provenance value (sim/sense-mc passes it on as
 #                  --klt-pin) and what every other facet is built from
 #   klt()          the pinned klt as a command
-#   klt_python()   python from the pinned environment (two call sites run
-#                  python, not klt, to reach klayout_tools internals)
+#   klt_python()   python from the pinned environment (one call site runs
+#                  python, not klt, to import the pinned klayout module)
 #   KLT_ARGV       the pin as a ready-made command string
 #                  ("uvx --from <pin> klt") for argv consumed across a process
 #                  boundary (layout/gen_efuse_otp.py --klt)
