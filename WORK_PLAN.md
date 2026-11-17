@@ -13,7 +13,7 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 
 `loom:very-important` (one counts per workspace); every stage takes these first.
 
-- **#172**: Route efuse_ls in the layout generator and LVS-match it with the pinned klt (first slice of #73)
+_None._
 
 ## Important
 
@@ -21,19 +21,19 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 
 - **#35**: T1 item 5 (corner verification, digital): klt sta and klt functional-verification for the controller
 - **#73**: Route the fuse-free analog leaf cells (efuse_ls, efuse_coldrv) and LVS-match each one
+- **#268**: Route efuse_coldrv (and the efuse_rowdrv wrapper) in the layout generator and LVS-match them (second slice of #73)
 
 ## Ready
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#35**: T1 item 5 (corner verification, digital): klt sta and klt functional-verification for the controller
-- **#172**: Route efuse_ls in the layout generator and LVS-match it with the pinned klt (first slice of #73)
+- **#268**: Route efuse_coldrv (and the efuse_rowdrv wrapper) in the layout generator and LVS-match them (second slice of #73)
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#246**: Bump signoff/klt-pin.txt to klayout-tools==0.9.2 (ships the klt stats geometry_digest fix, unblocks #130)
+_None._
 
 ## PRs Awaiting Review
 
@@ -53,8 +53,7 @@ Issues carrying `loom:curated`.
 
 - **#3**: Track the gap to T1 (klayout-tools design-evidence-tiers.md) *(curated)*
 - **#73**: Route the fuse-free analog leaf cells (efuse_ls, efuse_coldrv) and LVS-match each one *(curated)*
-- **#172**: Route efuse_ls in the layout generator and LVS-match it with the pinned klt (first slice of #73) *(curated)*
-- **#246**: Bump signoff/klt-pin.txt to klayout-tools==0.9.2 (ships the klt stats geometry_digest fix, unblocks #130) *(curated)*
+- **#268**: Route efuse_coldrv (and the efuse_rowdrv wrapper) in the layout generator and LVS-match them (second slice of #73) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -63,6 +62,7 @@ Issues carrying `loom:curated`.
 - **#131**: Remove the vendored signoff/design-evidence-tiers.md: byte-identical to the copy the pinned klt already ships and reads by default *(hermit)*
 - **#145**: Stop sta/run.sh gating on the 10 ns headroom case: exit 0 is unreachable on the committed design *(hermit)*
 - **#179**: Hoist the last hand-copied run.sh boilerplate into sim/lib/pdk_env.sh: the ngspice-version provenance regex is byte-identical in 5 benches *(hermit)*
+- **#267**: Single-source the check:ci list and drop the two drift-binding checkers (~1,240 lines) *(hermit)*
 
 ## Epics
 
@@ -73,13 +73,13 @@ _None._
 | Bucket | Count |
 |------|-------|
 | Operator merge-risk holds | 1 |
-| Very important | 1 |
-| Important | 2 |
-| Ready (`loom:issue`) | 2 |
-| In Progress (`loom:building`) | 1 |
+| Very important | 0 |
+| Important | 3 |
+| Ready (`loom:issue`) | 1 |
+| In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 1 |
-| Curated | 4 |
-| Architect / Hermit proposals | 5 |
+| Curated | 3 |
+| Architect / Hermit proposals | 6 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
