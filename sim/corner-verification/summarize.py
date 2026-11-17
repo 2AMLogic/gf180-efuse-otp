@@ -3,7 +3,9 @@
 
 Called by run.sh with the record directory. Reads sets/<stem>/report.json for the
 three program-current requests (prog_rf<ohm>) and the negative control
-(control_rf260_w<width>); lists every PVT point, names the binding corner (minimum
+(control_rf260_w<width>); a report that never came back, or came back with no
+corners or fewer than its corner_count, is refused with exit 4 rather than folded
+as a smaller set. Lists every PVT point, names the binding corner (minimum
 fuse current) per fuse value, and reports per-row pass/fail. The sense-margin row is
 not run here: its verdict is read from the committed sim/sense-margin record and
 quoted, never recomputed. Pass/fail is data in the record, not an exit status.
@@ -13,7 +15,10 @@ import glob
 import json
 import math
 import os
-import re
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
+import bench_record  # noqa: E402  (needs the path insert above under python3 -I)
 
 SENSE_RECORD_GLOB = os.path.join("sim", "sense-margin", "records", "*", "record.json")
 
@@ -61,7 +66,6 @@ def sense_citation(repo):
         "decision_correct_everywhere": r.get("decision_correct_everywhere"),
         "negative_control_flips_sign": (r.get("negative_control") or {}).get("demonstrates_bench_can_fail"),
         "verdict": r.get("verdict"),
-        "not_simulated": "reference tolerance and comparator offset (no documented source; statistical, owning issue #36)",
     }
 
 
@@ -72,25 +76,22 @@ def main():
     ap.add_argument("--rroute", type=float, required=True)
     ap.add_argument("--fuse-ohms", required=True)
     ap.add_argument("--w-control", required=True)
-    ap.add_argument("--pdk-rev", required=True)
-    ap.add_argument("--stamp", required=True)
-    ap.add_argument("--ngspice", required=True)
-    ap.add_argument("--klt", required=True)
+    bench_record.add_common_args(ap)
     a = ap.parse_args()
     repo = os.path.abspath(os.path.join(a.rec, "..", "..", "..", ".."))
 
-    backends, jobs = set(), set()
+    # The requests run.sh submitted, named rather than discovered; load_reports
+    # refuses a partial set before any grading, so a report that never came
+    # back -- or came back with no corners, or fewer than its corner_count --
+    # cannot fold a smaller set into `complete: true`.
+    stems = ["prog_rf" + r for r in a.fuse_ohms.split()]
+    stems.append("control_rf260_w" + a.w_control)
+    reports = bench_record.load_reports(a.rec, stems)
+
+    backends, jobs, engines = set(), set(), set()
 
     def load(stem):
-        rep = json.load(open(os.path.join(a.rec, "sets", stem, "report.json")))
-        env = rep.get("environment", {})
-        backends.add(json.dumps(env.get("backend", {}), sort_keys=True))
-        remote = env.get("remote") or {}
-        for k in ("job_id", "job_ids"):
-            v = remote.get(k)
-            if v:
-                jobs.update(v if isinstance(v, list) else [v])
-        return rep
+        return bench_record.collect_env(reports[stem], backends, jobs, engines)
 
     fuses = {}
     for r in a.fuse_ohms.split():
@@ -104,12 +105,7 @@ def main():
     bind = min((f["binding_corner"] for f in fuses.values() if f["binding_corner"]),
                key=lambda p: p["i_fuse_a"], default=None)
     rec = {
-        "pdk_revision": a.pdk_rev,
-        "variant_pinned": "gf180mcuC",
-        "variant_simulated": "gf180mcuD (fleet image; sm141064.ngspice, sm141064.spice, design.ngspice byte-identical to gf180mcuC, checked by run.sh)",
-        "timestamp_utc": a.stamp, "ngspice_version_local": a.ngspice, "klt_version": a.klt,
-        "backend": [json.loads(b) for b in sorted(backends)],
-        "remote_job_ids": sorted(jobs),
+        **bench_record.header(a, backends, jobs, engines),
         "dut": "efuse_coldrv + efuse_rowdrv (each with efuse_ls) + efuse_bitcell, extracted from design/efuse_otp_array.spice; one selected cell",
         "pvt": {"process": ["typical", "ff", "ss", "fs", "sf"], "temp_c": [-40, 25, 125],
                 "supplies_v": "vdd33 and vprog step together (klt sim zips supply_v axes): (2.97, 4.5), (3.30, 5.0), (3.63, 5.5)",
@@ -141,9 +137,7 @@ def main():
                            bind["process"], bind["temp_c"], bind["vdd33_v"], bind["vprog_v"], bind["fuse_ohm"], bind["i_fuse_a"] * 1e3),
                        "valid (reads fail)" if ctl_ok else "NOT VALID (did not read fail)")),
     }
-    with open(os.path.join(a.rec, "record.json"), "w") as f:
-        json.dump(rec, f, indent=1)
-        f.write("\n")
+    bench_record.write_record(a.rec, rec)
     if not complete:
         print("incomplete: some points have no current (see sets/*/report.json diagnostics)")
         raise SystemExit(3)

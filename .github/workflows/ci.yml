@@ -32,12 +32,25 @@ jobs:
         run: PREFIX="$HOME/eda" scripts/ci/install_eda.sh
       - name: Put pinned tools on PATH
         run: echo "$HOME/eda/bin" >> "$GITHUB_PATH"
+      - name: Install uv
+        # verification/run.sh runs the bench through `uvx --from "$(cat
+        # signoff/klt-pin.txt)" klt functional-verification`, never a
+        # host-installed klt, so the two bench steps below need uv on PATH.
+        # Fetching klt and the pinned cocotb needs network at job time; a fetch
+        # failure must fail the step, so there is no retry or fallback here.
+        run: pipx install uv
+
       - name: Controller bench
         run: verification/run.sh
       - name: Controller negative control
         run: verification/run.sh --negative-control
       - name: Latch check
         run: rtl/synth.sh
+      - name: Latch negative control
+        # Proves the latch gate can fail: synthesizes the committed
+        # latch-bearing fixture through the same rtl/latch-assert.ys text the
+        # gate asserts, and passes only if the assertion fires.
+        run: rtl/synth.sh --negative-control
 
   harness:
     runs-on: ubuntu-latest
@@ -51,12 +64,51 @@ jobs:
       - name: Install pinned klt
         run: pipx install "$(cat signoff/klt-pin.txt)"
 
+      - name: Install uv
+        # layout/attest.sh (and every other generator in this repo) reaches the
+        # pinned klt through `uvx --from "$(cat signoff/klt-pin.txt)"`, never a
+        # host-installed one, so the item 2 check step below needs uv on PATH.
+        run: pipx install uv
+
+      - name: Install jq
+        # sim/lib/test_pdk_env.sh (and the pdk_env.sh it exercises) parse JSON
+        # with jq; no other harness step uses it, so install it explicitly
+        # rather than assuming the runner image ships it.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends jq
+
       - name: Checker self-tests
         working-directory: scripts/ci
         run: python3 -I -m unittest discover -s . -p 'test_*.py' -v
 
       - name: Evidence format
         run: python3 scripts/ci/check_evidence_format.py
+
+      - name: Report input hashes
+        # layout/*report*.json must still describe the stream committed beside
+        # them (provenance.input.content_hash vs the sha256 of the stream the
+        # report names). Hermetic: python3 stdlib only, like Evidence format.
+        # It does not re-run any flow and does not check the deck hash
+        # (klayout-tools#5601); see signoff/README.md,
+        # "What CI does and does not check".
+        run: python3 scripts/ci/check_report_inputs.py
+
+      - name: check:ci step coverage
+        # check:ci chains scripts/ci/check_ci_yml_binding.py; run it here so a
+        # check:ci term with no matching step in this file fails CI instead of
+        # only the local gate. Which checks CI runs is out of scope by design:
+        # steps with no check:ci term (this one, the klt attestation steps,
+        # Sim records append-only) are not the checker's concern.
+        run: python3 scripts/ci/check_ci_yml_binding.py
+
+      - name: README check:ci enumeration binding
+        # check:ci chains scripts/ci/check_readme_enumeration.py; run it here
+        # so a check:ci term the README's check:ci paragraph stops naming by
+        # path fails CI instead of only the local gate. Plain python3, not -I:
+        # the checker imports its sibling check_ci_yml_binding, whose directory
+        # -I strips from sys.path on Python >= 3.11.
+        run: python3 scripts/ci/check_readme_enumeration.py
 
       - name: Sim records append-only
         env:
@@ -73,6 +125,40 @@ jobs:
 
       - name: Item 6 digital extract bound to the spec
         run: signoff/check-item6-digital.sh
+
+      - name: decision-0005 PVT grid bound to the spec
+        run: signoff/check-pvt-grid.sh
+
+      - name: pdk_env.sh self-test
+        run: sim/lib/test_pdk_env.sh
+
+      - name: Attestation pin check
+        # check:ci chains scripts/ci/check_attest_pins.py; run it here so a
+        # drifted attested-path pin fails CI instead of only the local gate.
+        run: python3 scripts/ci/check_attest_pins.py
+
+      - name: klt helper self-test
+        # check:ci chains signoff/test-klt.sh; it is hermetic (it fakes uvx on
+        # PATH and never invokes a real klt), so the runner needs no extra tool.
+        run: signoff/test-klt.sh
+
+      - name: program-select summarize self-test
+        # check:ci chains sim/program-select/test_summarize.py, which pins that
+        # the record describes the submitted grid; run it here so a regression
+        # in the refuse-a-partial-set behaviour fails CI.
+        run: python3 -I sim/program-select/test_summarize.py
+
+      - name: sense-margin summarize self-test
+        # check:ci chains sim/sense-margin/test_summarize.py, which pins that
+        # the record describes the submitted request set; run it here so a
+        # regression in that behaviour fails CI.
+        run: python3 -I sim/sense-margin/test_summarize.py
+
+      - name: bench_record load_reports self-test
+        # check:ci chains sim/lib/test_bench_record.py, which pins that a
+        # partial report set is refused before anything is returned; run it
+        # here so a regression in that refusal fails CI.
+        run: python3 -I sim/lib/test_bench_record.py
 
       - name: Re-grade signoff record
         run: |
@@ -94,10 +180,18 @@ jobs:
 
       - name: Item 9 attestation is current
         # Re-hashes the bench files and re-checks the pins; the cold-start command
-        # is local_only (needs the PDK, ngspice, Icarus, Yosys) and is not re-run here.
+        # is local_only (needs the PDK, ngspice, Icarus) and is not re-run here.
         run: |
           klt signoff --attest 9 --inventory signoff/attest/item9.json \
             --check signoff/attest/item9.envelope.json
+
+      - name: Item 8 attestation is current
+        # The item 8 envelope hashes signoff/block-manifest.signoff.json, so a
+        # record regeneration without a re-attest leaves this envelope stale
+        # (exit 3).
+        run: |
+          klt signoff --attest 8 --inventory signoff/attest/item8.json \
+            --check signoff/attest/item8.envelope.json
 
       - name: Item 1 (analog) attestation reproduces
         # Re-hashes the schematics, symbols and netlist; the xschem freshness
@@ -106,10 +200,14 @@ jobs:
           klt signoff --attest 1 --inventory signoff/item1-analog-inventory.json \
             --check signoff/item1-analog.attest.json
 
-      - name: Item 2 (analog) stream matches its record
-        # The stream is re-hashed against the hash recorded in the sha256 file
-        # and the attestation; the regeneration (layout/regen-gds.sh --check)
-        # needs the PDK and is not re-run here. The re-graded record above
-        # already fails if the manifest, envelope and stream disagree.
-        run: |
-          (cd layout && sha256sum --check efuse_otp_array.gds.sha256)
+      - name: Item 2 attestations reproduce
+        # Both item 2 envelopes, re-attested from the committed streams and
+        # compared with `klt signoff --attest 2 --check` (exit 3 = stale). This
+        # re-reads the streams and recomputes the digital geometry digest, so
+        # editing a stream or an envelope without re-attesting fails. The
+        # generators named in the regeneration claims are not run (they need
+        # OpenROAD and the PDK); the claim stays attester-asserted, as the
+        # grader treats it. Run through layout/attest.sh, which reads the
+        # digest from the pinned klt's own `klt stats --format json` and
+        # attests both envelopes in one step.
+        run: layout/attest.sh --check

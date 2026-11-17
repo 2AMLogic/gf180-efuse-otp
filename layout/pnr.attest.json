@@ -3,11 +3,39 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 2,
-  "summary": "T1 item 2 (Layout, digital): routed GDS from klt place-and-route (layout/pnr-report.json: status ok, stage_reached route, power.pdn true, route_drc_violation_count 0, antenna_violation_count 0)",
-  "source": "layout/pnr-report.json",
+  "summary": "T1 item 2 (Layout): 3/3 attestation checks passed (klt signoff --attest)",
+  "source": "layout/efuse_otp_ctrl.gds",
+  "attestation": {
+    "producer": "klt signoff --attest",
+    "hash_algorithm": "sha256-raw-bytes",
+    "check_count": 3,
+    "passed_count": 3,
+    "checks": [
+      {
+        "check": "stream_readable",
+        "role": "layout",
+        "passed": true,
+        "content_hash": "sha256:574c94b191ddb5592f230aa6cfb32bcde5f1ee8c1707d820c3bce5c73bb4f21a"
+      },
+      {
+        "check": "top_cell_non_empty",
+        "role": "layout",
+        "passed": true,
+        "top_cells": [
+          "efuse_otp_ctrl"
+        ]
+      },
+      {
+        "check": "dbu_on_grid",
+        "role": "layout",
+        "passed": true,
+        "dbu": 0.0005
+      }
+    ]
+  },
   "provenance": {
-    "klt_version": "0.8.0",
-    "klayout_version": null,
+    "klt_version": "0.9.2",
+    "klayout_version": "0.30.13",
     "pdk": null,
     "deck": null,
     "input": {

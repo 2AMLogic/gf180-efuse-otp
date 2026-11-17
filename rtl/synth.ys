@@ -1,7 +1,14 @@
 # Generic synthesis check for efuse_otp_ctrl; run through rtl/synth.sh from the
-# repo root (it also reports the latch count).
+# repo root. The run fails if any latch cell survives generic synthesis.
 read_verilog rtl/efuse_otp_ctrl.v
 hierarchy -check -top efuse_otp_ctrl
 synth -top efuse_otp_ctrl
 check -assert
-stat
+# `check -assert` does not assert on latches, so assert on them directly: the
+# selection must be empty. On failure Yosys names the offending cells and exits
+# non-zero. `synth` already prints a statistics block into the log, so no extra
+# `stat` is needed (a second one would double every cell count in the log).
+# The asserted pattern line lives in rtl/latch-assert.ys, script-included
+# here — the same text the negative control (rtl/synth-negctl.ys) asserts, so
+# a typo breaks both gates together and the control notices.
+script rtl/latch-assert.ys

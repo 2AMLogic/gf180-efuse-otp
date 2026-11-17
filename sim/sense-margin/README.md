@@ -22,6 +22,14 @@ grid: 5 process (`typical`, `ff`, `ss`, `fs`, `sf`) x -40/25/125 C x vdd33 2.97/
 | `bench_rf630/900/open_rr400` | programmed, 630 / 900 ohm / open (1 Gohm) (A5) | 400 ohm |
 | `control_rf140/260_rr200` | intact | 200 ohm: negative control |
 
+`summarize.py` is told which requests `run.sh` submitted (`--rfuse-intact`,
+`--rfuse-programmed`, `--rfuse-control` with `--rref`/`--rref-control`) and opens all
+eight reports by name rather than discovering whatever arrived. A request whose report
+is missing, or that came back carrying no corners, exits 4 and **writes no record** —
+a partial set is not evidence, the same rule `sim/program-select` and `sim/sense-mc`
+apply to their own sets. Reports that are all present but have points without values
+are still recorded for diagnosis, with `complete: false` and exit 3.
+
 One clock edge at 15 ns; `sense_en` is held asserted. Read just before the edge:
 `v_sbl`, `v_sref`. Read after it: `v_sense_out`, `v_cp`, `v_cn`.
 
@@ -31,9 +39,16 @@ whether the comparator resolved (`|v(cp) - v(cn)| >= 0.5 vdd33`), the latched de
 and whether it matches the expected bit. The binding (minimum-margin) corner is named per
 fuse value. **Pass/fail is data in the record, not an exit status.**
 
+Each request also declares a `klt sim` limit `margin_v >= 0` (signed, so positive is the
+correct side of the reference; measured just before the edge), so the pinned grader can
+grade the reports. The negative control carries the same limit and its 260 ohm request
+reads fail. Reference tolerance and offset are not covered by corners (see `sim/sense-mc/`).
+
 The negative control moves the reference inside the intact range. It demonstrates the
 bench can fail when some intact point that reads the correct side at 400 ohm reads the
-wrong side at 200 ohm (`negative_control.demonstrates_bench_can_fail`).
+wrong side at 200 ohm (`negative_control.demonstrates_bench_can_fail`). Both control
+requests are named in the expected set, so that flag is never asserted over part of the
+control set: if either report is absent the run is refused rather than recorded.
 
 ## Assumptions (all flagged in each record)
 

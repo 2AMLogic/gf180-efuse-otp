@@ -10,28 +10,21 @@
 #
 # Exit 0 once the record is written. Pass/fail against 10 mA is data in
 # record.json, not a script error. A failed batch submit exits non-zero and
-# does not fall back to a local grid.
+# does not fall back to a local grid; a submit that left any expected report
+# missing exits 4 from summarize.py without writing a record, because a partial
+# set is not evidence.
 set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 source "$here/../lib/pdk_env.sh"        # refuses a tree that is not the pin
 
-dry=0
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --dry-run) dry=1; shift ;;
-    *) echo "usage: run.sh [--dry-run]" >&2; exit 2 ;;
-  esac
-done
+bench_parse_args "$@"
 
 # The batch fleet image ships variant gf180mcuD, not the pinned gf180mcuC. The
 # model files this bench reads are the same bytes in both at the pinned
 # revision; check that at run time and use the D paths so the request is valid
 # on either backend. Any difference refuses the run.
-libc="$PDK_VARIANT_DIR/libs.tech/ngspice"
-lib="$PDK_ROOT/gf180mcuD/libs.tech/ngspice"
-for f in sm141064.ngspice sm141064.spice design.ngspice; do
-  cmp -s "$libc/$f" "$lib/$f" || { echo "run.sh: $f differs between gf180mcuC and gf180mcuD" >&2; exit 1; }
-done
+pdk_fleet_check || exit 1
+lib="$PDK_FLEET_LIB_DIR"
 # ASSUMPTIONS, recorded verbatim in record.json (no documented source).
 RROUTE_OHM=20
 WIDTHS_UM="20 40 60 80 100"
@@ -42,10 +35,7 @@ FUSE_OHMS="140 200 260"                  # A4 range; only 200 ohm is documented
 # Devices (6V)" and elec_specs_7_5; IPs/IO/gf180mcu_fd_io/conditions). 6.0 V is the device class label and
 # the Idsat characterisation bias (|Vds|=|Vgs|=6V), not a rating. See design/README.md.
 VMAX_RATING=6.0
-stamp="$(date -u +%Y%m%dT%H%M%SZ)"
-rec="$here/records/$stamp-${PDK_REVISION:0:7}"
-mkdir -p "$here/records"
-mkdir "$rec"                             # fails if it exists: no overwrite
+bench_new_record_dir "$here/records" "$dry"
 
 # Fuse current = drop across the routing resistor / its value (same loop current
 # as the fuse). Plain .meas cards, not expr: the fleet runner predates
@@ -63,11 +53,13 @@ for r in $FUSE_OHMS; do
         -e "s#@RROUTE@#$RROUTE_OHM#" -e "s#@FUSE@#$fuse#" -e "s#@WSEL@#${w}u#" \
         "$here/cell.cir.in" > "$rec/$stem.cir"
     jq -n --arg net "$stem.cir" --arg lib "libs.tech/ngspice/sm141064.ngspice" \
-          --argjson ireq "$IREQ_A" --arg iexpr "(v(nb)-v(d))/$RROUTE_OHM" '
+          --argjson ireq "$IREQ_A" --arg iexpr "(v(nb)-v(d))/$RROUTE_OHM" \
+          --argjson pvt_proc "$PVT_PROCESSES" --argjson pvt_temp "$PVT_TEMPERATURES_C" \
+          --argjson pvt_5v "$PVT_SUPPLY_5V0" '
       {netlist:$net, engine:"ngspice",
        models:{lib:$lib, pdk:"gf180mcuD"},
-       corners:{process:(["typical","ff","ss","fs","sf"]|map({name:., sections:[., "efuse"]})),
-                supply_v:{vdd:[4.5,5.0,5.5]}, temperature_c:[-40,25,125]},
+       corners:{process:($pvt_proc|map({name:., sections:[., "efuse"]})),
+                supply_v:{vdd:$pvt_5v}, temperature_c:$pvt_temp},
        analysis:{kind:"dc", args:"Vdmy 0 1 1"},
        measurements:[
          {name:"i_fuse", spice:(".meas dc i_fuse find par(\u0027" + $iexpr + "\u0027) at=0"), unit:"A", limits:{min:$ireq}},
@@ -79,28 +71,17 @@ for r in $FUSE_OHMS; do
 done
 
 if [[ $dry -eq 1 ]]; then
-  for q in "${reqs[@]}"; do
-    klt sim --dry-run --format json --backend batch "$q" | jq -c '{unit_count,backend,warnings}'
-  done
-  echo "dry run: $rec holds the generated decks and requests only; delete it"
+  bench_dry_run "${reqs[@]}"
+  rm -rf "$rec"
+  echo "dry run: request set validated; temp dir removed"
   exit 0
 fi
 
-# 0 = all pass, 3 = some measurement failed, 4 = a request errored or was
-# refused (partial set). Anything else is a tool failure. A failed or refused
-# submit is reported, never re-run on local ngspice.
-set +e
-klt sim --batch-set "${reqs[@]}" --max-in-flight 4 --capacity-retries 3 \
-    -o "$rec/sets" --format json > "$rec/set-report.json" 2> "$rec/klt.err"
-rc=$?
-set -e
-if [[ $rc -ne 0 && $rc -ne 3 && $rc -ne 4 ]]; then
-  echo "klt sim --batch-set failed (rc=$rc); see $rec/klt.err" >&2
-  exit "$rc"
-fi
+# rc: 0 = all pass, 3 = a measurement failed, 4 = partial set (see bench_submit_set).
+bench_submit_set "$rec" "${reqs[@]}"
 
-ngspice_version="$(ngspice -v | sed -n 's/^\*\* ngspice-\([0-9.]*\).*/\1/p' | head -1)"
 echo "record: $rec"
 python3 -I "$here/summarize.py" "$rec" --ireq "$IREQ_A" --vmax "$VMAX_RATING" \
-    --rroute "$RROUTE_OHM" --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
-    --ngspice "$ngspice_version" --klt "$(klt --version)"
+    --rroute "$RROUTE_OHM" --fuse-ohms "$FUSE_OHMS" --widths-um "$WIDTHS_UM" \
+    --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
+    --klt "$(klt --version)"

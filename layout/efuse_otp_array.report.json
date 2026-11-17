@@ -2,18 +2,28 @@
   "top_cell": "efuse_otp_array",
   "dbu_um": 0.0005,
   "bbox_um": [
-    -35.745,
-    -33.84,
-    918.36,
-    539.44
+    -20.26,
+    -38.84,
+    794.48,
+    699.44
   ],
   "array": {
     "rows": 32,
     "cols": 8,
-    "pitch_x_um": 115.045,
-    "pitch_y_um": 16.92
+    "pitch_x_um": 99.56,
+    "pitch_y_um": 21.92
   },
-  "caveat": "placed hierarchy only: no routing, no connectivity, no DRC/LVS claim",
+  "caveat": "placed hierarchy; efuse_ls is routed (see 'routed'), every other cell is placement-only: no routing, no connectivity, no DRC/LVS claim outside efuse_ls",
+  "routed": {
+    "cells": [
+      "efuse_ls"
+    ],
+    "planes": {
+      "m1": "device pads and guard-ring taps",
+      "m2": "supply rails and horizontal runs",
+      "m3": "vertical stubs"
+    }
+  },
   "devices": [
     {
       "cell": "efuse_bitcell__Xf",

@@ -14,10 +14,14 @@ What it does
     `efuse` device becomes the PDK primitive, copied unmodified.
   * Sub-cells are placed in a row per subcircuit; the 32 x 8 array, the row
     drivers and the column drivers are hierarchical array instances.
+  * `efuse_ls` is the exception: it is placed on a stated two-row floorplan and
+    routed with generator-drawn geometry (M2 horizontal, M3 vertical, via1/
+    via2 stacks), so the cell is a circuit (see ls_cell and layout/README.md,
+    "efuse_ls routing"). Every other cell remains placement-only.
 
-What it does not do: draw inter-device or inter-block routing, or check
-anything. Connectivity is not claimed; DRC, EF.* coverage and LVS are separate
-items (see layout/README.md).
+What it does not do: draw inter-device or inter-block routing outside
+`efuse_ls`, or check anything. Connectivity outside `efuse_ls` is not claimed;
+DRC, EF.* coverage and LVS are separate items (see layout/README.md).
 """
 
 import argparse
@@ -50,6 +54,28 @@ MOS_MODELS = {
     "pfet_06v0": ("pfet", "medium_voltage"),
 }
 SUFFIX = {"f": 1e-15, "p": 1e-12, "n": 1e-9, "u": 1e-6, "m": 1e-3, "k": 1e3, "meg": 1e6}
+
+# efuse_ls routing (see ls_cell and layout/README.md, "efuse_ls routing").
+# gf180mcu GDS layer/datatype pairs (PDK tech layer table).
+LS_M1, LS_M1_LBL = (34, 0), (34, 10)
+LS_M2, LS_M3 = (36, 0), (42, 0)
+LS_VIA1, LS_VIA2 = (35, 0), (38, 0)
+LS_VIA_SIZE = 0.26  # the deck's fixed via1/via2 square (gf180mcu 7.14)
+LS_PAD2 = 0.4  # M2 landing pad at every M1 connection point
+LS_W1 = 0.42  # M1 routing width (pad width)
+LS_W2 = 0.42  # M2 routing width (rails and strips)
+LS_W3 = 0.42  # M3 routing width
+LS_W3N = 0.30  # M3 width where two verticals share a device column
+# Stated floorplan, um: bbox lower-left of each leaf, two device rows.
+LS_COL_X = {"XMpi": 0.0, "XMni": 0.0, "XMp1": 6.24, "XMn1": 6.24,
+            "XMp2": 12.90, "XMn2": 12.90}
+LS_ROW_Y = {"XMpi": 12.0, "XMp1": 12.0, "XMp2": 12.0,
+            "XMni": 0.0, "XMn1": 0.0, "XMn2": 0.0}
+LS_NMOS = ("XMni", "XMn1", "XMn2")
+LS_VSS_RAIL_Y = -1.5  # M2 rail below the NMOS row
+LS_TRACK_Y = {"in": 8.6, "inb": 10.2, "x1": 3.23, "out": 11.0}
+LS_JUNC_X = {"inb": 5.0, "x1": 11.5, "out": 12.3}  # channel-area junctions
+LS_M3_HORIZ_Y = {"x1": 17.2, "out": 18.0}  # runs above the PMOS row
 
 # Expected shape of the array top, asserted against the netlist.
 ROWS, COLS = 32, 8
@@ -114,7 +140,7 @@ class Klt:
         ]
         res = subprocess.run(cmd, capture_output=True, text=True, check=True)
         report = json.loads(res.stdout)
-        self.cache[key] = (str(out), report["cell_name"])
+        self.cache[key] = (str(out), report["cell_name"], report)
         return self.cache[key]
 
 
@@ -122,6 +148,12 @@ def snap(dbu, up=True):
     """Round a database-unit length to the rule grid, up or down."""
     q = -(-dbu // GRID_DBU) if up else dbu // GRID_DBU
     return q * GRID_DBU
+
+
+def gs(um):
+    """Snap a um coordinate to the rule grid (exact when already on it)."""
+    step = GRID_DBU * DBU_UM
+    return round(um / step) * step
 
 
 def fold(width_um):
@@ -136,6 +168,7 @@ class Builder:
         self.layout = kdb.Layout()
         self.layout.dbu = DBU_UM
         self.cells = {}
+        self.reports = {}  # leaf cell name -> that leaf's klt gen JSON report
         self.devices = []  # report rows
 
     def import_cell(self, gds, src_name, dst_name):
@@ -161,7 +194,7 @@ class Builder:
             # the strip's vertices off it); the drawn ohms follow from it.
             step = GRID_DBU * DBU_UM
             length = round(round(inst["ohms"] / RSH_PPOLYF_U * RES_WIDTH_UM / step) * step, 3)
-            gds, top = self.klt.gen("res_array", {
+            gds, top, _ = self.klt.gen("res_array", {
                 "length_um": length, "width_um": RES_WIDTH_UM, "num": 1,
                 "dummy": 0, "flavor": "generic"})
             self.devices.append({"cell": name, "device": "ppolyf_u", "ohms": inst["ohms"],
@@ -178,10 +211,11 @@ class Builder:
         w = round(parse_value(inst["params"]["W"]) * 1e6, 6)
         l = round(parse_value(inst["params"]["L"]) * 1e6, 6)
         fingers, wf = fold(w)
-        gds, top = self.klt.gen("mos_array", {
+        gds, top, report = self.klt.gen("mos_array", {
             "w_um": wf, "l_um": l, "fingers": fingers, "rows": 1, "cols": 1,
             "dummy": 0, "topology": "array", "flavor": flavor,
             "voltage_flavor": vflavor, "gate_contact": True, "add_guard_ring": True})
+        self.reports[name] = report
         self.devices.append({"cell": name, "device": master, "w_um": w, "l_um": l,
                              "fingers": fingers, "finger_w_um": wf})
         return self.import_cell(gds, top, name)
@@ -226,6 +260,189 @@ class Builder:
             x += self.size(child)[0] + GAP_UM + GRID_DBU * DBU_UM  # snap slack
         self.cells[subckt] = cell
         return cell
+
+    # -- efuse_ls: the one routed cell ------------------------------------
+
+    def ls_cell(self, subckt):
+        """efuse_ls on a stated two-row floorplan, with drawn routing.
+
+        Floorplan (um, this cell's own coordinates): NMOS row at y=0
+        (XMni x=0, XMn1 x=6.24, XMn2 x=12.90), PMOS row at y=12.0 (XMpi,
+        XMp1, XMp2 at the same three column origins) -- the input inverter
+        in column 0, the two cross-coupled 6 V inverters in columns 1 and 2,
+        so the 3.3 V pair and the 6 V quad each stay in one row and each
+        column keeps a device's source, drain and gate pads vertically
+        aligned. Routing: M1 device pads and guard-ring taps; M2 horizontal
+        (supply rails, per-net channel runs); M3 vertical (per-pad stubs);
+        0.26 um via1/via2 cuts on 0.4 um M2 landing pads. Every source pad
+        is merged into its own guard ring with an M1 bridge (source and body
+        are one net on each device), and each ring leaves the island at one
+        tap: TAP_S for the NMOS row and the 6 V PMOS pair (both to wires in
+        the channel or below it), TAP_W for XMpi (vdd33 exits west).
+        """
+        insts = {i["name"]: i for i in self.netlist[subckt]}
+        expected = {"XMpi", "XMni", "XMn1", "XMn2", "XMp1", "XMp2"}
+        assert set(insts) == expected, f"efuse_ls netlist changed: {sorted(insts)}"
+        cell = self.layout.create_cell(subckt)
+        ports = {}
+        for iname, inst in insts.items():
+            child = self.leaf(subckt, inst)
+            rep = self.reports[f"{subckt}__{iname[1:]}"]
+            x0, y0 = rep["bbox_um"]["x0"], rep["bbox_um"]["y0"]
+            col, row = LS_COL_X[iname], LS_ROW_Y[iname]
+            self.place(cell, child, col, row)
+            ports[iname] = {p["name"]: (gs(col + p["x_um"] - x0), gs(row + p["y_um"] - y0),
+                                        p["width_um"], p["direction_deg"])
+                            for p in rep["ports"]}
+        self._ls_supplies(cell, ports)
+        self._ls_signals(cell, ports)
+        self._ls_labels(cell, ports)
+        self.cells[subckt] = cell
+        return cell
+
+    def _ls_supplies(self, cell, ports):
+        m1, m2 = self._ls_layer(LS_M1), self._ls_layer(LS_M2)
+        v1 = self._ls_layer(LS_VIA1)
+        rail = LS_VSS_RAIL_Y
+        # vss: rail below the NMOS row; one tap stub per NMOS ring.
+        self._ls_box(m2, 0.9, rail - LS_W2 / 2, 16.0, rail + LS_W2 / 2)
+        for iname in LS_NMOS:
+            s, tw, ts = ports[iname]["U0_S"], ports[iname]["TAP_W"], ports[iname]["TAP_S"]
+            self._ls_box(m1, tw[0] - LS_W1 / 2, s[1] - s[2] / 2, s[0] - LS_W1 / 2, s[1] + s[2] / 2)
+            self._ls_cut(v1, ts[0], ts[1])
+            self._ls_box(m2, ts[0] - LS_W2 / 2, rail - LS_W2 / 2, ts[0] + LS_W2 / 2, ts[1] + LS_W2 / 2)
+        # vdd33: XMpi only; TAP_W exits west to a short open-ended stub.
+        s, tw, _ = ports["XMpi"]["U0_S"], ports["XMpi"]["TAP_W"], ports["XMpi"]["TAP_S"]
+        self._ls_box(m1, tw[0] - LS_W1 / 2, s[1] - s[2] / 2, s[0] - LS_W1 / 2, s[1] + s[2] / 2)
+        self._ls_cut(v1, tw[0], tw[1])
+        self._ls_box(m2, -1.2, tw[1] - LS_W2 / 2, tw[0] + LS_W2 / 2, tw[1] + LS_W2 / 2)
+        # vprog: the 6 V PMOS pair; TAP_S of both rings, joined in the channel top.
+        ts1, ts2 = ports["XMp1"]["TAP_S"], ports["XMp2"]["TAP_S"]
+        for iname, ts in (("XMp1", ts1), ("XMp2", ts2)):
+            s, tw = ports[iname]["U0_S"], ports[iname]["TAP_W"]
+            self._ls_box(m1, tw[0] - LS_W1 / 2, s[1] - s[2] / 2, s[0] - LS_W1 / 2, s[1] + s[2] / 2)
+            self._ls_cut(v1, ts[0], ts[1])
+        self._ls_box(m2, ts1[0] - LS_W2 / 2, ts1[1] - LS_W2 / 2, ts2[0] + LS_W2 / 2, ts1[1] + LS_W2 / 2)
+
+    def _ls_signals(self, cell, ports):
+        m1, m2, m3 = (self._ls_layer(l) for l in (LS_M1, LS_M2, LS_M3))
+        v1, v2 = self._ls_layer(LS_VIA1), self._ls_layer(LS_VIA2)
+        ni, pi, n1, p1, n2, p2 = (ports[n] for n in
+                                  ("XMni", "XMpi", "XMn1", "XMp1", "XMn2", "XMp2"))
+        # in: XMni.G <-> XMpi.G straight up column 0; branch west-to-east on
+        # M2 to XMn1.G, down a short M3 stub.
+        g_ni, g_pi, g_n1 = ni["U0_G"], pi["U0_G"], n1["U0_G"]
+        self._ls_pad3(m1, m2, v1, v2, g_ni)
+        self._ls_pad3(m1, m2, v1, v2, g_pi)
+        self._ls_vstrip(m3, g_ni[0], g_ni[1], g_pi[1], LS_W3)
+        y = LS_TRACK_Y["in"]
+        self._ls_cut(v2, g_ni[0], y)
+        self._ls_box(m2, g_ni[0] - LS_W2 / 2, y - LS_W2 / 2, g_n1[0] + LS_W2 / 2, y + LS_W2 / 2)
+        self._ls_vstrip(m3, g_n1[0], g_n1[1], y, LS_W3)
+        self._ls_cut(v2, g_n1[0], y)
+        self._ls_pad3(m1, m2, v1, v2, g_n1)
+        # inb: XMni.D east on M2 at pad height, M3 up the col0/col1 gap to the
+        # channel track, east to XMn2.G, down a stub; XMpi.D east on M2 at pad
+        # height to the same M3 (the two legs meet the track at one junction).
+        d_ni, d_pi, g_n2 = ni["U0_D"], pi["U0_D"], n2["U0_G"]
+        jx = LS_JUNC_X["inb"]
+        yt = LS_TRACK_Y["inb"]
+        self._ls_pad3(m1, m2, v1, v2, d_ni)
+        self._ls_box(m2, d_ni[0], d_ni[1] - LS_W2 / 2, jx + LS_W2 / 2, d_ni[1] + LS_W2 / 2)
+        self._ls_vstrip(m3, jx, d_ni[1], d_pi[1], LS_W3)
+        self._ls_cut(v2, jx, d_ni[1])
+        self._ls_pad3(m1, m2, v1, v2, d_pi)
+        self._ls_box(m2, d_pi[0], d_pi[1] - LS_W2 / 2, jx + LS_W2 / 2, d_pi[1] + LS_W2 / 2)
+        self._ls_cut(v2, jx, d_pi[1])
+        self._ls_box(m2, jx - LS_W2 / 2, yt - LS_W2 / 2, g_n2[0] + LS_W2 / 2, yt + LS_W2 / 2)
+        self._ls_cut(v2, jx, yt)
+        self._ls_vstrip(m3, g_n2[0], g_n2[1], yt, LS_W3)
+        self._ls_cut(v2, g_n2[0], yt)
+        self._ls_pad3(m1, m2, v1, v2, g_n2)
+        # x1: XMn1.D east on M2 at pad height, M3 up the col1/col2 gap; XMp1.D
+        # taps that M3 through an M2 run at pad height; on top an M3 run east
+        # drops into XMp2.G.
+        d_n1, d_p1, g_p2 = n1["U0_D"], p1["U0_D"], p2["U0_G"]
+        jx = LS_JUNC_X["x1"]
+        yh = LS_M3_HORIZ_Y["x1"]
+        self._ls_pad3(m1, m2, v1, v2, d_n1)
+        self._ls_box(m2, d_n1[0], d_n1[1] - LS_W2 / 2, jx + LS_W3N / 2, d_n1[1] + LS_W2 / 2)
+        self._ls_vstrip(m3, jx, d_n1[1], yh, LS_W3N)
+        self._ls_cut(v2, jx, d_n1[1])
+        self._ls_box(m2, d_p1[0], d_p1[1] - LS_W2 / 2, jx + LS_W3N / 2, d_p1[1] + LS_W2 / 2)
+        self._ls_cut(v2, jx, d_p1[1])
+        self._ls_pad3(m1, m2, v1, v2, d_p1)
+        # The top run's east end stops at the drop leg's far edge (not its own
+        # half-width past the junction): one more 0.06 um would close the gap
+        # to the `out` vertical at XMp2.D+0.06 below 0.28 um.
+        self._ls_hstrip(m3, jx, g_p2[0] + LS_W3N / 2 - LS_W3 / 2, yh, LS_W3)
+        self._ls_vstrip(m3, g_p2[0], g_p2[1], yh, LS_W3N)
+        self._ls_pad3(m1, m2, v1, v2, g_p2)
+        # out: XMn2.D west on M2 at pad height, M3 up to the channel, east on
+        # M2, M3 up past XMp2.D (tapped there) to a top M3 run that drops west
+        # into XMp1.G. XMp2.D's M1 pad centre is 0.06 um west of the column's
+        # free M3 x (XMp1.D pads XMn1.D by 0.2 um), so the tap's via stack sits
+        # at pad+0.06: still inside the 0.42 um pad, and 0.30 um clear of the
+        # x1 stub that drops into XMp2.G.
+        d_n2, d_p2, g_p1 = n2["U0_D"], p2["U0_D"], p1["U0_G"]
+        jx = LS_JUNC_X["out"]
+        mx = d_p2[0] + 0.06  # M3 x through XMp2.D
+        ym, yh = LS_TRACK_Y["out"], LS_M3_HORIZ_Y["out"]
+        self._ls_pad3(m1, m2, v1, v2, d_n2)
+        self._ls_box(m2, jx - LS_W3N / 2, d_n2[1] - LS_W2 / 2, d_n2[0], d_n2[1] + LS_W2 / 2)
+        self._ls_vstrip(m3, jx, d_n2[1], ym, LS_W3N)
+        self._ls_cut(v2, jx, d_n2[1])
+        self._ls_box(m2, jx - LS_W3N / 2, ym - LS_W2 / 2, mx + LS_W3N / 2, ym + LS_W2 / 2)
+        self._ls_cut(v2, jx, ym)
+        self._ls_vstrip(m3, mx, ym, yh, LS_W3N)
+        self._ls_cut(v2, mx, ym)
+        self._ls_pad3(m1, m2, v1, v2, d_p2, via2_x=mx)
+        self._ls_hstrip(m3, g_p1[0], mx, yh, LS_W3)
+        self._ls_vstrip(m3, g_p1[0], g_p1[1], yh, LS_W3N)
+        self._ls_pad3(m1, m2, v1, v2, g_p1)
+
+    def _ls_labels(self, cell, ports):
+        lbl = self._ls_layer(LS_M1_LBL)
+        for net, iname, port in (("in", "XMni", "U0_G"), ("inb", "XMni", "U0_D"),
+                                 ("x1", "XMn1", "U0_D"), ("out", "XMn2", "U0_D"),
+                                 ("vdd33", "XMpi", "TAP_W"), ("vprog", "XMp1", "TAP_S"),
+                                 ("vss", "XMn1", "TAP_S")):
+            x, y = ports[iname][port][0], ports[iname][port][1]
+            text = kdb.Text(net, kdb.Trans(round(x / DBU_UM), round(y / DBU_UM)))
+            cell.shapes(lbl).insert(text)
+
+    def _ls_layer(self, pair):
+        return self.layout.layer(*pair)
+
+    def _ls_box(self, li, x0, y0, x1, y1):
+        cell = self.layout.cell("efuse_ls")
+        cell.shapes(li).insert(kdb.Box(round(gs(x0) / DBU_UM), round(gs(y0) / DBU_UM),
+                                       round(gs(x1) / DBU_UM), round(gs(y1) / DBU_UM)))
+
+    def _ls_cut(self, li, cx, cy):
+        h = LS_VIA_SIZE / 2
+        self._ls_box(li, cx - h, cy - h, cx + h, cy + h)
+
+    def _ls_pad3(self, m1, m2, v1, v2, port, via2_x=None):
+        """via1 + M2 landing pad + via2 at one M1 pad centre.
+
+        via2_x shifts only the upper cut (M2 pad still centres on the M1
+        pad): used where the M3 stub through a 0.42 um pad must clear a
+        neighbouring net's M3 by 0.28 um (XMp2.D).
+        """
+        cx, cy = port[0], port[1]
+        h = LS_PAD2 / 2
+        self._ls_cut(v1, cx, cy)
+        self._ls_box(m2, cx - h, cy - h, cx + h, cy + h)
+        self._ls_cut(v2, via2_x if via2_x is not None else cx, cy)
+
+    def _ls_vstrip(self, m3, x, y0, y1, w):
+        lo, hi = min(y0, y1), max(y0, y1)
+        self._ls_box(m3, x - w / 2, lo - w / 2, x + w / 2, hi + w / 2)
+
+    def _ls_hstrip(self, m3, x0, x1, y, w):
+        lo, hi = min(x0, x1), max(x0, x1)
+        self._ls_box(m3, lo - w / 2, y - w / 2, hi + w / 2, y + w / 2)
 
 
 def masters(netlist, subckt):
@@ -275,10 +492,14 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
     assert masters(netlist, "efuse_row") == {"efuse_bitcell": COLS}, "efuse_row is not 8 bitcells"
 
     b = Builder(klt, fuse_gds, netlist)
-    # Leaf-level subcircuits first, in dependency order.
+    # Leaf-level subcircuits first, in dependency order. efuse_ls is routed
+    # (ls_cell); the rest are one placement row each.
     for name in ("efuse_bitcell", "efuse_ls", "efuse_rowdrv", "efuse_coldrv",
                  "efuse_comp", "efuse_sense"):
-        b.row_cell(name)
+        if name == "efuse_ls":
+            b.ls_cell(name)
+        else:
+            b.row_cell(name)
 
     bit_w, bit_h = b.size(b.cells["efuse_bitcell"])
     rd_w, rd_h = b.size(b.cells["efuse_rowdrv"])
@@ -315,7 +536,13 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
         "bbox_um": [round(v * DBU_UM, 4) for v in (bb.left, bb.bottom, bb.right, bb.top)],
         "array": {"rows": ROWS, "cols": COLS, "pitch_x_um": round(pitch_x, 4),
                   "pitch_y_um": round(pitch_y, 4)},
-        "caveat": "placed hierarchy only: no routing, no connectivity, no DRC/LVS claim",
+        "caveat": "placed hierarchy; efuse_ls is routed (see 'routed'), every "
+                  "other cell is placement-only: no routing, no connectivity, "
+                  "no DRC/LVS claim outside efuse_ls",
+        "routed": {"cells": ["efuse_ls"],
+                   "planes": {"m1": "device pads and guard-ring taps",
+                              "m2": "supply rails and horizontal runs",
+                              "m3": "vertical stubs"}},
         "devices": b.devices,
     }
     Path(report_json).write_text(json.dumps(report, indent=2) + "\n")

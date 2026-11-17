@@ -369,13 +369,13 @@ written to every block.
    verb needs the `yield` extra.** Unlike every other T1 item's
    evidence verb (`drc`, `lvs`, `extract`, `sim`, `pex`, `sta`,
    `functional-verification`, `erc`, `place-and-route`), `klt yield`
-   requires the `klt_yield_native` Rust extension. Today that needs a repo
-   checkout with a Rust toolchain: the prebuilt `klt-yield-native` wheel
-   (Linux x86_64, macOS arm64) behind `pip install 'klayout-tools[yield]'` is
-   not yet on PyPI, so the extra resolves for no release to date and only for
-   releases published after the wheel is. A bare `pip install klayout-tools`
-   and the git-pinned form do not include it either. A consumer on another
-   platform likewise needs a repo checkout with a Rust toolchain; see
+   requires the `klt_yield_native` Rust extension: install it with the
+   `[yield]` extra (`pip install 'klayout-tools[yield]'`). As of 2026-11-06 the
+   prebuilt `klt-yield-native` 0.1.0 wheel (Linux x86_64, macOS arm64) is on
+   PyPI and the extra resolves for klayout-tools 0.9.1 and later. A bare
+   `pip install klayout-tools` and the git-pinned form do not include it. A
+   consumer on another platform (Linux aarch64, Windows, Intel macOS) needs a
+   repo checkout with a Rust toolchain; see
    `docs/cli/yield.md`'s "What the extra does and does not reach" callout and
    `docs/releasing-native.md`.
    **When "not applicable" is legitimate** (issue #2865): a block whose
@@ -578,6 +578,14 @@ written to every block.
       `erc.expected_short_missing` naming a declared supply — blocks this
       item in the short's place, so declaring the tie converts a false
       blocking finding into a real check rather than into no evidence.
+      **Supplies that share a substrate body are graded too** (issue
+      #5346): an `erc.supply_short` with `via: "substrate"` blocks this item
+      like a metal one, and a cited run that *disclosed* the substrate path
+      undecidable (`erc_coverage.inapplicable[erc.supply_short]`, reason
+      `substrate_isolation_undecidable`) is `unmet` with the same-named
+      reason and its `missing` list in `detail.power_delivery`; only an
+      evaluated-clean run (`erc.supply_short.substrate` in `checked`) is
+      `met`.
       **The severed-rail half of "exactly one island" is gradeable too,
       where the spec declares the roles a supply owns** (issue #2524).
       `erc.unconnected_net` counts islands *carrying the declared label*,

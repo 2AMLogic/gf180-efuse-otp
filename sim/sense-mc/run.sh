@@ -20,24 +20,20 @@ here="$(cd "$(dirname "$0")" && pwd)"
 repo="$(cd "$here/../.." && pwd)"
 source "$here/../lib/pdk_env.sh"
 
-dry=0
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --dry-run) dry=1; shift ;;
-    *) echo "usage: run.sh [--dry-run]" >&2; exit 2 ;;
-  esac
-done
+bench_parse_args "$@"
 
-libc="$PDK_VARIANT_DIR/libs.tech/ngspice"
-lib="$PDK_ROOT/gf180mcuD/libs.tech/ngspice"
-for f in sm141064.ngspice sm141064.spice design.ngspice; do
-  cmp -s "$libc/$f" "$lib/$f" || { echo "run.sh: $f differs between gf180mcuC and gf180mcuD" >&2; exit 1; }
-done
+pdk_fleet_check || exit 1
+lib="$PDK_FLEET_LIB_DIR"
 
-KLT_PIN="$(cat "$repo/signoff/klt-pin.txt")"
-KLT_YIELD=(uvx --from "${KLT_PIN%%==*}[yield]==${KLT_PIN##*==}" klt)
+# Pinned-klt facets for the yield grading below (no function facets: this
+# bench's own klt invocations -- klt sim, klt --version -- stay on the host
+# klt; the --no-function source argument skips them).
+. "$repo/signoff/klt.sh" --no-function
 
-# ASSUMPTIONS, recorded verbatim in record.json.
+# ASSUMPTIONS, recorded verbatim in record.json from this one definition: each is either
+# passed to summarize.py below or written into the requests built here and read back
+# from them (DECISION_MIN, the corner grid). T_PRE/T_OUT reach the record directory as
+# the .meas lines of those requests, not as a record.json field.
 RREF_OHM=400                 # A6, decision 0003
 RFUSE_INTACT=260             # A4 upper edge (binding for the intact population)
 RFUSE_PROG=630               # A5 lower edge (binding for the programmed population)
@@ -56,15 +52,14 @@ T_OUT=38n
 
 netlist="$repo/design/efuse_otp_array.spice"
 [[ -f "$netlist" ]] || { echo "run.sh: $netlist missing" >&2; exit 1; }
-sub() { awk -v n="$1" '$1==".subckt" && $2==n {p=1} p {print} p && $1==".ends" {exit}' "$netlist"; }
+sub() { bench_subckt "$netlist" "$1"; }  # one .subckt block from the committed netlist
 
 # All klt invocations run from the repo root with repo-relative record paths, so the paths
 # stored in set-report.json, set-manifest.json and the yield/samples files resolve from any
 # checkout (an absolute worktree path does not exist in CI and breaks input verification).
 cd "$repo"
-stamp="$(date -u +%Y%m%dT%H%M%SZ)"
-if [[ $dry -eq 1 ]]; then rec="$(mktemp -d)"; else
-  rec="sim/sense-mc/records/$stamp-${PDK_REVISION:0:7}"; mkdir -p "$repo/sim/sense-mc/records"; mkdir "$repo/$rec"; fi
+bench_new_record_dir "$repo/sim/sense-mc/records" "$dry"
+rec="${rec#"$repo/"}"                    # repo-relative (cwd is $repo); a dry-run temp dir is unchanged
 
 reqs=()
 # mk <stem> <kind: intact|prog> <rfuse> <rref> <n>
@@ -87,11 +82,13 @@ mk() {
   jq -n --arg net "$stem.cir" --arg lib "libs.tech/ngspice/sm141064.ngspice" \
         --arg tpre "$T_PRE" --arg tout "$T_OUT" --arg margin "$margin" --arg dec "$dec" \
         --argjson n "$n" --argjson seed "$SEED" --argjson sigma "$SIGMA_RREF" \
-        --argjson ms "$MISMATCH_SCALE" --argjson dmin "$DECISION_MIN" --arg q "'" '
+        --argjson ms "$MISMATCH_SCALE" --argjson dmin "$DECISION_MIN" --arg q "'" \
+        --argjson pvt_proc "$PVT_PROCESSES" --argjson pvt_temp "$PVT_TEMPERATURES_C" \
+        --argjson pvt_3v3 "$PVT_SUPPLY_3V3" '
     {netlist:$net, engine:"ngspice",
      models:{lib:$lib, pdk:"gf180mcuD"},
-     corners:{process:(["typical","ff","ss","fs","sf"]|map({name:., sections:[.]})),
-              supply_v:{vdd33:[2.97,3.30,3.63]}, temperature_c:[-40,25,125]},
+     corners:{process:($pvt_proc|map({name:., sections:[.]})),
+              supply_v:{vdd33:$pvt_3v3}, temperature_c:$pvt_temp},
      monte_carlo:{n:$n, seed:$seed, vary:"mismatch", seed_scope:"point",
                   mismatch_scale:$ms,
                   injected:[{instance:"Rref", parameter:"r", relative_sigma:$sigma, distribution:"gaussian"}]},
@@ -110,20 +107,12 @@ mk ctl_intact_rf${RFUSE_INTACT}_rr${RREF_CTL_INTACT} intact "$RFUSE_INTACT" "$RR
 mk ctl_prog_rf${RFUSE_PROG}_rr${RREF_CTL_PROG}   prog   "$RFUSE_PROG"   "$RREF_CTL_PROG"  "$N_CONTROL"
 
 if [[ $dry -eq 1 ]]; then
-  for q in "${reqs[@]}"; do
-    klt sim --dry-run --format json --backend batch "$q" | jq -c '{unit_count,backend,warnings}'
-  done
+  bench_dry_run "${reqs[@]}"
   rm -rf "$rec"; echo "dry run: request set validated; temp dir removed"; exit 0
 fi
 
-set +e
-klt sim --batch-set "${reqs[@]}" --max-in-flight 4 --capacity-retries 3 \
-    -o "$rec/sets" --format json > "$rec/set-report.json" 2> "$rec/klt.err"
-rc=$?
-set -e
-if [[ $rc -ne 0 && $rc -ne 3 && $rc -ne 4 ]]; then
-  echo "klt sim --batch-set failed (rc=$rc); see $rec/klt.err" >&2; exit "$rc"
-fi
+# rc: 0 = all pass, 3 = a measurement failed, 4 = partial set (see bench_submit_set).
+bench_submit_set "$rec" "${reqs[@]}"
 
 # A partial set (a request refused or errored, e.g. batch_no_capacity) is not evidence:
 # stop here, keep the record directory for diagnosis, and never fall back to a local grid.
@@ -140,9 +129,11 @@ for pop in intact prog; do
   "${KLT_YIELD[@]}" yield-samples "$rec/sets/$nom/report.json" --negative-control "$rec/sets/$ctl/report.json" \
       --description "reference skewed to the wrong side of the $pop fuse population" \
       --format json > "$rec/yield/$pop.samples.json"
-  # Cited report: the analog margin only. The latched-decision measurement is graded in a
-  # separate, uncited report: the committed sense-margin record shows the comparator never
-  # resolves for a resistive fuse, so its negative control cannot discriminate (see README).
+  # Cited report: the analog margin only (margin_v, the ratified row's limit). The latched-
+  # decision measurement is graded in a separate report that block-manifest.json does not
+  # cite; see README for what each record measured (the latch resolves on the committed DUT,
+  # resized under issue 77). Whether that split should change is a signoff decision, not this
+  # script's to state a reason for.
   set +e
   "${KLT_YIELD[@]}" yield "$rec/yield/$pop.samples.json" --measurement margin_v --min-samples "$MIN_SAMPLES" \
       --target-ci-halfwidth "$CI_HALFWIDTH" --format json > "$rec/yield/$pop.yield.json" 2> "$rec/yield/$pop.yield.err"
@@ -153,9 +144,11 @@ for pop in intact prog; do
   set -e
 done
 
-ngspice_version="$(ngspice -v | sed -n 's/^\*\* ngspice-\([0-9.]*\).*/\1/p' | head -1)"
 echo "record: $rec"
 python3 -I "$here/summarize.py" "$rec" --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
-    --ngspice "$ngspice_version" --klt "$(klt --version)" --klt-pin "$KLT_PIN" \
+    --klt "$(klt --version)" --klt-pin "$KLT_PIN" \
     --seed "$SEED" --n-nominal "$N_NOMINAL" --n-control "$N_CONTROL" --sigma-rref "$SIGMA_RREF" \
-    --mismatch-scale "$MISMATCH_SCALE" --rref "$RREF_OHM" --min-samples "$MIN_SAMPLES" --ci-halfwidth "$CI_HALFWIDTH"
+    --mismatch-scale "$MISMATCH_SCALE" --rref "$RREF_OHM" \
+    --rfuse-intact "$RFUSE_INTACT" --rfuse-prog "$RFUSE_PROG" \
+    --rref-ctl-intact "$RREF_CTL_INTACT" --rref-ctl-prog "$RREF_CTL_PROG" \
+    --min-samples "$MIN_SAMPLES" --ci-halfwidth "$CI_HALFWIDTH"

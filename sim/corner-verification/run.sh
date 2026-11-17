@@ -2,8 +2,10 @@
 # Program-current corner verification (spec row P06 / claim C1): the real program
 # path from design/efuse_otp_array.spice (column driver + level shifter, row driver
 # + level shifter, 60 um select) delivering current into a selected cell, over the
-# decision-0005 grid: 5 process x -40/25/125 C x vdd33 2.97/3.30/3.63 V x program
-# supply 4.5/5.0/5.5 V (135 corners per request), fuse 140/200/260 ohm. One `klt sim`
+# decision-0005 grid: 5 process x -40/25/125 C x three supply pairs (vdd33, vprog) of
+# (2.97, 4.5), (3.30, 5.0), (3.63, 5.5) V -- 45 corners per request -- fuse 140/200/260
+# ohm. The two supplies step together (`klt sim` zips the supply_v axes) and are not
+# crossed, so mixed supply combinations are not covered. One `klt sim`
 # request per fuse value plus a negative control (select narrowed to 4 um), submitted
 # together with `klt sim --batch-set` (batch only, never local). Job ids land in
 # environment.remote of each report. Writes a new append-only record under
@@ -21,20 +23,11 @@ here="$(cd "$(dirname "$0")" && pwd)"
 repo="$(cd "$here/../.." && pwd)"
 source "$here/../lib/pdk_env.sh"        # refuses a tree that is not the pin
 
-dry=0
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --dry-run) dry=1; shift ;;
-    *) echo "usage: run.sh [--dry-run]" >&2; exit 2 ;;
-  esac
-done
+bench_parse_args "$@"
 
 # Same fleet-image rule as sim/program-select/run.sh (fleet ships gf180mcuD, pin is C).
-libc="$PDK_VARIANT_DIR/libs.tech/ngspice"
-lib="$PDK_ROOT/gf180mcuD/libs.tech/ngspice"
-for f in sm141064.ngspice sm141064.spice design.ngspice; do
-  cmp -s "$libc/$f" "$lib/$f" || { echo "run.sh: $f differs between gf180mcuC and gf180mcuD" >&2; exit 1; }
-done
+pdk_fleet_check || exit 1
+lib="$PDK_FLEET_LIB_DIR"
 
 # ASSUMPTIONS, recorded verbatim in record.json (no documented source).
 RROUTE_OHM=20                            # same lumped value as sim/program-select
@@ -44,18 +37,9 @@ W_CONTROL=4u                             # negative control: select narrowed fro
 
 netlist="$repo/design/efuse_otp_array.spice"
 [[ -f "$netlist" ]] || { echo "run.sh: $netlist missing" >&2; exit 1; }
-sub() {                                  # print one .subckt ... .ends block from the committed netlist
-  awk -v n="$1" '$1==".subckt" && $2==n {p=1} p {print} p && $1==".ends" {exit}' "$netlist"
-}
+sub() { bench_subckt "$netlist" "$1"; }  # one .subckt block from the committed netlist
 
-stamp="$(date -u +%Y%m%dT%H%M%SZ)"
-if [[ $dry -eq 1 ]]; then
-  rec="$(mktemp -d)"
-else
-  rec="$here/records/$stamp-${PDK_REVISION:0:7}"
-  mkdir -p "$here/records"
-  mkdir "$rec"                           # fails if it exists: no overwrite
-fi
+bench_new_record_dir "$here/records" "$dry"
 
 reqs=()
 mk() {                                   # mk <stem> <fuse ohm> <select width|keep>
@@ -78,11 +62,13 @@ mk() {                                   # mk <stem> <fuse ohm> <select width|ke
     echo; sub efuse_ls
   } > "$rec/$stem.cir"
   jq -n --arg net "$stem.cir" --arg lib "libs.tech/ngspice/sm141064.ngspice" \
-        --argjson ireq "$IREQ_A" --arg r "$r" --argjson efuse "$efuse" '
+        --argjson ireq "$IREQ_A" --arg r "$r" --argjson efuse "$efuse" \
+        --argjson pvt_proc "$PVT_PROCESSES" --argjson pvt_temp "$PVT_TEMPERATURES_C" \
+        --argjson pvt_3v3 "$PVT_SUPPLY_3V3" --argjson pvt_5v "$PVT_SUPPLY_5V0" '
     {netlist:$net, engine:"ngspice",
      models:{lib:$lib, pdk:"gf180mcuD"},
-     corners:{process:(["typical","ff","ss","fs","sf"]|map({name:., sections:([.] + (if $efuse then ["efuse"] else [] end))})),
-              supply_v:{vdd33:[2.97,3.30,3.63], vprog:[4.5,5.0,5.5]}, temperature_c:[-40,25,125]},
+     corners:{process:($pvt_proc|map({name:., sections:([.] + (if $efuse then ["efuse"] else [] end))})),
+              supply_v:{vdd33:$pvt_3v3, vprog:$pvt_5v}, temperature_c:$pvt_temp},
      analysis:{kind:"dc", args:"Vdmy 0 1 1"},
      measurements:[
        {name:"i_fuse", spice:(".meas dc i_fuse find par(\u0027(v(blc)-v(xcell.n))/" + $r + "\u0027) at=0"), unit:"A", limits:{min:$ireq}},
@@ -96,30 +82,17 @@ for r in $FUSE_OHMS; do mk "prog_rf${r}" "$r" keep; done
 mk "control_rf260_w${W_CONTROL}" 260 "$W_CONTROL"
 
 if [[ $dry -eq 1 ]]; then
-  for q in "${reqs[@]}"; do
-    klt sim --dry-run --format json --backend batch "$q" | jq -c '{unit_count,backend,warnings}'
-  done
+  bench_dry_run "${reqs[@]}"
   rm -rf "$rec"
   echo "dry run: request set validated; temp dir removed"
   exit 0
 fi
 
-# 0 = all pass, 3 = some measurement failed, 4 = a request errored or was refused
-# (partial set). Anything else is a tool failure. A failed or refused submit is
-# reported, never re-run on local ngspice.
-set +e
-klt sim --batch-set "${reqs[@]}" --max-in-flight 4 --capacity-retries 3 --wait-for-capacity 600 \
-    -o "$rec/sets" --format json > "$rec/set-report.json" 2> "$rec/klt.err"
-rc=$?
-set -e
-if [[ $rc -ne 0 && $rc -ne 3 && $rc -ne 4 ]]; then
-  echo "klt sim --batch-set failed (rc=$rc); see $rec/klt.err" >&2
-  exit "$rc"
-fi
+# rc: 0 = all pass, 3 = a measurement failed, 4 = partial set (see bench_submit_set).
+bench_submit_set "$rec" "${reqs[@]}"
 
-ngspice_version="$(ngspice -v | sed -n 's/^\*\* ngspice-\([0-9.]*\).*/\1/p' | head -1)"
 echo "record: $rec"
 python3 -I "$here/summarize.py" "$rec" --ireq "$IREQ_A" --rroute "$RROUTE_OHM" \
     --fuse-ohms "$FUSE_OHMS" --w-control "$W_CONTROL" \
     --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
-    --ngspice "$ngspice_version" --klt "$(klt --version)"
+    --klt "$(klt --version)"

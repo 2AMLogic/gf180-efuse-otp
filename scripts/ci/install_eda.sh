@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Build the exact Icarus Verilog and Yosys releases that verification/run.sh
-# enforces (13.0 and 0.67) from their release tags into $PREFIX, checking the
-# tagged commit. Stock ubuntu-latest packages are not these versions, and the
-# version pin is not loosened to fit them. Skips a tool already present in
-# $PREFIX (restored from the CI cache).
+# Build the pinned Icarus Verilog (13.0, enforced by verification/run.sh) and
+# Yosys (0.67, used by rtl/synth.sh; this script is what pins it in CI) from
+# their release tags into $PREFIX, checking the tagged commit. Stock
+# ubuntu-latest packages are not these versions, and the version pin is not
+# loosened to fit them. Skips a tool already present in $PREFIX (restored from
+# the CI cache).
 set -euo pipefail
 PREFIX="${PREFIX:?set PREFIX}"
 IVERILOG_REPO=https://github.com/steveicarus/iverilog
