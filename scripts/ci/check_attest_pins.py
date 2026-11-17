@@ -86,11 +86,10 @@ REMEDIATION = {
         "envelope's provenance.input.content_hash (the composite over the input set) and\n"
         'regenerate the signoff record.'),
     "signoff/attest/item8.envelope.json": (
-        're-attest per signoff/README.md "Re-attest item 8 (characterization report)"\n'
-        "(pass --format json; 0.9.0's text renderer crashes on citation checks):\n"
+        're-attest per signoff/README.md "Re-attest item 8 (characterization report)":\n'
         f'    {_ATTEST} --attest 8 \\\n'
         '      --inventory signoff/attest/item8.json \\\n'
-        '      -o signoff/attest/item8.envelope.json --format json\n'
+        '      -o signoff/attest/item8.envelope.json\n'
         'then set evidence["8.analog"] and evidence["8.digital"].content_hash in\n'
         'signoff/block-manifest.json to the sha256 of attest/item8.json (this envelope\'s\n'
         'provenance.input.content_hash) and regenerate the signoff record.'),
