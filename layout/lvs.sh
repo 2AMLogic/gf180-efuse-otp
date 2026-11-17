@@ -1,28 +1,30 @@
 #!/usr/bin/env bash
-# Run `klt lvs` on the digital partition: layout/efuse_otp_ctrl.gds (extracted
-# inline under the curated gf180mcu deck) against the as-built gate-level
-# netlist layout/efuse_otp_ctrl.asbuilt.v, with the pinned klt (never a
-# host-installed one), and keep the JSON report as committed evidence.
-#   layout/lvs.sh           rewrite layout/lvs-ctrl.report.json
+# Run `klt lvs` with the pinned klt (never a host-installed one) on the digital
+# partition (layout/efuse_otp_ctrl.gds against the as-built gate-level netlist)
+# and on the routed efuse_ls cell (top of layout/efuse_otp_array.gds against its
+# .subckt in design/efuse_otp_array.spice), keeping the JSON reports as
+# committed evidence.
+#   layout/lvs.sh           rewrite layout/lvs-ctrl.report.json and
+#                           layout/lvs-ls.report.json
 #   layout/lvs.sh --check   klt lvs --check on the committed report (input and
 #                           deck hashes still match; add --rerun to re-run the
 #                           compare)
-# klt exits 3 when the compare does not match; that is a finding, not a script
+# klt exits 3 when a compare does not match; that is a finding, not a script
 # failure, so the verdict is printed and the report is kept as found.
-# Unlike layout/drc.sh this needs the PDK, not only the pinned klt: the
-# gate-level reference resolves each standard cell's pin order from the
-# library's own spice/cdl under <PDK_ROOT>/gf180mcuD/libs.ref, so CI (which
-# installs no PDK) cannot run it. PDK_ROOT defaults to ~/.ciel,
-# layout/pnr.sh's default; the root is passed to klt explicitly so the report
-# records one resolved install instead of an ambiguous search. The request is
-# fed on stdin from the repo root, so its relative paths resolve there and
-# stay portable in the committed report.
+# The ctrl part needs the PDK, unlike drc.sh or the ls part: the gate-level
+# reference resolves each standard cell's pin order from the library's own
+# spice/cdl under <PDK_ROOT>/gf180mcuD/libs.ref, so CI (which installs no PDK)
+# cannot run it. PDK_ROOT defaults to ~/.ciel, layout/pnr.sh's default; the
+# root is passed to klt explicitly so the report records one resolved install
+# instead of an ambiguous search. Requests are fed on stdin from the repo
+# root, so their relative paths resolve there and stay portable in the
+# committed reports.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 export PDK="${PDK:-gf180mcuD}" PDK_ROOT="${PDK_ROOT:-$HOME/.ciel}"
 # shellcheck source=../signoff/klt.sh
 . signoff/klt.sh
-parts=(ctrl:efuse_otp_ctrl)
+parts=(ctrl:efuse_otp_ctrl ls:efuse_ls)
 if [ "${1:-}" = "--check" ]; then
   shift
   for p in "${parts[@]}"; do
@@ -34,7 +36,14 @@ for p in "${parts[@]}"; do
   part=${p%%:*} top=${p##*:}
   out=$(mktemp)
   rc=0
-  klt lvs - --format json > "$out" <<REQ || rc=$?
+  # ctrl: the routed controller against its as-built gate-level netlist (needs
+  # the PDK: the reference resolves each standard cell's pin order from the
+  # library's own spice/cdl). ls: the routed efuse_ls cell, extracted from the
+  # analog stream (top efuse_ls), against its .subckt in the analog netlist --
+  # simulation form (X cards calling PDK device subcircuits), which
+  # reference.form "subckt-call" converts; no PDK or library needed.
+  if [ "$part" = ctrl ]; then
+    req=$(cat <<REQ
 {
   "layout": { "file": "layout/${top}.gds", "top": "$top", "deck": "gf180mcu",
               "abstract_cells": "gf180mcu_fd_sc_mcu7t5v0__*" },
@@ -49,6 +58,21 @@ for p in "${parts[@]}"; do
   "portable_paths": true
 }
 REQ
+)
+  else
+    req=$(cat <<REQ
+{
+  "layout": { "file": "layout/efuse_otp_array.gds", "top": "$top", "deck": "gf180mcu" },
+  "reference": { "netlist": "design/efuse_otp_array.spice",
+                 "form": "subckt-call",
+                 "top": "$top" },
+  "options": { "anchor_top_level_pins": true },
+  "portable_paths": true
+}
+REQ
+)
+  fi
+  klt lvs - --format json > "$out" <<< "$req" || rc=$?
   [ "$rc" = 0 ] || [ "$rc" = 3 ] || { cat "$out" >&2; rm -f "$out"; exit "$rc"; }
   cp "$out" "layout/lvs-$part.report.json"
   rm -f "$out"

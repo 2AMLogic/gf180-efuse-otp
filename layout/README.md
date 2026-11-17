@@ -46,37 +46,91 @@ Needs `openroad` on `PATH` and the gf180mcuD PDK (`PDK_ROOT`, default `~/.ciel`)
 ### Analog partition
 
 Analog-partition layout (T1 item 2): `efuse_otp_array.gds`, generated from the
-netlist `design/efuse_otp_array.spice`.
+netlist `design/efuse_otp_array.spice`. The `efuse_ls` cells inside it are
+routed (see "efuse_ls routing" below); every other cell is placement-only.
 
 | File | Role |
 |---|---|
-| `gen_efuse_otp.py` | Generator. Reads the netlist; one cell per subcircuit, named as the subcircuit. MOS devices come from `klt gen mos_array` at the netlist W and L; the fuse is the PDK primitive. |
-| `regen-gds.sh` | Reproduce the files below with the pinned klt (`signoff/klt-pin.txt`) and PDK (`sim/pdk.json`); `--check` exits 3 on drift. |
+| `gen_efuse_otp.py` | Generator. Reads the netlist; one cell per subcircuit, named as the subcircuit. MOS devices come from `klt gen mos_array` at the netlist W and L; the fuse is the PDK primitive. `efuse_ls` is the exception: it is placed on a stated two-row floorplan and routed with generator-drawn geometry. |
+| `regen-gds.sh` | Reproduce the files below with the pinned klt (`signoff/klt-pin.txt`) and PDK (`sim/pdk.json`); `--check` exits 3 on drift. Two runs produce byte-identical streams (the routing is drawn from netlist-derived constants and the generators' own reported port positions — no randomness). |
 | `efuse_otp_array.gds` | The committed stream. Top cell `efuse_otp_array`. |
 | `efuse_otp_array.gds.sha256` | sha256 of the stream (below). |
-| `efuse_otp_array.report.json` | Every device cell with its model, W, L and fingers, the array pitch and bounding box. |
+| `efuse_otp_array.report.json` | Every device cell with its model, W, L and fingers, the array pitch and bounding box, and the `routed` block naming `efuse_ls` and its routing planes. |
+| `drc-ls.report.json` | Committed `klt drc` report of the routed `efuse_ls` cell (top `efuse_ls` of this stream), written by `layout/drc.sh`; `status: clean` under the same curated deck as the partition reports (see "DRC" below). |
+| `lvs-ls.report.json` | Committed `klt lvs` report of the routed `efuse_ls` cell against its `.subckt` in `design/efuse_otp_array.spice`, written by `layout/lvs.sh`; `status: match` — see "efuse_ls LVS" below. |
 
 ```sh
 layout/regen-gds.sh           # rewrite the files
 layout/regen-gds.sh --check   # exit 3 = drifted
+layout/drc.sh                 # rewrite the DRC reports (partition pair + drc-ls)
+layout/lvs.sh                 # rewrite the LVS reports (lvs-ctrl needs the PDK; lvs-ls does not)
 layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-analog.attest.json)
 ```
 
-`sha256(efuse_otp_array.gds)` = `a48866157cd4753e17e112eab70e1e39128ee1c0085e3d311d890a6aaee8fafc`
-(klt 0.9.2, `gf180mcuC` at open_pdks `f6eeac7`; re-run at the 2026-11-17 pin bump —
-the decoded geometry is unchanged, verified equal by the public
-`klt stats --format json` `geometry_digest`). The 0.9.2
-container bytes differ from the 0.8.0 stream only in record order: both files
-hold the identical multiset of 6559 GDS records, every record byte-identical,
-with the layer/record emission order permuted — neither stream carries
-KLayout's `$$$CONTEXT_INFO$$$` structure. The order moved because 0.9.2 stops
-writing that structure (klayout-tools#5499, `write_context_info = False`): a
-stream without it is read back as proxy cells that re-link to the live library
-and re-inherit its process-global layer order, which reaches the committed
-stream through the per-device `klt gen` intermediate streams the generator
-imports. The 0.8.0 stream hashed to
-`186be6b6e0ba5200154a20b6e66bda85b629aea378d76b6e683918dd0d412224`. Streams
-carry no write time, so the check is a byte compare.
+`sha256(efuse_otp_array.gds)` = `bf79985e4a0a15aaad4eeb56d8bbbb9652a9dd5de1c8bda8ddbebed56a36a0dc`
+(klt 0.9.2, `gf180mcuC` at open_pdks `f6eeac7`). The previous hash
+`a48866157cd4753e17e112eab70e1e39128ee1c0085e3d311d890a6aaee8fafc` was the
+placed-only stream at the same pin (itself a re-run of the 0.8.0 stream
+`186be6b6e0ba5200154a20b6e66bda85b629aea378d76b6e683918dd0d412224`, byte-different
+only in GDS record order — klayout-tools#5499 stopped writing KLayout's
+`$$$CONTEXT_INFO$$$` structure; streams carry no write time, so the check is a
+byte compare). The stream changed now because `efuse_ls` grew routing and the
+row/column drivers grew with it, which re-pitched the array (see "efuse_ls
+routing").
+
+## efuse_ls routing
+
+`efuse_ls` (the program-path level shifter, 6 MOS, no fuse) is routed by
+`gen_efuse_otp.py` (`ls_cell`) — the one cell in the analog stream that is a
+circuit rather than a placement.
+
+- **Floorplan (stated).** Two device rows: NMOS at y = 0 (`XMni` x = 0,
+  `XMn1` x = 6.24, `XMn2` x = 12.90), PMOS at y = 12.0 (`XMpi`, `XMp1`,
+  `XMp2` at the same column origins). The 3.3 V input inverter
+  (`XMpi`/`XMni`) holds column 0; the cross-coupled 6 V latch inverters hold
+  columns 1 and 2 — each voltage family stays in one row, and within a column
+  a device's source, drain and gate pads land near-vertically aligned.
+- **Planes.** M1 carries the device pads and the guard-ring taps (all `klt
+  gen` ports are M1). M2 carries everything horizontal: the `vss` rail below
+  the NMOS row, the `vprog` wire joining the two 6 V PMOS rings across the
+  channel top, and per-net channel runs. M3 carries everything vertical:
+  one stub per connected pad. Via1/via2 are the deck's fixed 0.26 µm squares
+  on 0.4 µm M2 landing pads.
+- **Supplies tie through the rings.** Every source pad is merged into its own
+  guard ring with an M1 bridge (source and body are one net per device), and
+  each ring leaves the island at one tap: `TAP_S` for the NMOS row and the 6 V
+  PMOS pair, `TAP_W` for `XMpi` (`vdd33` exits west; it has a single
+  connection, so it needs no rail).
+- **What is connected.** All 7 nets of the `.subckt`: `in`, `inb`, `x1`,
+  `out`, `vdd33`, `vprog`, `vss` — including the internal `inb`/`x1`, so the
+  extracted cell's net names are the netlist's (each net also carries a text
+  label on the Metal1 label layer 34/10, which is how `klt lvs` anchors the
+  five `.subckt` pins by name below).
+- **`gen-compose` is not used.** Re-probed at the pin before committing to
+  hand-drawn routing (klayout-tools 0.9.2, two-row floorplan, per-net planes,
+  via-drop routing): the same 4 of 7 nets the #73 note measured on 0.8.0
+  (`inb`, `vss`, `vdd33`, `vprog`) still come back unrouted ("crosses
+  already-routed net"), so every net here is drawn by the generator instead.
+
+## efuse_ls LVS (first analog compare at the pinned klt)
+
+`layout/lvs.sh`'s `ls` part extracts `efuse_ls` from this stream (layout top
+`efuse_ls`, curated `gf180mcu` deck) and compares it against the `.subckt
+efuse_ls` block of `design/efuse_otp_array.spice`. The reference is in
+simulation form (X cards calling the PDK device subcircuits), so the request
+sets `reference.form: "subckt-call"` for klt's automatic conversion; no PDK
+or library install is needed (unlike the `ctrl` part). The report is
+`layout/lvs-ls.report.json`:
+
+**`status: match`**, with the five `.subckt` pins (`in out vdd33 vprog vss`)
+anchored by name (`options.anchor_top_level_pins: true`) — which is what
+settles the cross-coupled latch's two-fold automorphism: `XMn1`/`XMp1` and
+`XMn2`/`XMp2` are device-for-device interchangeable, so `x1` and `out` could
+pair swapped on topology alone. The three report entries are warnings-only
+(the subckt-call conversion's `bjt`/`RES` classes with no devices on either
+side, and the pin-anchoring note itself); none affects the verdict. What the
+`match` reaches is the same pin-to-net correctness as the digital run below —
+not rail continuity or current capability.
 
 ## What is in the stream
 
@@ -85,6 +139,12 @@ carry no write time, so the check is a byte compare.
   `efuse_row` is an array of 8 `efuse_bitcell`; `efuse_rowdrv` and `efuse_coldrv`
   contain `efuse_ls`; `efuse_sense` contains `efuse_comp`. Leaf device cells are
   named `<subcircuit>__<instance>`.
+- **`efuse_ls` is routed** (the one exception to the placement-only caveat
+  below): its six devices sit on a stated two-row floorplan and all 7 nets are
+  generator-drawn on M1/M2/M3 with via1/via2 stacks — see "efuse_ls routing"
+  above for the floorplan, planes and the `gen-compose` probe that ruled it
+  out. Everything else is placement-only: devices and cells are placed; no
+  wire joins them.
 - Array pitch follows the wider of the bitcell and column driver (x) and the
   taller of the bitcell and row driver (y), so word lines and bit lines line up
   with their drivers.
@@ -106,15 +166,17 @@ carry no write time, so the check is a byte compare.
   `rsh_ppolyf_u` = 350 Ω/sq, snapped to the 0.005 µm grid. The 1 µm width is an assumption, not a sourced
   value.
 
-## DRC (T1 item 3): both partitions clean, no `EF.*` rule modelled
+## DRC (T1 item 3): both partitions and the routed `efuse_ls` cell clean, no `EF.*` rule modelled
 
 `layout/drc.sh` runs `klt drc --deck gf180mcu --top <top>` (the pinned klt,
-`signoff/klt-pin.txt`) on each GDS and keeps the reports as found:
-`layout/drc-array.report.json`, `layout/drc-ctrl.report.json`. `--check` re-hashes
-the input and the deck against them (`--rerun` re-runs). Deck content hash, both
-runs: `sha256:c3f2cce49000857a3a71cb65203aabf0eb27cd0ee6b1c60e29792355c455c4b1`
-(klt 0.9.2, klayout 0.30.13 — the pin; re-run under it 2026-11-17, both
-partitions clean as before). The 0.9.0 deck hash was
+`signoff/klt-pin.txt`) on each GDS — both partitions, plus the routed
+`efuse_ls` cell as a top of the analog stream — and keeps the reports as
+found: `layout/drc-array.report.json`, `layout/drc-ctrl.report.json`,
+`layout/drc-ls.report.json`. `--check` re-hashes
+the input and the deck against them (`--rerun` re-runs). Deck content hash,
+all runs: `sha256:c3f2cce49000857a3a71cb65203aabf0eb27cd0ee6b1c60e29792355c455c4b1`
+(klt 0.9.2, klayout 0.30.13 — the pin; re-run under it 2026-11-17, all three
+clean as before). The 0.9.0 deck hash was
 `sha256:cf44de63f0a5b01c1d09c4d58e0535e990aa4b070bcaae17fd3a94a67a1d97e1`
 (klayout 0.30.13; #154 re-ran both partitions under it).
 That hash is engine-dependent and `signoff/klt-pin.txt` does not constrain the
@@ -122,12 +184,13 @@ klayout engine, so a future install of the same pin can resolve a different
 engine and make `layout/drc.sh --check` report `drifted` with nothing else
 changed (klayout-tools#5601). CI does not run `drc.sh --check`, so this is a
 local-reproducibility caveat, not a CI gate.
-**Item 3 stays `unmet` (every `EF.01`–`EF.22b` is unmodelled, see below); no envelope is cited for it.** Both partitions are clean under the curated deck.
+**Item 3 stays `unmet` (every `EF.01`–`EF.22b` is unmodelled, see below); no envelope is cited for it.** Both partitions and the routed cell are clean under the curated deck.
 
 | Partition | status | violations |
 |---|---|---|
 | analog `efuse_otp_array` | `clean` | 0 (was 2560 `*.ongrid.1` hits at `45987b9`) |
 | digital `efuse_otp_ctrl` | `clean` | 0 (was 2525 before the two request changes below) |
+| routed `efuse_ls` cell | `clean` | 0 (first run with routing; this issue) |
 
 Sources (from the reports' `source_cell`):
 
@@ -307,18 +370,23 @@ names declared on both sides anchored by name first).
 
 ## What is not claimed
 
-- **No routing and no connectivity in the analog stream.** Devices and cells
-  are placed; no wire joins them, so `efuse_otp_array.gds` is not a circuit
-  and does not match the netlist until routing is added. The digital stream
-  is the opposite case: it is routed, and its per-instance connectivity is
-  the LVS run above.
-- **No LVS for the analog partition, no ERC.** The LVS section above covers
-  item 4's digital half only; the analog half needs the fuse as a device
-  (#32), and ERC is #33. DRC status is not restated here:
-  the `DRC (T1 item 3)` section above is the one place it is reported. Whatever
-  it reports is clean only under the curated deck's coverage — `klt drc` does
-  not run the `EF.*` rules at all (`spec/efuse-otp.md` §1.3) — so T1 item 3
-  stays `unmet` and no envelope is cited for it.
+- **No routing outside `efuse_ls` in the analog stream.** `efuse_ls` is routed
+  (above) and LVS-matches its `.subckt`; every other analog cell is
+  placement-only — devices and cells placed, no wire joining them — so beyond
+  the `efuse_ls` boundary `efuse_otp_array.gds` is still not a circuit: the
+  array top, the row/column drivers, the bitcell, the sense and comp cells
+  remain unrouted (slice (b) of the #73 split). The digital stream is the
+  opposite case: it is routed, and its per-instance connectivity is the LVS
+  run above.
+- **Analog LVS reaches `efuse_ls` only.** The LVS sections above cover item
+  4's digital half (`lvs-ctrl`) and the routed `efuse_ls` cell (`lvs-ls`);
+  item 4's analog partition as a whole still needs the fuse as a device
+  (#32), and ERC is #33 — no analog LVS row is claimed. DRC status is not
+  restated here: the `DRC (T1 item 3)` section above is the one place it is
+  reported. Whatever it reports is clean only under the curated deck's
+  coverage — `klt drc` does not run the `EF.*` rules at all
+  (`spec/efuse-otp.md` §1.3) — so T1 item 3 stays `unmet` and no envelope is
+  cited for it.
 - Cell-to-cell clearance is a fixed 2 µm between bounding boxes, not a
   rule-derived spacing.
 - **The item 2 envelopes claim the stream, not the circuit.** Both are written by
@@ -326,5 +394,6 @@ names declared on both sides anchored by name first).
   non-empty top cell and an on-grid database unit, plus the attester's
   regeneration claim (generator and hash, never run by the grader). The
   producer's `summary` is fixed text and says nothing about the content: for
-  `efuse_otp_array.gds` the claim is **placed hierarchy only — no DRC, LVS or
-  connectivity statement**, and neither envelope makes one for either partition.
+  `efuse_otp_array.gds` the claim is **placed hierarchy with `efuse_ls`
+  routed — no DRC, LVS or connectivity statement beyond it**, and neither
+  envelope makes one for either partition.
