@@ -6,7 +6,7 @@ that exercises klayout-tools (`klt`) on a rule-defined device.
 
 **Status as of 2026-11-13, `main` @ `d16f22b`.** The verdict of record is
 [`signoff/block-manifest.signoff.json`](signoff/block-manifest.signoff.json)
-(pinned `klayout-tools==0.9.0`, re-graded in CI); this file says what comes
+(pinned `klayout-tools==0.9.2`, re-graded in CI); this file says what comes
 next. Label state is in [`WORK_PLAN.md`](WORK_PLAN.md); the tracker is #3.
 
 ## Where it stands

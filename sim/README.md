@@ -100,7 +100,7 @@ T1 item 7 (digital) wants the controller functional suite re-run on the routed
 gate-level netlist with back-annotated SDF timing, cited from a
 `klt functional-verification` report whose `environment.sdf.annotated` is
 `true`. **No such report exists yet: at the pinned klt (`signoff/klt-pin.txt`,
-0.9.0) no valid post-route SDF for this design can be produced**, so nothing is
+0.9.2) no valid post-route SDF for this design can be produced**, so nothing is
 cited and `7.digital` stays `unmet` / `no_evidence` in
 `signoff/block-manifest.signoff.json`. Verified 2026-11-15 (#174); three gaps,
 each checked live:
@@ -120,7 +120,7 @@ each checked live:
    missing one-line bridge entry, not a capability gap — filed generically as
    [klayout-tools#5825](https://github.com/2AMLogic/klayout-tools/issues/5825).
    The two request flags must stay out of `layout/pnr-request.json` until a pin
-   carries the bridge entry: at 0.9.0 they make `layout/pnr.sh` fail.
+   carries the bridge entry: at 0.9.2 they make `layout/pnr.sh` fail.
 
 2. **A standalone SPEF cannot substitute.** The exact invocation, re-run at
    the pin 2026-11-15 (identical result bare and with `--top-cell-pins`):

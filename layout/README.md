@@ -62,9 +62,14 @@ layout/regen-gds.sh --check   # exit 3 = drifted
 layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-analog.attest.json)
 ```
 
-`sha256(efuse_otp_array.gds)` = `186be6b6e0ba5200154a20b6e66bda85b629aea378d76b6e683918dd0d412224`
-(klt 0.8.0, `gf180mcuC` at open_pdks `f6eeac7`). Streams carry no write time, so
-the check is a byte compare.
+`sha256(efuse_otp_array.gds)` = `a48866157cd4753e17e112eab70e1e39128ee1c0085e3d311d890a6aaee8fafc`
+(klt 0.9.2, `gf180mcuC` at open_pdks `f6eeac7`; re-run at the 2026-11-17 pin bump —
+the decoded geometry is unchanged, verified equal by the public
+`klt stats --format json` `geometry_digest` (klayout-tools#5551), the container
+bytes differ because 0.9.2's generated streams no longer carry KLayout's
+`$$$CONTEXT_INFO$$$` structure). The 0.8.0 stream hashed to
+`186be6b6e0ba5200154a20b6e66bda85b629aea378d76b6e683918dd0d412224`. Streams
+carry no write time, so the check is a byte compare.
 
 ## What is in the stream
 
@@ -100,8 +105,11 @@ the check is a byte compare.
 `signoff/klt-pin.txt`) on each GDS and keeps the reports as found:
 `layout/drc-array.report.json`, `layout/drc-ctrl.report.json`. `--check` re-hashes
 the input and the deck against them (`--rerun` re-runs). Deck content hash, both
-runs: `sha256:cf44de63f0a5b01c1d09c4d58e0535e990aa4b070bcaae17fd3a94a67a1d97e1`
-(klt 0.9.0, klayout 0.30.13 — the pin; #154 re-ran both partitions under it).
+runs: `sha256:c3f2cce49000857a3a71cb65203aabf0eb27cd0ee6b1c60e29792355c455c4b1`
+(klt 0.9.2, klayout 0.30.13 — the pin; re-run under it 2026-11-17, both
+partitions clean as before). The 0.9.0 deck hash was
+`sha256:cf44de63f0a5b01c1d09c4d58e0535e990aa4b070bcaae17fd3a94a67a1d97e1`
+(klayout 0.30.13; #154 re-ran both partitions under it).
 That hash is engine-dependent and `signoff/klt-pin.txt` does not constrain the
 klayout engine, so a future install of the same pin can resolve a different
 engine and make `layout/drc.sh --check` report `drifted` with nothing else
@@ -223,9 +231,11 @@ the report as found: `layout/lvs-ctrl.report.json`. It needs the PDK, unlike
 `drc.sh` above; the script header and `signoff/README.md` ("Re-run the
 controller LVS") say why and how the root is pinned.
 
-Verdict, klt 0.9.0 (deck content hash
-`sha256:cf44de63f0a5b01c1d09c4d58e0535e990aa4b070bcaae17fd3a94a67a1d97e1`,
-klayout engine 0.30.13 — the same engine-dependence caveat as DRC above):
+Verdict, klt 0.9.2 (deck content hash
+`sha256:c3f2cce49000857a3a71cb65203aabf0eb27cd0ee6b1c60e29792355c455c4b1`,
+klayout engine 0.30.13 — the same engine-dependence caveat as DRC above;
+re-run at the 0.9.2 pin 2026-11-17, `match`/`match` as before, the report's
+`schema_version` moved 2 → 3 with additive fields):
 **`status: match` and `power_connectivity.status: match`**, `error_count: 0`.
 It is cited for `4.digital` in `signoff/block-manifest.json` and the record
 reads `met`. Digests, both recorded in the report: layout

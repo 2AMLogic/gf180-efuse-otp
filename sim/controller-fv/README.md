@@ -15,7 +15,7 @@ difference is a klt report-schema difference, not a result difference.
 | Result | 9 sets, `status: pass`, `test_count` / `passed_count` 12/12, `failed_count` / `skipped_count` 0 |
 | Produced by | **klt 0.8.0**, `schema_version: 1` |
 | Recorded in | `7a1d430` (2026-10-27), while `signoff/klt-pin.txt` was `klayout-tools==0.8.0` (set in `74dd137`, same day) |
-| Current pin | `klayout-tools==0.9.0` (since `bf8be12`, 2026-11-05), which emits `schema_version: 2` |
+| Current pin | `klayout-tools==0.9.2` (since the 2026-11-17 pin bump), which emits `schema_version: 2` |
 
 The 0.9.0 pin bump re-attested items 1/9/10 and moved the item 8 *inventory* to
 the 0.9.0 schema; it did not regenerate these reports. Nothing else in the repo
