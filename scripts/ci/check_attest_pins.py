@@ -29,7 +29,9 @@ Finally, every ``signoff/block-manifest.json`` ``evidence[]`` entry carrying a
 (entries without a hash are skipped). The cited file need not be a discovered
 envelope — any tracked JSON carrying that field binds the same way (e.g. the
 ``4.digital`` LVS report, whose binding is the routed stream's sha256, per
-``signoff/README.md``); a cited file without it is reported.
+``signoff/README.md``); a cited file without it, or a cited file that is not
+tracked by git (a fresh checkout would not have it to bind against), is
+reported.
 
 On drift the checker names the offending path, its committed and fresh hash, and
 the per-item "Re-attest item N" remediation from ``signoff/README.md`` — item 1
@@ -41,6 +43,7 @@ is refused with a message). Exit 0 = clean, 1 = drift or structural problem.
 import argparse
 import hashlib
 import json
+import posixpath
 import subprocess
 import sys
 from pathlib import Path
@@ -48,8 +51,6 @@ from pathlib import Path
 HASH_ALGORITHM = "sha256-raw-bytes"
 MANIFEST = Path("signoff") / "block-manifest.json"
 SKIP_WALK = {".git", ".loom", "node_modules", "__pycache__"}
-NO_HASH_KINDS = ("command", "citation", "metric", "pin", "dbu_on_grid",
-                 "top_cell_non_empty")
 
 _ATTEST = 'uvx --from "$(cat signoff/klt-pin.txt)" klt signoff'
 _REGRADE = (f'{_ATTEST} --manifest signoff/block-manifest.json \\\n'
@@ -155,11 +156,6 @@ def walked_json(root):
         if not SKIP_WALK.intersection(path.relative_to(root).parts):
             found.append(path.relative_to(root).as_posix())
     return found
-
-
-def discover(root):
-    tracked = tracked_json(root)
-    return tracked if tracked is not None else walked_json(root)
 
 
 def remediation_for(env):
@@ -269,7 +265,7 @@ def _check_paths(env, inp, members, root, fresh):
     return problems, pins, composites
 
 
-def check_manifest(root):
+def check_manifest(root, tracked):
     problems = []
     manifest_pins = 0
     try:
@@ -286,6 +282,13 @@ def check_manifest(root):
         cite = entry.get("file")
         bound = None
         if isinstance(cite, str):
+            if tracked is not None and posixpath.normpath(cite) not in tracked:
+                problems.append(
+                    (f'{MANIFEST}: evidence["{key}"] cites {cite!r}, which is '
+                     'untracked — it is not in git ls-files, so a fresh checkout '
+                     'would not have it to bind against',
+                     f'git add -- "{cite}"'))
+                continue
             try:
                 bound = json.loads((root / cite).read_text(encoding="utf-8")).get(
                     "provenance", {}).get("input", {}).get("content_hash")
@@ -313,7 +316,9 @@ def check(root):
     problems = []
     envelopes = set()
     pins = composites = skipped = 0
-    for f in discover(root):
+    tracked = tracked_json(root)
+    files = tracked if tracked is not None else walked_json(root)
+    for f in files:
         try:
             data = json.loads((root / f).read_text(encoding="utf-8"))
         except (OSError, ValueError) as e:
@@ -327,7 +332,8 @@ def check(root):
         pins += n
         composites += c
         skipped += s
-    mp, manifest_pins = check_manifest(root)
+    mp, manifest_pins = check_manifest(
+        root, None if tracked is None else set(files))
     problems.extend(mp)
     stats = {"envelopes": len(envelopes), "pins": pins, "composites": composites,
              "manifest_pins": manifest_pins, "skipped": skipped}
