@@ -5,9 +5,8 @@
 #   signoff/item2-analog.attest.json  analog,  binds layout/efuse_otp_array.gds
 # Each carries a regeneration claim naming its generator (echoed, never run by
 # the grader). The digital claim is a geometry digest, so GDS write times do not
-# matter; klt has no public source for that digest (klayout-tools#5551), so the
-# one command below reads it from the private klayout_tools._provenance. Every
-# other field of both envelopes comes from the producer.
+# matter; it is the `geometry_digest` of `klt stats --format json`, read below.
+# Every field of both envelopes comes from klt.
 #   layout/attest.sh           rewrite both envelopes
 #   layout/attest.sh --check   fail (exit 3) if either committed envelope differs
 # The P&R response's own pass conditions (status ok, stage route, power.pdn true,
@@ -20,15 +19,13 @@ cd "$(dirname "$0")/.."
 mode=(-o)
 [ "${1:-}" = "--check" ] && mode=(--check)
 
-# The only private-API use left in this repo; see klayout-tools#5551.
-geometry_digest=$(klt_python -I -c '
-import sys
-from klayout_tools._provenance import layout_geometry_digest
-digest = layout_geometry_digest(sys.argv[1])
-if digest is None:
-    sys.exit("no geometry digest for " + sys.argv[1])
+geometry_digest=$(klt stats --format json layout/efuse_otp_ctrl.gds | python3 -I -c '
+import json, sys
+digest = json.load(sys.stdin).get("geometry_digest")
+if not digest:
+    sys.exit("klt stats reported no geometry_digest")
 print(digest)
-' layout/efuse_otp_ctrl.gds)
+')
 
 klt signoff --attest 2 \
   --input layout/efuse_otp_ctrl.gds \
