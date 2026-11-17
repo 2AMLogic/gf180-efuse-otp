@@ -2,8 +2,19 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-17
+
+- **PR #251**: fix: report untracked manifest cites in check_attest_pins; drop dead NO_HASH_KINDS
+- **PR #255**: docs: name the report-input check in the check:ci enumeration
+- **Issue #221** (closed): check_attest_pins.py manifest layer binds against untracked cited files, and NO_HASH_KINDS is dead
+- **Issue #248** (closed): README.md's check:ci enumeration omits the report-input check
+
 ### 2026-11-16
 
+- **PR #254**: ci: an if-gated step or an inline-comment mention no longer binds a check:ci term
+- **PR #253**: test: guard klt.sh's $1 opt-out against callers handling --no-function
+- **Issue #249** (closed): check:ci step binding: a step that cannot run still satisfies its term
+- **Issue #237** (closed): signoff/klt.sh: the --no-function opt-out is read from $1, so a caller's own first argument can silently drop the pin
 - **PR #247**: ci: bind check:ci's term list to ci.yml step coverage
 - **Issue #233** (closed): scripts/ci: bind check:ci's term list to ci.yml step coverage
 - **PR #245**: test: name the empty-tree vacuous-pass case for what it covers
