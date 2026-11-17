@@ -102,6 +102,14 @@ jobs:
         # Sim records append-only) are not the checker's concern.
         run: python3 scripts/ci/check_ci_yml_binding.py
 
+      - name: README check:ci enumeration binding
+        # check:ci chains scripts/ci/check_readme_enumeration.py; run it here
+        # so a check:ci term the README's check:ci paragraph stops naming by
+        # path fails CI instead of only the local gate. Plain python3, not -I:
+        # the checker imports its sibling check_ci_yml_binding, whose directory
+        # -I strips from sys.path on Python >= 3.11.
+        run: python3 scripts/ci/check_readme_enumeration.py
+
       - name: Sim records append-only
         env:
           EVENT: ${{ github.event_name }}

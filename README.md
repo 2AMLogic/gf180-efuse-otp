@@ -120,8 +120,9 @@ are listed in [`signoff/README.md`](signoff/README.md), "What CI does and does
 not check". It does not run the ngspice flow (it needs the PDK).
 
 `npm run -s check:ci` is the local pre-flight: the subset of those checks that
-needs nothing but python3, bash and jq — the checker self-tests, the
-evidence-format check, the attestation-envelope pin check
+needs nothing but python3, bash and jq — the checker self-tests
+(`scripts/ci/test_*.py`), the evidence-format check
+(`scripts/ci/check_evidence_format.py`), the attestation-envelope pin check
 (`scripts/ci/check_attest_pins.py`, which re-hashes every attested path pin,
 composite and manifest binding in the repo and names the "Re-attest item N"
 procedure when one has drifted), the report-input check
@@ -132,8 +133,13 @@ check (`scripts/ci/check_ci_yml_binding.py`, which parses this very term list
 and fails when a term has no matching step in `.github/workflows/ci.yml`,
 with a documented `EXEMPT_TERMS` list for terms CI deliberately skips — the
 term list and the CI step list can no longer drift by hand, #217, #230,
-#231), the item 6 spec-binding check, the
-decision-0005 PVT grid binding check, the `pdk_env.sh` self-test
+#231), the README enumeration check
+(`scripts/ci/check_readme_enumeration.py`, which binds this same paragraph to
+the term list and fails when a non-`echo` term's script path is no longer
+named here — the term list and this enumeration can no longer drift by hand
+either, #248, #250), the item 6 spec-binding check
+(`signoff/check-item6-digital.sh`), the decision-0005 PVT grid binding check
+(`signoff/check-pvt-grid.sh`), the `pdk_env.sh` self-test
 (`sim/lib/test_pdk_env.sh`), the klt helper self-test (`signoff/test-klt.sh`,
 which fakes `uvx` on `PATH` and asserts on the argv the pinned-klt facets emit,
 so it never invokes a real `klt`), the bench-record loader self-test
