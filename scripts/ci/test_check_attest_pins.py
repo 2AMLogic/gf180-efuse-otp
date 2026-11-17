@@ -265,6 +265,18 @@ class Test(unittest.TestCase):
         self.assertIn("1.digital", out)
         self.assertIn("regen-gl", out)
 
+    def test_item8_remediation_omits_format_json_workaround(self):
+        root = make_root()
+        write_bytes(root, "measurements/characterization/README.md",
+                    b"# characterization\n")
+        self.put_envelope(
+            root, "signoff/attest/item8.envelope.json", envelope(
+                checks=[present("measurements/characterization/README.md",
+                                "sha256:" + "0" * 64)]))
+        _, out = self.run_main(root)
+        self.assertIn("Re-attest item 8", out)
+        self.assertNotIn("--format json", out)
+
     def test_unknown_envelope_gets_generic_pointer(self):
         root = make_root()
         write_bytes(root, "some/file.src", b"x\n")

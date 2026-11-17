@@ -114,10 +114,10 @@ After any edit to `measurements/characterization/README.md` or `attest/item8.jso
 
 ```sh
 uvx --from "$(cat signoff/klt-pin.txt)" klt signoff --attest 8 \
-  --inventory signoff/attest/item8.json -o signoff/attest/item8.envelope.json --format json
+  --inventory signoff/attest/item8.json -o signoff/attest/item8.envelope.json
 ```
 
-Pass `--format json`: 0.9.0's text renderer has no branch for `citation` checks, so they fall through to its pin-rendering branch, which reads a `value` key a *passing* citation check does not carry — `KeyError: 'value'`, exit 1 (`klayout_tools/signoff_attest_text.py:42`). One resolving citation is enough to trigger it, so the default text format always fails for item 8. The envelope is written before the renderer runs, so the file on disk is complete and only the exit status is wrong. Fixed upstream in klayout-tools#4941, after the pinned 0.9.0; the pinned 0.9.2 no longer crashes without `--format json` (verified 2026-11-17, exit 0 in text format), but the flag is kept here until the workaround removal lands as its own change. Then set the `content_hash` for `8.analog` and `8.digital` in `block-manifest.json` to the sha256 of `attest/item8.json` and regenerate the record as above.
+0.9.0's text renderer had no branch for `citation` checks: they fell through to its pin-rendering branch, which reads a `value` key a *passing* citation check does not carry — `KeyError: 'value'`, exit 1 (`klayout_tools/signoff_attest_text.py:42`) — so item 8 was attested with `--format json` as a workaround. One resolving citation was enough to trigger it, and the envelope was written before the renderer ran, so the file on disk was complete and only the exit status was wrong. Fixed upstream in klayout-tools#4941; the workaround was retired at pin 0.9.2 (#257), where the text format exits 0 on a passing item 8. Then set the `content_hash` for `8.analog` and `8.digital` in `block-manifest.json` to the sha256 of `attest/item8.json` and regenerate the record as above.
 
 ## Re-attest item 1 (analog)
 
@@ -261,7 +261,7 @@ they check that:
   `--attest 2 --check` on each stream); the generators named in their
   regeneration claims need OpenROAD and the PDK and are not re-run;
 - the item 8 envelope's recorded hash of `block-manifest.signoff.json` is current
-  (`--attest 8 --check --format json`), so regenerating the record without
+  (`--attest 8 --check`), so regenerating the record without
   re-attesting item 8 fails;
 - re-grading the manifest reproduces the committed record byte for byte.
 

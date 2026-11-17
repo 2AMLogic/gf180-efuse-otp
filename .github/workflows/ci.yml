@@ -188,12 +188,10 @@ jobs:
       - name: Item 8 attestation is current
         # The item 8 envelope hashes signoff/block-manifest.signoff.json, so a
         # record regeneration without a re-attest leaves this envelope stale
-        # (exit 3). --format json is required: 0.9.0's text renderer raises
-        # KeyError on a passing citation check (see signoff/README.md,
-        # "Re-attest item 8").
+        # (exit 3).
         run: |
           klt signoff --attest 8 --inventory signoff/attest/item8.json \
-            --check signoff/attest/item8.envelope.json --format json
+            --check signoff/attest/item8.envelope.json
 
       - name: Item 1 (analog) attestation reproduces
         # Re-hashes the schematics, symbols and netlist; the xschem freshness
