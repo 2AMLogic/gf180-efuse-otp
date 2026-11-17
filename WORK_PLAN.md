@@ -26,23 +26,20 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#130**: Replace the last private klt call in layout/attest.sh (layout_geometry_digest) with the public digest source once klayout-tools#5551 ships
+- **#35**: T1 item 5 (corner verification, digital): klt sta and klt functional-verification for the controller
 - **#172**: Route efuse_ls in the layout generator and LVS-match it with the pinned klt (first slice of #73)
-- **#221**: check_attest_pins.py manifest layer binds against untracked cited files, and NO_HASH_KINDS is dead
-- **#233**: scripts/ci: bind check:ci's term list to ci.yml step coverage
-- **#237**: signoff/klt.sh: the --no-function opt-out is read from $1, so a caller's own first argument can silently drop the pin
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-- **#195**: CI never compares a committed DRC report's recorded input hash to the stream it describes, so a stale report passes every gate
+- **#246**: Bump signoff/klt-pin.txt to klayout-tools==0.9.2 (ships the klt stats geometry_digest fix, unblocks #130)
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#223**: ci: gate each layout report's input hash against the stream it names
+_None._
 
 ## Approved (Awaiting Merge)
 
@@ -57,10 +54,7 @@ Issues carrying `loom:curated`.
 - **#3**: Track the gap to T1 (klayout-tools design-evidence-tiers.md) *(curated)*
 - **#73**: Route the fuse-free analog leaf cells (efuse_ls, efuse_coldrv) and LVS-match each one *(curated)*
 - **#172**: Route efuse_ls in the layout generator and LVS-match it with the pinned klt (first slice of #73) *(curated)*
-- **#195**: CI never compares a committed DRC report's recorded input hash to the stream it describes, so a stale report passes every gate *(curated)*
-- **#221**: check_attest_pins.py manifest layer binds against untracked cited files, and NO_HASH_KINDS is dead *(curated)*
-- **#233**: scripts/ci: bind check:ci's term list to ci.yml step coverage *(curated)*
-- **#237**: signoff/klt.sh: the --no-function opt-out is read from $1, so a caller's own first argument can silently drop the pin *(curated)*
+- **#246**: Bump signoff/klt-pin.txt to klayout-tools==0.9.2 (ships the klt stats geometry_digest fix, unblocks #130) *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -81,11 +75,11 @@ _None._
 | Operator merge-risk holds | 1 |
 | Very important | 1 |
 | Important | 2 |
-| Ready (`loom:issue`) | 5 |
+| Ready (`loom:issue`) | 2 |
 | In Progress (`loom:building`) | 1 |
-| PRs awaiting review | 1 |
+| PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 1 |
-| Curated | 7 |
+| Curated | 4 |
 | Architect / Hermit proposals | 5 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
