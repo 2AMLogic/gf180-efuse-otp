@@ -4,6 +4,12 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-16
 
+- **PR #247**: ci: bind check:ci's term list to ci.yml step coverage
+- **Issue #233** (closed): scripts/ci: bind check:ci's term list to ci.yml step coverage
+- **PR #245**: test: name the empty-tree vacuous-pass case for what it covers
+- **Issue #226** (closed): test_real_tree_passes in test_check_report_inputs.py tests an empty tmp tree, not the real tree
+- **PR #223**: ci: gate each layout report's input hash against the stream it names
+- **Issue #195** (closed): CI never compares a committed DRC report's recorded input hash to the stream it describes, so a stale report passes every gate
 - **PR #241**: test: pin check-pvt-grid.sh's ValueError temperature-parse reason
 - **Issue #240** (closed): check-pvt-grid.sh: the ValueError temperature-parse reason has no self-test (sibling of the one #214 covered)
 - **PR #239**: test: pin signoff checker failure modes with seeded-bad-input self-tests
