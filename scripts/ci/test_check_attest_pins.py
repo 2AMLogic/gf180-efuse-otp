@@ -411,6 +411,7 @@ class Test(unittest.TestCase):
                        cwd=root, check=True)
         problems, stats = self.run_check(root)
         self.assertEqual(stats["manifest_pins"], 1)
+        self.assertEqual(len(problems), 1)
         msgs = [m for m, _ in problems]
         self.assertTrue(any('evidence["4.digital"]' in m
                             and "layout/report.json" in m and "untracked" in m
@@ -418,7 +419,24 @@ class Test(unittest.TestCase):
         code, out = self.run_main(root)
         self.assertEqual(code, 1)
 
-    def test_manifest_cite_normalises_against_tracked_set(self):
+    def test_manifest_untracked_cite_without_provenance_reported_once(self):
+        if shutil.which("git") is None:
+            self.skipTest("git not available")
+        root = make_root()
+        subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+        write(root, "layout/report.json", json.dumps({"schema_version": 2}))
+        write(root, "signoff/block-manifest.json", json.dumps({
+            "kind": "block-manifest",
+            "evidence": {"4.digital": {"file": "layout/report.json",
+                                       "content_hash": "sha256:" + "4" * 64}}}))
+        subprocess.run(["git", "add", "signoff/block-manifest.json"],
+                       cwd=root, check=True)
+        problems, stats = self.run_check(root)
+        self.assertEqual(stats["manifest_pins"], 1)
+        self.assertEqual(len(problems), 1)
+        self.assertIn("untracked", problems[0][0])
+
+    def test_manifest_cite_in_non_git_tree_skips_trackedness(self):
         root = make_root()
         write(root, "layout/report.json", json.dumps({
             "schema_version": 2,
@@ -428,6 +446,26 @@ class Test(unittest.TestCase):
             "kind": "block-manifest",
             "evidence": {"4.digital": {"file": "./layout/report.json",
                                        "content_hash": "sha256:" + "4" * 64}}}))
+        problems, stats = self.run_check(root)
+        self.assertEqual(problems, [])
+        self.assertEqual(stats["manifest_pins"], 1)
+
+    def test_manifest_cite_normalises_against_tracked_set(self):
+        if shutil.which("git") is None:
+            self.skipTest("git not available")
+        root = make_root()
+        subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+        write(root, "layout/report.json", json.dumps({
+            "schema_version": 2,
+            "provenance": {"input": {"content_hash": "sha256:" + "4" * 64}},
+        }))
+        write(root, "signoff/block-manifest.json", json.dumps({
+            "kind": "block-manifest",
+            "evidence": {"4.digital": {"file": "./layout/report.json",
+                                       "content_hash": "sha256:" + "4" * 64}}}))
+        subprocess.run(["git", "add", "layout/report.json",
+                        "signoff/block-manifest.json"],
+                       cwd=root, check=True)
         problems, stats = self.run_check(root)
         self.assertEqual(problems, [])
         self.assertEqual(stats["manifest_pins"], 1)
