@@ -14,14 +14,17 @@ What it does
     `efuse` device becomes the PDK primitive, copied unmodified.
   * Sub-cells are placed in a row per subcircuit; the 32 x 8 array, the row
     drivers and the column drivers are hierarchical array instances.
-  * `efuse_ls` is the exception: it is placed on a stated two-row floorplan and
-    routed with generator-drawn geometry (M2 horizontal, M3 vertical, via1/
-    via2 stacks), so the cell is a circuit (see ls_cell and layout/README.md,
-    "efuse_ls routing"). Every other cell remains placement-only.
+  * `efuse_ls` is placed on a stated two-row floorplan and routed with
+    generator-drawn geometry (M2 horizontal, M3 vertical, via1/via2 stacks), so
+    the cell is a circuit (see ls_cell and layout/README.md, "efuse_ls
+    routing"). `efuse_rowdrv` (one efuse_ls) and `efuse_coldrv` (12 devices,
+    Mdrv drawn as its m=3 parallel units, and one efuse_ls) are routed the
+    same way (rowdrv_cell, coldrv_cell). Every other cell remains
+    placement-only.
 
-What it does not do: draw inter-device or inter-block routing outside
-`efuse_ls`, or check anything. Connectivity outside `efuse_ls` is not claimed;
-DRC, EF.* coverage and LVS are separate items (see layout/README.md).
+What it does not do: draw inter-device or inter-block routing outside those
+three cells, or check anything. Connectivity elsewhere is not claimed; DRC,
+EF.* coverage and LVS are separate items (see layout/README.md).
 """
 
 import argparse
@@ -77,6 +80,14 @@ LS_TRACK_Y = {"in": 8.6, "inb": 10.2, "x1": 3.23, "out": 11.0}
 LS_JUNC_X = {"inb": 5.0, "x1": 11.5, "out": 12.3}  # channel-area junctions
 LS_M3_HORIZ_Y = {"x1": 17.2, "out": 18.0}  # runs above the PMOS row
 
+# efuse_coldrv routing (see coldrv_cell and layout/README.md, "efuse_coldrv routing").
+SUPPLY = ("vdd33", "vprog", "vss")
+CD_SHIFT = 0.16  # S lane west / D lane east of the pin, so a device's three lanes sit 0.59 um apart
+CD_TRACK_PITCH = 0.72  # M2 signal tracks above the device row (0.42 um wide)
+CD_RAIL_Y = {"vss": -1.5, "vdd33": -2.22, "vprog": -2.94}  # M2 supply rails below the row
+CD_LANE_PITCH = 0.72  # M3 lanes added beside the efuse_ls instance
+CD_LS_RAIL_END = 16.0  # east end of efuse_ls's vss rail (ls_cell)
+
 # Expected shape of the array top, asserted against the netlist.
 ROWS, COLS = 32, 8
 
@@ -117,7 +128,8 @@ def parse_netlist(path):
             raise ValueError(f"unsupported netlist line: {s[:60]}")
         plain = [t for t in tok[1:] if "=" not in t]
         params = dict(t.split("=", 1) for t in tok[1:] if "=" in t)
-        current.append({"kind": "x", "name": name, "master": plain[-1], "params": params})
+        current.append({"kind": "x", "name": name, "master": plain[-1], "params": params,
+                        "nodes": plain[:-1]})
     return subckts
 
 
@@ -216,8 +228,12 @@ class Builder:
             "dummy": 0, "topology": "array", "flavor": flavor,
             "voltage_flavor": vflavor, "gate_contact": True, "add_guard_ring": True})
         self.reports[name] = report
-        self.devices.append({"cell": name, "device": master, "w_um": w, "l_um": l,
-                             "fingers": fingers, "finger_w_um": wf})
+        row = {"cell": name, "device": master, "w_um": w, "l_um": l,
+               "fingers": fingers, "finger_w_um": wf}
+        m = int(inst["params"].get("m", "1"))
+        if m > 1:
+            row["m"] = m  # drawn as m placed units of this cell (coldrv_cell)
+        self.devices.append(row)
         return self.import_cell(gds, top, name)
 
     def bbox(self, cell):
@@ -297,6 +313,7 @@ class Builder:
         self._ls_supplies(cell, ports)
         self._ls_signals(cell, ports)
         self._ls_labels(cell, ports)
+        self.ls_ports = ports
         self.cells[subckt] = cell
         return cell
 
@@ -444,6 +461,160 @@ class Builder:
         lo, hi = min(x0, x1), max(x0, x1)
         self._ls_box(m3, lo - w / 2, y - w / 2, hi + w / 2, y + w / 2)
 
+    # -- efuse_rowdrv / efuse_coldrv: routed from efuse_ls and leaf devices --
+
+    def _box(self, cell, pair, x0, y0, x1, y1):
+        li = self.layout.layer(*pair)
+        cell.shapes(li).insert(kdb.Box(round(gs(x0) / DBU_UM), round(gs(y0) / DBU_UM),
+                                       round(gs(x1) / DBU_UM), round(gs(y1) / DBU_UM)))
+
+    def _cut(self, cell, pair, cx, cy):
+        h = LS_VIA_SIZE / 2
+        self._box(cell, pair, cx - h, cy - h, cx + h, cy + h)
+
+    def _label(self, cell, net, x, y):
+        cell.shapes(self.layout.layer(*LS_M1_LBL)).insert(
+            kdb.Text(net, kdb.Trans(round(x / DBU_UM), round(y / DBU_UM))))
+
+    def _stack(self, cell, x, y, lane_x=None):
+        """via1 + M2 landing pad at an M1 point, via2 at lane_x (the M2 pad
+        stretches from the point to the lane so the M3 lane can sit off the pin)."""
+        lx = x if lane_x is None else lane_x
+        h = LS_PAD2 / 2
+        self._cut(cell, LS_VIA1, x, y)
+        self._box(cell, LS_M2, min(x, lx) - h, y - h, max(x, lx) + h, y + h)
+        self._cut(cell, LS_VIA2, lx, y)
+
+    def rowdrv_cell(self, subckt):
+        """efuse_rowdrv: the routed efuse_ls instance at the origin; the five
+        ports are labels on the instance's own M1 pads (nothing else to draw)."""
+        insts = self.netlist[subckt]
+        assert [(i["master"], i["nodes"]) for i in insts] == [
+            ("efuse_ls", ["row_sel", "wl", "vdd33", "vprog", "vss"])], \
+            f"efuse_rowdrv netlist changed: {insts}"
+        cell = self.layout.create_cell(subckt)
+        cell.insert(kdb.CellInstArray(self.cells["efuse_ls"].cell_index(), kdb.Trans(0, 0)))
+        lp = self.ls_ports
+        for net, iname, port in (("row_sel", "XMni", "U0_G"), ("wl", "XMn2", "U0_D"),
+                                 ("vdd33", "XMpi", "TAP_W"), ("vprog", "XMp1", "TAP_S"),
+                                 ("vss", "XMn1", "TAP_S")):
+            self._label(cell, net, lp[iname][port][0], lp[iname][port][1])
+        self.cells[subckt] = cell
+        return cell
+
+    def coldrv_cell(self, subckt):
+        """efuse_coldrv: one routed efuse_ls at the origin and a row of leaf
+        devices east of it (Mdrv as m=3 parallel units), all 13 nets drawn.
+
+        Every signal pin gets via1 + an M2 pad + via2 and a vertical M3 lane
+        (S lane CD_SHIFT west of its pin, G on it, D CD_SHIFT east, so a
+        device's three lanes are 0.59 um apart) up to its net's M2 track in a
+        channel above everything; the M3 lanes only meet M2 at their own via2.
+        A source whose net is its body net is merged into the guard ring with
+        the ls_cell M1 bridge; each ring then leaves at TAP_S, down an M3 lane
+        to that supply's M2 rail below the row. efuse_ls is entered through
+        shapes it already exposes: `in` by an M3 run west off its in strip,
+        `out` by an M3 run east off its out vertical, vdd33 at the west end of
+        its M2 stub, vprog by extending its M2 run east, vss by extending its
+        rail east.
+        """
+        insts = self.netlist[subckt]
+        cell = self.layout.create_cell(subckt)
+        ls, lp = self.cells["efuse_ls"], self.ls_ports
+        cell.insert(kdb.CellInstArray(ls.cell_index(), kdb.Trans(0, 0)))
+        lsr, lst = ls.bbox().right * DBU_UM, ls.bbox().top * DBU_UM
+        net_pins, taps = {}, []  # net -> [(lane_x, y0)]; [(net, x, y, with_pad)]
+        label_at = {}
+
+        # -- efuse_ls attachments
+        inn = insts[[i["name"] for i in insts].index("Xls")]["nodes"]
+        n_in, n_out, n_vdd, n_vprog, n_vss = inn
+        assert (n_vdd, n_vprog, n_vss) == SUPPLY, "efuse_ls supply nets changed"
+        gni, gpi = lp["XMni"]["U0_G"], lp["XMpi"]["U0_G"]
+        y_in = gpi[1] - 0.3
+        x_w = -1.7
+        self._box(cell, LS_M3, x_w - LS_W3N / 2, y_in - LS_W3N / 2, gni[0], y_in + LS_W3N / 2)
+        net_pins.setdefault(n_in, []).append((x_w, y_in))
+        tw = lp["XMpi"]["TAP_W"]
+        taps.append((n_vdd, -0.9, tw[1], False))
+        dn2, dp2 = lp["XMn2"]["U0_D"], lp["XMp2"]["U0_D"]
+        mx = dp2[0] + 0.06
+        x_o = gs(lsr + 1.0)
+        x_v = gs(x_o + CD_LANE_PITCH)
+        y_out = 14.4
+        self._box(cell, LS_M3, mx - LS_W3N / 2, y_out - LS_W3N / 2, x_o + LS_W3N / 2, y_out + LS_W3N / 2)
+        net_pins.setdefault(n_out, []).append((x_o, y_out))
+        ts1, ts2 = lp["XMp1"]["TAP_S"], lp["XMp2"]["TAP_S"]
+        self._box(cell, LS_M2, ts2[0], ts1[1] - LS_W2 / 2, x_v + LS_PAD2 / 2, ts1[1] + LS_W2 / 2)
+        taps.append((n_vprog, x_v, ts1[1], False))
+
+        # -- leaf devices
+        units = []  # (iname, inst, child, rep, x)
+        x = gs(x_v + CD_LANE_PITCH + 1.5)
+        for inst in insts:
+            if inst["master"] == "efuse_ls":
+                continue
+            child = self.leaf(subckt, inst)
+            rep = self.reports[f"{subckt}__{inst['name'][1:]}"]
+            for k in range(int(inst["params"].get("m", "1"))):
+                units.append((inst["name"], inst, child, rep, x, k))
+                x = gs(x + (rep["bbox_um"]["x1"] - rep["bbox_um"]["x0"]) + GAP_UM + 0.01)
+        rail_x = {n: [] for n in SUPPLY}
+        for iname, inst, child, rep, col, k in units:
+            self.place(cell, child, col, 0.0)
+            x0, y0 = rep["bbox_um"]["x0"], rep["bbox_um"]["y0"]
+            pt = {p["name"]: (gs(col + p["x_um"] - x0), gs(0.0 + p["y_um"] - y0), p["width_um"])
+                  for p in rep["ports"]}
+            d, g, s, b = inst["nodes"]
+            if s == b and b in SUPPLY:
+                sp, tp = pt["U0_S"], pt["TAP_W"]
+                self._box(cell, LS_M1, tp[0] - LS_W1 / 2, sp[1] - sp[2] / 2,
+                          sp[0] - LS_W1 / 2, sp[1] + sp[2] / 2)
+            else:
+                assert s not in SUPPLY, f"{iname}: supply source off its body"
+                sp = pt["U0_S"]
+                self._stack(cell, sp[0], sp[1], gs(sp[0] - CD_SHIFT))
+                net_pins.setdefault(s, []).append((gs(sp[0] - CD_SHIFT), sp[1]))
+                label_at.setdefault(s, (sp[0], sp[1]))
+            for net, port, sh in ((d, "U0_D", CD_SHIFT), (g, "U0_G", 0.0)):
+                assert net not in SUPPLY, f"{iname}: supply on {port}"
+                p = pt[port]
+                self._stack(cell, p[0], p[1], gs(p[0] + sh))
+                net_pins.setdefault(net, []).append((gs(p[0] + sh), p[1]))
+                label_at.setdefault(net, (p[0], p[1]))
+            tp = pt["TAP_S"]
+            taps.append((b, tp[0], tp[1], True))
+            label_at.setdefault(b, (tp[0], tp[1]))
+
+        # -- tracks above, rails below
+        y = gs(lst + 1.5)
+        for net, pins in net_pins.items():
+            if len(pins) < 2:
+                continue
+            xs = [p[0] for p in pins]
+            self._box(cell, LS_M2, min(xs) - LS_W2 / 2, y - LS_W2 / 2, max(xs) + LS_W2 / 2, y + LS_W2 / 2)
+            for lx, y0 in pins:
+                self._box(cell, LS_M3, lx - LS_W3N / 2, y0 - LS_W3N / 2, lx + LS_W3N / 2, y + LS_W3N / 2)
+                self._cut(cell, LS_VIA2, lx, y)
+            y = gs(y + CD_TRACK_PITCH)
+        for net, tx, ty, pad in taps:
+            ry = CD_RAIL_Y[net]
+            if pad:
+                self._stack(cell, tx, ty)
+            else:
+                self._cut(cell, LS_VIA2, tx, ty)
+            self._box(cell, LS_M3, tx - LS_W3N / 2, ry - LS_W3N / 2, tx + LS_W3N / 2, ty + LS_W3N / 2)
+            self._cut(cell, LS_VIA2, tx, ry)
+            rail_x[net].append(tx)
+        for net, xs in rail_x.items():
+            lo = min(xs + ([CD_LS_RAIL_END - 1.0] if net == "vss" else []))
+            ry = CD_RAIL_Y[net]
+            self._box(cell, LS_M2, lo - LS_W2 / 2, ry - LS_W2 / 2, max(xs) + LS_W2 / 2, ry + LS_W2 / 2)
+        for net, (lx, ly) in label_at.items():
+            self._label(cell, net, lx, ly)
+        self.cells[subckt] = cell
+        return cell
+
 
 def masters(netlist, subckt):
     out = {}
@@ -498,6 +669,10 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
                  "efuse_comp", "efuse_sense"):
         if name == "efuse_ls":
             b.ls_cell(name)
+        elif name == "efuse_rowdrv":
+            b.rowdrv_cell(name)
+        elif name == "efuse_coldrv":
+            b.coldrv_cell(name)
         else:
             b.row_cell(name)
 
@@ -536,13 +711,13 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
         "bbox_um": [round(v * DBU_UM, 4) for v in (bb.left, bb.bottom, bb.right, bb.top)],
         "array": {"rows": ROWS, "cols": COLS, "pitch_x_um": round(pitch_x, 4),
                   "pitch_y_um": round(pitch_y, 4)},
-        "caveat": "placed hierarchy; efuse_ls is routed (see 'routed'), every "
-                  "other cell is placement-only: no routing, no connectivity, "
-                  "no DRC/LVS claim outside efuse_ls",
-        "routed": {"cells": ["efuse_ls"],
+        "caveat": "placed hierarchy; efuse_ls, efuse_rowdrv and efuse_coldrv are "
+                  "routed (see 'routed'), every other cell is placement-only: no "
+                  "routing, no connectivity, no DRC/LVS claim outside those three",
+        "routed": {"cells": ["efuse_ls", "efuse_rowdrv", "efuse_coldrv"],
                    "planes": {"m1": "device pads and guard-ring taps",
                               "m2": "supply rails and horizontal runs",
-                              "m3": "vertical stubs"}},
+                              "m3": "vertical stubs and lanes"}},
         "devices": b.devices,
     }
     Path(report_json).write_text(json.dumps(report, indent=2) + "\n")
