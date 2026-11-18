@@ -73,17 +73,19 @@ layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-an
 ```
 
 `sha256(efuse_otp_array.gds)` = `133922ed156c68534147da03101307feff268163c732b4b3c3cbf997b6293b98`
-(klt 0.9.2, `gf180mcuC` at open_pdks `f6eeac7`; the stream the `efuse_rowdrv` /
-`efuse_coldrv` routing produced). The previous hash
+(klt 0.9.2, `gf180mcuC` at open_pdks `f6eeac7`; the stream after the via2-landing fix: via2
+cuts with no M3 above them were dropped, and pin-level via2 is cut only where an M2 pad exists).
+The previous hash `4cf5b69431e9523935b18eb4d04ef5227884bf5d885ff20bde165628dfa9ec7f` was the
+stream the `efuse_rowdrv` / `efuse_coldrv` routing produced (#273), still carrying the unlanded
+via2; before it
 `bf79985e4a0a15aaad4eeb56d8bbbb9652a9dd5de1c8bda8ddbebed56a36a0dc` was the stream with only
-`efuse_ls` routed; before it `a48866157cd4753e17e112eab70e1e39128ee1c0085e3d311d890a6aaee8fafc` was the
+`efuse_ls` routed; before that `a48866157cd4753e17e112eab70e1e39128ee1c0085e3d311d890a6aaee8fafc` was the
 placed-only stream at the same pin (itself a re-run of the 0.8.0 stream
 `186be6b6e0ba5200154a20b6e66bda85b629aea378d76b6e683918dd0d412224`, byte-different
 only in GDS record order — klayout-tools#5499 stopped writing KLayout's
 `$$$CONTEXT_INFO$$$` structure; streams carry no write time, so the check is a
-byte compare). The stream changed now because `efuse_ls` grew routing and the
-row/column drivers grew with it, which re-pitched the array (see "efuse_ls
-routing").
+byte compare). The stream changed now because the via2 cuts that had no M3 (or no M2)
+landing were removed; `layout/check_via2_landing.sh` gates this in CI.
 
 ## efuse_ls routing
 
