@@ -531,7 +531,7 @@ class Builder:
         ls, lp = self.cells["efuse_ls"], self.ls_ports
         cell.insert(kdb.CellInstArray(ls.cell_index(), kdb.Trans(0, 0)))
         lsr, lst = ls.bbox().right * DBU_UM, ls.bbox().top * DBU_UM
-        net_pins, taps = {}, []  # net -> [(lane_x, y0)]; [(net, x, y, with_pad)]
+        net_pins, taps = {}, []  # net -> [(lane_x, y0, has_m2_pad)]; [(net, x, y, with_pad)]
         label_at = {}
 
         # -- efuse_ls attachments
@@ -542,7 +542,7 @@ class Builder:
         y_in = gpi[1] - 0.3
         x_w = -1.7
         self._box(cell, LS_M3, x_w - LS_W3N / 2, y_in - LS_W3N / 2, gni[0], y_in + LS_W3N / 2)
-        net_pins.setdefault(n_in, []).append((x_w, y_in))
+        net_pins.setdefault(n_in, []).append((x_w, y_in, False))  # M3-to-M3 tie-in: no M2 below
         tw = lp["XMpi"]["TAP_W"]
         taps.append((n_vdd, -0.9, tw[1], False))
         dn2, dp2 = lp["XMn2"]["U0_D"], lp["XMp2"]["U0_D"]
@@ -551,7 +551,7 @@ class Builder:
         x_v = gs(x_o + CD_LANE_PITCH)
         y_out = 14.4
         self._box(cell, LS_M3, mx - LS_W3N / 2, y_out - LS_W3N / 2, x_o + LS_W3N / 2, y_out + LS_W3N / 2)
-        net_pins.setdefault(n_out, []).append((x_o, y_out))
+        net_pins.setdefault(n_out, []).append((x_o, y_out, False))  # M3-to-M3 tie-in: no M2 below
         ts1, ts2 = lp["XMp1"]["TAP_S"], lp["XMp2"]["TAP_S"]
         self._box(cell, LS_M2, ts2[0], ts1[1] - LS_W2 / 2, x_v + LS_PAD2 / 2, ts1[1] + LS_W2 / 2)
         taps.append((n_vprog, x_v, ts1[1], False))
@@ -582,13 +582,13 @@ class Builder:
                 assert s not in SUPPLY, f"{iname}: supply source off its body"
                 sp = pt["U0_S"]
                 self._stack(cell, sp[0], sp[1], gs(sp[0] - CD_SHIFT), via2=False)
-                net_pins.setdefault(s, []).append((gs(sp[0] - CD_SHIFT), sp[1]))
+                net_pins.setdefault(s, []).append((gs(sp[0] - CD_SHIFT), sp[1], True))
                 label_at.setdefault(s, (sp[0], sp[1]))
             for net, port, sh in ((d, "U0_D", CD_SHIFT), (g, "U0_G", 0.0)):
                 assert net not in SUPPLY, f"{iname}: supply on {port}"
                 p = pt[port]
                 self._stack(cell, p[0], p[1], gs(p[0] + sh), via2=False)
-                net_pins.setdefault(net, []).append((gs(p[0] + sh), p[1]))
+                net_pins.setdefault(net, []).append((gs(p[0] + sh), p[1], True))
                 label_at.setdefault(net, (p[0], p[1]))
             tp = pt["TAP_S"]
             taps.append((b, tp[0], tp[1], True))
@@ -601,9 +601,10 @@ class Builder:
                 continue
             xs = [p[0] for p in pins]
             self._box(cell, LS_M2, min(xs) - LS_W2 / 2, y - LS_W2 / 2, max(xs) + LS_W2 / 2, y + LS_W2 / 2)
-            for lx, y0 in pins:
+            for lx, y0, pad in pins:
                 self._box(cell, LS_M3, lx - LS_W3N / 2, y0 - LS_W3N / 2, lx + LS_W3N / 2, y + LS_W3N / 2)
-                self._cut(cell, LS_VIA2, lx, y0)
+                if pad:  # only where _stack left an M2 pad for the cut to land on
+                    self._cut(cell, LS_VIA2, lx, y0)
                 self._cut(cell, LS_VIA2, lx, y)
             y = gs(y + CD_TRACK_PITCH)
         for net, tx, ty, pad in taps:

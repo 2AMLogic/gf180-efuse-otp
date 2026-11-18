@@ -72,7 +72,7 @@ layout/lvs.sh                 # rewrite the LVS reports (lvs-ctrl needs the PDK;
 layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-analog.attest.json)
 ```
 
-`sha256(efuse_otp_array.gds)` = `99575cd6b428d55d9c6866778a0b90103527a85566fed11d2e8b9eae28e6831b`
+`sha256(efuse_otp_array.gds)` = `133922ed156c68534147da03101307feff268163c732b4b3c3cbf997b6293b98`
 (klt 0.9.2, `gf180mcuC` at open_pdks `f6eeac7`; the stream the `efuse_rowdrv` /
 `efuse_coldrv` routing produced). The previous hash
 `bf79985e4a0a15aaad4eeb56d8bbbb9652a9dd5de1c8bda8ddbebed56a36a0dc` was the stream with only
@@ -180,12 +180,19 @@ boxes. All 13 nets are drawn:
   M3 down); `vss` by extending its rail east. `efuse_ls` itself changed
   only by dropping its five unlanded D-pad via2 cuts (see the gate below).
 - **Via2 landing gate.** via2 rules `V2.3c`, `V2.3d`, `V2.4b` and `V2.4c` are
-  unmodeled in the deck, and `metal3.enclosing.via2.1` passes a via2 with no M3
-  over it, so DRC cannot catch an unlanded via2. `layout/check_via2_landing.sh`
-  counts via2 shapes with no merged M3 over them per cell (exit 1 on any); it
-  reports 0 for `efuse_ls`, `efuse_rowdrv`, `efuse_coldrv` and the top. Before
-  the fix: 5, 5, 6 and 208 (the D-pad cuts in `_ls_pad3` and `sbl`'s lane cut
-  in `_stack`).
+  unmodeled in the deck, and `metal3.enclosing.via2.1` / `metal2.enclosing.via2.1`
+  pass a via2 with no M3 over it or no M2 under it (and LVS cannot see a dead
+  cut), so neither DRC nor LVS can catch an unlanded via2.
+  `layout/check_via2_landing.sh` counts, per cell, via2 shapes with no merged M3
+  above them and via2 shapes with no merged M2 below them (exit 1 on any of
+  either); it reports 0 for both in `efuse_ls`, `efuse_rowdrv`, `efuse_coldrv`
+  and the top. Before the fix the M3-above counts were 5, 5, 6 and 208 (the
+  D-pad cuts in `_ls_pad3` and `sbl`'s lane cut in `_stack`); an interim
+  version that cut at every `net_pins` entry left 2 / 16 with no M2 below in
+  `efuse_coldrv` / the top (the two `efuse_ls` M3-to-M3 tie-ins), which the
+  one-sided gate did not see. `net_pins` now records whether a pin has an M2
+  pad and only those get a pin-level cut. A cell's via2 is judged against the
+  metal in that cell's own hierarchy.
 
 ## efuse_rowdrv / efuse_coldrv LVS
 
