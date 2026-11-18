@@ -4,6 +4,18 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-18
 
+- **PR #284**: ci: gate the committed ctrl stream on via2 landing
+- **PR #283**: docs(ci): state that the via2 step does not run regen-gds.sh
+- **PR #280**: docs(signoff): list the via2 landing gate in the CI checks
+- **PR #278**: ci: gate committed stream on via2 landing and re-thread README hash chain
+- **PR #275**: fix(layout): drop unlanded via2 cuts and gate them with a per-cell M3 count
+- **PR #273**: feat(layout): route efuse_rowdrv and efuse_coldrv, LVS-match both cells
+- **Issue #281** (closed): Via2 landing gate runs on the array stream only; efuse_otp_ctrl.gds (1429 via2) is ungated
+- **Issue #282** (closed): Reword the via2 CI step's regen-gds.sh claim, bundled with the next ci.yml edit
+- **Issue #279** (closed): Record the via2 landing gate in signoff/README.md's CI list, and fix the step comment's regen-gds claim
+- **Issue #276** (closed): Make the via2 landing gate durable in CI, and repair the README stream-hash chain
+- **Issue #274** (closed): Routed cells draw via2 cuts with no M3 above them (unlanded vias; V2.3c/d/V2.4b/c are unmodeled in the deck)
+- **Issue #268** (closed): Route efuse_coldrv (and the efuse_rowdrv wrapper) in the layout generator and LVS-match them (second slice of #73)
 - **PR #271**: ci: single-source the check:ci term list in scripts/ci/check_ci.sh
 - **Issue #267** (closed): Single-source the check:ci list and drop the two drift-binding checkers (~1,240 lines)
 
