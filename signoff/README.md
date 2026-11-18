@@ -245,11 +245,13 @@ they check that:
   engine-dependent while `signoff/klt-pin.txt` does not constrain the
   engine (klayout-tools#5601), so only the engine-independent input hash is
   gated;
-- every cell of the committed layout stream has zero via2 shapes with no M3
-  above or no M2 below (`layout/check_via2_landing.sh`, counted per cell with
-  the pinned klt's klayout). The deck does not model the `V2.3c`, `V2.3d`,
-  `V2.4b` or `V2.4c` rules, so this count is the only gate for that class;
-  it runs on the committed stream and does not regenerate it;
+- every cell of the committed array stream (`layout/efuse_otp_array.gds`) has
+  zero via2 shapes with no M3 above or no M2 below
+  (`layout/check_via2_landing.sh`, counted per cell with the pinned klt's
+  klayout). The deck does not model the `V2.3c`, `V2.3d`, `V2.4b` or `V2.4c`
+  rules, so this count is the only gate for that class on that stream; it
+  runs on the committed stream and does not regenerate it. The committed ctrl
+  stream (`layout/efuse_otp_ctrl.gds`) is outside this gate;
 - the item 6 digital extract is still bound to the ratified
   `spec/efuse-otp.md` (`signoff/check-item6-digital.sh`): the spec's sha256
   matches the extract's recorded hash and every quoted row still appears
