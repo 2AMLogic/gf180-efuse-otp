@@ -153,3 +153,11 @@ jobs:
         # digest from the pinned klt's own `klt stats --format json` and
         # attests both envelopes in one step.
         run: layout/attest.sh --check
+
+      - name: Committed stream has no unlanded via2
+        # The deck does not model V2.3c/V2.3d/V2.4b/V2.4c, so this per-cell count
+        # of via2 shapes with no M3 above or no M2 below is the only gate for
+        # that class. Reads the committed stream with the pinned klt's python;
+        # no PDK or OpenROAD. regen-gds.sh --check proves the stream equals the
+        # generator output, so gating the committed stream covers both.
+        run: layout/check_via2_landing.sh
