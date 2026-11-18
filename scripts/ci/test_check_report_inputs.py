@@ -38,7 +38,7 @@ def report(role, field, stream_path, data, scope="repo", recorded=None,
 
 
 def clean_tree():
-    """The six gated layout/ reports plus the skipped one, all matching."""
+    """The ten gated layout/ reports plus the skipped one, all matching."""
     return {
         "layout/efuse_otp_array.gds": ARRAY,
         "layout/efuse_otp_ctrl.gds": CTRL,
@@ -47,12 +47,12 @@ def clean_tree():
             report("layout", "file", "layout/efuse_otp_array.gds", ARRAY),
         "layout/drc-ctrl.report.json":
             report("layout", "file", "layout/efuse_otp_ctrl.gds", CTRL),
-        # The routed efuse_ls cell: DRC'd and LVS'd as a top of the analog
-        # stream, so the report names efuse_otp_array.gds, not efuse_ls.gds.
-        "layout/drc-ls.report.json":
-            report("layout", "file", "layout/efuse_otp_array.gds", ARRAY),
-        "layout/lvs-ls.report.json":
-            report("layout", "file", "layout/efuse_otp_array.gds", ARRAY),
+        # The routed analog cells (efuse_ls, efuse_rowdrv, efuse_coldrv): each
+        # DRC'd and LVS'd as a top of the analog stream, so the report names
+        # efuse_otp_array.gds, not a per-cell stream.
+        **{f"layout/{kind}-{cell}.report.json":
+           report("layout", "file", "layout/efuse_otp_array.gds", ARRAY)
+           for kind in ("drc", "lvs") for cell in ("ls", "rowdrv", "coldrv")},
         # The lvs-ctrl shape: role layout, resolved via .layout.path, no .file.
         "layout/lvs-ctrl.report.json":
             report("layout", "layout", "layout/efuse_otp_ctrl.gds", CTRL),
@@ -96,22 +96,22 @@ class Test(unittest.TestCase):
     def test_clean_tree_passes(self):
         rc, out = self.run_main(clean_tree())
         self.assertEqual(rc, 0)
-        self.assertIn("6 report input hash(es) match", out)
+        self.assertIn("10 report input hash(es) match", out)
         self.assertIn("1 skipped", out)
 
     def test_empty_tree_passes_vacuously(self):
         # An empty tree gates nothing, so main() takes its vacuous-pass
         # branch and check:ci is green with nothing seeded. No gated pair
         # is exercised here -- the real-tree pin lives in
-        # test_real_tree_gates_six_reports.
+        # test_real_tree_gates_ten_reports.
         rc, out = self.run_main({})
         self.assertEqual(rc, 0, out)
         self.assertIn("passes vacuously", out)
 
-    def test_real_tree_gates_six_reports(self):
+    def test_real_tree_gates_ten_reports(self):
         problems, gated, skipped = cri.check(REPO_ROOT)
         self.assertEqual(problems, [])
-        self.assertEqual(gated, 6)
+        self.assertEqual(gated, 10)
         self.assertEqual(skipped, 1)
 
     def test_recorded_hash_mismatch_fails(self):
@@ -188,7 +188,7 @@ class Test(unittest.TestCase):
     def test_no_provenance_skipped(self):
         problems, gated, skipped = cri.check(make_tree(clean_tree()))
         self.assertEqual(problems, [])
-        self.assertEqual(gated, 6)
+        self.assertEqual(gated, 10)
         self.assertEqual(skipped, 1)
 
     def test_hash_without_prefix_matches(self):
