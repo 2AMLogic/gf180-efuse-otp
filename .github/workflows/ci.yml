@@ -158,6 +158,7 @@ jobs:
         # The deck does not model V2.3c/V2.3d/V2.4b/V2.4c, so this per-cell count
         # of via2 shapes with no M3 above or no M2 below is the only gate for
         # that class. Reads the committed stream with the pinned klt's python;
-        # no PDK or OpenROAD. regen-gds.sh --check proves the stream equals the
-        # generator output, so gating the committed stream covers both.
+        # no PDK or OpenROAD. This runs on the committed stream and does not
+        # regenerate it; that the stream equals the generator output is a
+        # local `regen-gds.sh --check` step, which CI does not run.
         run: layout/check_via2_landing.sh
