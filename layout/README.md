@@ -72,7 +72,7 @@ layout/lvs.sh                 # rewrite the LVS reports (lvs-ctrl needs the PDK;
 layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-analog.attest.json)
 ```
 
-`sha256(efuse_otp_array.gds)` = `4cf5b69431e9523935b18eb4d04ef5227884bf5d885ff20bde165628dfa9ec7f`
+`sha256(efuse_otp_array.gds)` = `99575cd6b428d55d9c6866778a0b90103527a85566fed11d2e8b9eae28e6831b`
 (klt 0.9.2, `gf180mcuC` at open_pdks `f6eeac7`; the stream the `efuse_rowdrv` /
 `efuse_coldrv` routing produced). The previous hash
 `bf79985e4a0a15aaad4eeb56d8bbbb9652a9dd5de1c8bda8ddbebed56a36a0dc` was the stream with only
@@ -165,7 +165,8 @@ boxes. All 13 nets are drawn:
   top (0.72 µm track pitch). A device's S lane sits 0.16 µm west of its pin,
   G on it, D 0.16 µm east, so the three lanes are 0.59 µm apart (0.30 µm M3,
   0.29 µm space). M3 meets M2 only at a net's own via2. Nets with one pin
-  (`sbl`) need no track.
+  (`sbl`) need no track and get no via2 either (nothing would land on it; the
+  net stays reachable through its M1 label and M2 pad).
 - **Supplies.** A source on its body net (all the supply-source devices) is
   merged into its guard ring with the same M1 bridge as `ls_cell`; each ring
   leaves at `TAP_S`, down an M3 lane to its supply's M2 rail below the row
@@ -176,9 +177,15 @@ boxes. All 13 nets are drawn:
   west off the existing `in` vertical, then up; `out` by an M3 run east off the
   `out` vertical at its drop above `XMp2.D`, then up; `vdd33` at the west end
   of its M2 stub (via2, M3 down); `vprog` by extending its M2 run east (via2,
-  M3 down); `vss` by extending its rail east. `efuse_ls` itself is unchanged
-  (its stream shapes, `lvs-ls` and `drc-ls` are untouched apart from the
-  stream hash).
+  M3 down); `vss` by extending its rail east. `efuse_ls` itself changed
+  only by dropping its five unlanded D-pad via2 cuts (see the gate below).
+- **Via2 landing gate.** via2 rules `V2.3c`, `V2.3d`, `V2.4b` and `V2.4c` are
+  unmodeled in the deck, and `metal3.enclosing.via2.1` passes a via2 with no M3
+  over it, so DRC cannot catch an unlanded via2. `layout/check_via2_landing.sh`
+  counts via2 shapes with no merged M3 over them per cell (exit 1 on any); it
+  reports 0 for `efuse_ls`, `efuse_rowdrv`, `efuse_coldrv` and the top. Before
+  the fix: 5, 5, 6 and 208 (the D-pad cuts in `_ls_pad3` and `sbl`'s lane cut
+  in `_stack`).
 
 ## efuse_rowdrv / efuse_coldrv LVS
 

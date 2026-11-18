@@ -364,11 +364,11 @@ class Builder:
         d_ni, d_pi, g_n2 = ni["U0_D"], pi["U0_D"], n2["U0_G"]
         jx = LS_JUNC_X["inb"]
         yt = LS_TRACK_Y["inb"]
-        self._ls_pad3(m1, m2, v1, v2, d_ni)
+        self._ls_pad3(m1, m2, v1, v2, d_ni, via2=False)
         self._ls_box(m2, d_ni[0], d_ni[1] - LS_W2 / 2, jx + LS_W2 / 2, d_ni[1] + LS_W2 / 2)
         self._ls_vstrip(m3, jx, d_ni[1], d_pi[1], LS_W3)
         self._ls_cut(v2, jx, d_ni[1])
-        self._ls_pad3(m1, m2, v1, v2, d_pi)
+        self._ls_pad3(m1, m2, v1, v2, d_pi, via2=False)
         self._ls_box(m2, d_pi[0], d_pi[1] - LS_W2 / 2, jx + LS_W2 / 2, d_pi[1] + LS_W2 / 2)
         self._ls_cut(v2, jx, d_pi[1])
         self._ls_box(m2, jx - LS_W2 / 2, yt - LS_W2 / 2, g_n2[0] + LS_W2 / 2, yt + LS_W2 / 2)
@@ -382,13 +382,13 @@ class Builder:
         d_n1, d_p1, g_p2 = n1["U0_D"], p1["U0_D"], p2["U0_G"]
         jx = LS_JUNC_X["x1"]
         yh = LS_M3_HORIZ_Y["x1"]
-        self._ls_pad3(m1, m2, v1, v2, d_n1)
+        self._ls_pad3(m1, m2, v1, v2, d_n1, via2=False)
         self._ls_box(m2, d_n1[0], d_n1[1] - LS_W2 / 2, jx + LS_W3N / 2, d_n1[1] + LS_W2 / 2)
         self._ls_vstrip(m3, jx, d_n1[1], yh, LS_W3N)
         self._ls_cut(v2, jx, d_n1[1])
         self._ls_box(m2, d_p1[0], d_p1[1] - LS_W2 / 2, jx + LS_W3N / 2, d_p1[1] + LS_W2 / 2)
         self._ls_cut(v2, jx, d_p1[1])
-        self._ls_pad3(m1, m2, v1, v2, d_p1)
+        self._ls_pad3(m1, m2, v1, v2, d_p1, via2=False)
         # The top run's east end stops at the drop leg's far edge (not its own
         # half-width past the junction): one more 0.06 um would close the gap
         # to the `out` vertical at XMp2.D+0.06 below 0.28 um.
@@ -405,7 +405,7 @@ class Builder:
         jx = LS_JUNC_X["out"]
         mx = d_p2[0] + 0.06  # M3 x through XMp2.D
         ym, yh = LS_TRACK_Y["out"], LS_M3_HORIZ_Y["out"]
-        self._ls_pad3(m1, m2, v1, v2, d_n2)
+        self._ls_pad3(m1, m2, v1, v2, d_n2, via2=False)
         self._ls_box(m2, jx - LS_W3N / 2, d_n2[1] - LS_W2 / 2, d_n2[0], d_n2[1] + LS_W2 / 2)
         self._ls_vstrip(m3, jx, d_n2[1], ym, LS_W3N)
         self._ls_cut(v2, jx, d_n2[1])
@@ -440,18 +440,23 @@ class Builder:
         h = LS_VIA_SIZE / 2
         self._ls_box(li, cx - h, cy - h, cx + h, cy + h)
 
-    def _ls_pad3(self, m1, m2, v1, v2, port, via2_x=None):
+    def _ls_pad3(self, m1, m2, v1, v2, port, via2_x=None, via2=True):
         """via1 + M2 landing pad + via2 at one M1 pad centre.
 
         via2_x shifts only the upper cut (M2 pad still centres on the M1
         pad): used where the M3 stub through a 0.42 um pad must clear a
-        neighbouring net's M3 by 0.28 um (XMp2.D).
+        neighbouring net's M3 by 0.28 um (XMp2.D). via2=False omits the cut
+        where the net's M3 does not run over this pad (the D pads: their M2
+        runs to the junction, which carries its own via2); a cut with no M3
+        above it is an unlanded via (V2.3c/d, V2.4b/c: unmodeled in the deck,
+        gated by layout/check_via2_landing.sh).
         """
         cx, cy = port[0], port[1]
         h = LS_PAD2 / 2
         self._ls_cut(v1, cx, cy)
         self._ls_box(m2, cx - h, cy - h, cx + h, cy + h)
-        self._ls_cut(v2, via2_x if via2_x is not None else cx, cy)
+        if via2:
+            self._ls_cut(v2, via2_x if via2_x is not None else cx, cy)
 
     def _ls_vstrip(self, m3, x, y0, y1, w):
         lo, hi = min(y0, y1), max(y0, y1)
@@ -476,14 +481,17 @@ class Builder:
         cell.shapes(self.layout.layer(*LS_M1_LBL)).insert(
             kdb.Text(net, kdb.Trans(round(x / DBU_UM), round(y / DBU_UM))))
 
-    def _stack(self, cell, x, y, lane_x=None):
+    def _stack(self, cell, x, y, lane_x=None, via2=True):
         """via1 + M2 landing pad at an M1 point, via2 at lane_x (the M2 pad
-        stretches from the point to the lane so the M3 lane can sit off the pin)."""
+        stretches from the point to the lane so the M3 lane can sit off the pin).
+        via2=False leaves the cut to the caller, which draws it only once an M3
+        lane lands on it."""
         lx = x if lane_x is None else lane_x
         h = LS_PAD2 / 2
         self._cut(cell, LS_VIA1, x, y)
         self._box(cell, LS_M2, min(x, lx) - h, y - h, max(x, lx) + h, y + h)
-        self._cut(cell, LS_VIA2, lx, y)
+        if via2:
+            self._cut(cell, LS_VIA2, lx, y)
 
     def rowdrv_cell(self, subckt):
         """efuse_rowdrv: the routed efuse_ls instance at the origin; the five
@@ -573,13 +581,13 @@ class Builder:
             else:
                 assert s not in SUPPLY, f"{iname}: supply source off its body"
                 sp = pt["U0_S"]
-                self._stack(cell, sp[0], sp[1], gs(sp[0] - CD_SHIFT))
+                self._stack(cell, sp[0], sp[1], gs(sp[0] - CD_SHIFT), via2=False)
                 net_pins.setdefault(s, []).append((gs(sp[0] - CD_SHIFT), sp[1]))
                 label_at.setdefault(s, (sp[0], sp[1]))
             for net, port, sh in ((d, "U0_D", CD_SHIFT), (g, "U0_G", 0.0)):
                 assert net not in SUPPLY, f"{iname}: supply on {port}"
                 p = pt[port]
-                self._stack(cell, p[0], p[1], gs(p[0] + sh))
+                self._stack(cell, p[0], p[1], gs(p[0] + sh), via2=False)
                 net_pins.setdefault(net, []).append((gs(p[0] + sh), p[1]))
                 label_at.setdefault(net, (p[0], p[1]))
             tp = pt["TAP_S"]
@@ -595,6 +603,7 @@ class Builder:
             self._box(cell, LS_M2, min(xs) - LS_W2 / 2, y - LS_W2 / 2, max(xs) + LS_W2 / 2, y + LS_W2 / 2)
             for lx, y0 in pins:
                 self._box(cell, LS_M3, lx - LS_W3N / 2, y0 - LS_W3N / 2, lx + LS_W3N / 2, y + LS_W3N / 2)
+                self._cut(cell, LS_VIA2, lx, y0)
                 self._cut(cell, LS_VIA2, lx, y)
             y = gs(y + CD_TRACK_PITCH)
         for net, tx, ty, pad in taps:
