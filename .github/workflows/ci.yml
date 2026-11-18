@@ -78,37 +78,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends jq
 
-      - name: Checker self-tests
-        working-directory: scripts/ci
-        run: python3 -I -m unittest discover -s . -p 'test_*.py' -v
-
-      - name: Evidence format
-        run: python3 scripts/ci/check_evidence_format.py
-
-      - name: Report input hashes
-        # layout/*report*.json must still describe the stream committed beside
-        # them (provenance.input.content_hash vs the sha256 of the stream the
-        # report names). Hermetic: python3 stdlib only, like Evidence format.
-        # It does not re-run any flow and does not check the deck hash
-        # (klayout-tools#5601); see signoff/README.md,
-        # "What CI does and does not check".
-        run: python3 scripts/ci/check_report_inputs.py
-
-      - name: check:ci step coverage
-        # check:ci chains scripts/ci/check_ci_yml_binding.py; run it here so a
-        # check:ci term with no matching step in this file fails CI instead of
-        # only the local gate. Which checks CI runs is out of scope by design:
-        # steps with no check:ci term (this one, the klt attestation steps,
-        # Sim records append-only) are not the checker's concern.
-        run: python3 scripts/ci/check_ci_yml_binding.py
-
-      - name: README check:ci enumeration binding
-        # check:ci chains scripts/ci/check_readme_enumeration.py; run it here
-        # so a check:ci term the README's check:ci paragraph stops naming by
-        # path fails CI instead of only the local gate. Plain python3, not -I:
-        # the checker imports its sibling check_ci_yml_binding, whose directory
-        # -I strips from sys.path on Python >= 3.11.
-        run: python3 scripts/ci/check_readme_enumeration.py
+      - name: check:ci (hermetic checks)
+        # The single source of the hermetic term list is
+        # scripts/ci/check_ci.sh; package.json scripts["check:ci"] calls the
+        # same script, so this job and the local gate run the identical list
+        # by construction. One step instead of one per check: the script
+        # prints a "==> <name>" line before each check, so a failure is read
+        # from the log as the last such line. The steps below this one are
+        # the tool-, PDK- or diff-base-dependent checks the script
+        # deliberately omits.
+        run: ./scripts/ci/check_ci.sh
 
       - name: Sim records append-only
         env:
@@ -122,43 +101,6 @@ jobs:
             base="$BEFORE"
           fi
           python3 scripts/ci/check_sim_append_only.py --base "$base"
-
-      - name: Item 6 digital extract bound to the spec
-        run: signoff/check-item6-digital.sh
-
-      - name: decision-0005 PVT grid bound to the spec
-        run: signoff/check-pvt-grid.sh
-
-      - name: pdk_env.sh self-test
-        run: sim/lib/test_pdk_env.sh
-
-      - name: Attestation pin check
-        # check:ci chains scripts/ci/check_attest_pins.py; run it here so a
-        # drifted attested-path pin fails CI instead of only the local gate.
-        run: python3 scripts/ci/check_attest_pins.py
-
-      - name: klt helper self-test
-        # check:ci chains signoff/test-klt.sh; it is hermetic (it fakes uvx on
-        # PATH and never invokes a real klt), so the runner needs no extra tool.
-        run: signoff/test-klt.sh
-
-      - name: program-select summarize self-test
-        # check:ci chains sim/program-select/test_summarize.py, which pins that
-        # the record describes the submitted grid; run it here so a regression
-        # in the refuse-a-partial-set behaviour fails CI.
-        run: python3 -I sim/program-select/test_summarize.py
-
-      - name: sense-margin summarize self-test
-        # check:ci chains sim/sense-margin/test_summarize.py, which pins that
-        # the record describes the submitted request set; run it here so a
-        # regression in that behaviour fails CI.
-        run: python3 -I sim/sense-margin/test_summarize.py
-
-      - name: bench_record load_reports self-test
-        # check:ci chains sim/lib/test_bench_record.py, which pins that a
-        # partial report set is refused before anything is returned; run it
-        # here so a regression in that refusal fails CI.
-        run: python3 -I sim/lib/test_bench_record.py
 
       - name: Re-grade signoff record
         run: |
