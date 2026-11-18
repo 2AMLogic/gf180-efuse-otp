@@ -120,39 +120,13 @@ are listed in [`signoff/README.md`](signoff/README.md), "What CI does and does
 not check". It does not run the ngspice flow (it needs the PDK).
 
 `npm run -s check:ci` is the local pre-flight: the subset of those checks that
-needs nothing but python3, bash and jq — the checker self-tests
-(`scripts/ci/test_*.py`), the evidence-format check
-(`scripts/ci/check_evidence_format.py`), the attestation-envelope pin check
-(`scripts/ci/check_attest_pins.py`, which re-hashes every attested path pin,
-composite and manifest binding in the repo and names the "Re-attest item N"
-procedure when one has drifted), the report-input check
-(`scripts/ci/check_report_inputs.py`, which re-hashes each layout report's
-recorded input stream hash against the stream it names, so a report that was
-not re-run after its stream was regenerated fails), the ci.yml step-binding
-check (`scripts/ci/check_ci_yml_binding.py`, which parses this very term list
-and fails when a term has no matching step in `.github/workflows/ci.yml`,
-with a documented `EXEMPT_TERMS` list for terms CI deliberately skips — the
-term list and the CI step list can no longer drift by hand, #217, #230,
-#231), the README enumeration check
-(`scripts/ci/check_readme_enumeration.py`, which binds this same paragraph to
-the term list and fails when a non-`echo` term's script path is no longer
-named here — the term list and this enumeration can no longer drift by hand
-either, #248, #250), the item 6 spec-binding check
-(`signoff/check-item6-digital.sh`), the decision-0005 PVT grid binding check
-(`signoff/check-pvt-grid.sh`), the `pdk_env.sh` self-test
-(`sim/lib/test_pdk_env.sh`), the klt helper self-test (`signoff/test-klt.sh`,
-which fakes `uvx` on `PATH` and asserts on the argv the pinned-klt facets emit,
-so it never invokes a real `klt`), the bench-record loader self-test
-(`sim/lib/test_bench_record.py`, which pins that a partial report set is
-refused before anything is returned), the program-select summarize self-test
-(`sim/program-select/test_summarize.py`, which pins that the record describes
-the submitted grid rather than whatever reports are present) and the
-sense-margin summarize self-test (`sim/sense-margin/test_summarize.py`, which
-pins that the record describes the submitted request set rather than whatever
-reports are present). The workflow runs every check in that list, as
-individually named steps of the `harness` job. `check:ci` deliberately leaves
-out every check that needs an EDA tool, the PDK or a diff base, so a green
-`check:ci` is not a prediction that CI will pass.
+needs nothing but python3, bash and jq. Its term list is single-sourced in
+[`scripts/ci/check_ci.sh`](scripts/ci/check_ci.sh) — one command per line,
+each announced with a `==> <name>` line so a failure names its check — and
+both `package.json` and the `harness` job of `.github/workflows/ci.yml` call
+that script, so the local gate and CI run the identical list by construction.
+`check:ci` deliberately leaves out every check that needs an EDA tool, the PDK
+or a diff base, so a green `check:ci` is not a prediction that CI will pass.
 
 ## Repo layout
 

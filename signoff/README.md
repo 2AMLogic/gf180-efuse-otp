@@ -231,11 +231,6 @@ they check that:
 - the sense-margin summarize self-test still passes
   (`sim/sense-margin/test_summarize.py`, hermetic, pins that the record
   describes the submitted request set rather than whatever reports are present);
-- every `check:ci` term still has a matching step in `ci.yml`
-  (`scripts/ci/check_ci_yml_binding.py` parses the `&&` terms and the job
-  steps, with a documented `EXEMPT_TERMS` list for terms CI deliberately
-  skips), so the local gate's term list and CI's step list cannot drift by
-  hand again (#217, #230, #231);
 - each evidence directory has a `README.md`, and any `sim/**/records/*.json`
   has the required fields, a PDK revision, and repo-relative paths only
   (vacuously true while there are no records);
