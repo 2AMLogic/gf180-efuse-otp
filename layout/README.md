@@ -194,7 +194,11 @@ boxes. All 13 nets are drawn:
   `efuse_coldrv` / the top (the two `efuse_ls` M3-to-M3 tie-ins), which the
   one-sided gate did not see. `net_pins` now records whether a pin has an M2
   pad and only those get a pin-level cut. A cell's via2 is judged against the
-  metal in that cell's own hierarchy.
+  metal in that cell's own hierarchy. CI runs the gate on both committed streams,
+  the array and `layout/efuse_otp_ctrl.gds` (pass the ctrl stream as the argument);
+  as of 2026-11-18 the ctrl stream reports 0 / 0 in each of its three via2-bearing
+  cells (`VIA_Via2_VH` of 1, `VIA_via2_3_8960_1200_1_5_1040_1040` of 5,
+  `efuse_otp_ctrl` of 1429).
 
 ## efuse_rowdrv / efuse_coldrv LVS
 

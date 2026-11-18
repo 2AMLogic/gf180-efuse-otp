@@ -154,11 +154,14 @@ jobs:
         # attests both envelopes in one step.
         run: layout/attest.sh --check
 
-      - name: Committed stream has no unlanded via2
+      - name: Committed streams have no unlanded via2
         # The deck does not model V2.3c/V2.3d/V2.4b/V2.4c, so this per-cell count
         # of via2 shapes with no M3 above or no M2 below is the only gate for
-        # that class. Reads the committed stream with the pinned klt's python;
-        # no PDK or OpenROAD. This runs on the committed stream and does not
-        # regenerate it; that the stream equals the generator output is a
-        # local `regen-gds.sh --check` step, which CI does not run.
-        run: layout/check_via2_landing.sh
+        # that class. Reads each committed stream (array, then ctrl) with the
+        # pinned klt's python; no PDK or OpenROAD. This runs on the committed
+        # streams and does not regenerate them; that a stream equals the
+        # generator output is a local `regen-gds.sh --check` step, which CI
+        # does not run.
+        run: |
+          layout/check_via2_landing.sh
+          layout/check_via2_landing.sh layout/efuse_otp_ctrl.gds
