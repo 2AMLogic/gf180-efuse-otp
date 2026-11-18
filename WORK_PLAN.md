@@ -25,7 +25,7 @@ _None._
 
 ## Ready
 
-Human-approved issues ready for implementation (`loom:issue`).
+Human-approved issues (`loom:issue`) ready for implementation — excluding held (`loom:blocked`/`loom:operator`/`loom:frozen`), `loom:building`, and issues closed by an open `loom:pr` PR (listed under Approved).
 
 - **#268**: Route efuse_coldrv (and the efuse_rowdrv wrapper) in the layout generator and LVS-match them (second slice of #73)
 
@@ -45,7 +45,7 @@ _None._
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-- **#94**: spec: ratify 10 MHz controller clock and cite STA + functional reports for item 5 digital
+- **#94**: spec: ratify 10 MHz controller clock and cite STA + functional reports for item 5 digital — closes #35
 
 ## Proposed
 
@@ -75,11 +75,11 @@ _None._
 | Operator merge-risk holds | 1 |
 | Very important | 0 |
 | Important | 3 |
-| Ready (`loom:issue`) | 1 |
+| Ready (`loom:issue`, net of holds/building/merge-pending) | 1 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 1 |
 | Curated | 3 |
-| Architect / Hermit proposals | 6 |
+| Architect / Hermit proposals | 5 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->

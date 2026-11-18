@@ -2,6 +2,11 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-18
+
+- **PR #271**: ci: single-source the check:ci term list in scripts/ci/check_ci.sh
+- **Issue #267** (closed): Single-source the check:ci list and drop the two drift-binding checkers (~1,240 lines)
+
 ### 2026-11-17
 
 - **PR #266**: feat(layout): route efuse_ls in the generator, DRC/LVS the routed cell
