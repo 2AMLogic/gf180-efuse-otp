@@ -2,6 +2,10 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-19
+
+- **Issue #73** (closed): Route the fuse-free analog leaf cells (efuse_ls, efuse_coldrv) and LVS-match each one
+
 ### 2026-11-18
 
 - **PR #284**: ci: gate the committed ctrl stream on via2 landing
