@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 # Run `klt drc --deck gf180mcu` on both partitions' GDS with the pinned klt (never
-# a host-installed one) plus the routed efuse_ls, efuse_rowdrv and efuse_coldrv
-# cells (each the top of the analog stream),
+# a host-installed one) plus the routed efuse_ls, efuse_rowdrv, efuse_coldrv,
+# efuse_bitcell and efuse_row cells (each the top of the analog stream),
 # and keep the JSON reports as committed evidence.
 #   layout/drc.sh           rewrite layout/drc-array.report.json,
 #                           layout/drc-ctrl.report.json and
 #                           layout/drc-ls.report.json,
-#                           layout/drc-rowdrv.report.json and
-#                           layout/drc-coldrv.report.json
+#                           layout/drc-rowdrv.report.json,
+#                           layout/drc-coldrv.report.json,
+#                           layout/drc-bitcell.report.json and
+#                           layout/drc-row.report.json
 #   layout/drc.sh --check   klt drc --check on each committed report (input and
 #                           deck content hashes still match; add --rerun to re-run)
 # klt exits 3 when a report is not clean; that is a finding, not a script failure,
@@ -17,10 +19,12 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 # shellcheck source=../signoff/klt.sh
 . signoff/klt.sh
-# part:name:top[:file] -- a routed cell (efuse_ls, rowdrv, coldrv) is DRC'd inside the analog
-# stream (top efuse_ls of efuse_otp_array.gds), so its GDS differs from its top.
+# part:name:top[:file] -- a routed cell (efuse_ls, rowdrv, coldrv, bitcell,
+# row) is DRC'd inside the analog stream (top efuse_ls of efuse_otp_array.gds),
+# so its GDS differs from its top.
 parts=(array:efuse_otp_array ctrl:efuse_otp_ctrl ls:efuse_ls:efuse_otp_array
-       rowdrv:efuse_rowdrv:efuse_otp_array coldrv:efuse_coldrv:efuse_otp_array)
+       rowdrv:efuse_rowdrv:efuse_otp_array coldrv:efuse_coldrv:efuse_otp_array
+       bitcell:efuse_bitcell:efuse_otp_array row:efuse_row:efuse_otp_array)
 if [ "${1:-}" = "--check" ]; then
   shift
   for p in "${parts[@]}"; do
