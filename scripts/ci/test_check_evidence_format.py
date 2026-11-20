@@ -1,4 +1,5 @@
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -9,8 +10,9 @@ GOOD = {"pdk_revision": "abc123", "tool_versions": {"ngspice": "44"},
         "corners": ["tt"], "netlist": "sim/x/netlist.spice"}
 
 
-def make_tree(record=None, drop_readme=None):
+def make_tree(case, record=None, drop_readme=None):
     root = Path(tempfile.mkdtemp())
+    case.addCleanup(shutil.rmtree, root, ignore_errors=True)
     for d in cef.EVIDENCE_DIRS:
         (root / d).mkdir()
         if d != drop_readme:
@@ -24,7 +26,7 @@ def make_tree(record=None, drop_readme=None):
 
 class Test(unittest.TestCase):
     def run_check(self, **kw):
-        return cef.main(["--root", str(make_tree(**kw))])
+        return cef.main(["--root", str(make_tree(self, **kw))])
 
     def test_clean_without_records(self):
         self.assertEqual(self.run_check(), 0)
