@@ -1,5 +1,6 @@
 import hashlib
 import json
+import shutil
 import tempfile
 import unittest
 from contextlib import redirect_stdout
@@ -72,8 +73,9 @@ def clean_tree():
     }
 
 
-def make_tree(files):
+def make_tree(case, files):
     root = Path(tempfile.mkdtemp())
+    case.addCleanup(shutil.rmtree, root, ignore_errors=True)
     for rel, content in files.items():
         p = root / rel
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -90,7 +92,7 @@ class Test(unittest.TestCase):
     def run_main(self, files, args=()):
         out = StringIO()
         with redirect_stdout(out):
-            rc = cri.main(["--root", str(make_tree(files)), *args])
+            rc = cri.main(["--root", str(make_tree(self, files)), *args])
         return rc, out.getvalue()
 
     def test_clean_tree_passes(self):
@@ -186,7 +188,7 @@ class Test(unittest.TestCase):
         self.assertIn("not present in the tree", out)
 
     def test_no_provenance_skipped(self):
-        problems, gated, skipped = cri.check(make_tree(clean_tree()))
+        problems, gated, skipped = cri.check(make_tree(self, clean_tree()))
         self.assertEqual(problems, [])
         self.assertEqual(gated, 10)
         self.assertEqual(skipped, 1)
