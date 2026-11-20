@@ -42,6 +42,7 @@ PDK_PROCESSES_PERMUTED = sub(PDK_TEXT, '"typical","ff","ss","fs","sf"',
                              '"ff","typical","ss","fs","sf"')
 PDK_TEMPS_DRIFT = sub(PDK_TEXT, "[-40,25,125]", "[-40,25,150]")
 PDK_3V3_DRIFT = sub(PDK_TEXT, "[2.97,3.30,3.63]", "[2.97,3.30,3.7]")
+PDK_3V3_NULL = sub(PDK_TEXT, "[2.97,3.30,3.63]", "null")
 PDK_3V3_NOT_JSON = sub(PDK_TEXT, "[2.97,3.30,3.63]", "[2.97 3.30]")
 PDK_5V0_DRIFT = sub(PDK_TEXT, "[4.5,5.0,5.5]", "[4.5,5.0,5.6]")
 PDK_5V0_UNSET = sub(PDK_TEXT, "PVT_SUPPLY_5V0='[4.5,5.0,5.5]'",
@@ -166,6 +167,11 @@ class Test(unittest.TestCase):
 
     def test_supply_3v3_axis_disagrees(self):
         p = self.check(pdk_env_text=PDK_3V3_DRIFT)
+        self.assertEqual(p.returncode, 1)
+        self.assertIn("logic/sense supply 3.3 V axis disagrees", p.stderr)
+
+    def test_supply_3v3_json_null_rejected(self):
+        p = self.check(pdk_env_text=PDK_3V3_NULL)
         self.assertEqual(p.returncode, 1)
         self.assertIn("logic/sense supply 3.3 V axis disagrees", p.stderr)
 
