@@ -21,7 +21,7 @@ jobs:
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ~/eda
-          key: eda-iverilog-v13_0-yosys-v0.67-pr293-miss-probe-${{ hashFiles('scripts/ci/install_eda.sh') }}
+          key: eda-iverilog-v13_0-yosys-v0.67-${{ hashFiles('scripts/ci/install_eda.sh') }}
       - name: Install pinned Icarus 13.0 and Yosys 0.67
         # Prerequisites and source build share the cache-miss condition: on a
         # hit the runner needs neither the apt packages nor the compile, and
