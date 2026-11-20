@@ -16,11 +16,6 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
-      - name: Build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends build-essential clang cmake bison flex \
-            gperf autoconf libreadline-dev gawk tcl-dev libffi-dev pkg-config zlib1g-dev
       - name: Cache pinned Icarus 13.0 and Yosys 0.67
         id: eda
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
@@ -28,8 +23,15 @@ jobs:
           path: ~/eda
           key: eda-iverilog-v13_0-yosys-v0.67-${{ hashFiles('scripts/ci/install_eda.sh') }}
       - name: Install pinned Icarus 13.0 and Yosys 0.67
+        # Prerequisites and source build share the cache-miss condition: on a
+        # hit the runner needs neither the apt packages nor the compile, and
+        # the bench below proves that (no runtime package comes from apt).
         if: steps.eda.outputs.cache-hit != 'true'
-        run: PREFIX="$HOME/eda" scripts/ci/install_eda.sh
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential clang cmake bison flex \
+            gperf autoconf libreadline-dev gawk tcl-dev libffi-dev pkg-config zlib1g-dev
+          PREFIX="$HOME/eda" scripts/ci/install_eda.sh
       - name: Put pinned tools on PATH
         run: echo "$HOME/eda/bin" >> "$GITHUB_PATH"
       - name: Install uv
