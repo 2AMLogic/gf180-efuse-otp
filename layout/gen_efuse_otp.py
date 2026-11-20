@@ -310,6 +310,14 @@ class Builder:
             ports[iname] = {p["name"]: (gs(col + p["x_um"] - x0), gs(row + p["y_um"] - y0),
                                         p["width_um"], p["direction_deg"])
                             for p in rep["ports"]}
+        # Create the routing layers before any shape is drawn, in the order
+        # the committed GDS was first written with: klayout emits each cell's
+        # shapes in layer-index order, and a layer's index is fixed by the
+        # first draw that touches it, so without this the stream bytes would
+        # depend on which helper happens to draw first (same geometry,
+        # different file).
+        for pair in (LS_M2, LS_VIA1, LS_M3, LS_VIA2):
+            self.layout.layer(*pair)
         self._ls_supplies(cell, ports)
         self._ls_signals(cell, ports)
         self._ls_labels(cell, ports)
@@ -318,83 +326,81 @@ class Builder:
         return cell
 
     def _ls_supplies(self, cell, ports):
-        m1, m2 = self._ls_layer(LS_M1), self._ls_layer(LS_M2)
-        v1 = self._ls_layer(LS_VIA1)
         rail = LS_VSS_RAIL_Y
         # vss: rail below the NMOS row; one tap stub per NMOS ring.
-        self._ls_box(m2, 0.9, rail - LS_W2 / 2, 16.0, rail + LS_W2 / 2)
+        self._box(cell, LS_M2, 0.9, rail - LS_W2 / 2, 16.0, rail + LS_W2 / 2)
         for iname in LS_NMOS:
             s, tw, ts = ports[iname]["U0_S"], ports[iname]["TAP_W"], ports[iname]["TAP_S"]
-            self._ls_box(m1, tw[0] - LS_W1 / 2, s[1] - s[2] / 2, s[0] - LS_W1 / 2, s[1] + s[2] / 2)
-            self._ls_cut(v1, ts[0], ts[1])
-            self._ls_box(m2, ts[0] - LS_W2 / 2, rail - LS_W2 / 2, ts[0] + LS_W2 / 2, ts[1] + LS_W2 / 2)
+            self._box(cell, LS_M1, tw[0] - LS_W1 / 2, s[1] - s[2] / 2, s[0] - LS_W1 / 2, s[1] + s[2] / 2)
+            self._cut(cell, LS_VIA1, ts[0], ts[1])
+            self._box(cell, LS_M2, ts[0] - LS_W2 / 2, rail - LS_W2 / 2,
+                      ts[0] + LS_W2 / 2, ts[1] + LS_W2 / 2)
         # vdd33: XMpi only; TAP_W exits west to a short open-ended stub.
         s, tw, _ = ports["XMpi"]["U0_S"], ports["XMpi"]["TAP_W"], ports["XMpi"]["TAP_S"]
-        self._ls_box(m1, tw[0] - LS_W1 / 2, s[1] - s[2] / 2, s[0] - LS_W1 / 2, s[1] + s[2] / 2)
-        self._ls_cut(v1, tw[0], tw[1])
-        self._ls_box(m2, -1.2, tw[1] - LS_W2 / 2, tw[0] + LS_W2 / 2, tw[1] + LS_W2 / 2)
+        self._box(cell, LS_M1, tw[0] - LS_W1 / 2, s[1] - s[2] / 2, s[0] - LS_W1 / 2, s[1] + s[2] / 2)
+        self._cut(cell, LS_VIA1, tw[0], tw[1])
+        self._box(cell, LS_M2, -1.2, tw[1] - LS_W2 / 2, tw[0] + LS_W2 / 2, tw[1] + LS_W2 / 2)
         # vprog: the 6 V PMOS pair; TAP_S of both rings, joined in the channel top.
         ts1, ts2 = ports["XMp1"]["TAP_S"], ports["XMp2"]["TAP_S"]
         for iname, ts in (("XMp1", ts1), ("XMp2", ts2)):
             s, tw = ports[iname]["U0_S"], ports[iname]["TAP_W"]
-            self._ls_box(m1, tw[0] - LS_W1 / 2, s[1] - s[2] / 2, s[0] - LS_W1 / 2, s[1] + s[2] / 2)
-            self._ls_cut(v1, ts[0], ts[1])
-        self._ls_box(m2, ts1[0] - LS_W2 / 2, ts1[1] - LS_W2 / 2, ts2[0] + LS_W2 / 2, ts1[1] + LS_W2 / 2)
+            self._box(cell, LS_M1, tw[0] - LS_W1 / 2, s[1] - s[2] / 2, s[0] - LS_W1 / 2, s[1] + s[2] / 2)
+            self._cut(cell, LS_VIA1, ts[0], ts[1])
+        self._box(cell, LS_M2, ts1[0] - LS_W2 / 2, ts1[1] - LS_W2 / 2,
+                  ts2[0] + LS_W2 / 2, ts1[1] + LS_W2 / 2)
 
     def _ls_signals(self, cell, ports):
-        m1, m2, m3 = (self._ls_layer(l) for l in (LS_M1, LS_M2, LS_M3))
-        v1, v2 = self._ls_layer(LS_VIA1), self._ls_layer(LS_VIA2)
         ni, pi, n1, p1, n2, p2 = (ports[n] for n in
                                   ("XMni", "XMpi", "XMn1", "XMp1", "XMn2", "XMp2"))
         # in: XMni.G <-> XMpi.G straight up column 0; branch west-to-east on
         # M2 to XMn1.G, down a short M3 stub.
         g_ni, g_pi, g_n1 = ni["U0_G"], pi["U0_G"], n1["U0_G"]
-        self._ls_pad3(m1, m2, v1, v2, g_ni)
-        self._ls_pad3(m1, m2, v1, v2, g_pi)
-        self._ls_vstrip(m3, g_ni[0], g_ni[1], g_pi[1], LS_W3)
+        self._ls_pad3(cell, g_ni)
+        self._ls_pad3(cell, g_pi)
+        self._ls_vstrip(cell, g_ni[0], g_ni[1], g_pi[1], LS_W3)
         y = LS_TRACK_Y["in"]
-        self._ls_cut(v2, g_ni[0], y)
-        self._ls_box(m2, g_ni[0] - LS_W2 / 2, y - LS_W2 / 2, g_n1[0] + LS_W2 / 2, y + LS_W2 / 2)
-        self._ls_vstrip(m3, g_n1[0], g_n1[1], y, LS_W3)
-        self._ls_cut(v2, g_n1[0], y)
-        self._ls_pad3(m1, m2, v1, v2, g_n1)
+        self._cut(cell, LS_VIA2, g_ni[0], y)
+        self._box(cell, LS_M2, g_ni[0] - LS_W2 / 2, y - LS_W2 / 2, g_n1[0] + LS_W2 / 2, y + LS_W2 / 2)
+        self._ls_vstrip(cell, g_n1[0], g_n1[1], y, LS_W3)
+        self._cut(cell, LS_VIA2, g_n1[0], y)
+        self._ls_pad3(cell, g_n1)
         # inb: XMni.D east on M2 at pad height, M3 up the col0/col1 gap to the
         # channel track, east to XMn2.G, down a stub; XMpi.D east on M2 at pad
         # height to the same M3 (the two legs meet the track at one junction).
         d_ni, d_pi, g_n2 = ni["U0_D"], pi["U0_D"], n2["U0_G"]
         jx = LS_JUNC_X["inb"]
         yt = LS_TRACK_Y["inb"]
-        self._ls_pad3(m1, m2, v1, v2, d_ni, via2=False)
-        self._ls_box(m2, d_ni[0], d_ni[1] - LS_W2 / 2, jx + LS_W2 / 2, d_ni[1] + LS_W2 / 2)
-        self._ls_vstrip(m3, jx, d_ni[1], d_pi[1], LS_W3)
-        self._ls_cut(v2, jx, d_ni[1])
-        self._ls_pad3(m1, m2, v1, v2, d_pi, via2=False)
-        self._ls_box(m2, d_pi[0], d_pi[1] - LS_W2 / 2, jx + LS_W2 / 2, d_pi[1] + LS_W2 / 2)
-        self._ls_cut(v2, jx, d_pi[1])
-        self._ls_box(m2, jx - LS_W2 / 2, yt - LS_W2 / 2, g_n2[0] + LS_W2 / 2, yt + LS_W2 / 2)
-        self._ls_cut(v2, jx, yt)
-        self._ls_vstrip(m3, g_n2[0], g_n2[1], yt, LS_W3)
-        self._ls_cut(v2, g_n2[0], yt)
-        self._ls_pad3(m1, m2, v1, v2, g_n2)
+        self._ls_pad3(cell, d_ni, via2=False)
+        self._box(cell, LS_M2, d_ni[0], d_ni[1] - LS_W2 / 2, jx + LS_W2 / 2, d_ni[1] + LS_W2 / 2)
+        self._ls_vstrip(cell, jx, d_ni[1], d_pi[1], LS_W3)
+        self._cut(cell, LS_VIA2, jx, d_ni[1])
+        self._ls_pad3(cell, d_pi, via2=False)
+        self._box(cell, LS_M2, d_pi[0], d_pi[1] - LS_W2 / 2, jx + LS_W2 / 2, d_pi[1] + LS_W2 / 2)
+        self._cut(cell, LS_VIA2, jx, d_pi[1])
+        self._box(cell, LS_M2, jx - LS_W2 / 2, yt - LS_W2 / 2, g_n2[0] + LS_W2 / 2, yt + LS_W2 / 2)
+        self._cut(cell, LS_VIA2, jx, yt)
+        self._ls_vstrip(cell, g_n2[0], g_n2[1], yt, LS_W3)
+        self._cut(cell, LS_VIA2, g_n2[0], yt)
+        self._ls_pad3(cell, g_n2)
         # x1: XMn1.D east on M2 at pad height, M3 up the col1/col2 gap; XMp1.D
         # taps that M3 through an M2 run at pad height; on top an M3 run east
         # drops into XMp2.G.
         d_n1, d_p1, g_p2 = n1["U0_D"], p1["U0_D"], p2["U0_G"]
         jx = LS_JUNC_X["x1"]
         yh = LS_M3_HORIZ_Y["x1"]
-        self._ls_pad3(m1, m2, v1, v2, d_n1, via2=False)
-        self._ls_box(m2, d_n1[0], d_n1[1] - LS_W2 / 2, jx + LS_W3N / 2, d_n1[1] + LS_W2 / 2)
-        self._ls_vstrip(m3, jx, d_n1[1], yh, LS_W3N)
-        self._ls_cut(v2, jx, d_n1[1])
-        self._ls_box(m2, d_p1[0], d_p1[1] - LS_W2 / 2, jx + LS_W3N / 2, d_p1[1] + LS_W2 / 2)
-        self._ls_cut(v2, jx, d_p1[1])
-        self._ls_pad3(m1, m2, v1, v2, d_p1, via2=False)
+        self._ls_pad3(cell, d_n1, via2=False)
+        self._box(cell, LS_M2, d_n1[0], d_n1[1] - LS_W2 / 2, jx + LS_W3N / 2, d_n1[1] + LS_W2 / 2)
+        self._ls_vstrip(cell, jx, d_n1[1], yh, LS_W3N)
+        self._cut(cell, LS_VIA2, jx, d_n1[1])
+        self._box(cell, LS_M2, d_p1[0], d_p1[1] - LS_W2 / 2, jx + LS_W3N / 2, d_p1[1] + LS_W2 / 2)
+        self._cut(cell, LS_VIA2, jx, d_p1[1])
+        self._ls_pad3(cell, d_p1, via2=False)
         # The top run's east end stops at the drop leg's far edge (not its own
         # half-width past the junction): one more 0.06 um would close the gap
         # to the `out` vertical at XMp2.D+0.06 below 0.28 um.
-        self._ls_hstrip(m3, jx, g_p2[0] + LS_W3N / 2 - LS_W3 / 2, yh, LS_W3)
-        self._ls_vstrip(m3, g_p2[0], g_p2[1], yh, LS_W3N)
-        self._ls_pad3(m1, m2, v1, v2, g_p2)
+        self._ls_hstrip(cell, jx, g_p2[0] + LS_W3N / 2 - LS_W3 / 2, yh, LS_W3)
+        self._ls_vstrip(cell, g_p2[0], g_p2[1], yh, LS_W3N)
+        self._ls_pad3(cell, g_p2)
         # out: XMn2.D west on M2 at pad height, M3 up to the channel, east on
         # M2, M3 up past XMp2.D (tapped there) to a top M3 run that drops west
         # into XMp1.G. XMp2.D's M1 pad centre is 0.06 um west of the column's
@@ -405,21 +411,21 @@ class Builder:
         jx = LS_JUNC_X["out"]
         mx = d_p2[0] + 0.06  # M3 x through XMp2.D
         ym, yh = LS_TRACK_Y["out"], LS_M3_HORIZ_Y["out"]
-        self._ls_pad3(m1, m2, v1, v2, d_n2, via2=False)
-        self._ls_box(m2, jx - LS_W3N / 2, d_n2[1] - LS_W2 / 2, d_n2[0], d_n2[1] + LS_W2 / 2)
-        self._ls_vstrip(m3, jx, d_n2[1], ym, LS_W3N)
-        self._ls_cut(v2, jx, d_n2[1])
-        self._ls_box(m2, jx - LS_W3N / 2, ym - LS_W2 / 2, mx + LS_W3N / 2, ym + LS_W2 / 2)
-        self._ls_cut(v2, jx, ym)
-        self._ls_vstrip(m3, mx, ym, yh, LS_W3N)
-        self._ls_cut(v2, mx, ym)
-        self._ls_pad3(m1, m2, v1, v2, d_p2, via2_x=mx)
-        self._ls_hstrip(m3, g_p1[0], mx, yh, LS_W3)
-        self._ls_vstrip(m3, g_p1[0], g_p1[1], yh, LS_W3N)
-        self._ls_pad3(m1, m2, v1, v2, g_p1)
+        self._ls_pad3(cell, d_n2, via2=False)
+        self._box(cell, LS_M2, jx - LS_W3N / 2, d_n2[1] - LS_W2 / 2, d_n2[0], d_n2[1] + LS_W2 / 2)
+        self._ls_vstrip(cell, jx, d_n2[1], ym, LS_W3N)
+        self._cut(cell, LS_VIA2, jx, d_n2[1])
+        self._box(cell, LS_M2, jx - LS_W3N / 2, ym - LS_W2 / 2, mx + LS_W3N / 2, ym + LS_W2 / 2)
+        self._cut(cell, LS_VIA2, jx, ym)
+        self._ls_vstrip(cell, mx, ym, yh, LS_W3N)
+        self._cut(cell, LS_VIA2, mx, ym)
+        self._ls_pad3(cell, d_p2, via2_x=mx)
+        self._ls_hstrip(cell, g_p1[0], mx, yh, LS_W3)
+        self._ls_vstrip(cell, g_p1[0], g_p1[1], yh, LS_W3N)
+        self._ls_pad3(cell, g_p1)
 
     def _ls_labels(self, cell, ports):
-        lbl = self._ls_layer(LS_M1_LBL)
+        lbl = self.layout.layer(*LS_M1_LBL)
         for net, iname, port in (("in", "XMni", "U0_G"), ("inb", "XMni", "U0_D"),
                                  ("x1", "XMn1", "U0_D"), ("out", "XMn2", "U0_D"),
                                  ("vdd33", "XMpi", "TAP_W"), ("vprog", "XMp1", "TAP_S"),
@@ -428,19 +434,7 @@ class Builder:
             text = kdb.Text(net, kdb.Trans(round(x / DBU_UM), round(y / DBU_UM)))
             cell.shapes(lbl).insert(text)
 
-    def _ls_layer(self, pair):
-        return self.layout.layer(*pair)
-
-    def _ls_box(self, li, x0, y0, x1, y1):
-        cell = self.layout.cell("efuse_ls")
-        cell.shapes(li).insert(kdb.Box(round(gs(x0) / DBU_UM), round(gs(y0) / DBU_UM),
-                                       round(gs(x1) / DBU_UM), round(gs(y1) / DBU_UM)))
-
-    def _ls_cut(self, li, cx, cy):
-        h = LS_VIA_SIZE / 2
-        self._ls_box(li, cx - h, cy - h, cx + h, cy + h)
-
-    def _ls_pad3(self, m1, m2, v1, v2, port, via2_x=None, via2=True):
+    def _ls_pad3(self, cell, port, via2_x=None, via2=True):
         """via1 + M2 landing pad + via2 at one M1 pad centre.
 
         via2_x shifts only the upper cut (M2 pad still centres on the M1
@@ -453,20 +447,20 @@ class Builder:
         """
         cx, cy = port[0], port[1]
         h = LS_PAD2 / 2
-        self._ls_cut(v1, cx, cy)
-        self._ls_box(m2, cx - h, cy - h, cx + h, cy + h)
+        self._cut(cell, LS_VIA1, cx, cy)
+        self._box(cell, LS_M2, cx - h, cy - h, cx + h, cy + h)
         if via2:
-            self._ls_cut(v2, via2_x if via2_x is not None else cx, cy)
+            self._cut(cell, LS_VIA2, via2_x if via2_x is not None else cx, cy)
 
-    def _ls_vstrip(self, m3, x, y0, y1, w):
+    def _ls_vstrip(self, cell, x, y0, y1, w):
         lo, hi = min(y0, y1), max(y0, y1)
-        self._ls_box(m3, x - w / 2, lo - w / 2, x + w / 2, hi + w / 2)
+        self._box(cell, LS_M3, x - w / 2, lo - w / 2, x + w / 2, hi + w / 2)
 
-    def _ls_hstrip(self, m3, x0, x1, y, w):
+    def _ls_hstrip(self, cell, x0, x1, y, w):
         lo, hi = min(x0, x1), max(x0, x1)
-        self._ls_box(m3, lo - w / 2, y - w / 2, hi + w / 2, y + w / 2)
+        self._box(cell, LS_M3, lo - w / 2, y - w / 2, hi + w / 2, y + w / 2)
 
-    # -- efuse_rowdrv / efuse_coldrv: routed from efuse_ls and leaf devices --
+    # -- boxes, cuts and labels shared by efuse_ls and the driver cells ----
 
     def _box(self, cell, pair, x0, y0, x1, y1):
         li = self.layout.layer(*pair)
@@ -476,6 +470,8 @@ class Builder:
     def _cut(self, cell, pair, cx, cy):
         h = LS_VIA_SIZE / 2
         self._box(cell, pair, cx - h, cy - h, cx + h, cy + h)
+
+    # -- efuse_rowdrv / efuse_coldrv: routed from efuse_ls and leaf devices --
 
     def _label(self, cell, net, x, y):
         cell.shapes(self.layout.layer(*LS_M1_LBL)).insert(
