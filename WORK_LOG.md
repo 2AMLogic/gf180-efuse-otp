@@ -4,6 +4,8 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-20
 
+- **PR #299**: test: register per-test cleanup for checker self-test fixture trees
+- **Issue #298** (closed): Clean up the 61 fixture directories left by each checker self-test run
 - **PR #295**: refactor: draw efuse_ls routing through the shared cell-taking box/cut helpers
 - **PR #294**: ci: skip controller build deps on an EDA cache hit
 - **Issue #293** (closed): Skip controller build dependencies on an EDA cache hit
