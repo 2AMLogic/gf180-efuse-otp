@@ -2,6 +2,13 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-20
+
+- **PR #295**: refactor: draw efuse_ls routing through the shared cell-taking box/cut helpers
+- **PR #294**: ci: skip controller build deps on an EDA cache hit
+- **Issue #293** (closed): Skip controller build dependencies on an EDA cache hit
+- **Issue #291** (closed): Reuse the column driver's box and via-cut helpers in the level shifter
+
 ### 2026-11-19
 
 - **Issue #73** (closed): Route the fuse-free analog leaf cells (efuse_ls, efuse_coldrv) and LVS-match each one
