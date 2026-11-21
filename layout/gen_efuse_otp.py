@@ -69,6 +69,7 @@ LS_W1 = 0.42  # M1 routing width (pad width)
 LS_W2 = 0.42  # M2 routing width (rails and strips)
 LS_W3 = 0.42  # M3 routing width
 LS_W3N = 0.30  # M3 width where two verticals share a device column
+LS_V2_END = LS_VIA_SIZE / 2 + 0.06  # M3 end that lands a via2 reaches this far past the cut centre: on M3 narrower than 0.34 um the cut needs 0.06 um of end overlap (V2.4b) and, its side overlap below 0.04 um, 0.06 um on the adjacent edges too (V2.4c)
 # Stated floorplan, um: bbox lower-left of each leaf, two device rows.
 LS_COL_X = {"XMpi": 0.0, "XMni": 0.0, "XMp1": 6.24, "XMn1": 6.24,
             "XMp2": 12.90, "XMn2": 12.90}
@@ -390,7 +391,7 @@ class Builder:
         yh = LS_M3_HORIZ_Y["x1"]
         self._ls_pad3(cell, d_n1, via2=False)
         self._box(cell, LS_M2, d_n1[0], d_n1[1] - LS_W2 / 2, jx + LS_W3N / 2, d_n1[1] + LS_W2 / 2)
-        self._ls_vstrip(cell, jx, d_n1[1], yh, LS_W3N)
+        self._ls_vstrip(cell, jx, d_n1[1], yh, LS_W3N, land0=True)
         self._cut(cell, LS_VIA2, jx, d_n1[1])
         self._box(cell, LS_M2, d_p1[0], d_p1[1] - LS_W2 / 2, jx + LS_W3N / 2, d_p1[1] + LS_W2 / 2)
         self._cut(cell, LS_VIA2, jx, d_p1[1])
@@ -399,7 +400,7 @@ class Builder:
         # half-width past the junction): one more 0.06 um would close the gap
         # to the `out` vertical at XMp2.D+0.06 below 0.28 um.
         self._ls_hstrip(cell, jx, g_p2[0] + LS_W3N / 2 - LS_W3 / 2, yh, LS_W3)
-        self._ls_vstrip(cell, g_p2[0], g_p2[1], yh, LS_W3N)
+        self._ls_vstrip(cell, g_p2[0], g_p2[1], yh, LS_W3N, land0=True)
         self._ls_pad3(cell, g_p2)
         # out: XMn2.D west on M2 at pad height, M3 up to the channel, east on
         # M2, M3 up past XMp2.D (tapped there) to a top M3 run that drops west
@@ -413,15 +414,15 @@ class Builder:
         ym, yh = LS_TRACK_Y["out"], LS_M3_HORIZ_Y["out"]
         self._ls_pad3(cell, d_n2, via2=False)
         self._box(cell, LS_M2, jx - LS_W3N / 2, d_n2[1] - LS_W2 / 2, d_n2[0], d_n2[1] + LS_W2 / 2)
-        self._ls_vstrip(cell, jx, d_n2[1], ym, LS_W3N)
+        self._ls_vstrip(cell, jx, d_n2[1], ym, LS_W3N, land0=True, land1=True)
         self._cut(cell, LS_VIA2, jx, d_n2[1])
         self._box(cell, LS_M2, jx - LS_W3N / 2, ym - LS_W2 / 2, mx + LS_W3N / 2, ym + LS_W2 / 2)
         self._cut(cell, LS_VIA2, jx, ym)
-        self._ls_vstrip(cell, mx, ym, yh, LS_W3N)
+        self._ls_vstrip(cell, mx, ym, yh, LS_W3N, land0=True)
         self._cut(cell, LS_VIA2, mx, ym)
         self._ls_pad3(cell, d_p2, via2_x=mx)
         self._ls_hstrip(cell, g_p1[0], mx, yh, LS_W3)
-        self._ls_vstrip(cell, g_p1[0], g_p1[1], yh, LS_W3N)
+        self._ls_vstrip(cell, g_p1[0], g_p1[1], yh, LS_W3N, land0=True)
         self._ls_pad3(cell, g_p1)
 
     def _ls_labels(self, cell, ports):
@@ -452,9 +453,15 @@ class Builder:
         if via2:
             self._cut(cell, LS_VIA2, via2_x if via2_x is not None else cx, cy)
 
-    def _ls_vstrip(self, cell, x, y0, y1, w):
+    def _ls_vstrip(self, cell, x, y0, y1, w, land0=False, land1=False):
+        """Vertical M3 strip between two endpoints, a w/2 shoulder past each
+        end. land0/land1 mark an end whose endpoint centres a via2 cut: that
+        shoulder alone leaves w/2 - 0.13 um of end overlap (0.02 um on
+        LS_W3N), so the strip reaches LS_V2_END past the endpoint instead."""
         lo, hi = min(y0, y1), max(y0, y1)
-        self._box(cell, LS_M3, x - w / 2, lo - w / 2, x + w / 2, hi + w / 2)
+        e = max(0.0, LS_V2_END - w / 2)
+        self._box(cell, LS_M3, x - w / 2, lo - w / 2 - (e if land0 else 0.0),
+                  x + w / 2, hi + w / 2 + (e if land1 else 0.0))
 
     def _ls_hstrip(self, cell, x0, x1, y, w):
         lo, hi = min(x0, x1), max(x0, x1)
@@ -598,8 +605,9 @@ class Builder:
             xs = [p[0] for p in pins]
             self._box(cell, LS_M2, min(xs) - LS_W2 / 2, y - LS_W2 / 2, max(xs) + LS_W2 / 2, y + LS_W2 / 2)
             for lx, y0, pad in pins:
-                self._box(cell, LS_M3, lx - LS_W3N / 2, y0 - LS_W3N / 2, lx + LS_W3N / 2, y + LS_W3N / 2)
-                if pad:  # only where _stack left an M2 pad for the cut to land on
+                # land0 only where _stack left an M2 pad for the cut to land on
+                self._ls_vstrip(cell, lx, y0, y, LS_W3N, land0=pad, land1=True)
+                if pad:
                     self._cut(cell, LS_VIA2, lx, y0)
                 self._cut(cell, LS_VIA2, lx, y)
             y = gs(y + CD_TRACK_PITCH)
@@ -609,7 +617,7 @@ class Builder:
                 self._stack(cell, tx, ty)
             else:
                 self._cut(cell, LS_VIA2, tx, ty)
-            self._box(cell, LS_M3, tx - LS_W3N / 2, ry - LS_W3N / 2, tx + LS_W3N / 2, ty + LS_W3N / 2)
+            self._ls_vstrip(cell, tx, ty, ry, LS_W3N, land0=True, land1=True)
             self._cut(cell, LS_VIA2, tx, ry)
             rail_x[net].append(tx)
         for net, xs in rail_x.items():

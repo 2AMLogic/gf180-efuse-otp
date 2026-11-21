@@ -72,9 +72,15 @@ layout/lvs.sh                 # rewrite the LVS reports (lvs-ctrl needs the PDK;
 layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-analog.attest.json)
 ```
 
-`sha256(efuse_otp_array.gds)` = `133922ed156c68534147da03101307feff268163c732b4b3c3cbf997b6293b98`
-(klt 0.9.2, `gf180mcuC` at open_pdks `f6eeac7`; the stream after the via2-landing fix: via2
-cuts with no M3 above them were dropped, and pin-level via2 is cut only where an M2 pad exists).
+`sha256(efuse_otp_array.gds)` = `2cd9b515e8688c64fd9c844769eb43d5bdbc3aaa31da92dd1a480693bc117fa4`
+(klt 0.9.2, `gf180mcuC` at open_pdks `f6eeac7`; the stream after the via2 Metal3-enclosure
+fix: every M3 end that lands a via2 cut — the six marked `LS_W3N` strip ends in `efuse_ls`
+and every lane end in `efuse_coldrv` — reaches 0.06 µm past the cut edge, closing the
+native deck's V2.4b and V2.4c findings while all lane widths, positions and spacings
+are unchanged). The previous hash
+`133922ed156c68534147da03101307feff268163c732b4b3c3cbf997b6293b98` was the
+stream after the via2-landing fix: via2
+cuts with no M3 above them were dropped, and pin-level via2 is cut only where an M2 pad exists.
 The previous hash `4cf5b69431e9523935b18eb4d04ef5227884bf5d885ff20bde165628dfa9ec7f` was the
 stream the `efuse_rowdrv` / `efuse_coldrv` routing produced (#273), still carrying the unlanded
 via2; before it
@@ -84,8 +90,10 @@ placed-only stream at the same pin (itself a re-run of the 0.8.0 stream
 `186be6b6e0ba5200154a20b6e66bda85b629aea378d76b6e683918dd0d412224`, byte-different
 only in GDS record order — klayout-tools#5499 stopped writing KLayout's
 `$$$CONTEXT_INFO$$$` structure; streams carry no write time, so the check is a
-byte compare). The stream changed now because the via2 cuts that had no M3 (or no M2)
-landing were removed; `layout/check_via2_landing.sh` gates this in CI.
+byte compare). The stream changed at 133922ed because the via2 cuts that had
+no M3 (or no M2) landing were removed, and at 2cd9b515 because the M3
+enclosure at every landed cut end was extended to the V2.4b/V2.4c minimum;
+`layout/check_via2_landing.sh` and the native report gate these in CI.
 
 ## efuse_ls routing
 
@@ -278,7 +286,7 @@ nor EFUSE_MK (80/5). T1 item 3 stays uncited for both partitions.
 
 | Stream | Native report | Checked categories | `EF.*` markers | All markers |
 |---|---|---:|---:|---:|
-| Array | [drc-array.native.report.json](drc-array.native.report.json) | 772 | 0 | 253 |
+| Array | [drc-array.native.report.json](drc-array.native.report.json) | 772 | 0 | 53 |
 | Controller | [drc-ctrl.native.report.json](drc-ctrl.native.report.json) | 772 | 0 | 9 |
 
 `layout/drc.sh` uses the Ciel revision in `sim/pdk.json` (`f6eeac7`,
@@ -303,7 +311,7 @@ lists as unmodeled.
 
 | Finding | Array | Controller | Follow-up |
 |---|---:|---:|---|
-| Metal3 enclosure of via2 (V2.4b, V2.4c) | 200 | 0 | [Level shifter and column driver #308](https://github.com/2AMLogic/gf180-efuse-otp/issues/308) |
+| Metal3 enclosure of via2 (V2.4b, V2.4c) | 0 | 0 | fixed ([#308](https://github.com/2AMLogic/gf180-efuse-otp/issues/308)): every M3 end landing a via2 reaches 0.06 µm past the cut edge |
 | PMOS (DF.4d_MV, DV.6, PL.2_MV) and resistor geometry (PP.9, PRES.5, PRES.6, SB.13) | 44 | 0 | [Generated device cores #309](https://github.com/2AMLogic/gf180-efuse-otp/issues/309) |
 | Global density (DCF.1b, PL.8, M1.4 through M5.4, MT.3) | 8 | 8 | [Density #310](https://github.com/2AMLogic/gf180-efuse-otp/issues/310) |
 | DBU (0.0005 µm, required 0.001 µm) | 1 | 1 | [Partition writers #311](https://github.com/2AMLogic/gf180-efuse-otp/issues/311), [klt generator default #5721](https://github.com/2AMLogic/klayout-tools/issues/5721) |
