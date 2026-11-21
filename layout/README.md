@@ -15,7 +15,7 @@ analog partition is below.
 | `efuse_otp_ctrl.asbuilt.v` | `verilog_path` output: the as-built gate-level netlist (CTS buffers, resizes, antenna diodes included). This, not `rtl/efuse_otp_ctrl.gl.v`, is the reference for the controller LVS run. |
 | `attest.sh` | Writes both T1 item 2 envelopes with the pinned klt's own producer, `klt signoff --attest 2 --input <stream>`: `pnr.attest.json` (digital) and `../signoff/item2-analog.attest.json` (analog). `--check` re-attests and fails (exit 3) if either committed envelope has drifted. The digital regeneration claim is a geometry digest, read from `klt stats --format json`'s `geometry_digest`; every field is the producer's. |
 | `pnr.attest.json` | The T1 item 2 (digital) envelope: `klt signoff --attest 2` bound to the routed GDS (readable, non-empty top cell, dbu on grid), with a `layout/pnr.sh` regeneration claim (geometry digest, so GDS write times do not matter). |
-| `lvs.sh` | Runs `klt lvs` with the pinned klt (`signoff/klt-pin.txt`) on `efuse_otp_ctrl.gds` against `efuse_otp_ctrl.asbuilt.v` and keeps the JSON report as found. `--check` re-hashes the stream, the netlist and the deck against the committed report (`--rerun` re-runs the compare). Unlike `drc.sh` this needs the PDK, not only the pinned klt: the gate-level reference resolves each standard cell's pin order from the library's own spice/cdl under `<PDK_ROOT>/gf180mcuD/libs.ref` (`PDK_ROOT`, default `~/.ciel`, passed to klt as `reference.pdk_root`), so CI (which installs no PDK) cannot run it. |
+| `lvs.sh` | Runs `klt lvs` with the pinned klt (`signoff/klt-pin.txt`) on `efuse_otp_ctrl.gds` against `efuse_otp_ctrl.asbuilt.v` and keeps the JSON report as found. `--check` re-hashes the stream, the netlist and the deck against the committed report (`--rerun` re-runs the compare). The gate-level reference resolves each standard cell's pin order from the library's own spice/cdl under `<PDK_ROOT>/gf180mcuD/libs.ref` (`PDK_ROOT`, default `~/.ciel`, passed to klt as `reference.pdk_root`), so CI (which installs no PDK) cannot run it. |
 | `lvs-ctrl.report.json` | Committed `--format json` LVS report (T1 item 4, digital): `status: match`, `power_connectivity.status: match` — see "LVS" below. |
 
 ## Reproduce
@@ -67,7 +67,7 @@ fuse (`efuse_bitcell`, `efuse_row`, the array top).
 ```sh
 layout/regen-gds.sh           # rewrite the files
 layout/regen-gds.sh --check   # exit 3 = drifted
-layout/drc.sh                 # rewrite the DRC reports (partition pair + the three routed cells)
+layout/drc.sh                 # rewrite curated DRC for five tops and native DRC for the two partitions
 layout/lvs.sh                 # rewrite the LVS reports (lvs-ctrl needs the PDK; the analog parts do not)
 layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-analog.attest.json)
 ```
@@ -268,7 +268,60 @@ claim, not a layout one).
   `rsh_ppolyf_u` = 350 Ω/sq, snapped to the 0.005 µm grid. The 1 µm width is an assumption, not a sourced
   value.
 
-## DRC (T1 item 3): both partitions and the routed analog cells clean, no `EF.*` rule modelled
+## DRC (T1 item 3)
+
+### PDK-native results
+
+Both partitions fail the full foundry deck. The array passes **all 27**
+`EF.*` checks on fuse geometry. The controller draws neither PLFUSE (125/5)
+nor EFUSE_MK (80/5). T1 item 3 stays uncited for both partitions.
+
+| Stream | Native report | Checked categories | `EF.*` markers | All markers |
+|---|---|---:|---:|---:|
+| Array | [drc-array.native.report.json](drc-array.native.report.json) | 772 | 0 | 253 |
+| Controller | [drc-ctrl.native.report.json](drc-ctrl.native.report.json) | 772 | 0 | 9 |
+
+`layout/drc.sh` uses the Ciel revision in `sim/pdk.json` (`f6eeac7`,
+`CIEL_ROOT` defaults to `~/.ciel`). The array takes `gf180mcuC` from its
+generator pin, the controller takes `gf180mcuD` from its place-and-route
+report. Both select five metal levels and MIM option B. C selects 9K top
+metal and D selects 11K. The controller's PDK layer map puts Metal5 on
+81/0. Each run passes the corresponding `variant` to the PDK main script
+`tech/drc/gf180mcu.drc`, with `decks=all` (including metal slotting) and
+`threads=1`. These measurements used pinned klt 0.9.2 and standalone
+KLayout 0.30.12 (minimum 0.30.9).
+
+For each variant, an empty-layout `--list-rule-categories` run independently
+declared 763 categories. The script requires the 27 foundry IDs in that
+set of expectations and adds any finding-producing categories from a first
+pass over the stream. For both streams those extra categories are DBU and
+the eight density rules below. The final run uses klt's exact-name coverage
+assertion. Both reports record `coverage_assertion.satisfied: true`, all 27
+IDs in `coverage.rules_checked`, and zero `EF.*` markers. The native list
+includes EF.14, EF.17 and EF.20 in addition to the 24 IDs the curated deck
+lists as unmodeled.
+
+| Finding | Array | Controller | Follow-up |
+|---|---:|---:|---|
+| Metal3 enclosure of via2 (V2.4b, V2.4c) | 200 | 0 | [Level shifter and column driver #308](https://github.com/2AMLogic/gf180-efuse-otp/issues/308) |
+| PMOS (DF.4d_MV, DV.6, PL.2_MV) and resistor geometry (PP.9, PRES.5, PRES.6, SB.13) | 44 | 0 | [Generated device cores #309](https://github.com/2AMLogic/gf180-efuse-otp/issues/309) |
+| Global density (DCF.1b, PL.8, M1.4 through M5.4, MT.3) | 8 | 8 | [Density #310](https://github.com/2AMLogic/gf180-efuse-otp/issues/310) |
+| DBU (0.0005 µm, required 0.001 µm) | 1 | 1 | [Partition writers #311](https://github.com/2AMLogic/gf180-efuse-otp/issues/311), [klt generator default #5721](https://github.com/2AMLogic/klayout-tools/issues/5721) |
+
+`layout/drc.sh --check` verifies the input and deck hashes.
+`layout/drc.sh --check --rerun` replays the native invocation, including
+the variant and coverage assertion, and compares the complete report.
+The script binds the pinned PDK to the relative `pdk/` path recorded by
+klt in a temporary directory so both operations work across installations.
+
+The committed native reports use `--engine klayout`. In a scratch manifest,
+pinned klt read them and graded both rows `check_failed`. A separate
+`--engine both` run returned `comparison.state: not_comparable`, and the
+same grader returned `unrecognized_envelope` for that report shape.
+[Comparison issue #5720](https://github.com/2AMLogic/klayout-tools/issues/5720)
+and [grader fix #5815](https://github.com/2AMLogic/klayout-tools/issues/5815).
+
+### Curated results
 
 `layout/drc.sh` runs `klt drc --deck gf180mcu --top <top>` (the pinned klt,
 `signoff/klt-pin.txt`) on each GDS — both partitions, plus the routed
@@ -287,7 +340,7 @@ klayout engine, so a future install of the same pin can resolve a different
 engine and make `layout/drc.sh --check` report `drifted` with nothing else
 changed (klayout-tools#5601). CI does not run `drc.sh --check`, so this is a
 local-reproducibility caveat, not a CI gate.
-**Item 3 stays `unmet` (every `EF.01`–`EF.22b` is unmodelled, see below); no envelope is cited for it.** Both partitions and the routed cell are clean under the curated deck.
+Both partitions and all three routed cells are clean under the curated deck.
 
 | Partition | status | violations |
 |---|---|---|
@@ -388,21 +441,14 @@ keeping apart:
   mapping between the two is published — so they are additional coverage, not
   evidence for any `EF.*` row.
 
-The route via the PDK's own `efuse.rb` also still fails: `klt drc --engine klayout
---deck-file <PDK>/libs.tech/klayout/tech/drc/rule_decks/efuse.rb` exits 1 with
-`NameError: uninitialized constant GF180_DRC_REGISTRY` (the file is one fragment
-of a deck that must be assembled with the registry; klayout-tools#4002). The spec
-row "DRC clean including every `EF.*` rule" therefore stays `unmet`. Whether the
-new coverage changes what item 3 can claim is #60's call, not settled here.
-
 ## LVS (T1 item 4, digital): the routed controller matches its as-built netlist
 
 `layout/lvs.sh` runs `klt lvs` (the pinned klt, `signoff/klt-pin.txt`) on
 `layout/efuse_otp_ctrl.gds` — extracted inline under the curated `gf180mcu`
 deck — against `layout/efuse_otp_ctrl.asbuilt.v` (`reference.form:
 "gate-level-verilog"`, `reference.library: gf180mcu_fd_sc_mcu7t5v0`) and keeps
-the report as found: `layout/lvs-ctrl.report.json`. It needs the PDK, unlike
-`drc.sh` above; the script header and `signoff/README.md` ("Re-run the
+the report as found: `layout/lvs-ctrl.report.json`. It needs the PDK.
+The script header and `signoff/README.md` ("Re-run the
 controller LVS") say why and how the root is pinned.
 
 Verdict, klt 0.9.2 (deck content hash
