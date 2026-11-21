@@ -16,9 +16,15 @@ C {devices/lab_pin.sym} 270 170 0 0 {name=l1 lab=vdd33}
 C {devices/lab_pin.sym} 230 200 0 0 {name=l2 lab=vbp}
 C {devices/lab_pin.sym} 270 230 0 0 {name=l3 lab=vbp}
 C {devices/lab_pin.sym} 270 200 0 0 {name=l4 lab=vdd33}
-C {devices/res.sym} 470 200 0 0 {name=Rb value=2k footprint=none}
+C {symbols/ppolyf_u.sym} 470 200 0 0 {name=Rb
+W=1e-6
+L=5.425e-6
+model=ppolyf_u
+spiceprefix=X
+m=1}
 C {devices/lab_pin.sym} 470 170 0 0 {name=l6 lab=vbp}
 C {devices/lab_pin.sym} 470 230 0 0 {name=l7 lab=nb}
+C {devices/lab_pin.sym} 450 200 0 0 {name=l5b lab=vss}
 C {symbols/nfet_03v3.sym} 690 200 0 0 {name=Mbs L=0.28u W=2u nf=1 m=1 model=nfet_03v3 spiceprefix=X}
 C {devices/lab_pin.sym} 710 170 0 0 {name=l9 lab=nb}
 C {devices/lab_pin.sym} 670 200 0 0 {name=l10 lab=sense_en}
@@ -39,9 +45,15 @@ C {devices/lab_pin.sym} 270 340 0 0 {name=l24 lab=vdd33}
 C {devices/lab_pin.sym} 230 370 0 0 {name=l25 lab=vbp}
 C {devices/lab_pin.sym} 270 400 0 0 {name=l26 lab=sref}
 C {devices/lab_pin.sym} 270 370 0 0 {name=l27 lab=vdd33}
-C {devices/res.sym} 470 370 0 0 {name=Rref value=400 footprint=none}
+C {symbols/ppolyf_u.sym} 470 370 0 0 {name=Rref
+W=1e-6
+L=1.085e-6
+model=ppolyf_u
+spiceprefix=X
+m=1}
 C {devices/lab_pin.sym} 470 340 0 0 {name=l29 lab=sref}
 C {devices/lab_pin.sym} 470 400 0 0 {name=l30 lab=rn1}
+C {devices/lab_pin.sym} 450 370 0 0 {name=l28b lab=vss}
 C {symbols/nfet_06v0.sym} 690 370 0 0 {name=Msw L=0.7u W=4u nf=1 m=1 model=nfet_06v0 spiceprefix=X}
 C {devices/lab_pin.sym} 710 340 0 0 {name=l32 lab=rn1}
 C {devices/lab_pin.sym} 670 370 0 0 {name=l33 lab=sense_en}
@@ -120,4 +132,4 @@ C {devices/lab_pin.sym} 490 850 0 0 {name=l105 lab=qb}
 C {devices/lab_pin.sym} 450 880 0 0 {name=l106 lab=sense_out}
 C {devices/lab_pin.sym} 490 910 0 0 {name=l107 lab=vss}
 C {devices/lab_pin.sym} 490 880 0 0 {name=l108 lab=vss}
-T {Sense path: equal bias currents (pfet_03v3 mirror) into the selected-fuse bus sbl and a 400 ohm reference (A6, decision 0003) behind a dummy switch+select; clocked comparator; NOR SR latch holds sense_out (1 = programmed). Bias resistor and sizes are placeholders, not simulated.} 0 -60 0 0 0.3 0.3 {}
+T {Sense path: equal bias currents (pfet_03v3 mirror) into the selected-fuse bus sbl and a 400 ohm reference (A6, decision 0003) behind a dummy switch+select; clocked comparator; NOR SR latch holds sense_out (1 = programmed). Rb and Rref are PDK ppolyf_u resistors (r_width 1 um, r_length solved so the model's nominal R is 2k / 400 ohm; drawn geometry is what LVS compares). Sizes are placeholders, not simulated.} 0 -60 0 0 0.3 0.3 {}

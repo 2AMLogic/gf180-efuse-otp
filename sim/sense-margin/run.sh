@@ -48,23 +48,32 @@ sub() { bench_subckt "$netlist" "$1"; }  # one .subckt ... .ends block from the 
 bench_new_record_dir "$here/records" "$dry"
 
 reqs=()
+# The netlist draws the reference as a PDK ppolyf_u resistor; this bench is a
+# value-parametric study (its controls sweep the reference value itself), so
+# the deck copy replaces that one instance with a plain R at the swept value --
+# the same standing as the rfuse stand-in above. The bias resistor XRb stays
+# the real device, so every deck needs the model library's resistor sections
+# (res_typical/res_ss/res_ff) beside the MOS corner; the PDK ships no fs/sf
+# resistor section, so those two corners keep the typical sheet rho (A8).
+RREF_LINE='^XRref rn1 sref vss ppolyf_u r_width=1e-6 r_length=1.085e-6 m=1$'
 mk() {                                   # mk <stem> <rfuse> <rref> <sign>
   local stem="$1" rf="$2" rr="$3" sgn="$4" val="$2"   # sgn: +1 programmed (sbl > sref), -1 intact
   [[ "$rf" == open ]] && val=1G
   { sed -e "s#@DESIGN@#$lib/design.ngspice#" -e "s#@RFUSE@#$val#" "$here/sense.cir.in"
     echo
-    sub efuse_sense | sed -e "s#^Rref sref rn1 400 #Rref sref rn1 $rr #"
+    sub efuse_sense | sed -e "s#$RREF_LINE#Rref rn1 sref $rr#"
     echo
     sub efuse_comp
   } > "$rec/$stem.cir"
-  grep -q "^Rref sref rn1 $rr " "$rec/$stem.cir" || { echo "run.sh: Rref line not found in efuse_sense" >&2; exit 1; }
+  grep -q "^Rref rn1 sref $rr\$" "$rec/$stem.cir" || { echo "run.sh: Rref line not found in efuse_sense" >&2; exit 1; }
   jq -n --arg net "$stem.cir" --arg lib "libs.tech/ngspice/sm141064.ngspice" \
         --arg tpre "$T_PRE" --arg tout "$T_OUT" --arg sgn "$sgn" \
         --argjson pvt_proc "$PVT_PROCESSES" --argjson pvt_temp "$PVT_TEMPERATURES_C" \
         --argjson pvt_3v3 "$PVT_SUPPLY_3V3" '
     {netlist:$net, engine:"ngspice",
      models:{lib:$lib, pdk:"gf180mcuD"},
-     corners:{process:($pvt_proc|map({name:., sections:[.]})),
+     corners:{process:($pvt_proc|map({name:.,
+              sections:[., ({"typical":"res_typical","ss":"res_ss","ff":"res_ff"}[.] // "res_typical")]})),
               supply_v:{vdd33:$pvt_3v3}, temperature_c:$pvt_temp},
      analysis:{kind:"tran", args:"20p 40n"},  # 100p under-resolves the 200p edge: decisions flipped with the step (issue 77)
      measurements:[

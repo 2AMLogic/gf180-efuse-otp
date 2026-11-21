@@ -3,7 +3,7 @@
   "dbu_um": 0.0005,
   "bbox_um": [
     -20.26,
-    -48.47,
+    -64.57,
     1067.12,
     699.44
   ],
@@ -13,18 +13,26 @@
     "pitch_x_um": 133.64,
     "pitch_y_um": 21.92
   },
-  "caveat": "placed hierarchy; efuse_ls, efuse_rowdrv and efuse_coldrv are routed (see 'routed'), every other cell is placement-only: no routing, no connectivity, no DRC/LVS claim outside those three",
+  "caveat": "placed hierarchy; efuse_ls, efuse_rowdrv, efuse_coldrv, efuse_comp and efuse_sense are routed (see 'routed'), every other cell is placement-only: no routing, no connectivity, no DRC/LVS claim outside those five",
   "routed": {
     "cells": [
       "efuse_ls",
       "efuse_rowdrv",
-      "efuse_coldrv"
+      "efuse_coldrv",
+      "efuse_comp",
+      "efuse_sense"
     ],
     "planes": {
       "m1": "device pads and guard-ring taps",
       "m2": "supply rails and horizontal runs",
       "m3": "vertical stubs and lanes"
     }
+  },
+  "resistors": {
+    "device": "ppolyf_u",
+    "rsh_ohm_sq": 350.0,
+    "source": "sm141064.ngspice .param rsh_ppolyf_u (350) and the ppolyf_u model card's r_dl/r_dw deltas; the netlist states r_length/r_width and the drawn body is exactly that geometry",
+    "note": "ohms_lvs_drawn is the deck's LVS value (drawn L/W * rsh), which both compare sides compute from the same geometry; ohms_sim_nominal applies the model deltas and is what the netlist's lengths were solved for"
   },
   "devices": [
     {
@@ -250,12 +258,12 @@
       "finger_w_um": 4.0
     },
     {
-      "cell": "efuse_sense__b",
+      "cell": "efuse_sense__Rb",
       "device": "ppolyf_u",
-      "ohms": 2000.0,
-      "ohms_drawn": 2000.25,
-      "length_um": 5.715,
-      "width_um": 1.0
+      "r_length_um": 5.425,
+      "r_width_um": 1.0,
+      "ohms_lvs_drawn": 1898.75,
+      "ohms_sim_nominal": 2000.78
     },
     {
       "cell": "efuse_sense__Mbs",
@@ -290,12 +298,12 @@
       "finger_w_um": 4.0
     },
     {
-      "cell": "efuse_sense__ref",
+      "cell": "efuse_sense__Rref",
       "device": "ppolyf_u",
-      "ohms": 400.0,
-      "ohms_drawn": 400.75,
-      "length_um": 1.145,
-      "width_um": 1.0
+      "r_length_um": 1.085,
+      "r_width_um": 1.0,
+      "ohms_lvs_drawn": 379.75,
+      "ohms_sim_nominal": 400.15
     },
     {
       "cell": "efuse_sense__Msw",
