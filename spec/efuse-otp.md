@@ -48,15 +48,26 @@ that root. Tool: `klt 0.7.1.dev1754+g81ac4d3915c1`.
 
 ### 1.3 Tool survey (klt)
 
-- `klt drc --list-rules --deck gf180mcu`: 94 rules, **zero `EF.*` rules**.
+- `klt drc --list-rules --deck gf180mcu`: 94 rules, zero `EF.*` rule IDs at
+  the survey revision (`0.7.1.dev1754+g81ac4d3915c1`, 2026-10-17). At the
+  pinned klt 0.9.2 (2026-11-21): 126 rules, still zero `EF.*` IDs, but seven
+  EF-scope rules — `efuse_mk.space.1`, `efuse_mk.enclosing.lvs_source.1`,
+  `plfuse.separation.{comp,nplus,esd,sab,resistor}.1` — so a prefix count
+  alone understates curated EF coverage.
+  [0007](decisions/0007-drc-tool-survey.md).
 - `klt drc` on `libs.ref/gf180mcu_fd_pr/gds/efuse.gds`: status `violations`,
   64, all `*.ongrid.1` (off-grid vertices on contact, efuse_mk, metal1,
   plfuse, poly2, pplus). No `EF.*` rule fires, passes, or is reported as
   skipped: the exact-value rules are not run.
-- `klt drc --engine klayout` has no PDK-native deck for gf180mcu ("no
-  PDK-native klayout DRC deck script found for this PDK variant"); the PDK's
-  `efuse.rb` could only run inside a full deck supplied via `--deck-file`.
-  Not attempted in this item.
+- `klt drc --engine klayout`: at the survey revision (2026-10-17) klt found
+  no PDK-native deck ("no PDK-native klayout DRC deck script found for this
+  PDK variant"). At the pinned klt 0.9.2, `layout/drc.sh` runs the foundry
+  deck by supplying the main deck explicitly — `--deck-file
+  pdk/<variant>/libs.tech/klayout/tech/drc/gf180mcu.drc` with `decks=all`,
+  array variant `gf180mcuC`, controller variant `gf180mcuD` — and both
+  committed reports (PR #313) check all 27 `EF.*` IDs with zero EF markers,
+  status `violations`. Automatic deck discovery is a separate claim, not
+  made. [0007](decisions/0007-drc-tool-survey.md).
 - LVS: klt's gf180mcu deck uses `efuse_mk`/`plfuse` only as layers excluded
   from other derivations (resistor, MiM); a search of the installed klt
   package found no fuse device extraction. The PDK's own deck does extract
