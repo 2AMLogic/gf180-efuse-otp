@@ -23,7 +23,7 @@ baseline, unchanged; `layout/drc.sh --check` ran against this tree.
 |---|---|---|
 | klt | `0.7.1.dev1754+g81ac4d3915c1` | `klayout-tools==0.9.2` (`signoff/klt-pin.txt`) |
 | observed | 2026-10-17 (PR #8 survey) | 2026-11-21, `4c155df` |
-| `klt drc --deck gf180mcu --list-rules --format json` | 94 rules | 126 rules |
+| `klt drc --deck gf180mcu --list-rules --format json` | 94 rules | 127 rules |
 | rule IDs starting `EF.` | 0 | 0 |
 | rules with `scope == "EF"` | 0 | 7 |
 
@@ -33,16 +33,20 @@ Commands. Survey revision, in a klayout-tools checkout at
 Current pin, at the repo root: `. signoff/klt.sh`, then
 `klt drc --deck gf180mcu --list-rules --format json`. Both listings checked
 with `jq '[.rules|length, (map(select(.id|startswith("EF.")))|length),
-(map(select(.scope=="EF"))|length)]'`: `[94,0,0]` and `[126,0,7]`.
+(map(select(.scope=="EF"))|length)]'`: `[94,0,0]` and `[127,0,7]`.
 
-The 94-to-126 change is 32 added rule IDs and zero removals (sorted-ID
+The 94-to-127 change is 33 added rule IDs and zero removals (sorted-ID
 comparison across the two listings). Additions by group: nine guard-ring-mark
 separation rules (`comp`, `metal1`–`metal5`, `metaltop`, `nwell`, `poly2`,
 each `+ separation.guard_ring_mk.1`), seven ESD geometry rules, seven
 EF-scope rules (below), four medium-voltage rules (`mvsd.width.1`,
 `mvsd.separation.dnwell.1`, `mvsd.ongrid.1`, `mvpsd.ongrid.1`), two
-`dualgate` rules, two `comp.tap_distance.*` rules and
-`ldmos_xtor.enclosing.mvpsd.1`. None is named `EF.*`.
+`dualgate` rules (`dualgate.space.1`, `dualgate.width.1`; `dualgate.ongrid.1`
+is already in the 94-rule baseline), two `comp.tap_distance.*` rules,
+`comp.width.moscap.1` and `ldmos_xtor.enclosing.mvpsd.1`. None is named
+`EF.*`. The sorted-ID comparison was re-run against both listings (the
+baseline built from the pinned survey revision), giving 33 added and 0
+removed.
 
 Curated EF scope is not foundry rule names. The seven EF-scope additions are
 separation and enclosure checks named after their layers: `efuse_mk.space.1`,
@@ -77,8 +81,9 @@ PDK variant") was a discovery observation at the survey revision,
 
 - §1.3 bullets 1 and 3 now cite this record; bullet 2 is untouched.
 - The §1.3 friction items stand: the curated deck still carries no
-  exact-value `EF.*` width/length rules at 0.9.2 (0 of 126 IDs).
+  exact-value `EF.*` width/length rules at 0.9.2 (0 of 127 IDs).
 - PR #313's drift note ("the curated inventory now has 126 rules") is
-  resolved: the number and its derivation are on record here.
+  resolved: PR #313's figure of 126 does not reproduce at the pin, which lists
+  127 rules; the corrected number and its derivation are on record here.
 - Automatic native-deck discovery remains untested. No runner or tool
   change is made or required by this record.

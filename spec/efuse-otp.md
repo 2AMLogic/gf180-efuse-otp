@@ -50,7 +50,7 @@ that root. Tool: `klt 0.7.1.dev1754+g81ac4d3915c1`.
 
 - `klt drc --list-rules --deck gf180mcu`: 94 rules, zero `EF.*` rule IDs at
   the survey revision (`0.7.1.dev1754+g81ac4d3915c1`, 2026-10-17). At the
-  pinned klt 0.9.2 (2026-11-21): 126 rules, still zero `EF.*` IDs, but seven
+  pinned klt 0.9.2 (2026-11-21): 127 rules, still zero `EF.*` IDs, but seven
   EF-scope rules — `efuse_mk.space.1`, `efuse_mk.enclosing.lvs_source.1`,
   `plfuse.separation.{comp,nplus,esd,sab,resistor}.1` — so a prefix count
   alone understates curated EF coverage.
