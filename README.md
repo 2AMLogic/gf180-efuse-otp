@@ -24,14 +24,16 @@ caveats). Committed on `main`:
 - a placed analog layout stream and the routed controller layout
   ([`layout/efuse_otp_ctrl.gds`](layout/efuse_otp_ctrl.gds),
   [`layout/pnr-report.json`](layout/pnr-report.json));
-- DRC reports for both partitions
-  ([`layout/drc-array.report.json`](layout/drc-array.report.json),
-  [`layout/drc-ctrl.report.json`](layout/drc-ctrl.report.json)); the `EF.*`
-  rules are not yet evaluated by the deck (#60);
+- curated and PDK-native DRC reports for both partitions. The native deck
+  checked 27 foundry `EF.*` rules on each stream and reported zero eFuse
+  markers ([array report](layout/drc-array.native.report.json),
+  [controller report](layout/drc-ctrl.native.report.json));
 - the signoff record.
 
-Not started: analog routing, LVS (#32) and ERC (#33). Verdicts of record are in
-[`signoff/block-manifest.signoff.json`](signoff/block-manifest.signoff.json).
+The controller, level shifter, row driver and column driver have matching
+[LVS reports](layout/README.md). Full-array routing and LVS (#32) and
+power-delivery verification (#33) are still open. The
+[signoff record](signoff/block-manifest.signoff.json) grades each partition.
 
 ## What the block is
 
@@ -87,10 +89,10 @@ record under `sim/sense-margin/` and `sim/sense-mc/`. That claim rests on the
 **assumed** intact/programmed ranges A4/A5 and an unsourced
 reference-tolerance sigma — rows P10/C2 grade `partial` in
 [`measurements/characterization/README.md`](measurements/characterization/README.md)
-— not on a real fuse's margins. The next rung (array DRC/LVS-clean) is **not**
-reached: DRC is clean but uncited (#60 — the curated deck does not evaluate
-the foundry `EF.*` set) and LVS is `unmet` (#32), so the block is not an
-LVS-clean array.
+— not on a real fuse's margins. Both streams pass the curated DRC deck.
+The native deck reports 253 violations on the array and 9 on the controller
+(#60). Array LVS is still unmet (#32), so the array DRC/LVS-clean rung
+remains open.
 
 ## Reproduce
 
