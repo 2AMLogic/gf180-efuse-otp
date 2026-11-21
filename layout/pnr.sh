@@ -6,7 +6,11 @@
 #                           and layout/efuse_otp_ctrl.gds.sha256. Refuses to write
 #                           any of them unless the response is status ok, stage
 #                           route, power.pdn true, with zero route DRC and zero
-#                           antenna violations.
+#                           antenna violations. The committed GDS then carries the
+#                           density fill (#310, layout/fill_partitions.py), which
+#                           refuses (exit 5) if any of the eight density rules
+#                           would still fail, and writes
+#                           layout/fill-ctrl.report.json.
 #   layout/pnr.sh --check   cheap klt --check (input/deck hashes) plus the
 #                           committed GDS sha256
 #   layout/pnr.sh --check --rerun   full klt --check (re-runs the flow)
@@ -41,4 +45,10 @@ def src(v):
 shutil.copyfile(src(d["gds_path"]), sys.argv[3])
 shutil.copyfile(src(d["verilog_path"]), sys.argv[4])
 PY
+# Density fill (#310) on the routed stream: the fill stage owns the committed
+# top, refuses to write it if any of the eight density rules would still fail
+# (exit 5), and records its own report.
+klt_python -I layout/fill_partitions.py --input "$gds" --output "$gds.fill" \
+  --report layout/fill-ctrl.report.json --top efuse_otp_ctrl >/dev/null
+mv "$gds.fill" "$gds"
 (cd layout && sha256sum efuse_otp_ctrl.gds > efuse_otp_ctrl.gds.sha256)

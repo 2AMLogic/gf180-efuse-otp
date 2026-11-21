@@ -8,7 +8,7 @@ analog partition is below.
 
 | File | Role |
 |---|---|
-| `pnr-request.json` | The `klt place-and-route` request: `gf180mcu_fd_sc_mcu7t5v0`, 40 % utilization, 10 µm core margin, PDN by platform recipe (`power.preset: gf180mcu_7t_6M`; see DRC below), `power.tapcell.distance_um` 15, I/O pins on Metal3 (horizontal) / Metal2 (vertical), `target_stage: route`, seed 1, `portable_paths`. The straps and connects were spelled out by hand until #154, for klt 0.8.0, whose preset emitted `-split_cuts {Metal3 0.128}`; the pinned 0.9.0 preset carries `split_cuts: null`, so the hand copy was redundant. `power.preset` and explicit `power.straps` are mutually exclusive, which is why the override had to be a full copy rather than a patch. |
+| `pnr-request.json` | The `klt place-and-route` request: `gf180mcu_fd_sc_mcu7t5v0`, 40 % utilization, 16 µm core margin (10 µm until #310; the bump is the fill enabler, see "Density fill" below), PDN by platform recipe (`power.preset: gf180mcu_7t_6M`; see DRC below), `power.tapcell.distance_um` 15, I/O pins on Metal3 (horizontal) / Metal2 (vertical), `target_stage: route`, seed 1, `portable_paths`. The straps and connects were spelled out by hand until #154, for klt 0.8.0, whose preset emitted `-split_cuts {Metal3 0.128}`; the pinned 0.9.0 preset carries `split_cuts: null`, so the hand copy was redundant. `power.preset` and explicit `power.straps` are mutually exclusive, which is why the override had to be a full copy rather than a patch. |
 | `pnr.sh` | Runs the flow with the pinned klt (`signoff/klt-pin.txt`), refuses to write anything unless the response is `status: ok`, `stage_reached: route`, `power.pdn: true` with `route_drc_violation_count` and `antenna_violation_count` both 0, and writes the files below. `--check` runs `klt place-and-route --check` plus the GDS sha256; `--check --rerun` re-runs the flow and diffs the verdict-bearing fields. |
 | `pnr-report.json` | Committed `--format json` response. Route stage reached, 0 route DRC and 0 antenna violations, `power.pdn: true`, `power.preset: gf180mcu_7t_6M`, `power.connects_overridden: false`, `power.connects[].split_cuts: null`, `power.tapcell_master: gf180mcu_fd_sc_mcu7t5v0__filltie`, `power.placed.tapcells: 171`. |
 | `efuse_otp_ctrl.gds` | Routed GDS (standard-cell GDS views merged in by klt). Its sha256 is in `efuse_otp_ctrl.gds.sha256`. |
@@ -39,7 +39,13 @@ Needs `openroad` on `PATH` and the gf180mcuD PDK (`PDK_ROOT`, default `~/.ciel`)
   assumed period, so it is not evidence of a timing margin (STA is a separate
   item).
 - Utilization, core margin, I/O layers and seed are floorplan choices, not spec
-  values.
+  values. The core margin moved 10 → 16 µm for #310: with 10 µm the die-edge
+  ring is too narrow for any DCF.1b-conformant comp fill next to a DPF.1
+  covering pattern (the geometry is documented under "Density fill" below), so
+  the eight density rules could not all clear on this partition at that
+  margin. Same core, same seed, same placement — only the die grew
+  (165.355 µm → 177.355 µm square; utilization 40 % → 46.2 % against the
+  unchanged core).
 - Only the typical-corner liberty is used for the P&R timing figures; the
   report's `corners` are not a PVT sign-off.
 
@@ -55,7 +61,9 @@ fuse (`efuse_bitcell`, `efuse_row`, the array top).
 | File | Role |
 |---|---|
 | `gen_efuse_otp.py` | Generator. Reads the netlist; one cell per subcircuit, named as the subcircuit. MOS devices come from `klt gen mos_array` at the netlist W and L; the fuse is the PDK primitive. `efuse_ls` is placed on a stated two-row floorplan and routed with generator-drawn geometry; `efuse_rowdrv` and `efuse_coldrv` are routed from it and the leaf devices the same way. |
-| `regen-gds.sh` | Reproduce the files below with the pinned klt (`signoff/klt-pin.txt`) and PDK (`sim/pdk.json`); `--check` exits 3 on drift. Two runs produce byte-identical streams (the routing is drawn from netlist-derived constants and the generators' own reported port positions — no randomness). |
+| `regen-gds.sh` | Reproduce the files below with the pinned klt (`signoff/klt-pin.txt`) and PDK (`sim/pdk.json`); `--check` exits 3 on drift. Two runs produce byte-identical streams (the routing is drawn from netlist-derived constants and the generators' own reported port positions — no randomness). Since #310 the stream carries density fill: the generator output is piped through `fill_partitions.py` (below) before it is committed. |
+| `fill_partitions.py` | The density-fill generator (#310): adds COMP/Poly2/Metal1–Metal5 dummy shapes (datatype 4, the layers the PDK density rules count) inside the design extent, respecting every dummy keep-out the native deck checks. Refuses (exit 5) when any of the eight density rules would still fail; writes `fill-array.report.json` / `fill-ctrl.report.json`. See "Density fill (#310)" under DRC. |
+| `fill-array.report.json` | The analog fill report: extent, per-layer drawn/fill/total percentages against each rule's bound, shape counts and the keep-out values used. |
 | `efuse_otp_array.gds` | The committed stream. Top cell `efuse_otp_array`. |
 | `efuse_otp_array.gds.sha256` | sha256 of the stream (below). |
 | `efuse_otp_array.report.json` | Every device cell with its model, W, L and fingers, the array pitch and bounding box, and the `routed` block naming the three routed cells and their routing planes. `efuse_coldrv__Mdrv` carries `m: 3` (drawn as three placed units). |
@@ -72,9 +80,12 @@ layout/lvs.sh                 # rewrite the LVS reports (lvs-ctrl needs the PDK;
 layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-analog.attest.json)
 ```
 
-`sha256(efuse_otp_array.gds)` = `133922ed156c68534147da03101307feff268163c732b4b3c3cbf997b6293b98`
-(klt 0.9.2, `gf180mcuC` at open_pdks `f6eeac7`; the stream after the via2-landing fix: via2
-cuts with no M3 above them were dropped, and pin-level via2 is cut only where an M2 pad exists).
+`sha256(efuse_otp_array.gds)` = `23f7bc7bf7706f647f928cd013962746e2a95cb5553e70b398cf137337e78b56`
+(klt 0.9.2, `gf180mcuC` at open_pdks `f6eeac7`; the stream after the via2-landing fix plus the
+#310 density fill — same hierarchy and routing as the previous hash
+`133922ed156c68534147da03101307feff268163c732b4b3c3cbf997b6293b98`, with one `density_fill`
+cell instance added at the top). The fill is part of the regeneration: `regen-gds.sh --check`
+byte-compares the filled stream, so fill and placement cannot drift apart.
 The previous hash `4cf5b69431e9523935b18eb4d04ef5227884bf5d885ff20bde165628dfa9ec7f` was the
 stream the `efuse_rowdrv` / `efuse_coldrv` routing produced (#273), still carrying the unlanded
 via2; before it
@@ -274,12 +285,15 @@ claim, not a layout one).
 
 Both partitions fail the full foundry deck. The array passes **all 27**
 `EF.*` checks on fuse geometry. The controller draws neither PLFUSE (125/5)
-nor EFUSE_MK (80/5). T1 item 3 stays uncited for both partitions.
+nor EFUSE_MK (80/5). Since #310 both streams carry density fill and the
+eight global-density markers are gone; what remains are the #308/#309
+geometry findings and the #311 DBU marker. T1 item 3 stays uncited for both
+partitions (that decision is #60's).
 
 | Stream | Native report | Checked categories | `EF.*` markers | All markers |
 |---|---|---:|---:|---:|
-| Array | [drc-array.native.report.json](drc-array.native.report.json) | 772 | 0 | 253 |
-| Controller | [drc-ctrl.native.report.json](drc-ctrl.native.report.json) | 772 | 0 | 9 |
+| Array | [drc-array.native.report.json](drc-array.native.report.json) | 764 | 0 | 245 |
+| Controller | [drc-ctrl.native.report.json](drc-ctrl.native.report.json) | 764 | 0 | 1 |
 
 `layout/drc.sh` uses the Ciel revision in `sim/pdk.json` (`f6eeac7`,
 `CIEL_ROOT` defaults to `~/.ciel`). The array takes `gf180mcuC` from its
@@ -294,9 +308,11 @@ KLayout 0.30.12 (minimum 0.30.9).
 For each variant, an empty-layout `--list-rule-categories` run independently
 declared 763 categories. The script requires the 27 foundry IDs in that
 set of expectations and adds any finding-producing categories from a first
-pass over the stream. For both streams those extra categories are DBU and
-the eight density rules below. The final run uses klt's exact-name coverage
-assertion. Both reports record `coverage_assertion.satisfied: true`, all 27
+pass over the stream. Before the fill those extra categories were DBU and
+the eight density rules below; after it a positive-count category can only be
+DBU-plus-#308/#309 geometry, so the density executions are instead evidenced
+by the deck's own ratio log (see "Density fill (#310)"). The final run uses
+klt's exact-name coverage assertion. Both reports record `coverage_assertion.satisfied: true`, all 27
 IDs in `coverage.rules_checked`, and zero `EF.*` markers. The native list
 includes EF.14, EF.17 and EF.20 in addition to the 24 IDs the curated deck
 lists as unmodeled.
@@ -305,7 +321,7 @@ lists as unmodeled.
 |---|---:|---:|---|
 | Metal3 enclosure of via2 (V2.4b, V2.4c) | 200 | 0 | [Level shifter and column driver #308](https://github.com/2AMLogic/gf180-efuse-otp/issues/308) |
 | PMOS (DF.4d_MV, DV.6, PL.2_MV) and resistor geometry (PP.9, PRES.5, PRES.6, SB.13) | 44 | 0 | [Generated device cores #309](https://github.com/2AMLogic/gf180-efuse-otp/issues/309) |
-| Global density (DCF.1b, PL.8, M1.4 through M5.4, MT.3) | 8 | 8 | [Density #310](https://github.com/2AMLogic/gf180-efuse-otp/issues/310) |
+| Global density (DCF.1b, PL.8, M1.4 through M5.4, MT.3) | 0 | 0 | cleared by the fill ([Density #310](https://github.com/2AMLogic/gf180-efuse-otp/issues/310), "Density fill" below) |
 | DBU (0.0005 µm, required 0.001 µm) | 1 | 1 | [Partition writers #311](https://github.com/2AMLogic/gf180-efuse-otp/issues/311), [klt generator default #5721](https://github.com/2AMLogic/klayout-tools/issues/5721) |
 
 `layout/drc.sh --check` verifies the input and deck hashes.
@@ -320,6 +336,97 @@ pinned klt read them and graded both rows `check_failed`. A separate
 same grader returned `unrecognized_envelope` for that report shape.
 [Comparison issue #5720](https://github.com/2AMLogic/klayout-tools/issues/5720)
 and [grader fix #5815](https://github.com/2AMLogic/klayout-tools/issues/5815).
+
+### Density fill (#310)
+
+`layout/fill_partitions.py` adds the dummy geometry the eight global-density
+rules count (`density.rb` at open_pdks `f6eeac7` divides each layer's
+merged drawn+dummy area by the design extent): COMP 22/0+22/4 at 25–70 %
+(DCF.1b/1d), Poly2 30/0+30/4 at 14 % (PL.8), Metal1–Metal5 (34, 36, 42, 46,
+81 /0+/4) at 30 % each (M1.4–M5.4), and on the 5-level stack MetalTop is
+Metal5, so the Metal5 fill serves M5.4 and MT.3 together. The fill runs
+inside each generator (`layout/regen-gds.sh` after `gen_efuse_otp.py`,
+`layout/pnr.sh` after the place-and-route copy), refuses to write the stream
+when any of the eight would still fail, and writes its own report
+(`fill-array.report.json`, `fill-ctrl.report.json`). The verification
+context is each partition's own stream — the repo has no die-level
+integration top, so no integrated result exists to publish alongside.
+
+What it draws, all on the 0.005 µm rule grid:
+
+- **FEOL**: one Poly2-dummy annulus at the die edge (per side, the widest
+  strip inside the dummy-poly2 keep-outs) with its comp annulus underneath —
+  the comp annulus is the poly2 annulus eroded 0.3 µm, so the merged poly2
+  polygon strictly covers the merged comp polygon. That covering relation is
+  what the deck's DPF.1 actually checks (`poly2_dummy.not_covering(comp_dummy)`
+  flags any poly2 dummy that covers no comp dummy); the PDK's own fill
+  scripts use the same 5.0/5.6 relation. Over the remaining comp free area:
+  a lattice of 6 µm comp squares at 8 µm pitch, each optionally carrying a
+  6.6 µm poly2 square concentrically (0.3 µm larger per side, same covering
+  relation).
+- **Metals**: per layer, a frame strip along the die edge plus a lattice of
+  6 µm squares at 7 µm pitch, then a second pass of 3 µm squares at 4 µm
+  pitch over what remains, each pass kept 1.0 µm from the last (DM.n.2b asks
+  0.98; 1.0 stays on grid).
+- **Keep-outs**, every value a foundry rule from the PDK's own rule decks:
+  comp dummy keeps 3.5 µm from COMP, 1.5 from Poly2, 1.3/4/1.3/1.3 from
+  Nwell/DNWELL/LVPWELL/Dualgate, 3.5 from RES_MK (DCF.4/5/6abcd/8a, plus
+  NDMY 3.5 and IND_MK 3); poly2 dummy keeps 3.2/5/1/2/1/1 from the same
+  set, 19.7 from RES_MK, 8 from PMNDMY (DPF.4–6, 8, 11, 19); metal dummies
+  keep 2.0 µm from their own layer's drawn shapes (DM.n.3). The one value
+  that is not a rule is the fuse keep-out: 6 µm from PLFUSE, EFUSE_MK and
+  every marker DM.8 names, on every filled layer — DM.8's own
+  dummy-metal-to-fuse-marker space, applied to all fill although this PDK's
+  eFuse marks itself with PLFUSE/EFUSE_MK, which DM.8 does not list. A
+  post-fill check on both committed streams counts fill shapes within 6 µm
+  of any fuse marker: **0 on every filled layer** (the bitcell-bbox variant
+  of that check would over-report — the fuse keep-out is around the fuse
+  markers, not the whole select-device cell).
+
+**Why the controller's core margin moved 10 → 16 µm.** DCF.1b needs 25 %
+COMP over the die, and the controller's only FEOL free area is the die-edge
+ring (the core is wall-to-wall comp-with-halos). With a 10 µm ring, annulus
+plus lattice tops out near 24.5–25 % while DPF.1 forces every poly2 dummy
+onto a comp dummy it can strictly cover — the strip widths that reach 25 %
+leave no room for a covering pattern, and vice versa; the two constraints
+have no common solution at that die size (measured on the real stream, not
+estimated). The margin is a documented floorplan choice, so #310 bumps it:
+same core, same seed, same placement, 165.355 µm → 177.355 µm die
+(utilization 46.2 %, still 171 tapcells, still 0 route DRC and 0 antenna
+violations).
+
+Measured inputs and counts (the eight rules each report 0 markers; the
+ratios are the deck's own `logger` output — `Executing rule <id>` /
+`<layer> ratio: <v> %` — captured from a standalone `klayout -b -r
+gf180mcu.drc` run per variant, which is how a zero-count density execution
+is evidenced since the deck emits a category only on failure):
+
+| | Array | Controller |
+|---|---|---|
+| Stream / top | `layout/efuse_otp_array.gds` / `efuse_otp_array` | `layout/efuse_otp_ctrl.gds` / `efuse_otp_ctrl` |
+| sha256 | `23f7bc7bf7706f647f928cd013962746e2a95cb5553e70b398cf137337e78b56` | `c4300cc05ad942eefb7fc9c1e5409f61684a67553b687e208e9f1817cf58f43a` |
+| Extent (µm) | −20.26, −48.47 → 1067.12, 699.44 (813 262 µm²) | 0, 0 → 177.355, 177.355 (31 455 µm²) |
+| PDK variant / deck options | `gf180mcuC`, `decks=all`, `threads=1` | `gf180mcuD`, `decks=all`, `threads=1` |
+| DCF.1b COMP | 0 markers, ratio 43.13 % | 0 markers, ratio 34.99 % |
+| PL.8 Poly2 | 0 markers, ratio 49.37 % | 0 markers, ratio 35.86 % |
+| M1.4 | 0 markers, ratio 57.16 % | 0 markers, ratio 48.10 % |
+| M2.4 | 0 markers, ratio 60.75 % | 0 markers, ratio 42.25 % |
+| M3.4 | 0 markers, ratio 60.99 % | 0 markers, ratio 41.56 % |
+| M4.4 | 0 markers, ratio 66.11 % | 0 markers, ratio 68.84 % |
+| M5.4 / MT.3 | 0 markers, ratio 66.11 % | 0 markers, ratio 76.06 % |
+
+**Before/after findings, compared by rule and location** (old report at
+`8eb7143`, new at this HEAD): the array lost exactly the eight density
+markers and gained none (253 → 245, all remaining are the #308 V2.4b/c and
+#309 geometry findings plus the #311 DBU marker, at unchanged locations);
+the controller lost the same eight and gained none (9 → 1 — only the DBU
+marker remains, re-issued at the new die extent). No rule that fired before
+fires more or elsewhere after, so the fill hides no new spacing or
+enclosure violation. Both partitions and all three routed cells remain
+`clean` under the curated deck, all four LVS compares remain `match`
+(controller power included), the via2-landing gate reports 0/0 in every
+cell of both streams, and both item 2 envelopes were re-attested against
+the filled streams.
 
 ### Curated results
 
@@ -455,14 +562,15 @@ Verdict, klt 0.9.2 (deck content hash
 `sha256:c3f2cce49000857a3a71cb65203aabf0eb27cd0ee6b1c60e29792355c455c4b1`,
 klayout engine 0.30.13 — the same engine-dependence caveat as DRC above;
 re-run at the 0.9.2 pin 2026-11-17, `match`/`match` as before, the report's
-`schema_version` moved 2 → 3 with additive fields):
+`schema_version` moved 2 → 3 with additive fields; re-run again 2026-11-21
+after the #310 re-P&R and fill, still `match`/`match`):
 **`status: match` and `power_connectivity.status: match`**, `error_count: 0`.
 It is cited for `4.digital` in `signoff/block-manifest.json` and the record
 reads `met`. Digests, both recorded in the report: layout
-`sha256:574c94b191ddb5592f230aa6cfb32bcde5f1ee8c1707d820c3bce5c73bb4f21a` —
+`sha256:c4300cc05ad942eefb7fc9c1e5409f61684a67553b687e208e9f1817cf58f43a` —
 the report's `provenance.input.content_hash`, equal to
 `efuse_otp_ctrl.gds.sha256`; reference
-`sha256:921a3d477c8b10a67554b086d478bcd9a360b1a961fcd3c893bcde01c9da1628` —
+`sha256:f7907521b87135d6f746d5e465af8580950f4b38bc48746d4f2512f9ed0ed7c3` —
 `environment.reference_sha256`, `sha256 efuse_otp_ctrl.asbuilt.v`.
 
 How the compare is shaped (this is not the extraction's default):

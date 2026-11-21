@@ -24,14 +24,14 @@
         "role": "evidence",
         "path": "layout/drc-array.report.json",
         "passed": true,
-        "content_hash": "sha256:9d25a3903b9e18980c805d431098848bf31f391c00b7a92b1e065ba14153fad6"
+        "content_hash": "sha256:daf92acf836ebd3e7f6240d9d758ce907127d208936b78248451c0ebb0c3c4e2"
       },
       {
         "check": "present",
         "role": "evidence",
         "path": "layout/drc-ctrl.report.json",
         "passed": true,
-        "content_hash": "sha256:fc0606750a7c299b3ffadb04afd8cfb60fd610b1c8a4d70723b6e13aca35541c"
+        "content_hash": "sha256:0212a345d5fc9c6ad11c87d96dcc4301f9fbd05bc6d1e39a061044efee6561d0"
       },
       {
         "check": "present",
@@ -45,21 +45,21 @@
         "role": "evidence",
         "path": "layout/lvs-ctrl.report.json",
         "passed": true,
-        "content_hash": "sha256:fd24dd20c35b1d0262024839190aefb75243d7d06f2d2af4e052f66e2fd70124"
+        "content_hash": "sha256:85d051f5be67a1d0a191b7408829834bc2538ee3bf93e81975a29c15e4135a3f"
       },
       {
         "check": "present",
         "role": "evidence",
         "path": "layout/pnr-report.json",
         "passed": true,
-        "content_hash": "sha256:ccd846040a984e915b567ed3c9cc6b783c37245ea6bb1d018bdd9a9654d06756"
+        "content_hash": "sha256:a1c6bf1574983287f10705affc6b98e5cb1233be223688bf367d38c5e2e32cda"
       },
       {
         "check": "present",
         "role": "evidence",
         "path": "signoff/block-manifest.signoff.json",
         "passed": true,
-        "content_hash": "sha256:7e85efc9418e47b542a05a9b5b3cb53834c9540bec4f23be43bfd47b37d3b1bb"
+        "content_hash": "sha256:715fe788ba9e9dc933658e3a62d51ff4d5c9da63e4546b0931d2b902840de47b"
       },
       {
         "check": "present",
@@ -737,7 +737,7 @@
         "metric": "area",
         "envelope": "layout/pnr-report.json",
         "field": "die_area_um2",
-        "value": 27342.3,
+        "value": 31454.8,
         "passed": true
       },
       {
@@ -767,7 +767,7 @@
         "metric": "area",
         "envelope": "layout/pnr-report.json",
         "field": "die_area_um2",
-        "value": 27342.3,
+        "value": 31454.8,
         "passed": true
       },
       {
@@ -797,7 +797,7 @@
         "metric": "area",
         "envelope": "layout/pnr-report.json",
         "field": "die_area_um2",
-        "value": 27342.3,
+        "value": 31454.8,
         "passed": true
       },
       {
@@ -827,7 +827,7 @@
         "metric": "area",
         "envelope": "layout/pnr-report.json",
         "field": "die_area_um2",
-        "value": 27342.3,
+        "value": 31454.8,
         "passed": true
       },
       {
@@ -857,7 +857,7 @@
         "metric": "area",
         "envelope": "layout/pnr-report.json",
         "field": "die_area_um2",
-        "value": 27342.3,
+        "value": 31454.8,
         "passed": true
       },
       {
