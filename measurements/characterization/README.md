@@ -3,7 +3,8 @@
 One row per ratified spec row (`spec/efuse-otp.md` section 2 parameters `P01`-`P13`
 and section 3 "can show" claims `C1`-`C3`), with the record each verdict rests on.
 This report **aggregates committed records; it produces no evidence and edits no
-`sim/` result.** State read at `main` `fafa4a6`, 2026-11-10.
+`sim/` result.** The original snapshot used `main` at `fafa4a6` on 2026-11-10.
+The controller timing and power table uses the 100 ns STA report added in `302f29d`.
 
 Verdict vocabulary: `met` (a committed record shows the bound over the stated
 conditions), `not met`, `partial` (record covers part of the bound), `not measured`
@@ -78,8 +79,8 @@ estimated by the engine). Source: `sim/controller-sta/sta-100ns.ddba55a3.report.
 
 Not omitted, only unmeasured: P02 (#60) and the LVS part of P13 (#32). P08, P09,
 P10 and C2 are cited above from the post-#85 corner and Monte Carlo records; they
-rest on assumptions A4-A6 and the unsourced reference-tolerance sigma. Post-layout rows (#61) and the clock-target ratification
-(decision 0006, #35) will change the controller section; update the rows then.
+rest on assumptions A4-A6 and the unsourced reference-tolerance sigma. Issue #61
+tracks the remaining post-layout controller measurements.
 
 ## Reproduce / re-derive
 
