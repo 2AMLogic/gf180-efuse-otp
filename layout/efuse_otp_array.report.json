@@ -3,25 +3,27 @@
   "dbu_um": 0.0005,
   "bbox_um": [
     -20.26,
-    -38.84,
-    794.48,
+    -48.47,
+    1067.12,
     699.44
   ],
   "array": {
     "rows": 32,
     "cols": 8,
-    "pitch_x_um": 99.56,
+    "pitch_x_um": 133.64,
     "pitch_y_um": 21.92
   },
-  "caveat": "placed hierarchy; efuse_ls is routed (see 'routed'), every other cell is placement-only: no routing, no connectivity, no DRC/LVS claim outside efuse_ls",
+  "caveat": "placed hierarchy; efuse_ls, efuse_rowdrv and efuse_coldrv are routed (see 'routed'), every other cell is placement-only: no routing, no connectivity, no DRC/LVS claim outside those three",
   "routed": {
     "cells": [
-      "efuse_ls"
+      "efuse_ls",
+      "efuse_rowdrv",
+      "efuse_coldrv"
     ],
     "planes": {
       "m1": "device pads and guard-ring taps",
       "m2": "supply rails and horizontal runs",
-      "m3": "vertical stubs"
+      "m3": "vertical stubs and lanes"
     }
   },
   "devices": [
@@ -124,7 +126,8 @@
       "w_um": 100.0,
       "l_um": 0.5,
       "fingers": 10,
-      "finger_w_um": 10.0
+      "finger_w_um": 10.0,
+      "m": 3
     },
     {
       "cell": "efuse_coldrv__Mpra",

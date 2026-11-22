@@ -54,8 +54,9 @@ def single_input(path, digest):
     return {"path": {"path": path, "scope": "repo"}, "content_hash": digest}
 
 
-def make_root():
+def make_root(case):
     root = Path(tempfile.mkdtemp())
+    case.addCleanup(shutil.rmtree, root, ignore_errors=True)
     write(root, "signoff/block-manifest.json",
           json.dumps({"kind": "block-manifest", "evidence": {}}))
     return root
@@ -77,7 +78,7 @@ class Test(unittest.TestCase):
     # -- the three pin shapes ------------------------------------------------
 
     def test_checks_entry_shape_pinned(self):
-        root = make_root()
+        root = make_root(self)
         write_bytes(root, "README.md", b"hello\n")
         write(root, "signoff/attest/x.json", json.dumps({"item": "x"}))
         self.put_envelope(root, "signoff/attest/x.envelope.json", envelope(
@@ -89,7 +90,7 @@ class Test(unittest.TestCase):
         self.assertEqual(stats["pins"], 2)
 
     def test_single_file_input_shape_pinned(self):
-        root = make_root()
+        root = make_root(self)
         write_bytes(root, "layout/ea.gds", b"\x00\x01gds")
         self.put_envelope(root, "layout/e.attest.json", envelope(
             prov_input=single_input("layout/ea.gds", sha_of(root, "layout/ea.gds"))))
@@ -98,7 +99,7 @@ class Test(unittest.TestCase):
         self.assertEqual(stats["pins"], 1)
 
     def test_multi_path_shape_and_composite_pinned(self):
-        root = make_root()
+        root = make_root(self)
         files = ["rtl/a.v", "rtl/b.gl.v"]
         for f in files:
             write_bytes(root, f, f"module {f}\n".encode())
@@ -117,7 +118,7 @@ class Test(unittest.TestCase):
     # -- skipped kinds -------------------------------------------------------
 
     def test_command_entries_skipped_not_failed(self):
-        root = make_root()
+        root = make_root(self)
         self.put_envelope(root, "signoff/attest/x.envelope.json", envelope(
             checks=[command_check("some --audit --command"),
                     {"check": "citation", "citation": "spec/x"},
@@ -132,7 +133,7 @@ class Test(unittest.TestCase):
         self.assertEqual(stats["skipped"], 6)
 
     def test_stream_readable_hash_without_path_skipped(self):
-        root = make_root()
+        root = make_root(self)
         write_bytes(root, "layout/ea.gds", b"gds")
         self.put_envelope(root, "layout/e.attest.json", envelope(
             checks=[stream_readable(sha_of(root, "layout/ea.gds"))],
@@ -154,7 +155,7 @@ class Test(unittest.TestCase):
         self.put_envelope(root, "signoff/attest/x.envelope.json", env)
 
     def test_unsupported_hash_algorithm_is_named_not_reported_as_drift(self):
-        root = make_root()
+        root = make_root(self)
         write_bytes(root, "README.md", b"x\n")
         # a stale pin: under the old behaviour this would be reported as drift
         env = envelope(checks=[present("README.md", "sha256:" + "0" * 64)])
@@ -171,21 +172,21 @@ class Test(unittest.TestCase):
 
     def test_non_string_or_null_hash_algorithm_is_refused_not_a_crash(self):
         for bad in (None, 7, ["sha256-raw-bytes"]):
-            root = make_root()
+            root = make_root(self)
             self._env_with_algorithm(root, algo=bad)
             problems, stats = self.run_check(root)
             self.assertEqual(len(problems), 1, bad)
             self.assertEqual(stats["pins"], 0)
 
     def test_absent_hash_algorithm_checks_pins_as_before(self):
-        root = make_root()
+        root = make_root(self)
         self._env_with_algorithm(root)
         problems, stats = self.run_check(root)
         self.assertEqual(problems, [])
         self.assertEqual(stats["pins"], 1)
 
     def test_declared_supported_hash_algorithm_checks_pins(self):
-        root = make_root()
+        root = make_root(self)
         self._env_with_algorithm(root, algo=cap.HASH_ALGORITHM)
         problems, stats = self.run_check(root)
         self.assertEqual(problems, [])
@@ -194,7 +195,7 @@ class Test(unittest.TestCase):
     # -- the two klt assumptions, pinned by name -----------------------------
 
     def test_assumption_sha256_raw_bytes_is_plain_file_sha256(self):
-        root = make_root()
+        root = make_root(self)
         write_bytes(root, "README.md", b"assumption\n")
         self.put_envelope(root, "signoff/attest/x.envelope.json", envelope(
             checks=[present("README.md",
@@ -203,7 +204,7 @@ class Test(unittest.TestCase):
         self.assertEqual(problems, [])
 
     def test_assumption_composite_recipe_is_sha256sum_lines(self):
-        root = make_root()
+        root = make_root(self)
         files = ["a.src", "b.src"]
         for f in files:
             write_bytes(root, f, f"{f}\n".encode())
@@ -219,7 +220,7 @@ class Test(unittest.TestCase):
         self.assertEqual(stats["composites"], 1)
 
     def test_assumption_composite_recipe_rejects_wrong_digest(self):
-        root = make_root()
+        root = make_root(self)
         write_bytes(root, "a.src", b"a\n")
         members = [{"path": {"path": "a.src", "scope": "repo"},
                     "content_hash": sha_of(root, "a.src")}]
@@ -232,7 +233,7 @@ class Test(unittest.TestCase):
     # -- drift reporting -----------------------------------------------------
 
     def test_drifted_pin_names_path_committed_and_fresh(self):
-        root = make_root()
+        root = make_root(self)
         write_bytes(root, "README.md", b"new content\n")
         stale = "sha256:" + "0" * 64
         self.put_envelope(root, "signoff/attest/x.envelope.json", envelope(
@@ -243,7 +244,7 @@ class Test(unittest.TestCase):
                             and sha_of(root, "README.md") in m for m in msgs), msgs)
 
     def test_drifted_pin_prints_per_item_remediation(self):
-        root = make_root()
+        root = make_root(self)
         write_bytes(root, "README.md", b"edited\n")
         self.put_envelope(root, "signoff/attest/item10.envelope.json", envelope(
             checks=[present("README.md", "sha256:" + "0" * 64)]))
@@ -255,7 +256,7 @@ class Test(unittest.TestCase):
         self.assertIn('signoff/klt-pin.txt', out)
 
     def test_item1_remediation_names_two_step_manifest_update(self):
-        root = make_root()
+        root = make_root(self)
         write_bytes(root, "rtl/efuse_otp_ctrl.v", b"always @(posedge clk);\n")
         self.put_envelope(root, "signoff/item1-digital.attest.json", envelope(
             checks=[present("rtl/efuse_otp_ctrl.v", "sha256:" + "0" * 64)]))
@@ -266,7 +267,7 @@ class Test(unittest.TestCase):
         self.assertIn("regen-gl", out)
 
     def test_item8_remediation_omits_format_json_workaround(self):
-        root = make_root()
+        root = make_root(self)
         write_bytes(root, "measurements/characterization/README.md",
                     b"# characterization\n")
         self.put_envelope(
@@ -278,7 +279,7 @@ class Test(unittest.TestCase):
         self.assertNotIn("--format json", out)
 
     def test_unknown_envelope_gets_generic_pointer(self):
-        root = make_root()
+        root = make_root(self)
         write_bytes(root, "some/file.src", b"x\n")
         self.put_envelope(root, "signoff/future.envelope.json", envelope(
             checks=[present("some/file.src", "sha256:" + "0" * 64)]))
@@ -287,7 +288,7 @@ class Test(unittest.TestCase):
         self.assertNotIn("--attest", out)
 
     def test_missing_pinned_file_reports_missing_not_crash(self):
-        root = make_root()
+        root = make_root(self)
         self.put_envelope(root, "signoff/attest/x.envelope.json", envelope(
             checks=[present("gone/missing.md", "sha256:" + "0" * 64)]))
         problems, _ = self.run_check(root)
@@ -297,7 +298,7 @@ class Test(unittest.TestCase):
     # -- envelope hygiene ----------------------------------------------------
 
     def test_envelope_with_no_pins_passes(self):
-        root = make_root()
+        root = make_root(self)
         self.put_envelope(root, "signoff/attest/empty.envelope.json", envelope(
             checks=[command_check("noop")]))
         problems, stats = self.run_check(root)
@@ -305,14 +306,14 @@ class Test(unittest.TestCase):
         self.assertEqual(stats["pins"], 0)
 
     def test_unparseable_tracked_json_is_a_defect_not_a_crash(self):
-        root = make_root()
+        root = make_root(self)
         write(root, "signoff/attest/broken.json", "{not json")
         problems, _ = self.run_check(root)
         msgs = [m for m, _ in problems]
         self.assertTrue(any("broken.json" in m for m in msgs), msgs)
 
     def test_non_envelope_json_ignored(self):
-        root = make_root()
+        root = make_root(self)
         write(root, "plain.json", json.dumps({"schema_version": 3, "rows": []}))
         problems, stats = self.run_check(root)
         self.assertEqual(problems, [])
@@ -321,7 +322,7 @@ class Test(unittest.TestCase):
     # -- manifest layer ------------------------------------------------------
 
     def test_manifest_binding_matches_envelope_composite(self):
-        root = make_root()
+        root = make_root(self)
         write_bytes(root, "a.src", b"a\n")
         members = [{"path": {"path": "a.src", "scope": "repo"},
                     "content_hash": sha_of(root, "a.src")}]
@@ -338,7 +339,7 @@ class Test(unittest.TestCase):
         self.assertEqual(stats["manifest_pins"], 1)
 
     def test_manifest_stale_binding_reported_with_fix(self):
-        root = make_root()
+        root = make_root(self)
         write_bytes(root, "a.src", b"a\n")
         self.put_envelope(root, "signoff/x.attest.json", envelope(
             prov_input=single_input("a.src", sha_of(root, "a.src"))))
@@ -355,7 +356,7 @@ class Test(unittest.TestCase):
         self.assertIn("design-evidence-tiers.md", out)
 
     def test_manifest_entries_without_hash_skipped(self):
-        root = make_root()
+        root = make_root(self)
         write(root, "signoff/block-manifest.json", json.dumps({
             "kind": "block-manifest",
             "evidence": {
@@ -367,7 +368,7 @@ class Test(unittest.TestCase):
         self.assertEqual(stats["manifest_pins"], 0)
 
     def test_manifest_citing_file_without_provenance_reported(self):
-        root = make_root()
+        root = make_root(self)
         write(root, "signoff/block-manifest.json", json.dumps({
             "kind": "block-manifest",
             "evidence": {"9": {"file": "signoff/attest/gone.envelope.json",
@@ -378,7 +379,7 @@ class Test(unittest.TestCase):
                             for m in msgs), msgs)
 
     def test_manifest_binds_provenance_bearing_non_envelope(self):
-        root = make_root()
+        root = make_root(self)
         write(root, "layout/report.json", json.dumps({
             "schema_version": 2,
             "provenance": {"input": {"content_hash": "sha256:" + "4" * 64}},
@@ -392,7 +393,7 @@ class Test(unittest.TestCase):
         self.assertEqual(stats["manifest_pins"], 1)
 
     def test_manifest_stale_non_envelope_binding_reported(self):
-        root = make_root()
+        root = make_root(self)
         write(root, "layout/report.json", json.dumps({
             "schema_version": 2,
             "provenance": {"input": {"content_hash": "sha256:" + "4" * 64}},
@@ -409,7 +410,7 @@ class Test(unittest.TestCase):
     def test_manifest_citing_untracked_file_reported(self):
         if shutil.which("git") is None:
             self.skipTest("git not available")
-        root = make_root()
+        root = make_root(self)
         subprocess.run(["git", "init", "-q"], cwd=root, check=True)
         write(root, "layout/report.json", json.dumps({
             "schema_version": 2,
@@ -434,7 +435,7 @@ class Test(unittest.TestCase):
     def test_manifest_untracked_cite_without_provenance_reported_once(self):
         if shutil.which("git") is None:
             self.skipTest("git not available")
-        root = make_root()
+        root = make_root(self)
         subprocess.run(["git", "init", "-q"], cwd=root, check=True)
         write(root, "layout/report.json", json.dumps({"schema_version": 2}))
         write(root, "signoff/block-manifest.json", json.dumps({
@@ -449,7 +450,7 @@ class Test(unittest.TestCase):
         self.assertIn("untracked", problems[0][0])
 
     def test_manifest_cite_in_non_git_tree_skips_trackedness(self):
-        root = make_root()
+        root = make_root(self)
         write(root, "layout/report.json", json.dumps({
             "schema_version": 2,
             "provenance": {"input": {"content_hash": "sha256:" + "4" * 64}},
@@ -465,7 +466,7 @@ class Test(unittest.TestCase):
     def test_manifest_cite_normalises_against_tracked_set(self):
         if shutil.which("git") is None:
             self.skipTest("git not available")
-        root = make_root()
+        root = make_root(self)
         subprocess.run(["git", "init", "-q"], cwd=root, check=True)
         write(root, "layout/report.json", json.dumps({
             "schema_version": 2,
@@ -486,6 +487,7 @@ class Test(unittest.TestCase):
 
     def test_run_outside_repo_root_says_so(self):
         root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root, ignore_errors=True)
         code, out = self.run_main(root)
         self.assertEqual(code, 1)
         self.assertIn("repo root", out)
@@ -493,7 +495,7 @@ class Test(unittest.TestCase):
     def test_tracked_only_discovery_ignores_untracked(self):
         if shutil.which("git") is None:
             self.skipTest("git not available")
-        root = make_root()
+        root = make_root(self)
         subprocess.run(["git", "init", "-q"], cwd=root, check=True)
         write_bytes(root, "tracked.md", b"tracked\n")
         self.put_envelope(root, "signoff/attest/x.envelope.json", envelope(
@@ -512,7 +514,7 @@ class Test(unittest.TestCase):
     # -- clean run output ----------------------------------------------------
 
     def test_clean_run_exit_0_and_ok_line(self):
-        root = make_root()
+        root = make_root(self)
         write_bytes(root, "README.md", b"ok\n")
         self.put_envelope(root, "signoff/attest/x.envelope.json", envelope(
             checks=[present("README.md", sha_of(root, "README.md"))]))

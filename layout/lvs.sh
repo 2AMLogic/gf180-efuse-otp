@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 # Run `klt lvs` with the pinned klt (never a host-installed one) on the digital
 # partition (layout/efuse_otp_ctrl.gds against the as-built gate-level netlist)
-# and on the routed efuse_ls cell (top of layout/efuse_otp_array.gds against its
-# .subckt in design/efuse_otp_array.spice), keeping the JSON reports as
-# committed evidence.
-#   layout/lvs.sh           rewrite layout/lvs-ctrl.report.json and
-#                           layout/lvs-ls.report.json
+# and on the routed analog cells efuse_ls, efuse_rowdrv and efuse_coldrv (each
+# the top of layout/efuse_otp_array.gds, against its .subckt in
+# design/efuse_otp_array.spice), keeping the JSON reports as committed evidence.
+#   layout/lvs.sh           rewrite layout/lvs-ctrl.report.json,
+#                           layout/lvs-ls.report.json,
+#                           layout/lvs-rowdrv.report.json and
+#                           layout/lvs-coldrv.report.json
 #   layout/lvs.sh --check   klt lvs --check on the committed report (input and
 #                           deck hashes still match; add --rerun to re-run the
 #                           compare)
 # klt exits 3 when a compare does not match; that is a finding, not a script
 # failure, so the verdict is printed and the report is kept as found.
-# The ctrl part needs the PDK, unlike drc.sh or the ls part: the gate-level
+# The ctrl part needs the PDK, unlike the ls part: the gate-level
 # reference resolves each standard cell's pin order from the library's own
 # spice/cdl under <PDK_ROOT>/gf180mcuD/libs.ref, so CI (which installs no PDK)
 # cannot run it. PDK_ROOT defaults to ~/.ciel, layout/pnr.sh's default; the
@@ -24,7 +26,7 @@ cd "$(dirname "$0")/.."
 export PDK="${PDK:-gf180mcuD}" PDK_ROOT="${PDK_ROOT:-$HOME/.ciel}"
 # shellcheck source=../signoff/klt.sh
 . signoff/klt.sh
-parts=(ctrl:efuse_otp_ctrl ls:efuse_ls)
+parts=(ctrl:efuse_otp_ctrl ls:efuse_ls rowdrv:efuse_rowdrv coldrv:efuse_coldrv)
 if [ "${1:-}" = "--check" ]; then
   shift
   for p in "${parts[@]}"; do
@@ -42,6 +44,12 @@ for p in "${parts[@]}"; do
   # analog stream (top efuse_ls), against its .subckt in the analog netlist --
   # simulation form (X cards calling PDK device subcircuits), which
   # reference.form "subckt-call" converts; no PDK or library needed.
+  # rowdrv/coldrv: same, but the layout extracts flat (efuse_ls inlined), so
+  # the reference is flattened under the top (options.flatten_reference keeps
+  # only the top circuit) -- efuse_ls is compared as its devices, not as a
+  # hierarchical instance -- and combine_devices merges parallel devices on
+  # both sides: the reference's m=3 Mdrv (three W=100 copies) and the layout's
+  # three 10-finger units become one device each side.
   if [ "$part" = ctrl ]; then
     req=$(cat <<REQ
 {
@@ -60,13 +68,17 @@ for p in "${parts[@]}"; do
 REQ
 )
   else
+    opts='{ "anchor_top_level_pins": true }'
+    case "$part" in
+      rowdrv|coldrv) opts="{ \"anchor_top_level_pins\": true, \"flatten_reference\": [\"$top\"], \"combine_devices\": true }" ;;
+    esac
     req=$(cat <<REQ
 {
   "layout": { "file": "layout/efuse_otp_array.gds", "top": "$top", "deck": "gf180mcu" },
   "reference": { "netlist": "design/efuse_otp_array.spice",
                  "form": "subckt-call",
                  "top": "$top" },
-  "options": { "anchor_top_level_pins": true },
+  "options": $opts,
   "portable_paths": true
 }
 REQ

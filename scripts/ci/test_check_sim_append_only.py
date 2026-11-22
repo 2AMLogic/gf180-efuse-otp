@@ -1,3 +1,4 @@
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -11,8 +12,9 @@ def git(root, *a):
                    check=True, capture_output=True)
 
 
-def make_repo():
+def make_repo(case):
     root = Path(tempfile.mkdtemp())
+    case.addCleanup(shutil.rmtree, root, ignore_errors=True)
     git(root, "init", "-q", "-b", "main")
     rd = root / "sim" / "t" / "records"
     rd.mkdir(parents=True)
@@ -31,27 +33,27 @@ def finish(root):
 
 class Test(unittest.TestCase):
     def test_add_accepted(self):
-        root, rd = make_repo()
+        root, rd = make_repo(self)
         (rd / "b.json").write_text("{}\n")
         self.assertEqual(finish(root), 0)
 
     def test_modify_rejected(self):
-        root, rd = make_repo()
+        root, rd = make_repo(self)
         (rd / "a.json").write_text('{"x": 1}\n')
         self.assertNotEqual(finish(root), 0)
 
     def test_delete_rejected(self):
-        root, rd = make_repo()
+        root, rd = make_repo(self)
         (rd / "a.json").unlink()
         self.assertNotEqual(finish(root), 0)
 
     def test_rename_rejected(self):
-        root, rd = make_repo()
+        root, rd = make_repo(self)
         (rd / "a.json").rename(rd / "c.json")
         self.assertNotEqual(finish(root), 0)
 
     def test_non_record_edit_accepted(self):
-        root, _ = make_repo()
+        root, _ = make_repo(self)
         (root / "sim" / "README.md").write_text("edited\n")
         self.assertEqual(finish(root), 0)
 

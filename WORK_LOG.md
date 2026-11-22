@@ -2,6 +2,36 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-20
+
+- **PR #299**: test: register per-test cleanup for checker self-test fixture trees
+- **Issue #298** (closed): Clean up the 61 fixture directories left by each checker self-test run
+- **PR #295**: refactor: draw efuse_ls routing through the shared cell-taking box/cut helpers
+- **PR #294**: ci: skip controller build deps on an EDA cache hit
+- **Issue #293** (closed): Skip controller build dependencies on an EDA cache hit
+- **Issue #291** (closed): Reuse the column driver's box and via-cut helpers in the level shifter
+
+### 2026-11-19
+
+- **Issue #73** (closed): Route the fuse-free analog leaf cells (efuse_ls, efuse_coldrv) and LVS-match each one
+
+### 2026-11-18
+
+- **PR #284**: ci: gate the committed ctrl stream on via2 landing
+- **PR #283**: docs(ci): state that the via2 step does not run regen-gds.sh
+- **PR #280**: docs(signoff): list the via2 landing gate in the CI checks
+- **PR #278**: ci: gate committed stream on via2 landing and re-thread README hash chain
+- **PR #275**: fix(layout): drop unlanded via2 cuts and gate them with a per-cell M3 count
+- **PR #273**: feat(layout): route efuse_rowdrv and efuse_coldrv, LVS-match both cells
+- **Issue #281** (closed): Via2 landing gate runs on the array stream only; efuse_otp_ctrl.gds (1429 via2) is ungated
+- **Issue #282** (closed): Reword the via2 CI step's regen-gds.sh claim, bundled with the next ci.yml edit
+- **Issue #279** (closed): Record the via2 landing gate in signoff/README.md's CI list, and fix the step comment's regen-gds claim
+- **Issue #276** (closed): Make the via2 landing gate durable in CI, and repair the README stream-hash chain
+- **Issue #274** (closed): Routed cells draw via2 cuts with no M3 above them (unlanded vias; V2.3c/d/V2.4b/c are unmodeled in the deck)
+- **Issue #268** (closed): Route efuse_coldrv (and the efuse_rowdrv wrapper) in the layout generator and LVS-match them (second slice of #73)
+- **PR #271**: ci: single-source the check:ci term list in scripts/ci/check_ci.sh
+- **Issue #267** (closed): Single-source the check:ci list and drop the two drift-binding checkers (~1,240 lines)
+
 ### 2026-11-17
 
 - **PR #266**: feat(layout): route efuse_ls in the generator, DRC/LVS the routed cell
