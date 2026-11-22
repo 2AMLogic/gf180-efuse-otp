@@ -49,7 +49,7 @@ out-of-spec headroom.
 
 Fmax, worst setup and hold slack come from `klt sta` on the routed DEF
 (`geometry_source: routed`, `clock_mode: ideal`, no SPEF: wire parasitics are
-estimated by the engine). Source: `sim/controller-sta/sta-100ns.report.json`
+estimated by the engine). Source: `sim/controller-sta/sta-100ns.ddba55a3.report.json`
 (`corners[]`).
 
 | Corner | Fmax (MHz) | Setup slack @ 100 ns (ns) | Hold slack (ns) | Estimated power (mW) |

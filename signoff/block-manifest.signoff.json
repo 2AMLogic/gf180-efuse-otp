@@ -624,17 +624,17 @@
       "reason": null,
       "graded_by_build": true,
       "citation": {
-        "file": "sim/controller-sta/sta-100ns.report.json",
+        "file": "sim/controller-sta/sta-100ns.ddba55a3.report.json",
         "command": null,
         "kind": "sta",
         "check_status": "ok",
-        "content_hash": "sha256:3afa4360b2499d968de07195e1dcec46c9d8b07a04809048b2a80b5134b04a05",
-        "input_verified": null,
+        "content_hash": "sha256:ddba55a3ae45487bbb5e56959b29c436dc08217687b0eda79aff4673109d5adc",
+        "input_verified": true,
         "exit_status": 0
       },
       "citations_graded": [
         {
-          "citation": "sim/controller-sta/sta-100ns.report.json",
+          "citation": "sim/controller-sta/sta-100ns.ddba55a3.report.json",
           "status": "met",
           "reason": null
         },
@@ -686,12 +686,12 @@
       ],
       "citations": [
         {
-          "file": "sim/controller-sta/sta-100ns.report.json",
+          "file": "sim/controller-sta/sta-100ns.ddba55a3.report.json",
           "command": null,
           "kind": "sta",
           "check_status": "ok",
-          "content_hash": "sha256:3afa4360b2499d968de07195e1dcec46c9d8b07a04809048b2a80b5134b04a05",
-          "input_verified": null,
+          "content_hash": "sha256:ddba55a3ae45487bbb5e56959b29c436dc08217687b0eda79aff4673109d5adc",
+          "input_verified": true,
           "exit_status": 0
         },
         {
@@ -887,7 +887,7 @@
         },
         "statement": {
           "file": "signoff/item6-digital-statement.json",
-          "content_hash": "sha256:23c09beb9083d2133cb02e8d841e46a86ac4e1fe9edb6d78f1b25d3f4b24eac3",
+          "content_hash": "sha256:08bc4b3d2cdb25493ac0009b1607984ef533ffcb3bdd66ad670a95b55dcfe763",
           "rows": [
             {
               "id": "array",
@@ -912,7 +912,7 @@
             {
               "id": "controller-clock",
               "class": "timing / clock target (corner-bounded)",
-              "reason": "The clock period is a fixed target (100 ns, decision 0006), not a distribution. It is bounded at the PDK's characterised corners by static timing (sim/controller-sta/sta-100ns.report.json); the 10 ns report is out-of-spec headroom and is not cited."
+              "reason": "The clock period is a fixed target (100 ns, decision 0006), not a distribution. It is bounded at the PDK's characterised corners by static timing (sim/controller-sta/sta-100ns.ddba55a3.report.json); the 10 ns report is out-of-spec headroom and is not cited."
             },
             {
               "id": "pvt-corners",
@@ -974,7 +974,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:32ce6ba0c388613b09175442c236de533b37b54f21ef7c2a52a7cf915890cd85",
+        "content_hash": "sha256:51e98d7d2ac690885ab7a5416c59ac9de9ef66be280603e96ee23d61691adb5f",
         "input_verified": true,
         "exit_status": 0,
         "attestation": {
@@ -1001,7 +1001,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:32ce6ba0c388613b09175442c236de533b37b54f21ef7c2a52a7cf915890cd85",
+        "content_hash": "sha256:51e98d7d2ac690885ab7a5416c59ac9de9ef66be280603e96ee23d61691adb5f",
         "input_verified": true,
         "exit_status": 0,
         "attestation": {

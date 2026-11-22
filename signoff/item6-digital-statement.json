@@ -25,7 +25,7 @@
   {
    "id": "controller-clock",
    "class": "timing / clock target (corner-bounded)",
-   "reason": "The clock period is a fixed target (100 ns, decision 0006), not a distribution. It is bounded at the PDK's characterised corners by static timing (sim/controller-sta/sta-100ns.report.json); the 10 ns report is out-of-spec headroom and is not cited."
+   "reason": "The clock period is a fixed target (100 ns, decision 0006), not a distribution. It is bounded at the PDK's characterised corners by static timing (sim/controller-sta/sta-100ns.ddba55a3.report.json); the 10 ns report is out-of-spec headroom and is not cited."
   },
   {
    "id": "pvt-corners",
