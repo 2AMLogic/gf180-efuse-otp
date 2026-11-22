@@ -31,7 +31,7 @@ therefore the five corners above; the rest is a gap, not a pass.
 | ff_n40C_3v60 | 96.84 / 0.64 | 6.84 / 0.64 |
 | ff_125C_3v60 | 95.36 / 0.91 | 5.36 / 0.91 |
 
-Re-run at the PR head (routed DEF sha256 `ddba55a3...adb5f`, regenerated with
+Re-run at the PR head (routed DEF sha256 `ddba55a3...9d5adc`, regenerated with
 `layout/pnr.sh`; GDS and as-built netlist byte-identical to the committed ones):
 `sim/controller-sta/sta-100ns.ddba55a3.report.json`, append-only. Setup and hold
 are non-negative at all five corners (worst setup 88.77 ns at `ss_125C_3v00`,

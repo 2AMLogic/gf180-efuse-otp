@@ -43,9 +43,8 @@ working value, not a fact, and a verdict against it says nothing about a real fu
 
 ## Controller (digital partition): Fmax, area, power
 
-Clock target is decision 0006, `Status: proposed` (10 MHz). It is **not ratified**;
-the 100 ns column below is not "ratified spec". The 10 ns report is cited only as
-out-of-spec headroom.
+Clock target is decision 0006, `Status: ratified` (10 MHz, 100 ns period). The
+10 ns report is cited only as out-of-spec headroom.
 
 Fmax, worst setup and hold slack come from `klt sta` on the routed DEF
 (`geometry_source: routed`, `clock_mode: ideal`, no SPEF: wire parasitics are
@@ -54,11 +53,11 @@ estimated by the engine). Source: `sim/controller-sta/sta-100ns.ddba55a3.report.
 
 | Corner | Fmax (MHz) | Setup slack @ 100 ns (ns) | Hold slack (ns) | Estimated power (mW) |
 |---|---|---|---|---|
-| ss_n40C_3v00 | 130.122 | 92.3149 | 1.61053 | 0.2765 |
-| ss_125C_3v00 | 89.0309 | 88.7679 | 2.30944 | 0.2932 |
-| tt_025C_3v30 | 181.228 | 94.4821 | 1.13542 | 0.3505 |
-| ff_n40C_3v60 | 316.613 | 96.8416 | 0.64285 | 0.4236 |
-| ff_125C_3v60 | 215.51 | 95.3598 | 0.90653 | 0.4519 |
+| ss_n40C_3v00 | 130.122 | 92.3149 | 1.61053 | 0.2798 |
+| ss_125C_3v00 | 89.0309 | 88.7679 | 2.30944 | 0.2968 |
+| tt_025C_3v30 | 181.228 | 94.4821 | 1.13542 | 0.3548 |
+| ff_n40C_3v60 | 316.613 | 96.8416 | 0.64285 | 0.4288 |
+| ff_125C_3v60 | 215.51 | 95.3598 | 0.90653 | 0.4577 |
 
 - **Power is an estimate, not a switching-activity result.** Basis in the
   report: `activity_source: engine_default`, `parasitics: estimate_only`. It
