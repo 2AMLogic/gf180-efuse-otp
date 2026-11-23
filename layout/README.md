@@ -82,7 +82,7 @@ layout/lvs.sh                 # rewrite the LVS reports (lvs-ctrl needs the PDK;
 layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-analog.attest.json)
 ```
 
-`sha256(efuse_otp_array.gds)` = `c6367fe868ece15427a4b97e550f9364b58da16db585e428654418b8c82d94ef`
+`sha256(efuse_otp_array.gds)` = `96034f41c9fda63a9c49e602ded0899c5021852d4236b5aca254ecef1631dff4`
 (klt 0.9.2, `gf180mcuC` at open_pdks `f6eeac7`; the stream after routing
 `efuse_comp` and `efuse_sense`, replacing the two ideal resistors with PDK
 `ppolyf_u` devices sized for their terminal resistance (5.08 µm x 1 µm and
@@ -468,7 +468,7 @@ lists as unmodeled.
 | Finding | Array | Controller | Follow-up |
 |---|---:|---:|---|
 | Metal3 enclosure of via2 (V2.4b, V2.4c) | 200 | 0 | [Level shifter and column driver #308](https://github.com/2AMLogic/gf180-efuse-otp/issues/308) — all of it in `efuse_coldrv` (94 each of V2.4b / V2.4c) and `efuse_ls` (6 each); the routed `efuse_comp` / `efuse_sense` contribute zero |
-| PMOS (DF.4d_MV, DV.6, PL.2_MV) and resistor geometry (PP.9, PRES.5, PRES.6, SB.13) | 44 | 0 | [Generated device cores #309](https://github.com/2AMLogic/gf180-efuse-otp/issues/309) |
+| ~~PMOS (DF.4d_MV, DV.6, PL.2_MV) and resistor geometry (PP.9, PRES.5, PRES.6, SB.13)~~ 44 → 0 | 0 | 0 | Resolved by [#309](https://github.com/2AMLogic/gf180-efuse-otp/issues/309): Mdrv/Mp1/Mp2 at L = 0.55 µm (operator ruling, 6 V rule PL.2_MV); the leaf generator widens the 6 V PMOS guard-ring Nwell (+0.01 µm) and Dualgate (+0.12 µm), and gives each `ppolyf_u` core Pplus 0.3 µm past the poly, a salicide block 0.28 µm past it in width (and ≥ 2 µm²) and head contacts 0.22 µm from the block |
 | Global density (DCF.1b, PL.8, M1.4 through M5.4, MT.3) | 8 | 8 | [Density #310](https://github.com/2AMLogic/gf180-efuse-otp/issues/310) |
 | ~~DBU (0.0005 µm, required 0.001 µm)~~ 1 → 0 per stream | — | — | Resolved by [#311](https://github.com/2AMLogic/gf180-efuse-otp/issues/311): both producers export at 0.001 µm ([klt generator default #5721](https://github.com/2AMLogic/klayout-tools/issues/5721) stays open upstream) |
 
