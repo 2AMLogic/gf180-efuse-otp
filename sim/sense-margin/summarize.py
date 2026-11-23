@@ -128,6 +128,9 @@ def main():
     if a.physical_reference:
         requests += [("phys", rf, None, "phys_rf%s_rrphys" % rf) for rf in intact + programmed]
     reports = bench_record.load_reports(a.rec, [stem for _, _, _, stem in requests])
+    # The PVT grid the corners actually ran, read back from the reports rather
+    # than retyped from decision 0005, so `pvt` cannot contradict point_list.
+    process, temp_c, supplies = bench_record.pvt_axes(reports)
 
     bench, control, phys = {}, {}, {}
     backends, jobs, engines = set(), set(), set()
@@ -169,8 +172,8 @@ def main():
     rec = {
         **bench_record.header(a, backends, jobs, engines),
         "dut": "efuse_sense (with efuse_comp), extracted from design/efuse_otp_array.spice",
-        "pvt": {"process": ["typical", "ff", "ss", "fs", "sf"], "temp_c": [-40, 25, 125],
-                "vdd33_v": [2.97, 3.30, 3.63], "source": "decision 0005"},
+        "pvt": {"process": process, "temp_c": temp_c,
+                "vdd33_v": [s["vdd33"] for s in supplies], "source": "decision 0005"},
         "assumptions": {
             "intact_range_ohm": {"value": [float(x) for x in intact], "status": "assumption A4; only the 200 ohm point is documented (+/-30% is the assumed range)"},
             "programmed_range_ohm": {"value": ["630", "900", "open (1 Gohm)"], "status": "assumption A5; only the 900 ohm point is documented (-30% is the assumed lower edge)"},

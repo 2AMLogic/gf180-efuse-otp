@@ -446,8 +446,13 @@ report. Both select five metal levels and MIM option B. C selects 9K top
 metal and D selects 11K. The controller's PDK layer map puts Metal5 on
 81/0. Each run passes the corresponding `variant` to the PDK main script
 `tech/drc/gf180mcu.drc`, with `decks=all` (including metal slotting) and
-`threads=1`. These measurements used pinned klt 0.9.2 and standalone
-KLayout 0.30.12 (minimum 0.30.9).
+`threads=1`. These measurements used pinned klt 0.9.2 with
+`--min-klayout-version 0.30.9`. The engine a report records in
+`provenance.klayout_version` is the Python `klayout` package that pin
+resolves (0.30.14 in both native reports, since
+[#345](https://github.com/2AMLogic/gf180-efuse-otp/issues/345)), not the
+standalone `klayout` binary on `PATH` (0.30.12 on the provisioned worker)
+— see "Engine changes" below.
 
 For each variant, an empty-layout `--list-rule-categories` run independently
 declared 763 categories. The script requires the 27 foundry IDs in that
@@ -476,6 +481,66 @@ invocation, including the variant and coverage assertion, and compares the
 complete report.
 The script binds the pinned PDK to the relative `pdk/` path recorded by
 klt in a temporary directory so both operations work across installations.
+
+#### Engine changes: when and how to re-record the native reports
+
+`--check --rerun` compares the **complete** native report with `cmp`,
+provenance included. That is deliberately stricter than klt's own
+`--rerun`, which diffs verdict-bearing fields and excludes
+`provenance.klt_version`/`klayout_version`/`pdk.version`, and which the
+native loop cannot use anyway (klt 0.9.2's native `--rerun` omits the
+original deck variables). The rule is **re-record on every engine bump
+and keep the full byte comparison**; the version field is not stripped.
+The report then keeps the engine that produced the evidence, and adopting
+a version forces a review of the whole diff, so a change in markers,
+coverage or input that rides along with an engine change is seen rather
+than masked
+([#345](https://github.com/2AMLogic/gf180-efuse-otp/issues/345)).
+
+The symptom of an engine bump: `layout/drc.sh --check` exits 0 with every
+report `status: match`, and `layout/drc.sh --check --rerun` exits 3 on a
+native report with `... differ: byte N, line L`, where line `L` is the
+report's `provenance.klayout_version` line, and klt has warned on every
+invocation that `resolved klayout engine version '<new>' differs from
+klayout==0.30.12`. The cause is the provisioned engine moving under an
+unchanged pin — `signoff/klt-pin.txt` pins klt, which resolves the
+klayout package; it does not pin klayout itself — not a layout change.
+The five per-cell reports are byte-compared the same way and drift with
+the engine too; the two partition reports are hash-gated only, which is
+why `layout/drc-ctrl.report.json` still recording 0.30.13 does not fail
+the gate.
+
+To adopt an engine version:
+
+1. Run `layout/drc.sh` in a disposable checkout; it rewrites all nine
+   reports. Keep the reports the replay byte-compares — the two native
+   reports and the five per-cell reports, which share the `cmp` contract —
+   and `git checkout --` the two partition reports unless regenerating
+   them is part of the same change.
+2. Read `git diff -- 'layout/*.native.report.json'` in full. On an
+   unchanged stream the only difference is the `klayout_version` line:
+   `diff <(jq -S 'del(.provenance.klayout_version)' <old>) <(jq -S
+   'del(.provenance.klayout_version)' <new>)` must be empty. Anything
+   else — a new or vanished marker, a changed `rule_counts` entry or
+   category count, a changed `provenance.input.content_hash`,
+   `provenance.deck.content_hash` or `provenance.deck.tree.content_hash` —
+   is a finding to investigate before the baseline is accepted, not a
+   refresh.
+3. On each new native report confirm `status`, `violation_count` (array
+   252; controller 8: DCF.1b, PL.8, M1.4 through M5.4 and MT.3, one each),
+   every `violations[]` entry, `coverage.rules_checked` (771) and
+   `coverage.rules_skipped` (`[]`), and `coverage_assertion.satisfied:
+   true`.
+4. `layout/drc.sh --check` and `layout/drc.sh --check --rerun` must both
+   exit 0.
+
+`layout/lvs.sh --check --rerun` cannot fail this way: it delegates to
+`klt lvs --check --rerun`, whose diff excludes
+`provenance.klayout_version` (the cheap `--check` prints the difference
+as a non-fatal `[DRIFT]` line). A copy of `lvs-ls.report.json` edited to
+record 0.30.13 replays `status: match`, exit 0. Its controller part still
+stops before any compare on the recorded literal `$PDK_ROOT`
+([#349](https://github.com/2AMLogic/gf180-efuse-otp/issues/349)).
 
 The committed native reports use `--engine klayout`. In a scratch manifest,
 pinned klt read them and graded both rows `check_failed`. A separate
