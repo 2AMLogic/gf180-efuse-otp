@@ -25,7 +25,6 @@ The block's verdict of record against the klayout-tools evidence tiers.
 | `item1-digital.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.digital` in `block-manifest.json`, pinned by the envelope's own composite `provenance.input.content_hash` (see "Re-attest item 1 (digital)"). |
 | `item1-analog-inventory.json` | `t1-attestation-inventory` for T1 item 1, analog: the xschem schematics and cell symbols in `design/` and the netlist `design/efuse_otp_array.spice`, whose freshness `check` is `design/regen-netlist.sh --check` (`local_only`: it needs xschem). |
 | `item1-analog.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.analog`, pinned by the envelope's own composite `provenance.input.content_hash` (see "Re-attest item 1 (analog)"). |
-| `design-evidence-tiers.md` | Copy of the tiers doc shipped with the pinned klt (`klayout-tools==0.9.2`, `klayout_tools/data/design-evidence-tiers.md`), so the record does not move when an installed klt bundles a different doc. |
 
 ## Regenerate the record
 
@@ -34,12 +33,21 @@ Always with the pinned release, never a host-installed `klt`:
 ```sh
 uvx --from "$(cat signoff/klt-pin.txt)" klt signoff \
   --manifest signoff/block-manifest.json \
-  --tiers-doc signoff/design-evidence-tiers.md \
   --format json > signoff/block-manifest.signoff.json
 ```
 
 Exit 3 means the report was produced with items unmet; that is the expected
 state. Any other non-zero exit is a failure.
+
+The checklist itself comes from the pinned tool: `klt signoff` grades against
+the design-evidence tiers doc shipped inside the pinned release
+(`klayout-tools==0.9.2`;
+[`docs/design-evidence-tiers.md`](https://github.com/2AMLogic/klayout-tools/blob/v0.9.2/docs/design-evidence-tiers.md)
+at the tag — decision
+[0008](../spec/decisions/0008-vendored-tiers-doc-removal.md)). The record's
+`source_doc` names that doc by klt's source-relative label, not a path in this
+repo, and `source_doc_content_hash` pins its content, so a checklist change at
+a pin bump shows up in the re-grade `cmp` below and in CI.
 
 The item 8 envelope hashes `block-manifest.signoff.json`, so **any** regeneration
 that changes the record leaves it stale: re-attest item 8 (see "Re-attest item 8")
@@ -48,10 +56,10 @@ That second pass always is — items `8.*` are pinned by the inventory sha256, w
 a re-attest does not touch — so the two converge in one round. CI enforces this
 with an item 8 `--check` step.
 
-To bump the pin: change `klt-pin.txt`, replace `design-evidence-tiers.md` with
-the copy shipped in the new release, regenerate, and commit all three together.
+To bump the pin: change `klt-pin.txt`, regenerate, and commit both together.
 The committed netlist is a product of the pinned klt, so also run
-`rtl/regen-gl.sh` and re-attest (below) in the same commit.
+`rtl/regen-gl.sh` and re-attest (below) in the same commit. The new release's
+tiers doc replaces the old one inside the tool itself; nothing to copy.
 
 ## Re-attest item 1 (digital)
 
