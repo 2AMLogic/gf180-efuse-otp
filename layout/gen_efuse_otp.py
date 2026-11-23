@@ -458,10 +458,13 @@ class Builder:
         end. land0/land1 mark an end whose endpoint centres a via2 cut: that
         shoulder alone leaves w/2 - 0.13 um of end overlap (0.02 um on
         LS_W3N), so the strip reaches LS_V2_END past the endpoint instead."""
-        lo, hi = min(y0, y1), max(y0, y1)
+        # Each land flag stays with its own endpoint whichever order the
+        # caller passes them in: sort (y, flag) pairs, not the bare ys.
+        (lo, land_lo), (hi, land_hi) = sorted([(y0, land0), (y1, land1)],
+                                              key=lambda p: p[0])
         e = max(0.0, LS_V2_END - w / 2)
-        self._box(cell, LS_M3, x - w / 2, lo - w / 2 - (e if land0 else 0.0),
-                  x + w / 2, hi + w / 2 + (e if land1 else 0.0))
+        self._box(cell, LS_M3, x - w / 2, lo - w / 2 - (e if land_lo else 0.0),
+                  x + w / 2, hi + w / 2 + (e if land_hi else 0.0))
 
     def _ls_hstrip(self, cell, x0, x1, y, w):
         lo, hi = min(x0, x1), max(x0, x1)

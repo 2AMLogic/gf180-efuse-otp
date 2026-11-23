@@ -92,8 +92,13 @@ only in GDS record order — klayout-tools#5499 stopped writing KLayout's
 `$$$CONTEXT_INFO$$$` structure; streams carry no write time, so the check is a
 byte compare). The stream changed at 133922ed because the via2 cuts that had
 no M3 (or no M2) landing were removed, and at 2cd9b515 because the M3
-enclosure at every landed cut end was extended to the V2.4b/V2.4c minimum;
-`layout/check_via2_landing.sh` and the native report gate these in CI.
+enclosure at every landed cut end was extended to the V2.4b/V2.4c minimum.
+CI runs `layout/check_via2_landing.sh` on both streams (the via2 overlap check)
+and verifies the report input hashes, but neither re-measures the enclosure: a
+fresh report can carry V2.4b/V2.4c markers and still pass both. The enclosure
+result is the V2.4b/V2.4c count in the native array report, replayed locally
+with `layout/drc.sh --check --rerun`; `layout/regen-gds.sh --check` (also
+local) confirms the stream equals the generator output.
 
 ## efuse_ls routing
 
