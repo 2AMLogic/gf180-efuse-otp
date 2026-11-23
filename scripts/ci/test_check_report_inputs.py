@@ -105,15 +105,15 @@ class Test(unittest.TestCase):
         # An empty tree gates nothing, so main() takes its vacuous-pass
         # branch and check:ci is green with nothing seeded. No gated pair
         # is exercised here -- the real-tree pin lives in
-        # test_real_tree_gates_fourteen_reports.
+        # test_real_tree_gates_twentyone_reports.
         rc, out = self.run_main({})
         self.assertEqual(rc, 0, out)
         self.assertIn("passes vacuously", out)
 
-    def test_real_tree_gates_fourteen_reports(self):
+    def test_real_tree_gates_twentyone_reports(self):
         problems, gated, skipped = cri.check(REPO_ROOT)
         self.assertEqual(problems, [])
-        self.assertEqual(gated, 14)
+        self.assertEqual(gated, 21)
         self.assertEqual(skipped, 1)
 
     def test_recorded_hash_mismatch_fails(self):

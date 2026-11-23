@@ -37,12 +37,20 @@ Done and merged since the spec was ratified (decisions 0001 to 0005):
   (#30), nine `klt functional-verification` and three `klt sta` reports.
 - DRC clean on both partitions under the curated deck (#48, #49); item 8
   report attested (#62, #100); evidence-hygiene fixes #106 to #152.
+- Analog routing slices: `efuse_ls` (#172), `efuse_rowdrv` and `efuse_coldrv`
+  (#268), `efuse_comp` and `efuse_sense` with the bias and reference
+  resistors drawn as PDK `ppolyf_u` devices (#303) — each LVS-matched against
+  its `.subckt`.
+- Digital ERC supply spec (#302, digital half of #33's item 11): the compound
+  `erc`/`lvs`/`place-and-route` citation grades 11.digital `met`; 11.analog
+  stays with #33.
 
 The README's current-position line now reads "sense path simulated across PVT"
 (#181), matching this record.
-The remaining nine unmet items reduce to four causes: the analog stream is not
-routed, `klt` has no eFuse device class for LVS, `klt drc` does not model the
-foundry `EF.*` rule set, and decision 0006 is not yet ratified.
+The remaining nine unmet items reduce to four causes: the array top and the
+fuse-bearing analog cells are unrouted, `klt` has no eFuse device class for
+LVS, `klt drc` does not model the foundry `EF.*` rule set, and decision 0006 is
+not yet ratified.
 
 ## Now
 
@@ -73,15 +81,6 @@ curated #155 and #160. Issue and label state in this section is as read on
 
 ## Next
 
-- **Route `efuse_coldrv` and `efuse_rowdrv`, LVS-match each** (#73 remainder).
-  Unblocked by Now item 2, which fixes the floorplan pattern for the level
-  shifter both cells instantiate. Done when each has a committed `match` report.
-- **Route `efuse_sense` and `efuse_comp`.** After the drivers. Done when each
-  has a committed LVS report and the ideal resistor in `efuse_sense`, which the
-  generator approximates, has a stated disposition.
-- **Cite 4.digital and run the digital ERC supply spec** (#33, digital half).
-  Unblocked by Now item 3. Done when a `klt erc` report for `efuse_otp_ctrl`
-  declares the supplies and 11.digital reads `met`.
 - **Cite 7.digital.** Unblocked by Now item 4 and #154 together.
 - **Rebase PR #94 and cite 5.digital** once the operator releases the
   ratification hold (see below). Done when 5.digital reads `met`.

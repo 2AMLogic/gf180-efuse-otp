@@ -35,9 +35,7 @@ IREQ_A=0.010                             # A2, spec/efuse-otp.md section 2
 FUSE_OHMS="140 200 260"                  # A4; only 200 ohm is documented
 W_CONTROL=4u                             # negative control: select narrowed from 60u
 
-netlist="$repo/design/efuse_otp_array.spice"
-[[ -f "$netlist" ]] || { echo "run.sh: $netlist missing" >&2; exit 1; }
-sub() { bench_subckt "$netlist" "$1"; }  # one .subckt block from the committed netlist
+bench_netlist "$repo/design/efuse_otp_array.spice"
 
 bench_new_record_dir "$here/records" "$dry"
 
@@ -82,10 +80,7 @@ for r in $FUSE_OHMS; do mk "prog_rf${r}" "$r" keep; done
 mk "control_rf260_w${W_CONTROL}" 260 "$W_CONTROL"
 
 if [[ $dry -eq 1 ]]; then
-  bench_dry_run "${reqs[@]}"
-  rm -rf "$rec"
-  echo "dry run: request set validated; temp dir removed"
-  exit 0
+  bench_dry_run_exit "${reqs[@]}"
 fi
 
 # rc: 0 = all pass, 3 = a measurement failed, 4 = partial set (see bench_submit_set).

@@ -1,9 +1,9 @@
 {
   "top_cell": "efuse_otp_array",
-  "dbu_um": 0.0005,
+  "dbu_um": 0.001,
   "bbox_um": [
     -20.26,
-    -48.47,
+    -64.62,
     1067.12,
     699.44
   ],
@@ -13,19 +13,21 @@
     "pitch_x_um": 133.64,
     "pitch_y_um": 21.92
   },
-  "caveat": "placed hierarchy; efuse_bitcell, efuse_ls, efuse_rowdrv, efuse_coldrv and efuse_row are routed (see 'routed'), every other cell is placement-only: no routing, no connectivity, no DRC/LVS claim outside those five",
+  "caveat": "placed hierarchy; efuse_bitcell, efuse_ls, efuse_rowdrv, efuse_coldrv, efuse_comp, efuse_sense and efuse_row are routed (see 'routed'), every other cell is placement-only: no routing, no connectivity, no DRC/LVS claim outside those seven",
   "routed": {
     "cells": [
       "efuse_bitcell",
       "efuse_ls",
       "efuse_rowdrv",
       "efuse_coldrv",
+      "efuse_comp",
+      "efuse_sense",
       "efuse_row"
     ],
     "planes": {
       "m1": "device pads, guard-ring taps and the source-ring bridge",
       "m2": "supply rails, horizontal runs and stubs",
-      "m3": "vertical bl lanes"
+      "m3": "vertical stubs and lanes"
     }
   },
   "program_path": {
@@ -55,6 +57,12 @@
       }
     ],
     "finding": "the narrowest points are the two 0.26 um via2 cuts at the bl entry and the two 0.26 um via1 cuts at the vss exit, one stack per bitcell; no documented GF180 current limit exists to rate them against 10 mA, so the metal delivery is an open item for the array-level program path (#307), widening or accepting them"
+  },
+  "resistors": {
+    "device": "ppolyf_u",
+    "rsh_ohm_sq": 350.0,
+    "source": "sm141064.ngspice .param rsh_ppolyf_u (350) and the ppolyf_u model card's r_dl/r_dw deltas and its two series terminal resistors (ppolyf_u_t, rsh 60); the netlist states r_length/r_width and the drawn body is exactly that geometry",
+    "note": "ohms_lvs_drawn is the deck's LVS value (drawn L/W * rsh), which both compare sides compute from the same geometry; ohms_sim_nominal applies the model deltas and both terminal resistors (25 C, typical) and is what the netlist's lengths were solved for"
   },
   "devices": [
     {
@@ -280,12 +288,12 @@
       "finger_w_um": 4.0
     },
     {
-      "cell": "efuse_sense__b",
+      "cell": "efuse_sense__Rb",
       "device": "ppolyf_u",
-      "ohms": 2000.0,
-      "ohms_drawn": 2000.25,
-      "length_um": 5.715,
-      "width_um": 1.0
+      "r_length_um": 5.08,
+      "r_width_um": 1.0,
+      "ohms_lvs_drawn": 1778.0,
+      "ohms_sim_nominal": 1999.99
     },
     {
       "cell": "efuse_sense__Mbs",
@@ -320,12 +328,12 @@
       "finger_w_um": 4.0
     },
     {
-      "cell": "efuse_sense__ref",
+      "cell": "efuse_sense__Rref",
       "device": "ppolyf_u",
-      "ohms": 400.0,
-      "ohms_drawn": 400.75,
-      "length_um": 1.145,
-      "width_um": 1.0
+      "r_length_um": 0.8,
+      "r_width_um": 1.05,
+      "ohms_lvs_drawn": 266.67,
+      "ohms_sim_nominal": 400.39
     },
     {
       "cell": "efuse_sense__Msw",

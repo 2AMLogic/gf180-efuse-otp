@@ -83,17 +83,14 @@ if len(lines) != 4 or not all(line.strip() for line in lines):
                "(got %r); are PVT_PROCESSES/PVT_TEMPERATURES_C/PVT_SUPPLY_3V3/"
                "PVT_SUPPLY_5V0 still assigned before the main block?" % lines)
 else:
-    vals = []
-    for constant, raw in zip(AXES, lines):
+    for (axis, constant), raw in zip(AXES, lines):
         try:
-            vals.append(json.loads(raw))
+            value = json.loads(raw)
         except ValueError:
-            vals.append(None)
-            bad.append("%s from sim/lib/pdk_env.sh is not JSON: %r" % (constant[1], raw))
-
-    for (axis, constant), value in zip(AXES, vals):
-        if axis not in spec or value is None:
-            continue  # the parse failures above are already reported
+            bad.append("%s from sim/lib/pdk_env.sh is not JSON: %r" % (constant, raw))
+            continue
+        if axis not in spec:
+            continue  # the spec parse failure above is already reported
         if spec[axis] != value:
             bad.append("%s axis disagrees: spec row parses to %r, sim/lib/pdk_env.sh "
                        "%s exports %r" % (axis, spec[axis], constant, value))
