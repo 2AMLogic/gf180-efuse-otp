@@ -291,8 +291,10 @@ as one `ppolyf_u` device per strip at 350 Ω/sq.
   agree by construction (`device_parameter_coverage` in `lvs-sense` records
   `R` as compared for both instances; `L`/`W`/`A`/`P` are secondary and not
   compared — disclosed there as `device.geometry_not_compared`).
-- **Width.** 1 µm is an assumption (no sourced minimum beyond the DRC deck's
-  own checks, which the strips pass).
+- **Width.** The two drawn widths are 1 µm (`Rb`) and 1.05 µm (`Rref`). The
+  1 µm is an assumption (no sourced minimum beyond the DRC deck's own checks,
+  which the strips pass); the 1.05 µm is rule-driven (native `PRES.1`), not
+  assumed.
 - **Benches.** `sim/sense-margin` and `sim/sense-mc` are value-parametric
   studies of the reference, so their sweep and control deck copies replace `XRref` with a plain
   `R` at the swept value (the same standing as the fuse stand-in; the
@@ -459,7 +461,7 @@ lists as unmodeled.
 
 | Finding | Array | Controller | Follow-up |
 |---|---:|---:|---|
-| Metal3 enclosure of via2 (V2.4b, V2.4c) | 548 | 0 | [Level shifter and column driver #308](https://github.com/2AMLogic/gf180-efuse-otp/issues/308) — the count grew from 200 with the routed `efuse_comp` / `efuse_sense` (their via2 stacks trip the same unmodeled enclosure rules) |
+| Metal3 enclosure of via2 (V2.4b, V2.4c) | 200 | 0 | [Level shifter and column driver #308](https://github.com/2AMLogic/gf180-efuse-otp/issues/308) — all of it in `efuse_coldrv` (94 each of V2.4b / V2.4c) and `efuse_ls` (6 each); the routed `efuse_comp` / `efuse_sense` contribute zero |
 | PMOS (DF.4d_MV, DV.6, PL.2_MV) and resistor geometry (PP.9, PRES.5, PRES.6, SB.13) | 44 | 0 | [Generated device cores #309](https://github.com/2AMLogic/gf180-efuse-otp/issues/309) |
 | Global density (DCF.1b, PL.8, M1.4 through M5.4, MT.3) | 8 | 8 | [Density #310](https://github.com/2AMLogic/gf180-efuse-otp/issues/310) |
 | ~~DBU (0.0005 µm, required 0.001 µm)~~ 1 → 0 per stream | — | — | Resolved by [#311](https://github.com/2AMLogic/gf180-efuse-otp/issues/311): both producers export at 0.001 µm ([klt generator default #5721](https://github.com/2AMLogic/klayout-tools/issues/5721) stays open upstream) |

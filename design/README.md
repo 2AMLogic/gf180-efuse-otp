@@ -68,7 +68,7 @@ width from the result above.
 | `efuse_rowdrv` | `wl` = level-shifted `row_sel` |
 | `efuse_coldrv` | `pfet_06v0` from `vprog` to `bl`, gate = level-shifted NAND(`col_sel`, `prog_strobe`); read switch `nfet_06v0` `bl`–`sbl`, gate = `col_sel` AND `sense_en` |
 | `efuse_comp` | clocked comparator, PMOS input pair, NMOS cross-coupled latch (`clkn` high = reset) |
-| `efuse_sense` | equal bias currents (`pfet_03v3`) into `sbl` and a 400 Ω reference (A6, decision 0003) behind a dummy switch and select; NAND(`clk`, `sense_en`) clocks the comparator; NOR SR latch holds `sense_out` (1 = programmed). `Rb` and `Rref` are PDK `ppolyf_u` resistors (1 µm wide; lengths solved so the model's nominal R is 2 kΩ / 400 Ω — see `layout/README.md`, "Resistors") |
+| `efuse_sense` | equal bias currents (`pfet_03v3`) into `sbl` and a 400 Ω reference (A6, decision 0003) behind a dummy switch and select; NAND(`clk`, `sense_en`) clocks the comparator; NOR SR latch holds `sense_out` (1 = programmed). `Rb` and `Rref` are PDK `ppolyf_u` resistors (`Rb` 1 µm wide, `Rref` 1.05 µm wide; lengths solved so the model's nominal R is 2 kΩ / 400 Ω — see `layout/README.md`, "Resistors") |
 | `efuse_otp_array` | top: 32 × 8 (decision 0001), bit address = row × 8 + column |
 
 **Topology choices not fixed by the spec** (the spec is not changed):

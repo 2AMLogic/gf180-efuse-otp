@@ -21,7 +21,7 @@ grid: 5 process (`typical`, `ff`, `ss`, `fs`, `sf`) x -40/25/125 C x vdd33 2.97/
 | `bench_rf140/200/260_rr400` | intact, 140 / 200 / 260 ohm (A4) | 400 ohm (A6) |
 | `bench_rf630/900/open_rr400` | programmed, 630 / 900 ohm / open (1 Gohm) (A5) | 400 ohm |
 | `control_rf140/260_rr200` | intact | 200 ohm: negative control |
-| `phys_rf<each fuse value>_rrphys` | the six fuse values above | the committed `XRref` (`ppolyf_u`, 0.74 µm x 1 µm) left in the deck, so its terminal resistance and corner dependence are exercised; recorded under `physical_reference` and counted in the headline verdicts (`--physical-reference`) |
+| `phys_rf<each fuse value>_rrphys` | the six fuse values above | the committed `XRref` (`ppolyf_u`, 0.8 µm x 1.05 µm) left in the deck, so its terminal resistance and corner dependence are exercised; recorded under `physical_reference` and counted in the headline verdicts (`--physical-reference`) |
 
 `summarize.py` is told which requests `run.sh` submitted (`--rfuse-intact`,
 `--rfuse-programmed`, `--rfuse-control` with `--rref`/`--rref-control`) and opens all
