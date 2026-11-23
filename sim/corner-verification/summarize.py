@@ -87,6 +87,9 @@ def main():
     stems = ["prog_rf" + r for r in a.fuse_ohms.split()]
     stems.append("control_rf260_w" + a.w_control)
     reports = bench_record.load_reports(a.rec, stems)
+    # The PVT grid the corners actually ran, read back from the reports rather
+    # than retyped from decision 0005, so `pvt` cannot contradict point_list.
+    process, temp_c, supplies = bench_record.pvt_axes(reports)
 
     backends, jobs, engines = set(), set(), set()
 
@@ -104,19 +107,18 @@ def main():
     all_pass = complete and all(f["all_pass"] for f in fuses.values())
     bind = min((f["binding_corner"] for f in fuses.values() if f["binding_corner"]),
                key=lambda p: p["i_fuse_a"], default=None)
-    # The PVT axes of the grid, named once: the pvt block and the top-level
-    # corners statement the CI record-format check requires (#118) both read
-    # these lists, so the count cannot drift from the grid it describes.
-    process = ["typical", "ff", "ss", "fs", "sf"]
-    temps = [-40, 25, 125]
-    supplies = "vdd33 and vprog step together (klt sim zips supply_v axes): (2.97, 4.5), (3.30, 5.0), (3.63, 5.5)"
     rec = {
         **bench_record.header(a, backends, jobs, engines),
         "dut": "efuse_coldrv + efuse_rowdrv (each with efuse_ls) + efuse_bitcell, extracted from design/efuse_otp_array.spice; one selected cell",
-        "corners": "%d per request: %d process x %d temperature x 3 supply pair (decision 0005); see pvt"
-                   % (len(process) * len(temps) * 3, len(process), len(temps)),
-        "pvt": {"process": process, "temp_c": temps,
-                "supplies_v": supplies,
+        "corners": "%d per request: %d process x %d temperature x %d supply pair (decision 0005); see pvt"
+                   % (len(process) * len(temp_c) * len(supplies),
+                      len(process), len(temp_c), len(supplies)),
+        # The zipped (vdd33, vprog) pairs as the committed records spell them:
+        # vdd33 in the decision-0005 two-decimal notation, vprog as parsed.
+        "pvt": {"process": process, "temp_c": temp_c,
+                "supplies_v": "vdd33 and vprog step together (klt sim zips supply_v axes): "
+                              + ", ".join("(%.2f, %s)" % (s["vdd33"], s["vprog"])
+                                          for s in supplies),
                 "source": "decision 0005"},
         "requirement": {"i_fuse_min_a": a.ireq, "source": "assumption A2, spec/efuse-otp.md section 2 (no PDK source)"},
         "assumptions": {

@@ -15,9 +15,12 @@ insert:
     import bench_record
 
 The three corner benches (program-select, corner-verification, sense-margin)
-share all five helpers -- including load_reports(), the refuse-a-partial-set
+share all six helpers -- including load_reports(), the refuse-a-partial-set
 report-loading step each summarizer used to hand-roll (the guard that has
-drifted #146 -> #177 -> #169) -- and emit a byte-identical record header.
+drifted #146 -> #177 -> #169), and pvt_axes(), which derives a record's `pvt`
+grid from the loaded reports so no summarizer keeps a second hand-typed copy
+of the decision-0005 grid for run.sh to simulate past (#341) -- and emit a
+byte-identical record header.
 sim/sense-mc shares only collect_env() and write_record(): its header names
 different tool keys (klt_sim_version, klt_yield_pin, no backend).
 
@@ -104,6 +107,44 @@ def load_reports(rec, stems):
               "%s/klt.err)" % (rec, rec), file=sys.stderr)
         raise SystemExit(4)
     return reports
+
+
+def pvt_axes(reports):
+    """The (process, temp_c, supplies) PVT axes every report in `reports` ran.
+
+    The record's `pvt` block states the grid the corners actually ran, derived
+    from reports[stem]["corners"] (the dict load_reports() returned) rather
+    than retyped from decision 0005: if the ratified grid is amended and
+    pdk_env.sh re-submits a new one, the record follows the reports instead of
+    contradicting the point_list beside it. Processes keep their first-seen
+    order in `corners`; temperatures come back sorted; supplies is each
+    corner's supply_v dict in first-seen order, so a single-axis grid reads as
+    one value per point and a zipped two-axis grid (vdd33 with vprog) keeps
+    its pairs. Two reports that ran different grids are not one evidence set:
+    like one_submitted() in sim/sense-mc/summarize.py, the disagreement is
+    refused with a message naming what each stem ran, never averaged.
+    """
+    if not reports:
+        raise SystemExit("bench_record: no reports to derive a PVT grid from")
+    by_stem = {}
+    for stem, rep in reports.items():
+        process, temps, supplies = [], [], []
+        for c in rep["corners"]:
+            if c["process"] not in process:
+                process.append(c["process"])
+            if c["temperature_c"] not in temps:
+                temps.append(c["temperature_c"])
+            s = c.get("supply_v") or {}
+            if s not in supplies:
+                supplies.append(s)
+        by_stem[stem] = {"process": process, "temp_c": sorted(temps),
+                         "supplies": supplies}
+    seen = {json.dumps(v, sort_keys=True): s for s, v in by_stem.items()}
+    if len(seen) != 1:
+        raise SystemExit("bench_record: the reports disagree on the corner grid: "
+                         + "; ".join("%s=%s" % (s, k) for k, s in sorted(seen.items())))
+    axes = next(iter(by_stem.values()))
+    return axes["process"], axes["temp_c"], axes["supplies"]
 
 
 def collect_env(rep, backends, jobs, engines):
