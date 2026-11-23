@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "status": "fail",
+  "request_count": 6,
+  "max_in_flight": 4,
+  "submitted": 6,
+  "refused": 0,
+  "refused_codes": [],
+  "requests": [
+    {
+      "index": 0,
+      "request": "sim/sense-mc/records/20261123T140937Z-f6eeac7/mc_intact_rf260_rr400.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-4210e5f72687",
+      "job_ids": [
+        "klt-sim-4210e5f72687"
+      ],
+      "report": "sim/sense-mc/records/20261123T140937Z-f6eeac7/sets/mc_intact_rf260_rr400/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-4210e5f72687",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "request": "sim/sense-mc/records/20261123T140937Z-f6eeac7/mc_prog_rf630_rr400.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-a5263ae1da58",
+      "job_ids": [
+        "klt-sim-a5263ae1da58"
+      ],
+      "report": "sim/sense-mc/records/20261123T140937Z-f6eeac7/sets/mc_prog_rf630_rr400/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-a5263ae1da58",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "request": "sim/sense-mc/records/20261123T140937Z-f6eeac7/ctl_intact_rf260_rr200.json",
+      "status": "fail",
+      "exit_code": 3,
+      "job_id": "klt-sim-31bea96c8b8a",
+      "job_ids": [
+        "klt-sim-31bea96c8b8a"
+      ],
+      "report": "sim/sense-mc/records/20261123T140937Z-f6eeac7/sets/ctl_intact_rf260_rr200/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-31bea96c8b8a",
+          "last_state": "failed",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "request": "sim/sense-mc/records/20261123T140937Z-f6eeac7/ctl_prog_rf630_rr1000.json",
+      "status": "fail",
+      "exit_code": 3,
+      "job_id": "klt-sim-66dc5caa7e8f",
+      "job_ids": [
+        "klt-sim-66dc5caa7e8f"
+      ],
+      "report": "sim/sense-mc/records/20261123T140937Z-f6eeac7/sets/ctl_prog_rf630_rr1000/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-66dc5caa7e8f",
+          "last_state": "failed",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "request": "sim/sense-mc/records/20261123T140937Z-f6eeac7/mc_intact_rf260_rrphys.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-044947062b94",
+      "job_ids": [
+        "klt-sim-044947062b94"
+      ],
+      "report": "sim/sense-mc/records/20261123T140937Z-f6eeac7/sets/mc_intact_rf260_rrphys/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-044947062b94",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "request": "sim/sense-mc/records/20261123T140937Z-f6eeac7/mc_prog_rf630_rrphys.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-1012cbfeec24",
+      "job_ids": [
+        "klt-sim-1012cbfeec24"
+      ],
+      "report": "sim/sense-mc/records/20261123T140937Z-f6eeac7/sets/mc_prog_rf630_rrphys/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-1012cbfeec24",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    }
+  ]
+}
