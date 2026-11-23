@@ -88,6 +88,19 @@ jobs:
         # deliberately omits.
         run: ./scripts/ci/check_ci.sh
 
+      - name: dbu_export unit tests
+        # layout/dbu_export.py is the shared final-write producer behind both
+        # committed partition streams (gen_efuse_otp.py imports coarsen();
+        # pnr.sh shells out with --pin-markers), but CI never regenerates a
+        # stream, so the module's own logic and rejection paths have no other
+        # automated coverage. Synthetic in-memory fixtures only: no PDK, no
+        # OpenROAD, no committed stream. Deliberately not part of
+        # scripts/ci/check_ci.sh, which runs under the host python3 with no
+        # klayout binding -- a missing binding here must fail this step.
+        run: |
+          . signoff/klt.sh
+          klt_python -I -m unittest discover -s layout -p 'test_dbu_export.py' -v
+
       - name: Sim records append-only
         env:
           EVENT: ${{ github.event_name }}
