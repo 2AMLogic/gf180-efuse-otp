@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "input": "efuse_otp_array.gds",
+  "output": "filled.gds",
+  "top_cell": "efuse_otp_array",
+  "dbu_um": 0.001,
+  "extent_um": [
+    -20.26,
+    -64.62,
+    1079.12,
+    699.44
+  ],
+  "extent_area_um2": 839992.3,
+  "fill_cell": "density_fill",
+  "fuse_keepout_um": 6.0,
+  "keepouts": {
+    "comp_dummy": {
+      "22/0": 3.5,
+      "30/0": 1.5,
+      "21/0": 1.3,
+      "12/0": 4.0,
+      "204/0": 1.3,
+      "55/0": 1.3,
+      "110/5": 3.5,
+      "111/5": 3.5,
+      "151/5": 3.0,
+      "37/0": 6.7
+    },
+    "poly2_dummy": {
+      "22/0": 3.2,
+      "30/0": 5.0,
+      "21/0": 1.0,
+      "12/0": 2.0,
+      "204/0": 1.0,
+      "55/0": 1.0,
+      "110/5": 19.7,
+      "37/0": 6.7,
+      "111/5": 29.7,
+      "151/5": 3.0,
+      "122/5": 3.0,
+      "152/5": 8.0
+    },
+    "metal_dummy_same_layer": 2.0,
+    "fuse_markers_um": 6.0
+  },
+  "pattern_um": {
+    "feol_square": 6.0,
+    "feol_pitch": 8.0,
+    "metal_square": 6.0,
+    "metal_pitch": 7.0,
+    "metal_second_square": 3.0,
+    "metal_second_pitch": 4.0,
+    "frame_max_width": 25.0
+  },
+  "layers": [
+    {
+      "name": "COMP",
+      "drawing": "22/0",
+      "fill_layer": "22/4",
+      "drawn_pct": 3.9447150978039915,
+      "fill_pct": 39.31750407266956,
+      "total_pct": 43.26221917047355,
+      "fill_shapes": 9174,
+      "rule": "DCF.1b",
+      "bound": 25,
+      "description": "COMP+dummy over extent, DCF.1b >= 25% / DCF.1d <= 70%",
+      "pass": true
+    },
+    {
+      "name": "Poly2",
+      "drawing": "30/0",
+      "fill_layer": "30/4",
+      "drawn_pct": 2.0491058254279477,
+      "fill_pct": 47.57417992793017,
+      "total_pct": 49.62328575335811,
+      "fill_shapes": 9174,
+      "rule": "PL.8",
+      "bound": 14,
+      "description": "Poly2+dummy over extent, PL.8 >= 14% (dummy poly2 covers dummy COMP, DPF.1)",
+      "pass": true
+    },
+    {
+      "name": "Metal1",
+      "drawing": "34/0",
+      "fill_layer": "34/4",
+      "drawn_pct": 2.8150669814701303,
+      "fill_pct": 55.06665947669585,
+      "total_pct": 57.88172645816598,
+      "fill_shapes": 14210,
+      "rule": "M1.4",
+      "bound": 30,
+      "description": "Metal1+dummy over extent, M1.4 >= 30%",
+      "pass": true
+    },
+    {
+      "name": "Metal2",
+      "drawing": "36/0",
+      "fill_layer": "36/4",
+      "drawn_pct": 0.44883105204642243,
+      "fill_pct": 60.42591228434557,
+      "total_pct": 60.874743336391994,
+      "fill_shapes": 15726,
+      "rule": "M2.4",
+      "bound": 30,
+      "description": "Metal2+dummy over extent, M2.4 >= 30%",
+      "pass": true
+    },
+    {
+      "name": "Metal3",
+      "drawing": "42/0",
+      "fill_layer": "42/4",
+      "drawn_pct": 0.3577004291020851,
+      "fill_pct": 60.22281875182961,
+      "total_pct": 60.580519180931695,
+      "fill_shapes": 15537,
+      "rule": "M3.4",
+      "bound": 30,
+      "description": "Metal3+dummy over extent, M3.4 >= 30%",
+      "pass": true
+    },
+    {
+      "name": "Metal4",
+      "drawing": "46/0",
+      "fill_layer": "46/4",
+      "drawn_pct": 0.0,
+      "fill_pct": 65.87102302364153,
+      "total_pct": 65.87102302364153,
+      "fill_shapes": 14777,
+      "rule": "M4.4",
+      "bound": 30,
+      "description": "Metal4+dummy over extent, M4.4 >= 30%",
+      "pass": true
+    },
+    {
+      "name": "Metal5",
+      "drawing": "81/0",
+      "fill_layer": "81/4",
+      "drawn_pct": 0.0,
+      "fill_pct": 65.87102302364153,
+      "total_pct": 65.87102302364153,
+      "fill_shapes": 14777,
+      "rule": "M5.4",
+      "bound": 30,
+      "description": "Metal5+dummy over extent, M5.4 >= 30%; MT.3 >= 30% shares this layer on the 5-level stack",
+      "pass": true
+    }
+  ],
+  "all_pass": true
+}
