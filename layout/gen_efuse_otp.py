@@ -40,6 +40,11 @@ from pathlib import Path
 
 import klayout.db as kdb
 
+# klt_python -I (isolated mode) does not add this script's directory to
+# sys.path; the converter module lives beside it.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import dbu_export
+
 DBU_UM = 0.0005  # the dbu `klt gen` writes for gf180mcu
 GRID_DBU = 10  # the 0.005 um rule grid in database units (DBU_UM = 0.0005)
 GAP_UM = 2.0  # clearance between placed cells (bboxes include guard rings)
@@ -704,17 +709,29 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
 
     verify_fuse(b.layout, "efuse_bitcell__Xf", fuse_gds)
 
+    # gf180mcu's full deck requires the exported stream at 0.001 um per
+    # database unit (its DBU rule; issue #311). The working grid stays at
+    # klt's 0.0005 um -- the 0.005 um rule grid and the import rescale above
+    # are stated in source dbu -- and the coarsening happens at the final
+    # write: every coordinate the stream stores is even (checked; an odd one
+    # is fatal), so 2:1 preserves the micron geometry exactly.
+    dbu_export.coarsen(b.layout)
     opts = kdb.SaveLayoutOptions()
     opts.format = "GDS2"
     opts.gds2_write_timestamps = False
     opts.gds2_libname = "efuse_otp_array"
     b.layout.write(str(out_gds), opts)
 
-    bb = t.bbox()
+    # Read the emitted stream back: the fuse comparison and the reported dbu
+    # describe the stream that ships, not the working layout.
+    emitted = kdb.Layout()
+    emitted.read(str(out_gds))
+    verify_fuse(emitted, "efuse_bitcell__Xf", fuse_gds)
+    bb = emitted.cell(top).bbox()
     report = {
         "top_cell": top,
-        "dbu_um": DBU_UM,
-        "bbox_um": [round(v * DBU_UM, 4) for v in (bb.left, bb.bottom, bb.right, bb.top)],
+        "dbu_um": emitted.dbu,
+        "bbox_um": [round(v * emitted.dbu, 4) for v in (bb.left, bb.bottom, bb.right, bb.top)],
         "array": {"rows": ROWS, "cols": COLS, "pitch_x_um": round(pitch_x, 4),
                   "pitch_y_um": round(pitch_y, 4)},
         "caveat": "placed hierarchy; efuse_ls, efuse_rowdrv and efuse_coldrv are "
