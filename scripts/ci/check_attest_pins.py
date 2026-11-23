@@ -53,8 +53,7 @@ MANIFEST = Path("signoff") / "block-manifest.json"
 SKIP_WALK = {".git", ".loom", "node_modules", "__pycache__"}
 
 _ATTEST = 'uvx --from "$(cat signoff/klt-pin.txt)" klt signoff'
-_REGRADE = (f'{_ATTEST} --manifest signoff/block-manifest.json \\\n'
-            '  --tiers-doc signoff/design-evidence-tiers.md --format json')
+_REGRADE = f'{_ATTEST} --manifest signoff/block-manifest.json --format json'
 
 MANIFEST_FIX = (
     'set evidence["{key}"].content_hash in signoff/block-manifest.json to the cited\n'
