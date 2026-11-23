@@ -13,7 +13,7 @@
 #                           compare)
 # klt exits 3 when a compare does not match; that is a finding, not a script
 # failure, so the verdict is printed and the report is kept as found.
-# The ctrl part needs the PDK, unlike drc.sh or the ls part: the gate-level
+# The ctrl part needs the PDK, unlike the ls part: the gate-level
 # reference resolves each standard cell's pin order from the library's own
 # spice/cdl under <PDK_ROOT>/gf180mcuD/libs.ref, so CI (which installs no PDK)
 # cannot run it. PDK_ROOT defaults to ~/.ciel, layout/pnr.sh's default; the
