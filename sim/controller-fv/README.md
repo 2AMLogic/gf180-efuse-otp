@@ -93,8 +93,9 @@ permission.
 verification/klt-fv.sh /tmp/fv-compare   # regenerate to a temp dir and compare there
 ```
 
-**Always pass an outdir.** `verification/klt-fv.sh [outdir]` defaults to
-`sim/controller-fv`, so running it with no argument overwrites the nine
+**Pass an outdir — it is required.** `verification/klt-fv.sh <outdir>` has no
+default destination: an omitted or empty argument prints usage and exits
+nonzero before the bench runs, so a no-argument run cannot overwrite the nine
 committed reports in place. Diff the fresh reports against the committed ones
 with the delta table above in hand, and ignore `tests[].real_time_s`.
 

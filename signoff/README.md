@@ -23,6 +23,7 @@ The block's verdict of record against the klayout-tools evidence tiers.
 | `klt-pin.txt` | The single place the grader version is pinned. CI installs `$(cat signoff/klt-pin.txt)`. |
 | `klt.sh` | The single sourced definition of how the scripts reach the pinned klt: reads `klt-pin.txt` once (resolved from its own location, not cwd), preflights `uvx` (exit 2), and defines `klt`, `klt_python`, `KLT_PIN`, `KLT_ARGV` and the `[yield]`-extras `KLT_YIELD` array. The `--no-function` source argument (`. signoff/klt.sh --no-function`; skip the functions, keep `KLT_PIN`/`KLT_YIELD` -- the shape `sim/sense-mc/run.sh` uses) is the opt-out: an argument is passed to the sourced file alone and cannot be inherited, so no environment variable can take a signoff script off the pinned klt. `verification/run.sh` keeps its own inline preflight by design: it is the exemplar and a content-hashed attestation input. |
 | `test-klt.sh` | Self-test for `klt.sh` (run in `check:ci`): the `uvx`-absent exit 2 and message, the `[yield]` splice, `klt`/`klt_python` argv through a fake `uvx`, the pin read exactly once and actually exported (the `declare -x` attribute, not mere set-ness), the `--no-function` source argument versus a non-opt-out argument and no argument, and the issue-#225 env-var shapes (an export, an export reassigned sourcing-locally, a `declare -ix` export, empty and `0`) proved unable to remove the function facets, the invariant that no caller handles `--no-function` as its own first parameter (every file sourcing `klt.sh` is scanned, with a fixture negative control), and pin resolution from a foreign cwd. |
+| `check-pvt-grid.sh` | decision-0005 PVT grid binding check (run in `check:ci`): fails when the `pvt-corners` row of `item6-digital-spec.json` no longer appears verbatim as a line of `spec/efuse-otp.md`, or when the four `PVT_*` constants `sim/lib/pdk_env.sh` exports no longer equal the four axes parsed from that row (processes, temperatures, both supply triplets). Exit 1 = stale; after a spec amendment (which needs a decision record) update `sim/lib/pdk_env.sh` and the golden literals in `sim/lib/test_pdk_env.sh` together with the spec and its extract. |
 | `item1-digital-inventory.json` | `t1-attestation-inventory` for T1 item 1, digital: the RTL source and the committed gate-level netlist `rtl/efuse_otp_ctrl.gl.v`, whose freshness `check` is `rtl/regen-gl.sh --check` (`local_only`: it needs Yosys and the PDK). |
 | `item1-digital.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.digital` in `block-manifest.json`, pinned by the envelope's own composite `provenance.input.content_hash` (see "Re-attest item 1 (digital)"). |
 | `item1-analog-inventory.json` | `t1-attestation-inventory` for T1 item 1, analog: the xschem schematics and cell symbols in `design/` and the netlist `design/efuse_otp_array.spice`, whose freshness `check` is `design/regen-netlist.sh --check` (`local_only`: it needs xschem). |
@@ -235,58 +236,25 @@ pinned klt, `uv` and `jq`
 with the pinned klt, which is how `--attest 2` reads a stream); `controller` builds the pinned
 Icarus 13.0 and Yosys 0.67 (`scripts/ci/install_eda.sh`, cached), installs `uv`
 (the bench reaches the pinned klt through `uvx`) and runs
-`verification/run.sh`, its `--negative-control` and `rtl/synth.sh`. Together
-they check that:
+`verification/run.sh`, its `--negative-control`, `rtl/synth.sh` and its
+`--negative-control`. Together they check that:
 
 - the controller bench passes, the negative control catches every seeded
-  defect, and no latch cell survives generic synthesis;
+  defect, no latch cell survives generic synthesis, and the latch gate's own
+  negative control (the committed latch-bearing fixture) still trips it;
 - the committed item 10 and item 9 envelopes match a fresh attestation;
-- the checker self-tests still reject seeded-bad input;
-- the `decision-0005` PVT corner grid exported by `sim/lib/pdk_env.sh` still
-  matches the ratified `pvt-corners` row of the spec, parsed through the item 6
-  extract (`signoff/check-pvt-grid.sh`);
-- the `pdk_env.sh` self-test still passes (`sim/lib/test_pdk_env.sh`, hermetic
-  fake trees and a stubbed `klt` on `PATH`);
-- the attestation-envelope pin check still passes
-  (`scripts/ci/check_attest_pins.py` re-hashes every attested path pin,
-  composite and manifest binding);
-- the klt helper self-test still passes (`signoff/test-klt.sh`, hermetic: it
-  fakes `uvx` on `PATH` and asserts on the argv the pinned-klt facets emit, so
-  it never invokes a real `klt`);
-- the bench-record loader self-test still passes
-  (`sim/lib/test_bench_record.py`, hermetic: hand-built fixtures in a temp
-  directory, pins that a partial report set is refused with exit 4 before
-  anything is returned);
-- the program-select summarize self-test still passes
-  (`sim/program-select/test_summarize.py`, hermetic, pins that the record
-  describes the submitted grid rather than whatever reports are present);
-- the sense-margin summarize self-test still passes
-  (`sim/sense-margin/test_summarize.py`, hermetic, pins that the record
-  describes the submitted request set rather than whatever reports are present);
-- each evidence directory has a `README.md`, and any `sim/**/records/*.json`
-  has the required fields, a PDK revision, and repo-relative paths only
-  (vacuously true while there are no records);
+- the hermetic checks of the `harness` job's `check:ci` step pass
+  ([`scripts/ci/check_ci.sh`](../scripts/ci/check_ci.sh), the same script
+  `npm run check:ci` runs locally). Its term list is single-sourced there --
+  one `run` line per check, each announced with a `==> <name>` line so a
+  failure names its check -- so the checks are not enumerated here;
 - files under `sim/**/records/` are only added, never modified, deleted or renamed;
-- each `layout/*report*.json` that records a `provenance.input.content_hash`
-  still names a stream whose sha256 equals it
-  (`scripts/ci/check_report_inputs.py`), so a report that was not re-run
-  after its stream was regenerated fails. The step reads the report's own
-  `provenance.input.role` to find the stream (`.file.path`, `.layout.path`
-  or `.netlist.path`); it does not re-run `layout/drc.sh`, `layout/pnr.sh`
-  or any flow, and it does not check the deck hash -- the deck hash is
-  engine-dependent while `signoff/klt-pin.txt` does not constrain the
-  engine (klayout-tools#5601), so only the engine-independent input hash is
-  gated;
 - every cell of each committed stream (`layout/efuse_otp_array.gds` and
   `layout/efuse_otp_ctrl.gds`) has zero via2 shapes with no M3 above or no M2
   below (`layout/check_via2_landing.sh`, counted per cell with the pinned klt's
   klayout). The deck does not model the `V2.3c`, `V2.3d`, `V2.4b` or `V2.4c`
   rules, so this count is the only gate for that class on those streams; it
   runs on the committed streams and does not regenerate them;
-- the item 6 digital extract is still bound to the ratified
-  `spec/efuse-otp.md` (`signoff/check-item6-digital.sh`): the spec's sha256
-  matches the extract's recorded hash and every quoted row still appears
-  verbatim; the digital flow that produced the item is not re-run;
 - the item 1 (analog) attestation still reproduces (`--attest 1 --check`);
 - both item 2 attestations still reproduce (`layout/attest.sh --check`, i.e.
   `--attest 2 --check` on each stream); the generators named in their
