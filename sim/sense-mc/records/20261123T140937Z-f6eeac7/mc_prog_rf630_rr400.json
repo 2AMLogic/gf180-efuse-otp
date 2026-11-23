@@ -1,0 +1,104 @@
+{
+  "netlist": "mc_prog_rf630_rr400.cir",
+  "engine": "ngspice",
+  "models": {
+    "lib": "libs.tech/ngspice/sm141064.ngspice",
+    "pdk": "gf180mcuD"
+  },
+  "corners": {
+    "process": [
+      {
+        "name": "typical",
+        "sections": [
+          "typical",
+          "res_typical"
+        ]
+      },
+      {
+        "name": "ff",
+        "sections": [
+          "ff",
+          "res_ff"
+        ]
+      },
+      {
+        "name": "ss",
+        "sections": [
+          "ss",
+          "res_ss"
+        ]
+      },
+      {
+        "name": "fs",
+        "sections": [
+          "fs",
+          "res_typical"
+        ]
+      },
+      {
+        "name": "sf",
+        "sections": [
+          "sf",
+          "res_typical"
+        ]
+      }
+    ],
+    "supply_v": {
+      "vdd33": [
+        2.97,
+        3.30,
+        3.63
+      ]
+    },
+    "temperature_c": [
+      -40,
+      25,
+      125
+    ]
+  },
+  "monte_carlo": {
+    "n": 12,
+    "seed": 36036,
+    "vary": "mismatch",
+    "seed_scope": "point",
+    "mismatch_scale": 1,
+    "injected": [
+      {
+        "instance": "Rref",
+        "parameter": "r",
+        "relative_sigma": 0.05,
+        "distribution": "gaussian"
+      }
+    ]
+  },
+  "analysis": {
+    "kind": "tran",
+    "args": "20p 40n"
+  },
+  "measurements": [
+    {
+      "name": "margin_v",
+      "spec_row": "P10",
+      "unit": "V",
+      "limits": {
+        "min": 0
+      },
+      "spice": ".meas tran margin_v find par('v(sbl)-v(xsa.sref)') at=14.9n"
+    },
+    {
+      "name": "decision_margin",
+      "spec_row": "P10",
+      "unit": "V/V",
+      "limits": {
+        "min": 0.2
+      },
+      "spice": ".meas tran decision_margin find par('v(sense_out)/v(vdd33)-0.5') at=38n"
+    }
+  ],
+  "options": {
+    "timeout_s": 60,
+    "ngspice_init": [
+      "set measureprec=9"
+    ]
+  }
+}

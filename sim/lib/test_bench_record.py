@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Self-test for bench_record.load_reports(): a partial report set is refused
-with exit 4 before anything is returned, and a complete set comes back as
-{stem: report}.
+"""Self-test for bench_record.load_reports() and bench_record.pvt_axes(): a
+partial report set is refused with exit 4 before anything is returned, a
+complete set comes back as {stem: report}, and the PVT axes those reports
+share are derived (order kept, temps sorted) or the disagreement is refused.
 
 Fixtures are hand-built reports in a temp directory; no committed record is
 read, so this test is hermetic and needs no bench data.
@@ -27,6 +28,15 @@ def report(corners=2):
     """A well-formed klt report: `corner_count` agrees with `corners`."""
     return {"corner_count": corners,
             "corners": [{"name": "c%d" % k} for k in range(corners)]}
+
+
+def grid(corners):
+    """A report whose corners carry the PVT fields pvt_axes() reads."""
+    return {"corner_count": len(corners), "corners": corners}
+
+
+def corner(process, temp, supply_v):
+    return {"process": process, "temperature_c": temp, "supply_v": supply_v}
 
 
 class Test(unittest.TestCase):
@@ -107,6 +117,60 @@ class Test(unittest.TestCase):
         before calling this, so an empty list here is only the vacuous case.
         """
         self.assertEqual(bench_record.load_reports(self.rec, []), {})
+
+
+class TestPvtAxes(unittest.TestCase):
+    """pvt_axes(): the grid the reports ran, or a refusal when they differ."""
+
+    def single(self):
+        """A one-axis grid in the program-select / sense-margin shape.
+
+        Corners are listed out of axis order (temps unsorted, a process
+        repeated) so the tests show pvt_axes() ordering, not echo order.
+        """
+        return grid([corner("typical", 125, {"vdd": 5.5}),
+                     corner("ff", 25, {"vdd": 4.5}),
+                     corner("typical", -40, {"vdd": 5.0}),
+                     corner("ff", 25, {"vdd": 4.5})])
+
+    def test_consistent_multi_report_set_returns_the_shared_axes(self):
+        reports = {"a": self.single(), "b": self.single()}
+        self.assertEqual(bench_record.pvt_axes(reports),
+                         (["typical", "ff"], [-40, 25, 125],
+                          [{"vdd": 5.5}, {"vdd": 4.5}, {"vdd": 5.0}]))
+
+    def test_process_order_is_first_seen_not_sorted(self):
+        """typical/ff/ss/fs/sf is not alphabetical; the record keeps klt's order."""
+        reports = {"a": grid([corner("fs", 25, {"vdd33": 3.3}),
+                              corner("typical", 25, {"vdd33": 3.3}),
+                              corner("ff", 25, {"vdd33": 3.3})])}
+        process, _, _ = bench_record.pvt_axes(reports)
+        self.assertEqual(process, ["fs", "typical", "ff"])
+
+    def test_paired_supplies_keep_their_zipped_order(self):
+        """A two-axis grid zipped by klt reads back as whole supply points."""
+        reports = {"a": grid([corner("typical", -40, {"vdd33": 2.97, "vprog": 4.5}),
+                              corner("typical", 25, {"vdd33": 3.3, "vprog": 5.0}),
+                              corner("typical", 125, {"vdd33": 3.63, "vprog": 5.5})])}
+        _, _, supplies = bench_record.pvt_axes(reports)
+        self.assertEqual(supplies, [{"vdd33": 2.97, "vprog": 4.5},
+                                    {"vdd33": 3.3, "vprog": 5.0},
+                                    {"vdd33": 3.63, "vprog": 5.5}])
+
+    def test_reports_that_ran_different_grids_are_refused(self):
+        other = self.single()
+        other["corners"][0]["temperature_c"] = 85
+        with self.assertRaises(SystemExit) as cm:
+            bench_record.pvt_axes({"a": self.single(), "b": other})
+        self.assertNotEqual(cm.exception.code, 0)
+        self.assertIn("disagree on the corner grid", str(cm.exception))
+        self.assertIn("a=", str(cm.exception))
+        self.assertIn("b=", str(cm.exception))
+
+    def test_no_reports_at_all_is_refused(self):
+        with self.assertRaises(SystemExit) as cm:
+            bench_record.pvt_axes({})
+        self.assertNotEqual(cm.exception.code, 0)
 
 
 if __name__ == "__main__":

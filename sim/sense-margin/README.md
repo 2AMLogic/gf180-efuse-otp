@@ -11,7 +11,7 @@ sim/sense-margin/run.sh             # submits the grid to the batch fleet; write
 
 ## What it measures
 
-Eight `klt sim` requests, submitted together with `klt sim --batch-set` (batch only; a
+Fourteen `klt sim` requests, submitted together with `klt sim --batch-set` (batch only; a
 failed submit exits non-zero and is never re-run locally), each over the decision-0005
 grid: 5 process (`typical`, `ff`, `ss`, `fs`, `sf`) x -40/25/125 C x vdd33 2.97/3.30/3.63 V
 (45 corners per request).
@@ -75,3 +75,33 @@ control set: if either report is absent the run is refused rather than recorded.
 never edited. The PDK revision is the pin in `sim/pdk.json`; `run.sh` refuses any other
 tree and checks that the gf180mcuD files the fleet reads are byte-identical to the pinned
 gf180mcuC ones.
+
+## Re-run against the physical ppolyf_u resistors (issue 321)
+
+PR #323 replaced both ideal resistors in `efuse_sense` with PDK `ppolyf_u` devices (`XRb`,
+`XRref`) and pointed this bench's `phys_*` requests at the committed reference. New record:
+`records/20261123T140330Z-f6eeac7/record.json` -- fourteen requests (six ideal-400-ohm
+`bench_rf*_rr400`, six physical-`XRref` `phys_rf*_rrphys`, two negative controls) over the
+45 decision-0005 corners each, 14 batch jobs in `remote_job_ids`, `res_ss` for ss,
+`res_ff` for ff, `res_typical` for typical/fs/sf (A8). Comparison baseline:
+`records/20261109T002043Z-f6eeac7`.
+
+- Ideal-reference minimum signed margins: 28.8 / 22.2 / 15.5 mV (intact 140/200/260 ohm) and
+  25.3 / 55.1 mV / 2.70 V (programmed 630/900/open), all binding at ss / 125 C / 2.97 V
+  (open at sf / 125 C / 2.97 V) -- the baseline read 29.6 / 22.8 / 16.0, 26.0 / 56.6 mV /
+  2.70 V at the same corners, so the real `XRb` moves the ideal-reference margins by
+  0.4-1.6 mV across the six fuse values (largest at 900 ohm).
+- Physical-`XRref` minimum signed margins: 29.7 / 20.5 / **10.9 mV** (intact; binding at
+  fs or ff / 125 C / 2.97 V) and 21.0 / 50.7 mV / 2.70 V (programmed; ss / 125 C / 2.97 V,
+  open at sf). The intact edge loses about 4.7 mV of margin against the ideal stand-in
+  (10.9 vs 15.5 mV at 260 ohm): the `ppolyf_u` reference's terminal resistance and corner
+  dependence, which the stand-in hid, now sit in the measured evidence.
+- Comparator resolution and decision correctness hold everywhere: no unresolved point, the
+  latched bit matches the expected bit at all 45 corners for every fuse value, under both
+  the ideal and the physical reference (`decision_correct_everywhere` true).
+- Negative control: the 200-ohm reference flips all 45 intact points to the wrong side
+  (`demonstrates_bench_can_fail` true, 45 flipped points), as in the baseline.
+
+The campaign completes with no failing corner; the intact-edge physical margin (10.9 mV) is
+the number a further sense-path sizing question would start from. No circuit resize and no
+spec change is made here.

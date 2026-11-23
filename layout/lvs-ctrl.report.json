@@ -473,9 +473,9 @@
   ],
   "environment": {
     "engine": "klayout",
-    "engine_version": "0.30.13",
+    "engine_version": "0.30.14",
     "netgen_binary": null,
-    "layout_sha256": "d6b4497b582d0755135176ceaaf22c71e5b62154084dcbc1943dd363703f37dc",
+    "layout_sha256": "5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748",
     "reference_sha256": "921a3d477c8b10a67554b086d478bcd9a360b1a961fcd3c893bcde01c9da1628",
     "extracted_netlist": null
   },
@@ -483,7 +483,7 @@
     "klt_version": "0.9.2",
     "klt_git_commit": "046ba74652fc096bd97071fc3237f7159dd40183",
     "klt_reinstall_spec": "klayout-tools==0.9.2",
-    "klayout_version": "0.30.13",
+    "klayout_version": "0.30.14",
     "pdk": {
       "name": "gf180mcuD",
       "source": "--pdk-root flag",
@@ -506,7 +506,7 @@
       "options_hash": "sha256:6a7dc7660a470994263c5ca8ace6d8ac8c605d77e6876a9c5490949de6e7cb05"
     },
     "input": {
-      "content_hash": "sha256:d6b4497b582d0755135176ceaaf22c71e5b62154084dcbc1943dd363703f37dc",
+      "content_hash": "sha256:5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748",
       "role": "layout"
     },
     "klayout_version_mismatch": true,
@@ -2172,19 +2172,19 @@
       "heuristic": false
     },
     {
-      "layout": "\\$711",
+      "layout": "\\$721",
       "reference": "CNT[0]",
       "pin": false,
       "heuristic": false
     },
     {
-      "layout": "\\$774",
+      "layout": "\\$757",
       "reference": "CNT[1]",
       "pin": false,
       "heuristic": false
     },
     {
-      "layout": "\\$770",
+      "layout": "\\$771",
       "reference": "CNT[2]",
       "pin": false,
       "heuristic": false
@@ -2196,13 +2196,13 @@
       "heuristic": false
     },
     {
-      "layout": "\\$715",
+      "layout": "\\$714",
       "reference": "CNT[4]",
       "pin": false,
       "heuristic": false
     },
     {
-      "layout": "\\$718",
+      "layout": "\\$717",
       "reference": "CNT[5]",
       "pin": false,
       "heuristic": false
@@ -2376,7 +2376,7 @@
       "heuristic": false
     },
     {
-      "layout": "\\$109",
+      "layout": "\\$110",
       "reference": "NET2",
       "pin": false,
       "heuristic": false
@@ -2394,13 +2394,13 @@
       "heuristic": false
     },
     {
-      "layout": "\\$604",
+      "layout": "\\$603",
       "reference": "PROG_PREV",
       "pin": false,
       "heuristic": false
     },
     {
-      "layout": "\\$603",
+      "layout": "\\$602",
       "reference": "PROG_Q",
       "pin": false,
       "heuristic": false
@@ -2424,7 +2424,7 @@
       "heuristic": false
     },
     {
-      "layout": "\\$605",
+      "layout": "\\$604",
       "reference": "RD_PREV",
       "pin": false,
       "heuristic": false
@@ -2442,7 +2442,7 @@
       "heuristic": false
     },
     {
-      "layout": "\\$250",
+      "layout": "\\$255",
       "reference": "ROW_Q[10]",
       "pin": false,
       "heuristic": false
@@ -2466,7 +2466,7 @@
       "heuristic": false
     },
     {
-      "layout": "\\$255",
+      "layout": "\\$253",
       "reference": "ROW_Q[14]",
       "pin": false,
       "heuristic": false
@@ -2520,7 +2520,7 @@
       "heuristic": false
     },
     {
-      "layout": "\\$203",
+      "layout": "\\$202",
       "reference": "ROW_Q[22]",
       "pin": false,
       "heuristic": false
@@ -2604,7 +2604,7 @@
       "heuristic": false
     },
     {
-      "layout": "\\$251",
+      "layout": "\\$249",
       "reference": "ROW_Q[6]",
       "pin": false,
       "heuristic": false
@@ -3072,7 +3072,7 @@
       "heuristic": false
     },
     {
-      "layout": "\\$333",
+      "layout": "\\$332",
       "reference": "_003_",
       "pin": false,
       "heuristic": false
@@ -3132,7 +3132,7 @@
       "heuristic": false
     },
     {
-      "layout": "\\$245",
+      "layout": "\\$244",
       "reference": "_013_",
       "pin": false,
       "heuristic": false
@@ -3156,7 +3156,7 @@
       "heuristic": false
     },
     {
-      "layout": "\\$106",
+      "layout": "\\$107",
       "reference": "_017_",
       "pin": false,
       "heuristic": false
@@ -3186,7 +3186,7 @@
       "heuristic": false
     },
     {
-      "layout": "\\$110",
+      "layout": "\\$86",
       "reference": "_022_",
       "pin": false,
       "heuristic": false
@@ -3216,7 +3216,7 @@
       "heuristic": false
     },
     {
-      "layout": "\\$199",
+      "layout": "\\$198",
       "reference": "_027_",
       "pin": false,
       "heuristic": false
@@ -3282,7 +3282,7 @@
       "heuristic": false
     },
     {
-      "layout": "\\$721",
+      "layout": "\\$720",
       "reference": "_038_",
       "pin": false,
       "heuristic": false
@@ -3390,13 +3390,13 @@
       "heuristic": false
     },
     {
-      "layout": "\\$719",
+      "layout": "\\$718",
       "reference": "_056_",
       "pin": false,
       "heuristic": false
     },
     {
-      "layout": "\\$606",
+      "layout": "\\$605",
       "reference": "_061_",
       "pin": false,
       "heuristic": false
@@ -3456,13 +3456,13 @@
       "heuristic": false
     },
     {
-      "layout": "\\$588",
+      "layout": "\\$606",
       "reference": "_071_",
       "pin": false,
       "heuristic": false
     },
     {
-      "layout": "\\$589",
+      "layout": "\\$593",
       "reference": "_072_",
       "pin": false,
       "heuristic": false
@@ -3486,7 +3486,7 @@
       "heuristic": false
     },
     {
-      "layout": "\\$90",
+      "layout": "\\$91",
       "reference": "_079_",
       "pin": false,
       "heuristic": false
@@ -3540,7 +3540,7 @@
       "heuristic": false
     },
     {
-      "layout": "\\$441",
+      "layout": "\\$442",
       "reference": "_088_",
       "pin": false,
       "heuristic": false
@@ -3582,13 +3582,13 @@
       "heuristic": false
     },
     {
-      "layout": "\\$99",
+      "layout": "\\$100",
       "reference": "_097_",
       "pin": false,
       "heuristic": false
     },
     {
-      "layout": "\\$100",
+      "layout": "\\$101",
       "reference": "_098_",
       "pin": false,
       "heuristic": false
@@ -3702,25 +3702,25 @@
       "heuristic": false
     },
     {
-      "layout": "\\$108",
+      "layout": "\\$109",
       "reference": "_119_",
       "pin": false,
       "heuristic": false
     },
     {
-      "layout": "\\$329",
+      "layout": "\\$338",
       "reference": "_120_",
       "pin": false,
       "heuristic": false
     },
     {
-      "layout": "\\$729",
+      "layout": "\\$728",
       "reference": "_121_",
       "pin": false,
       "heuristic": false
     },
     {
-      "layout": "\\$714",
+      "layout": "\\$713",
       "reference": "_122_",
       "pin": false,
       "heuristic": false
@@ -3762,31 +3762,31 @@
       "heuristic": false
     },
     {
-      "layout": "\\$730",
+      "layout": "\\$729",
       "reference": "_129_",
       "pin": false,
       "heuristic": false
     },
     {
-      "layout": "\\$728",
+      "layout": "\\$727",
       "reference": "_130_",
       "pin": false,
       "heuristic": false
     },
     {
-      "layout": "\\$772",
+      "layout": "\\$773",
       "reference": "_131_",
       "pin": false,
       "heuristic": false
     },
     {
-      "layout": "\\$771",
+      "layout": "\\$772",
       "reference": "_132_",
       "pin": false,
       "heuristic": false
     },
     {
-      "layout": "\\$758",
+      "layout": "\\$759",
       "reference": "_133_",
       "pin": false,
       "heuristic": false
@@ -3810,13 +3810,13 @@
       "heuristic": false
     },
     {
-      "layout": "\\$795",
+      "layout": "\\$794",
       "reference": "_137_",
       "pin": false,
       "heuristic": false
     },
     {
-      "layout": "\\$794",
+      "layout": "\\$797",
       "reference": "_138_",
       "pin": false,
       "heuristic": false
@@ -3858,13 +3858,13 @@
       "heuristic": false
     },
     {
-      "layout": "\\$713",
+      "layout": "\\$712",
       "reference": "_145_",
       "pin": false,
       "heuristic": false
     },
     {
-      "layout": "\\$727",
+      "layout": "\\$737",
       "reference": "_146_",
       "pin": false,
       "heuristic": false
@@ -3876,7 +3876,7 @@
       "heuristic": false
     },
     {
-      "layout": "\\$737",
+      "layout": "\\$736",
       "reference": "_148_",
       "pin": false,
       "heuristic": false
@@ -3912,13 +3912,13 @@
       "heuristic": false
     },
     {
-      "layout": "\\$105",
+      "layout": "\\$106",
       "reference": "_154_",
       "pin": false,
       "heuristic": false
     },
     {
-      "layout": "\\$94",
+      "layout": "\\$95",
       "reference": "_155_",
       "pin": false,
       "heuristic": false
@@ -3930,7 +3930,7 @@
       "heuristic": false
     },
     {
-      "layout": "\\$332",
+      "layout": "\\$331",
       "reference": "_157_",
       "pin": false,
       "heuristic": false
@@ -4038,13 +4038,13 @@
       "heuristic": false
     },
     {
-      "layout": "\\$444",
+      "layout": "\\$451",
       "reference": "_175_",
       "pin": false,
       "heuristic": false
     },
     {
-      "layout": "\\$445",
+      "layout": "\\$441",
       "reference": "_176_",
       "pin": false,
       "heuristic": false

@@ -60,8 +60,10 @@ decision-0005 PVT set with the fuse at 140/200/260 Ω. It writes
 current, Vgs, Vds, pass/fail against 10 mA, binding corner per width). The grid
 is 15 `klt sim` requests submitted with `--batch-set`, so it needs the batch
 fleet; a failed submit is reported and never re-run locally.
-`program-select.sch` is the schematic (netlist it with `klt netlist`); the
-swept deck is `cell.cir.in`. Result and derivation: `design/README.md`.
+The swept deck is [`program-select/cell.cir.in`](program-select/cell.cir.in); the
+cell as designed (the implemented 60 µm bitcell) is
+[`../design/efuse_bitcell.sch`](../design/efuse_bitcell.sch). Result and
+derivation: `design/README.md`.
 
 ## Program-current corner verification
 
@@ -90,8 +92,9 @@ range and the 20 ohm route are assumptions (A4, no documented source).
 `sim/sense-margin/run.sh` runs the committed sense path (`efuse_sense`, `efuse_comp`)
 against intact 140/200/260 ohm (A4) and programmed 630/900 ohm/open (A5) fuse values and
 the 400 ohm reference (A6) over the decision-0005 grid, plus a negative control with the
-reference moved inside the intact range. It submits 8 requests with `klt sim --batch-set`
-(batch only) and writes `sim/sense-margin/records/<stamp>-<rev>/record.json`. Assumptions
+reference moved inside the intact range. It submits 14 requests with `klt sim --batch-set`
+(batch only; six against the ideal 400 ohm stand-in, six against the committed physical
+`XRref`) and writes `sim/sense-margin/records/<stamp>-<rev>/record.json`. Assumptions
 and the record layout: `sim/sense-margin/README.md`.
 
 ## Controller post-route SDF status

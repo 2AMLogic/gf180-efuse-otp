@@ -76,7 +76,11 @@ class Test(unittest.TestCase):
                            for rf in cls.intact + cls.programmed]
         cls.control_stems = ["control_rf%s_rr%g" % (rf, cls.rref_control)
                              for rf in cls.controls]
-        cls.stems = cls.bench_stems + cls.control_stems
+        # A record run with --physical-reference also carries the phys_rf*_rrphys
+        # requests (summarize.py's physical_reference.fuses names their fuse values).
+        cls.phys_stems = (["phys_rf%s_rrphys" % rf for rf in cls.intact + cls.programmed]
+                          if "physical_reference" in cls.committed else [])
+        cls.stems = cls.bench_stems + cls.control_stems + cls.phys_stems
         times = cls.committed["measurement_times"]
         # "one rising edge at <t_edge>, amplitude tracks vdd33; ..." -- the only
         # place the record keeps the clock-edge argument.
@@ -94,6 +98,8 @@ class Test(unittest.TestCase):
             "--stamp", cls.committed["timestamp_utc"],
             "--klt", cls.committed["klt_version"],
         ]
+        if cls.phys_stems:
+            cls.args.append("--physical-reference")
 
     def run_case(self, drop=(), edit=None, args=None):
         """Copy the fixture's reports (minus `drop`), optionally edit one, summarize.
@@ -214,6 +220,18 @@ class Test(unittest.TestCase):
                 p, raw = self.run_case(args=args)
                 self.assertEqual(p.returncode, 2, p.stdout + p.stderr)
                 self.assertIsNone(raw, "an empty request list must not be recorded")
+
+    def test_i_a_missing_phys_request_is_refused(self):
+        """A physical-reference record is refused when a phys_* report is absent:
+        the physical reference is part of the nominal evidence, not an extra."""
+        if not self.phys_stems:
+            self.skipTest("newest committed record predates --physical-reference")
+        for stem in self.phys_stems:
+            with self.subTest(stem=stem):
+                p, raw = self.run_case(drop=[stem])
+                self.assertEqual(p.returncode, 4, p.stdout + p.stderr)
+                self.assertIsNone(raw, "a partial physical-reference set must not be recorded")
+                self.assertIn(stem, p.stderr)
 
 
 if __name__ == "__main__":

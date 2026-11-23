@@ -7,18 +7,9 @@
   "deck": "pdk/gf180mcuD/libs.tech/klayout/tech/drc/gf180mcu.drc",
   "engine": "klayout",
   "dbu_um": 0.001,
-  "status": "violations",
-  "violation_count": 8,
-  "rule_counts": {
-    "DCF.1b": 1,
-    "M1.4": 1,
-    "M2.4": 1,
-    "M3.4": 1,
-    "M4.4": 1,
-    "M5.4": 1,
-    "MT.3": 1,
-    "PL.8": 1
-  },
+  "status": "clean",
+  "violation_count": 0,
+  "rule_counts": {},
   "coverage": {
     "deck_layers": [],
     "layers_checked": [],
@@ -69,7 +60,6 @@
       "CUP.3",
       "DCF.11a",
       "DCF.12",
-      "DCF.1b",
       "DCF.2b",
       "DCF.4",
       "DCF.5",
@@ -249,23 +239,18 @@
       "M1.2a",
       "M1.2b",
       "M1.3",
-      "M1.4",
       "M2.1",
       "M2.2a",
       "M2.2b",
       "M2.3",
-      "M2.4",
       "M3.1",
       "M3.2a",
       "M3.2b",
       "M3.3",
-      "M3.4",
       "M4.1",
       "M4.2a",
       "M4.2b",
       "M4.3",
-      "M4.4",
-      "M5.4",
       "MC.1",
       "MC.2",
       "MC.3",
@@ -403,7 +388,6 @@
       "MT.1",
       "MT.2a",
       "MT.2b",
-      "MT.3",
       "MT.4",
       "NAT.1",
       "NAT.10",
@@ -489,7 +473,6 @@
       "PL.6",
       "PL.7_LV",
       "PL.7_MV",
-      "PL.8",
       "PL.9",
       "PP.1",
       "PP.10",
@@ -842,7 +825,6 @@
       "CUP.3",
       "DCF.11a",
       "DCF.12",
-      "DCF.1b",
       "DCF.2b",
       "DCF.4",
       "DCF.5",
@@ -1022,23 +1004,18 @@
       "M1.2a",
       "M1.2b",
       "M1.3",
-      "M1.4",
       "M2.1",
       "M2.2a",
       "M2.2b",
       "M2.3",
-      "M2.4",
       "M3.1",
       "M3.2a",
       "M3.2b",
       "M3.3",
-      "M3.4",
       "M4.1",
       "M4.2a",
       "M4.2b",
       "M4.3",
-      "M4.4",
-      "M5.4",
       "MC.1",
       "MC.2",
       "MC.3",
@@ -1176,7 +1153,6 @@
       "MT.1",
       "MT.2a",
       "MT.2b",
-      "MT.3",
       "MT.4",
       "NAT.1",
       "NAT.10",
@@ -1262,7 +1238,6 @@
       "PL.6",
       "PL.7_LV",
       "PL.7_MV",
-      "PL.8",
       "PL.9",
       "PP.1",
       "PP.10",
@@ -1624,7 +1599,6 @@
       "CUP.3",
       "DCF.11a",
       "DCF.12",
-      "DCF.1b",
       "DCF.2b",
       "DCF.4",
       "DCF.5",
@@ -1804,23 +1778,18 @@
       "M1.2a",
       "M1.2b",
       "M1.3",
-      "M1.4",
       "M2.1",
       "M2.2a",
       "M2.2b",
       "M2.3",
-      "M2.4",
       "M3.1",
       "M3.2a",
       "M3.2b",
       "M3.3",
-      "M3.4",
       "M4.1",
       "M4.2a",
       "M4.2b",
       "M4.3",
-      "M4.4",
-      "M5.4",
       "MC.1",
       "MC.2",
       "MC.3",
@@ -1958,7 +1927,6 @@
       "MT.1",
       "MT.2a",
       "MT.2b",
-      "MT.3",
       "MT.4",
       "NAT.1",
       "NAT.10",
@@ -2044,7 +2012,6 @@
       "PL.6",
       "PL.7_LV",
       "PL.7_MV",
-      "PL.8",
       "PL.9",
       "PP.1",
       "PP.10",
@@ -2356,272 +2323,7 @@
     "nothing_checked": false,
     "nothing_checked_reasons": []
   },
-  "violations": [
-    {
-      "rule": "DCF.1b",
-      "description": "DCF.1b : Global density for active layers (COMP+ Dummy COMP) shall be >= 25%",
-      "check": "external",
-      "layer": "DCF.1b",
-      "cell": "efuse_otp_ctrl",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": 0,
-        "bottom": 0,
-        "right": 165355,
-        "top": 165355
-      },
-      "polygon": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          165355
-        ],
-        [
-          165355,
-          165355
-        ],
-        [
-          165355,
-          0
-        ]
-      ]
-    },
-    {
-      "rule": "M1.4",
-      "description": "M1.4 : Metal1 coverage over the entire die shall be >30%\n                  (Refer to section 13.0 for Dummy Metal fill guidelines.\n                   Customer needs to ensure enough dummy metal to satisfy Metal1 coverage) : 30%",
-      "check": "external",
-      "layer": "M1.4",
-      "cell": "efuse_otp_ctrl",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": 0,
-        "bottom": 0,
-        "right": 165355,
-        "top": 165355
-      },
-      "polygon": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          165355
-        ],
-        [
-          165355,
-          165355
-        ],
-        [
-          165355,
-          0
-        ]
-      ]
-    },
-    {
-      "rule": "M2.4",
-      "description": "M2.4 : Metal2 coverage over the entire die shall be >30%\n                  (Refer to section 13.0 for Dummy Metal fill guidelines.\n                   Customer needs to ensure enough dummy metal to satisfy Metal2 coverage) : 30%",
-      "check": "external",
-      "layer": "M2.4",
-      "cell": "efuse_otp_ctrl",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": 0,
-        "bottom": 0,
-        "right": 165355,
-        "top": 165355
-      },
-      "polygon": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          165355
-        ],
-        [
-          165355,
-          165355
-        ],
-        [
-          165355,
-          0
-        ]
-      ]
-    },
-    {
-      "rule": "M3.4",
-      "description": "M3.4 : metal3 coverage over the entire die shall be >30%\n                      (Refer to section 13.0 for Dummy Metal fill guidelines.\n                      Customer needs to ensure enough dummy metal to satisfy metal3 coverage) : 30%",
-      "check": "external",
-      "layer": "M3.4",
-      "cell": "efuse_otp_ctrl",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": 0,
-        "bottom": 0,
-        "right": 165355,
-        "top": 165355
-      },
-      "polygon": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          165355
-        ],
-        [
-          165355,
-          165355
-        ],
-        [
-          165355,
-          0
-        ]
-      ]
-    },
-    {
-      "rule": "M4.4",
-      "description": "M4.4 : metal4 coverage over the entire die shall be >30%\n                      (Refer to section 13.0 for Dummy Metal fill guidelines.\n                      Customer needs to ensure enough dummy metal to satisfy metal4 coverage) : 30%",
-      "check": "external",
-      "layer": "M4.4",
-      "cell": "efuse_otp_ctrl",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": 0,
-        "bottom": 0,
-        "right": 165355,
-        "top": 165355
-      },
-      "polygon": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          165355
-        ],
-        [
-          165355,
-          165355
-        ],
-        [
-          165355,
-          0
-        ]
-      ]
-    },
-    {
-      "rule": "M5.4",
-      "description": "M5.4 : metal5 coverage over the entire die shall be >30%\n                      (Refer to section 13.0 for Dummy Metal fill guidelines.\n                      Customer needs to ensure enough dummy metal to satisfy metal5 coverage) : 30%",
-      "check": "external",
-      "layer": "M5.4",
-      "cell": "efuse_otp_ctrl",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": 0,
-        "bottom": 0,
-        "right": 165355,
-        "top": 165355
-      },
-      "polygon": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          165355
-        ],
-        [
-          165355,
-          165355
-        ],
-        [
-          165355,
-          0
-        ]
-      ]
-    },
-    {
-      "rule": "MT.3",
-      "description": "MT.3 : MetalTop coverage over the entire die shall be >30%\n                                  (Refer to section 10.3 for Dummy Metal-fill guidelines.\n                                  Customer needs to ensure enough dummy metal to satisfy Metaln coverage) : 30%",
-      "check": "external",
-      "layer": "MT.3",
-      "cell": "efuse_otp_ctrl",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": 0,
-        "bottom": 0,
-        "right": 165355,
-        "top": 165355
-      },
-      "polygon": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          165355
-        ],
-        [
-          165355,
-          165355
-        ],
-        [
-          165355,
-          0
-        ]
-      ]
-    },
-    {
-      "rule": "PL.8",
-      "description": "PL.8 : Poly2 coverage over the entire die shall be 14%.\n                  Dummy poly2 lines must be added to meet the minimum poly2 density requirement. : 14%",
-      "check": "external",
-      "layer": "PL.8",
-      "cell": "efuse_otp_ctrl",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": 0,
-        "bottom": 0,
-        "right": 165355,
-        "top": 165355
-      },
-      "polygon": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          165355
-        ],
-        [
-          165355,
-          165355
-        ],
-        [
-          165355,
-          0
-        ]
-      ]
-    }
-  ],
+  "violations": [],
   "coverage_assertion": {
     "kind": "expected_rule_category_names",
     "expected_names": [
@@ -2671,7 +2373,6 @@
       "CUP.3",
       "DCF.11a",
       "DCF.12",
-      "DCF.1b",
       "DCF.2b",
       "DCF.4",
       "DCF.5",
@@ -2851,23 +2552,18 @@
       "M1.2a",
       "M1.2b",
       "M1.3",
-      "M1.4",
       "M2.1",
       "M2.2a",
       "M2.2b",
       "M2.3",
-      "M2.4",
       "M3.1",
       "M3.2a",
       "M3.2b",
       "M3.3",
-      "M3.4",
       "M4.1",
       "M4.2a",
       "M4.2b",
       "M4.3",
-      "M4.4",
-      "M5.4",
       "MC.1",
       "MC.2",
       "MC.3",
@@ -3005,7 +2701,6 @@
       "MT.1",
       "MT.2a",
       "MT.2b",
-      "MT.3",
       "MT.4",
       "NAT.1",
       "NAT.10",
@@ -3091,7 +2786,6 @@
       "PL.6",
       "PL.7_LV",
       "PL.7_MV",
-      "PL.8",
       "PL.9",
       "PP.1",
       "PP.10",
@@ -3444,7 +3138,6 @@
       "CUP.3",
       "DCF.11a",
       "DCF.12",
-      "DCF.1b",
       "DCF.2b",
       "DCF.4",
       "DCF.5",
@@ -3624,23 +3317,18 @@
       "M1.2a",
       "M1.2b",
       "M1.3",
-      "M1.4",
       "M2.1",
       "M2.2a",
       "M2.2b",
       "M2.3",
-      "M2.4",
       "M3.1",
       "M3.2a",
       "M3.2b",
       "M3.3",
-      "M3.4",
       "M4.1",
       "M4.2a",
       "M4.2b",
       "M4.3",
-      "M4.4",
-      "M5.4",
       "MC.1",
       "MC.2",
       "MC.3",
@@ -3778,7 +3466,6 @@
       "MT.1",
       "MT.2a",
       "MT.2b",
-      "MT.3",
       "MT.4",
       "NAT.1",
       "NAT.10",
@@ -3864,7 +3551,6 @@
       "PL.6",
       "PL.7_LV",
       "PL.7_MV",
-      "PL.8",
       "PL.9",
       "PP.1",
       "PP.10",
@@ -4178,7 +3864,7 @@
     "klt_version": "0.9.2",
     "klt_git_commit": "046ba74652fc096bd97071fc3237f7159dd40183",
     "klt_reinstall_spec": "klayout-tools==0.9.2",
-    "klayout_version": "0.30.13",
+    "klayout_version": "0.30.14",
     "pdk": {
       "name": "gf180mcuD",
       "source": "--pdk-root flag",
@@ -4200,7 +3886,7 @@
       }
     },
     "input": {
-      "content_hash": "sha256:d6b4497b582d0755135176ceaaf22c71e5b62154084dcbc1943dd363703f37dc",
+      "content_hash": "sha256:5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748",
       "role": "layout"
     },
     "klayout_version_mismatch": true
