@@ -90,8 +90,9 @@ range and the 20 ohm route are assumptions (A4, no documented source).
 `sim/sense-margin/run.sh` runs the committed sense path (`efuse_sense`, `efuse_comp`)
 against intact 140/200/260 ohm (A4) and programmed 630/900 ohm/open (A5) fuse values and
 the 400 ohm reference (A6) over the decision-0005 grid, plus a negative control with the
-reference moved inside the intact range. It submits 8 requests with `klt sim --batch-set`
-(batch only) and writes `sim/sense-margin/records/<stamp>-<rev>/record.json`. Assumptions
+reference moved inside the intact range. It submits 14 requests with `klt sim --batch-set`
+(batch only; six against the ideal 400 ohm stand-in, six against the committed physical
+`XRref`) and writes `sim/sense-margin/records/<stamp>-<rev>/record.json`. Assumptions
 and the record layout: `sim/sense-margin/README.md`.
 
 ## Controller post-route SDF status
