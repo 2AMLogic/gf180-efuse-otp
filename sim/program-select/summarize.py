@@ -97,11 +97,21 @@ def main():
     cands = [w for w in out_w if w["candidate"]]
     chosen = cands[0]["w_um"] if cands else None
 
+    # The PVT axes of the grid, named once: the pvt block and the top-level
+    # corners statement the CI record-format check requires (#118) both read
+    # these lists, so the count cannot drift from the grid it describes.
+    process = ["typical", "ff", "ss", "fs", "sf"]
+    temps = [-40, 25, 125]
+    vprog = [4.5, 5.0, 5.5]
+
     rec = {
         **bench_record.header(a, backends, jobs, engines),
         "device": "nfet_06v0, L=0.7u, nf=1",
-        "pvt": {"process": ["typical", "ff", "ss", "fs", "sf"],
-                "temp_c": [-40, 25, 125], "vprog_v": [4.5, 5.0, 5.5],
+        "corners": "%d per request: %d process x %d temperature x %d vprog; see pvt"
+                   % (len(process) * len(temps) * len(vprog),
+                      len(process), len(temps), len(vprog)),
+        "pvt": {"process": process,
+                "temp_c": temps, "vprog_v": vprog,
                 "fuse_ohm": fuse_ohms},
         "requirement": {"i_fuse_min_a": a.ireq, "source": "assumption A2, spec/efuse-otp.md section 2 (no PDK source)"},
         "assumptions": {

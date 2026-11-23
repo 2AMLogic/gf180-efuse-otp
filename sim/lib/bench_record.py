@@ -140,6 +140,11 @@ def header(a, backends, jobs, engines):
     is the collect_env() set of engine versions; it is emitted sorted, so a set
     whose corners ran on more than one simulator version stays visible instead
     of collapsing to one value.
+
+    `tool_versions` restates the two version inputs above as the nested object
+    the CI record-format check requires (#118): the klt that submitted the set
+    and the engine versions that ran its corners. It adds no new information
+    by design -- a reader can take either shape.
     """
     return {
         "pdk_revision": a.pdk_rev,
@@ -148,6 +153,7 @@ def header(a, backends, jobs, engines):
         "timestamp_utc": a.stamp,
         "engine_versions": sorted(engines),
         "klt_version": a.klt,
+        "tool_versions": {"klt_sim": a.klt, "ngspice": sorted(engines)},
         "backend": [json.loads(b) for b in sorted(backends)],
         "remote_job_ids": sorted(jobs),
     }

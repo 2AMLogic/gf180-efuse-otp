@@ -41,6 +41,7 @@ done
 jq -n --arg rev "$PDK_REVISION" --arg var "$(jq -r .variant "$here/../pdk.json")" \
       --arg ng "$ngspice_version" --arg ts "$stamp" --argjson devs "$devs" --argjson rc "$rc" \
   '{pdk_revision:$rev, variant:$var, corner:"typical", temp_c:27,
+    tool_versions:{ngspice_local:$ng}, corners:"1: typical at 27 C (single-corner smoke); see corner/temp_c",
     ngspice_version:$ng, timestamp_utc:$ts, ngspice_exit:$rc, devices:$devs,
     all_converged: ($devs | all(.converged))}' > "$rec/record.json"
 

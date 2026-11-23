@@ -153,11 +153,21 @@ def main():
     bench_margin_ok = complete and all(f["all_margin_positive"] for f in fuses.values())
     bench_decision_ok = complete and all(f["all_decisions_ok"] for f in fuses.values())
 
+    # The PVT axes of the grid, named once: the pvt block and the top-level
+    # corners statement the CI record-format check requires (#118) both read
+    # these lists, so the count cannot drift from the grid it describes.
+    process = ["typical", "ff", "ss", "fs", "sf"]
+    temps = [-40, 25, 125]
+    vdd = [2.97, 3.30, 3.63]
+
     rec = {
         **bench_record.header(a, backends, jobs, engines),
         "dut": "efuse_sense (with efuse_comp), extracted from design/efuse_otp_array.spice",
-        "pvt": {"process": ["typical", "ff", "ss", "fs", "sf"], "temp_c": [-40, 25, 125],
-                "vdd33_v": [2.97, 3.30, 3.63], "source": "decision 0005"},
+        "corners": "%d per request: %d process x %d temperature x %d vdd33 (decision 0005); see pvt"
+                   % (len(process) * len(temps) * len(vdd),
+                      len(process), len(temps), len(vdd)),
+        "pvt": {"process": process, "temp_c": temps,
+                "vdd33_v": vdd, "source": "decision 0005"},
         "assumptions": {
             "intact_range_ohm": {"value": [float(x) for x in intact], "status": "assumption A4; only the 200 ohm point is documented (+/-30% is the assumed range)"},
             "programmed_range_ohm": {"value": ["630", "900", "open (1 Gohm)"], "status": "assumption A5; only the 900 ohm point is documented (-30% is the assumed lower edge)"},
