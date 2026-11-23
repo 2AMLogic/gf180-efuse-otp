@@ -505,9 +505,11 @@ klayout==0.30.12`. The cause is the provisioned engine moving under an
 unchanged pin — `signoff/klt-pin.txt` pins klt, which resolves the
 klayout package; it does not pin klayout itself — not a layout change.
 The five per-cell reports are byte-compared the same way and drift with
-the engine too; the two partition reports are hash-gated only, which is
-why `layout/drc-ctrl.report.json` still recording 0.30.13 does not fail
-the gate.
+the engine too. The two partition reports (`array`, `ctrl`) are not
+byte-compared: `layout/drc.sh --check --rerun` delegates them to
+`klt drc --check --rerun`, whose verdict diff excludes
+`provenance.klayout_version`, which is why `layout/drc-ctrl.report.json`
+still recording 0.30.13 does not fail the gate.
 
 To adopt an engine version:
 
