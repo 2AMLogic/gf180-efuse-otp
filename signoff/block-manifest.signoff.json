@@ -289,7 +289,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:c6367fe868ece15427a4b97e550f9364b58da16db585e428654418b8c82d94ef",
+        "content_hash": "sha256:439b53913fd4c5bbbe87ecf3e8a6bc4261333002ad051423d1611aef05981fa9",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -298,7 +298,7 @@
             "path": "layout/efuse_otp_array.gds",
             "scope": "repo"
           },
-          "content_hash": "sha256:c6367fe868ece15427a4b97e550f9364b58da16db585e428654418b8c82d94ef",
+          "content_hash": "sha256:439b53913fd4c5bbbe87ecf3e8a6bc4261333002ad051423d1611aef05981fa9",
           "input_verified": true,
           "summary": "T1 item 2 (Layout): 3/3 attestation checks passed (klt signoff --attest)",
           "source": "layout/efuse_otp_array.gds",
@@ -310,7 +310,7 @@
           },
           "regeneration": {
             "generator": "layout/regen-gds.sh",
-            "regenerated_hash": "sha256:c6367fe868ece15427a4b97e550f9364b58da16db585e428654418b8c82d94ef",
+            "regenerated_hash": "sha256:439b53913fd4c5bbbe87ecf3e8a6bc4261333002ad051423d1611aef05981fa9",
             "executed_by_klt": false
           }
         }
