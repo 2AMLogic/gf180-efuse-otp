@@ -4,8 +4,9 @@
 # monte_carlo.mismatch_scale), over the decision-0005 grid (5 process x -40/25/125 C x
 # vdd33 2.97/3.30/3.63 V). Two nominal requests at the binding edge of each fuse population
 # (intact 260 ohm = A4 upper edge, programmed 630 ohm = A5 lower edge) against the 400 ohm
-# reference (A6), plus a deterministic negative control per population with the reference
-# skewed to the wrong side of the fuse range. Submitted with `klt sim --batch-set` (batch
+# reference (A6), the same two against the committed physical reference XRref (ppolyf_u),
+# plus a deterministic negative control per population with the reference skewed to the
+# wrong side of the fuse range. Submitted with `klt sim --batch-set` (batch
 # only, never local); job ids land in environment.remote of each report. Then `klt yield`
 # (pinned klt, `[yield]` extra) grades each nominal/control pair.
 #
@@ -60,27 +61,46 @@ bench_new_record_dir "$repo/sim/sense-mc/records" "$dry"
 rec="${rec#"$repo/"}"                    # repo-relative (cwd is $repo); a dry-run temp dir is unchanged
 
 reqs=()
-# The netlist draws the reference as a PDK ppolyf_u resistor; this campaign
-# injects the reference tolerance as a design-owned multiplier on a plain-R
-# stand-in (A7 below), so the deck copy replaces that one instance with an
-# ideal R carrying {$rr*mc_inj_rref_r} -- the multiplier klt's injected draw
-# feeds. The bias resistor XRb stays the real device, so every deck needs the
-# model library's resistor sections (res_typical/res_ss/res_ff) beside the MOS
-# corner; the PDK ships no fs/sf resistor section, so those two corners keep
-# the typical sheet rho (same assumption as sim/sense-margin/run.sh).
+# The netlist draws the reference as a PDK ppolyf_u resistor. Two reference dispositions:
+# - ideal-stand-in requests inject the reference tolerance as a design-owned multiplier on a
+#   plain-R stand-in (A7 below), so the deck copy replaces that one instance with an ideal R
+#   carrying {$rr*mc_inj_rref_r} -- the multiplier klt's injected draw feeds. These stay
+#   value-parametric by design (their controls sweep the reference value itself).
+# - physical-reference requests keep the committed ppolyf_u device and feed its series
+#   multiplier s={mc_inj_xrref_s} instead: s scales the terminal resistors (rt1/rt2) and the
+#   body resistor (rb) linearly, so the injected tolerance moves the whole physical
+#   resistance including its corner-dependent value (injecting the PDK's own mis_r would
+#   scale only the body and under-apply the tolerance).
+# The bias resistor XRb stays the real device either way, so every deck needs the model
+# library's resistor sections (res_typical/res_ss/res_ff) beside the MOS corner; the PDK
+# ships no fs/sf resistor section, so those two corners keep the typical sheet rho (same
+# assumption as sim/sense-margin/run.sh).
 RREF_LINE='^XRref rn1 sref vss ppolyf_u r_width=1.05e-6 r_length=0.8e-6 m=1$'
-# mk <stem> <kind: intact|prog> <rfuse> <rref> <n>
+XRREF_INJ_LINE='XRref rn1 sref vss ppolyf_u r_width=1.05e-6 r_length=0.8e-6 s={mc_inj_xrref_s} m=1'
+# mk <stem> <kind: intact|prog> <rfuse> <rref|phys> <n>
 mk() {
-  local stem="$1" kind="$2" rf="$3" rr="$4" n="$5" sign
+  local stem="$1" kind="$2" rf="$3" rr="$4" n="$5" inj_inst inj_param sign
   # The reference is rewritten to carry the klt-injected tolerance multiplier; the committed
-  # netlist is untouched. mc_inj_rref_r is emitted per sample by monte_carlo.injected.
+  # netlist is untouched. mc_inj_rref_r / mc_inj_xrref_s are emitted per sample by
+  # monte_carlo.injected.
   { sed -e "s#@DESIGN@#$lib/design.ngspice#" -e "s#@RFUSE@#$rf#" "$here/../sense-margin/sense.cir.in"
     echo
-    sub efuse_sense | sed -e "s#$RREF_LINE#Rref rn1 sref {$rr*mc_inj_rref_r}#"
+    if [[ "$rr" == phys ]]; then
+      sub efuse_sense | sed -e "s#$RREF_LINE#$XRREF_INJ_LINE#"
+    else
+      sub efuse_sense | sed -e "s#$RREF_LINE#Rref rn1 sref {$rr*mc_inj_rref_r}#"
+    fi
     echo
     sub efuse_comp
   } > "$rec/$stem.cir"
-  grep -q "^Rref rn1 sref {$rr\*mc_inj_rref_r}\$" "$rec/$stem.cir" || { echo "run.sh: Rref line not found" >&2; exit 1; }
+  if [[ "$rr" == phys ]]; then
+    grep -q "^XRref rn1 sref vss ppolyf_u r_width=1.05e-6 r_length=0.8e-6 s={mc_inj_xrref_s} m=1\$" "$rec/$stem.cir" \
+      || { echo "run.sh: physical XRref line not found" >&2; exit 1; }
+    inj_inst="XRref"; inj_param="s"
+  else
+    grep -q "^Rref rn1 sref {$rr\*mc_inj_rref_r}\$" "$rec/$stem.cir" || { echo "run.sh: Rref line not found" >&2; exit 1; }
+    inj_inst="Rref"; inj_param="r"
+  fi
   if [[ $kind == intact ]]; then   # intact must read below the reference: positive = correct side
     margin="v(xsa.sref)-v(sbl)"; dec="0.5-v(sense_out)/v(vdd33)"
   else
@@ -88,6 +108,7 @@ mk() {
   fi
   jq -n --arg net "$stem.cir" --arg lib "libs.tech/ngspice/sm141064.ngspice" \
         --arg tpre "$T_PRE" --arg tout "$T_OUT" --arg margin "$margin" --arg dec "$dec" \
+        --arg inj_inst "$inj_inst" --arg inj_param "$inj_param" \
         --argjson n "$n" --argjson seed "$SEED" --argjson sigma "$SIGMA_RREF" \
         --argjson ms "$MISMATCH_SCALE" --argjson dmin "$DECISION_MIN" --arg q "'" \
         --argjson pvt_proc "$PVT_PROCESSES" --argjson pvt_temp "$PVT_TEMPERATURES_C" \
@@ -99,7 +120,7 @@ mk() {
               supply_v:{vdd33:$pvt_3v3}, temperature_c:$pvt_temp},
      monte_carlo:{n:$n, seed:$seed, vary:"mismatch", seed_scope:"point",
                   mismatch_scale:$ms,
-                  injected:[{instance:"Rref", parameter:"r", relative_sigma:$sigma, distribution:"gaussian"}]},
+                  injected:[{instance:$inj_inst, parameter:$inj_param, relative_sigma:$sigma, distribution:"gaussian"}]},
      analysis:{kind:"tran", args:"20p 40n"},
      measurements:[
        {name:"margin_v", spec_row:"P10", unit:"V", limits:{min:0},
@@ -113,6 +134,9 @@ mk mc_intact_rf${RFUSE_INTACT}_rr${RREF_OHM}     intact "$RFUSE_INTACT" "$RREF_O
 mk mc_prog_rf${RFUSE_PROG}_rr${RREF_OHM}         prog   "$RFUSE_PROG"   "$RREF_OHM"       "$N_NOMINAL"
 mk ctl_intact_rf${RFUSE_INTACT}_rr${RREF_CTL_INTACT} intact "$RFUSE_INTACT" "$RREF_CTL_INTACT" "$N_CONTROL"
 mk ctl_prog_rf${RFUSE_PROG}_rr${RREF_CTL_PROG}   prog   "$RFUSE_PROG"   "$RREF_CTL_PROG"  "$N_CONTROL"
+# Physical reference: the same two nominal populations against the committed XRref.
+mk mc_intact_rf${RFUSE_INTACT}_rrphys            intact "$RFUSE_INTACT" phys              "$N_NOMINAL"
+mk mc_prog_rf${RFUSE_PROG}_rrphys                prog   "$RFUSE_PROG"   phys              "$N_NOMINAL"
 
 if [[ $dry -eq 1 ]]; then
   bench_dry_run_exit "${reqs[@]}"
@@ -128,32 +152,40 @@ for q in "${reqs[@]}"; do
   [[ -f "$rec/sets/$stem/report.json" ]] || { echo "run.sh: no report for $stem (rc=$rc; see $rec/set-report.json, $rec/klt.err); not a complete set, not evidence" >&2; exit 4; }
 done
 
-# Pair each nominal with its control, derive the sample set, grade it.
+# Pair each nominal with its control, derive the sample set, grade it. The physical-
+# reference nominals are paired with the same value-skewed controls as their ideal
+# counterparts: the controls are value-parametric (200/1000 ohm skew) and validate both
+# populations' measurement and decision paths.
 mkdir -p "$rec/yield"
 for pop in intact prog; do
-  if [[ $pop == intact ]]; then nom="mc_intact_rf${RFUSE_INTACT}_rr${RREF_OHM}"; ctl="ctl_intact_rf${RFUSE_INTACT}_rr${RREF_CTL_INTACT}"
-  else nom="mc_prog_rf${RFUSE_PROG}_rr${RREF_OHM}"; ctl="ctl_prog_rf${RFUSE_PROG}_rr${RREF_CTL_PROG}"; fi
-  "${KLT_YIELD[@]}" yield-samples "$rec/sets/$nom/report.json" --negative-control "$rec/sets/$ctl/report.json" \
-      --description "reference skewed to the wrong side of the $pop fuse population" \
-      --format json > "$rec/yield/$pop.samples.json"
-  # Cited report: the analog margin only (margin_v, the ratified row's limit). The latched-
-  # decision measurement is graded in a separate report that block-manifest.json does not
-  # cite; see README for what each record measured (the latch resolves on the committed DUT,
-  # resized under issue 77). Whether that split should change is a signoff decision, not this
-  # script's to state a reason for.
-  set +e
-  "${KLT_YIELD[@]}" yield "$rec/yield/$pop.samples.json" --measurement margin_v --min-samples "$MIN_SAMPLES" \
-      --target-ci-halfwidth "$CI_HALFWIDTH" --format json > "$rec/yield/$pop.yield.json" 2> "$rec/yield/$pop.yield.err"
-  echo $? > "$rec/yield/$pop.yield.rc"
-  "${KLT_YIELD[@]}" yield "$rec/yield/$pop.samples.json" --measurement decision_margin --min-samples "$MIN_SAMPLES" \
-      --target-ci-halfwidth "$CI_HALFWIDTH" --format json > "$rec/yield/$pop.decision.yield.json" 2> "$rec/yield/$pop.decision.yield.err"
-  echo $? > "$rec/yield/$pop.decision.yield.rc"
-  set -e
+  for mode in "" "_phys"; do
+    if [[ $pop == intact ]]; then rf="$RFUSE_INTACT"; ctl="ctl_intact_rf${RFUSE_INTACT}_rr${RREF_CTL_INTACT}"
+    else rf="$RFUSE_PROG"; ctl="ctl_prog_rf${RFUSE_PROG}_rr${RREF_CTL_PROG}"; fi
+    if [[ -z "$mode" ]]; then nom="mc_${pop}_rf${rf}_rr${RREF_OHM}"
+    else nom="mc_${pop}_rf${rf}_rrphys"; fi
+    out="$pop$mode"
+    "${KLT_YIELD[@]}" yield-samples "$rec/sets/$nom/report.json" --negative-control "$rec/sets/$ctl/report.json" \
+        --description "reference skewed to the wrong side of the $pop fuse population" \
+        --format json > "$rec/yield/$out.samples.json"
+    # Cited report: the analog margin only (margin_v, the ratified row's limit). The latched-
+    # decision measurement is graded in a separate report that block-manifest.json does not
+    # cite; see README for what each record measured (the latch resolves on the committed DUT,
+    # resized under issue 77). Whether that split should change is a signoff decision, not this
+    # script's to state a reason for.
+    set +e
+    "${KLT_YIELD[@]}" yield "$rec/yield/$out.samples.json" --measurement margin_v --min-samples "$MIN_SAMPLES" \
+        --target-ci-halfwidth "$CI_HALFWIDTH" --format json > "$rec/yield/$out.yield.json" 2> "$rec/yield/$out.yield.err"
+    echo $? > "$rec/yield/$out.yield.rc"
+    "${KLT_YIELD[@]}" yield "$rec/yield/$out.samples.json" --measurement decision_margin --min-samples "$MIN_SAMPLES" \
+        --target-ci-halfwidth "$CI_HALFWIDTH" --format json > "$rec/yield/$out.decision.yield.json" 2> "$rec/yield/$out.decision.yield.err"
+    echo $? > "$rec/yield/$out.decision.yield.rc"
+    set -e
+  done
 done
 
 echo "record: $rec"
 python3 -I "$here/summarize.py" "$rec" --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
-    --klt "$(klt --version)" --klt-pin "$KLT_PIN" \
+    --klt "$(klt --version)" --klt-pin "$KLT_PIN" --physical-reference \
     --seed "$SEED" --n-nominal "$N_NOMINAL" --n-control "$N_CONTROL" --sigma-rref "$SIGMA_RREF" \
     --mismatch-scale "$MISMATCH_SCALE" --rref "$RREF_OHM" \
     --rfuse-intact "$RFUSE_INTACT" --rfuse-prog "$RFUSE_PROG" \

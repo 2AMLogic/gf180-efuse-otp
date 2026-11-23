@@ -1,0 +1,109 @@
+{
+  "netlist": "phys_rf140_rrphys.cir",
+  "engine": "ngspice",
+  "models": {
+    "lib": "libs.tech/ngspice/sm141064.ngspice",
+    "pdk": "gf180mcuD"
+  },
+  "corners": {
+    "process": [
+      {
+        "name": "typical",
+        "sections": [
+          "typical",
+          "res_typical"
+        ]
+      },
+      {
+        "name": "ff",
+        "sections": [
+          "ff",
+          "res_ff"
+        ]
+      },
+      {
+        "name": "ss",
+        "sections": [
+          "ss",
+          "res_ss"
+        ]
+      },
+      {
+        "name": "fs",
+        "sections": [
+          "fs",
+          "res_typical"
+        ]
+      },
+      {
+        "name": "sf",
+        "sections": [
+          "sf",
+          "res_typical"
+        ]
+      }
+    ],
+    "supply_v": {
+      "vdd33": [
+        2.97,
+        3.30,
+        3.63
+      ]
+    },
+    "temperature_c": [
+      -40,
+      25,
+      125
+    ]
+  },
+  "analysis": {
+    "kind": "tran",
+    "args": "20p 40n"
+  },
+  "measurements": [
+    {
+      "name": "margin_v",
+      "spice": ".meas tran margin_v find par('-1*(v(sbl)-v(xsa.sref))') at=14.9n",
+      "unit": "V",
+      "limits": {
+        "min": 0
+      }
+    },
+    {
+      "name": "v_sbl",
+      "spice": ".meas tran v_sbl find v(sbl) at=14.9n",
+      "unit": "V"
+    },
+    {
+      "name": "v_sref",
+      "spice": ".meas tran v_sref find v(xsa.sref) at=14.9n",
+      "unit": "V"
+    },
+    {
+      "name": "v_sense_out",
+      "spice": ".meas tran v_sense_out find v(sense_out) at=38n",
+      "unit": "V"
+    },
+    {
+      "name": "v_cp",
+      "spice": ".meas tran v_cp find v(xsa.cp) at=38n",
+      "unit": "V"
+    },
+    {
+      "name": "v_cn",
+      "spice": ".meas tran v_cn find v(xsa.cn) at=38n",
+      "unit": "V"
+    },
+    {
+      "name": "v_vdd33",
+      "spice": ".meas tran v_vdd33 find v(vdd33) at=38n",
+      "unit": "V"
+    }
+  ],
+  "options": {
+    "timeout_s": 60,
+    "ngspice_init": [
+      "set measureprec=9"
+    ]
+  }
+}
