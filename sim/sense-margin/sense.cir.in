@@ -7,9 +7,10 @@
 * ASSUMPTION (A4/A5, no documented source beyond the 200 / 900 ohm points): the selected
 * fuse is a plain resistor of the stated value. "open" is 1 Gohm.
 .param rfuse=@RFUSE@
-* Reference: efuse_sense carries Rref = 400 ohm (A6, decision 0003). The negative
-* control rewrites that one line to @RREF@ ohm in the deck copy; the committed netlist
-* is not touched.
+* Reference: the netlist draws Rref as a PDK ppolyf_u resistor whose model
+* nominal is 400 ohm (A6, decision 0003). The bench rewrites that one instance
+* to a plain R at the swept reference value in the deck copy (the study is
+* value-parametric; see run.sh); the committed netlist is not touched.
 
 * Sense/logic supply; klt sim alters source Vdd33 per corner (2.97 / 3.30 / 3.63 V).
 

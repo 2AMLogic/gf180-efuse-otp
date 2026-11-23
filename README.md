@@ -21,7 +21,9 @@ caveats). Committed on `main`:
   path ([`efuse_sense.sch`](design/efuse_sense.sch),
   [`efuse_comp.sch`](design/efuse_comp.sch)) and its margin campaign in
   [`sim/sense-margin/`](sim/sense-margin/) (#28);
-- a placed analog layout stream and the routed controller layout
+- a placed analog layout stream whose fuse-free cells are routed and
+  LVS-matched (level shifters, row/column drivers, comparator and sense path),
+  and the routed controller layout
   ([`layout/efuse_otp_ctrl.gds`](layout/efuse_otp_ctrl.gds),
   [`layout/pnr-report.json`](layout/pnr-report.json));
 - DRC reports for both partitions

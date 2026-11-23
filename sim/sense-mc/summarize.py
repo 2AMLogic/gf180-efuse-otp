@@ -209,6 +209,7 @@ def main():
             "A5_programmed_ohm": f">=630 up to open; only the 900 ohm point is documented. {a.rfuse_prog:g} (lower edge) is the binding programmed value here",
             "A6_reference_ohm": f"{a.rref:g} (decision 0003)",
             "A7_reference_relative_sigma": f"{a.sigma_rref:g}: NO documented source for the reference tolerance; a stated working value, not a fact (new assumption, not in spec/efuse-otp.md)",
+            "A8_resistor_fs_sf_corner": "the PDK model library declares resistor sections res_typical/res_ss/res_ff and no res_fs/res_sf, so the fs and sf corners keep the typical sheet rho; this has no documented source (new assumption, not in spec/efuse-otp.md); two of the five process corners therefore do not exercise the resistor corner dependence",
             "fuse_model": "plain resistor behind a series switch + select replica; the fuse value is not varied inside the Monte Carlo (the A4/A5 range edges are the evaluated points)",
             "not_covered": "bitline capacitance, column-mux leakage, supply noise, post-layout parasitics",
         },

@@ -57,6 +57,9 @@ at 95 %; `klt yield-samples` pairs each nominal with its control. The yield step
 - **A7, new, not in the spec: reference relative sigma 0.05.** No documented source exists for the
   reference tolerance; it is a stated working value, not a fact. Adopting a value is a spec change
   (decision record); this record does not make one.
+- **A8, new, not in the spec: fs/sf resistor corners hold the typical sheet rho.** The PDK model
+  library has no `res_fs`/`res_sf` section, so the bias resistor keeps the typical sheet rho at
+  those two corners (same assumption as `sim/sense-margin/README.md`); no documented source.
 - Not modelled: bitline capacitance, column-mux leakage, supply noise, post-layout parasitics.
 
 ## Result and what it does and does not show

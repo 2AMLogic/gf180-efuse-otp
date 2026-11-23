@@ -21,10 +21,11 @@ grid: 5 process (`typical`, `ff`, `ss`, `fs`, `sf`) x -40/25/125 C x vdd33 2.97/
 | `bench_rf140/200/260_rr400` | intact, 140 / 200 / 260 ohm (A4) | 400 ohm (A6) |
 | `bench_rf630/900/open_rr400` | programmed, 630 / 900 ohm / open (1 Gohm) (A5) | 400 ohm |
 | `control_rf140/260_rr200` | intact | 200 ohm: negative control |
+| `phys_rf<each fuse value>_rrphys` | the six fuse values above | the committed `XRref` (`ppolyf_u`, 0.8 µm x 1.05 µm) left in the deck, so its terminal resistance and corner dependence are exercised; recorded under `physical_reference` and counted in the headline verdicts (`--physical-reference`) |
 
 `summarize.py` is told which requests `run.sh` submitted (`--rfuse-intact`,
 `--rfuse-programmed`, `--rfuse-control` with `--rref`/`--rref-control`) and opens all
-eight reports by name rather than discovering whatever arrived. A request whose report
+expected reports by name rather than discovering whatever arrived. A request whose report
 is missing, or that came back carrying no corners, exits 4 and **writes no record** —
 a partial set is not evidence, the same rule `sim/program-select` and `sim/sense-mc`
 apply to their own sets. Reports that are all present but have points without values
@@ -55,6 +56,11 @@ control set: if either report is absent the run is refused rather than recorded.
 - A4 intact 140-260 ohm and A5 programmed >= 630 ohm / open: only the 200 ohm and 900 ohm
   points are documented; the ranges around them are assumptions.
 - A6 reference 400 ohm (decision 0003).
+- **A8, new, not in the spec: fs/sf resistor corners hold the typical sheet rho.** The pinned PDK
+  model library declares `res_typical`, `res_ss` and `res_ff` but no `res_fs`/`res_sf`, so the
+  bias and reference resistors (`XRb`, and `XRref` in the `phys_*` requests) keep the typical sheet
+  rho at those two corners. Holding it there has no documented source, and it bounds what the
+  physical-reference requests can claim about corner dependence at fs/sf.
 - The fuse leg is the fuse resistor behind a series switch and select device matching the
   reference leg's (`nfet_06v0` 4u / 60u). No bitline capacitance, no column-mux leakage.
 - Program supply held at 5.0 V; it only gates the 6 V select devices here.

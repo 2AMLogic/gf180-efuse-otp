@@ -19,11 +19,15 @@ What it does
     the cell is a circuit (see ls_cell and layout/README.md, "efuse_ls
     routing"). `efuse_rowdrv` (one efuse_ls) and `efuse_coldrv` (12 devices,
     Mdrv drawn as its m=3 parallel units, and one efuse_ls) are routed the
-    same way (rowdrv_cell, coldrv_cell). Every other cell remains
-    placement-only.
+    same way (rowdrv_cell, coldrv_cell). `efuse_comp` (seven MOS, one row)
+    and `efuse_sense` (twenty leaves and the routed efuse_comp instance) are
+    routed the same way (comp_cell, sense_cell): one via1 + M2 pad + via2 +
+    M3 lane per signal pin, one M2 track per multi-pin net above the row,
+    supply rails below it, and the PDK resistors drawn at the netlist's stated
+    geometry. Every other cell remains placement-only.
 
 What it does not do: draw inter-device or inter-block routing outside those
-three cells, or check anything. Connectivity elsewhere is not claimed; DRC,
+five cells, or check anything. Connectivity elsewhere is not claimed; DRC,
 EF.* coverage and LVS are separate items (see layout/README.md).
 """
 
@@ -49,11 +53,22 @@ DBU_UM = 0.0005  # the dbu `klt gen` writes for gf180mcu
 GRID_DBU = 10  # the 0.005 um rule grid in database units (DBU_UM = 0.0005)
 GAP_UM = 2.0  # clearance between placed cells (bboxes include guard rings)
 MAX_FINGER_W_UM = 10.0  # folded devices: fingers of at most this width
-# Assumption, not a design fact: the schematic carries ideal resistors, so the
-# layout body is a ppolyf_u strip at this width and the model library's sheet
-# resistance (sm141064.ngspice `.param rsh_ppolyf_u`).
-RES_WIDTH_UM = 1.0
+# The schematic instantiates the PDK's own resistor (`XRb ... ppolyf_u
+# r_width=.. r_length=..`), so the drawn body is the netlist's stated geometry.
+# The numbers below are the model card's (sm141064.ngspice `.subckt ppolyf_u`):
+# sheet resistance `.param rsh_ppolyf_u`, and the per-side deltas r_dl / r_dw
+# the model subtracts from the drawn length / width. The deck's LVS extraction
+# compares R = drawn L / drawn W * 350; the simulation model additionally
+# applies the deltas, so the netlist's lengths are solved for the model's
+# nominal R (2k / 400 ohm) and the drawn-geometry R the compare sees is
+# recorded per device in the report.
 RSH_PPOLYF_U = 350.0
+PPOLYF_U_DL_UM = 4e-5  # 2 * r_dl (2e-11 m per side: r_l = r_length - 2*r_dl)
+PPOLYF_U_DW_UM = 0.051  # 2 * r_dw (2.55e-8 m per side)
+# The model also puts a terminal resistor (rt1, rt2: `.model ppolyf_u_t`,
+# rsh 60 ohm/sq, l = 1 um, w = r_w) in series with the body at each end.
+RSH_PPOLYF_U_TERM = 60.0
+PPOLYF_U_TERM_L_UM = 1.0
 
 MOS_MODELS = {
     "nfet_03v3": ("nfet", ""),
@@ -74,6 +89,10 @@ LS_W1 = 0.42  # M1 routing width (pad width)
 LS_W2 = 0.42  # M2 routing width (rails and strips)
 LS_W3 = 0.42  # M3 routing width
 LS_W3N = 0.30  # M3 width where two verticals share a device column
+# End-of-line reach of a narrow (< 0.34 um) M3 lane past a via2 centre in the
+# comp/sense row routing: the 0.26 um cut's half size plus the 0.06 um V2.4b
+# end-of-line overlap (V2.4c is met by the same extension), rounded up to 0.20.
+M3_END = 0.20
 # Stated floorplan, um: bbox lower-left of each leaf, two device rows.
 LS_COL_X = {"XMpi": 0.0, "XMni": 0.0, "XMp1": 6.24, "XMn1": 6.24,
             "XMp2": 12.90, "XMn2": 12.90}
@@ -93,15 +112,29 @@ CD_RAIL_Y = {"vss": -1.5, "vdd33": -2.22, "vprog": -2.94}  # M2 supply rails bel
 CD_LANE_PITCH = 0.72  # M3 lanes added beside the efuse_ls instance
 CD_LS_RAIL_END = 16.0  # east end of efuse_ls's vss rail (ls_cell)
 
+# efuse_comp / efuse_sense routing (comp_cell, sense_cell and layout/README.md,
+# "efuse_comp routing" / "efuse_sense routing"). Both cells reuse the coldrv
+# planes and pitches: one row of leaf devices (efuse_comp: seven MOS; efuse_
+# sense: twenty leaves and the routed efuse_comp instance among them, in
+# netlist order), one via1 + M2 pad + via2 + vertical M3 lane per signal pin,
+# one M2 track per multi-pin net in a channel above the row, and the M2 supply
+# rails below it (same y as efuse_ls's own vss rail, so efuse_sense's rails
+# merge with the efuse_comp instance's where they cross it).
+CS_RAIL_Y = {"vss": -1.5, "vdd33": -2.22}  # M2 supply rails below the row
+CS_EXPORT = 0.9  # efuse_comp's pin lanes extend this far above its channel
+
 # Expected shape of the array top, asserted against the netlist.
 ROWS, COLS = 32, 8
 
 
 def parse_value(text):
-    m = re.fullmatch(r"([0-9.]+)(meg|[fpnumk])?", text.strip().lower())
+    m = re.fullmatch(r"([0-9.]+(?:e[+-]?[0-9]+)?)(meg|[fpnumk])?", text.strip().lower())
     if not m:
         raise ValueError(f"cannot parse value {text!r}")
-    return float(m.group(1)) * SUFFIX.get(m.group(2), 1.0)
+    value = float(m.group(1))
+    if m.group(2):
+        value *= SUFFIX[m.group(2)]
+    return value
 
 
 def parse_netlist(path):
@@ -207,18 +240,29 @@ class Builder:
     def leaf(self, subckt, inst):
         name = f"{subckt}__{inst['name'][1:]}"
         if inst["kind"] == "res":
-            # Length snapped to the 0.005 um rule grid (an off-grid length puts
-            # the strip's vertices off it); the drawn ohms follow from it.
-            step = GRID_DBU * DBU_UM
-            length = round(round(inst["ohms"] / RSH_PPOLYF_U * RES_WIDTH_UM / step) * step, 3)
-            gds, top, _ = self.klt.gen("res_array", {
-                "length_um": length, "width_um": RES_WIDTH_UM, "num": 1,
-                "dummy": 0, "flavor": "generic"})
-            self.devices.append({"cell": name, "device": "ppolyf_u", "ohms": inst["ohms"],
-                                 "ohms_drawn": round(length / RES_WIDTH_UM * RSH_PPOLYF_U, 2),
-                                 "length_um": length, "width_um": RES_WIDTH_UM})
-            return self.import_cell(gds, top, name)
+            raise ValueError(
+                f"{inst['name']}: ideal R cards are not drawn; instantiate the "
+                "PDK resistor (ppolyf_u) in the schematic instead")
         master = inst["master"]
+        if master == "ppolyf_u":
+            # The netlist states the drawn geometry (r_length/r_width, metres);
+            # the strip is generated at exactly those dimensions, so the deck's
+            # LVS value (drawn L / drawn W * rsh) and the reference conversion's
+            # agree by construction.
+            w = round(parse_value(inst["params"]["r_width"]) * 1e6, 6)
+            length = round(parse_value(inst["params"]["r_length"]) * 1e6, 6)
+            gds, top, report = self.klt.gen("res_array", {
+                "length_um": length, "width_um": w, "num": 1,
+                "dummy": 0, "flavor": "generic"})
+            self.reports[name] = report
+            self.devices.append({"cell": name, "device": "ppolyf_u",
+                                 "r_length_um": length, "r_width_um": w,
+                                 "ohms_lvs_drawn": round(length / w * RSH_PPOLYF_U, 2),
+                                 "ohms_sim_nominal": round(
+                                     ((length - PPOLYF_U_DL_UM) * RSH_PPOLYF_U
+                                      + 2 * PPOLYF_U_TERM_L_UM * RSH_PPOLYF_U_TERM)
+                                     / (w - PPOLYF_U_DW_UM), 2)})
+            return self.import_cell(gds, top, name)
         if master == "efuse":
             # The PDK primitive, copied as-is (only its dbu is rescaled by an
             # exact integer); not routed through any generator.
@@ -626,6 +670,194 @@ class Builder:
         self.cells[subckt] = cell
         return cell
 
+    # -- efuse_comp / efuse_sense: one row, lanes up, tracks above, rails below
+
+    def _row_unit(self, cell, subckt, inst, x):
+        """Place one row unit with its bbox lower-left at (x, 0): a leaf
+        device, or an already-routed subcircuit (efuse_comp inside
+        efuse_sense) kept unshifted in y so its supply rails stay at CS_RAIL_Y
+        and merge with this cell's own rails. Returns the unit's port table
+        (leaf reports' absolute pin positions) or None (subcircuit)."""
+        if inst["kind"] == "x" and inst["master"] in self.netlist \
+                and inst["master"] != "efuse":
+            child = self.cells[inst["master"]]
+            bb = child.bbox()
+            dx = snap(round(x / DBU_UM)) - bb.left
+            cell.insert(kdb.CellInstArray(child.cell_index(), kdb.Trans(dx, 0)))
+            return {"iname": inst["name"], "inst": inst, "child": child,
+                    "rep": None, "pt": None, "w": bb.width() * DBU_UM,
+                    "top": bb.top * DBU_UM, "dx": dx * DBU_UM, "sub": inst["master"]}
+        child = self.leaf(subckt, inst)
+        rep = self.reports[f"{subckt}__{inst['name'][1:]}"]
+        self.place(cell, child, x, 0.0)
+        x0, y0 = rep["bbox_um"]["x0"], rep["bbox_um"]["y0"]
+        pt = {p["name"]: (gs(x + p["x_um"] - x0), gs(0.0 + p["y_um"] - y0), p["width_um"])
+              for p in rep["ports"]}
+        bb = child.bbox()
+        return {"iname": inst["name"], "inst": inst, "child": child, "rep": rep,
+                "pt": pt, "w": bb.width() * DBU_UM, "top": bb.top * DBU_UM,
+                "dx": None, "sub": None}
+
+    def _unit_pins(self, cell, u, net_pins, taps, label_at):
+        """Stacks, ring bridges and taps for one row unit (see coldrv_cell:
+        same conventions -- S lane 0.16 um west of its pin, G on it, D 0.16 um
+        east; a source on its body net is merged into the guard ring with an
+        M1 bridge and the ring leaves at TAP_S; a resistor's two heads are
+        signals with lanes on the pad centres)."""
+        inst, pt = u["inst"], u["pt"]
+        if inst["master"] == "ppolyf_u":
+            a, b, bulk = inst["nodes"]
+            assert bulk == "vss", f"{u['iname']}: resistor bulk off vss"
+            for net, port in ((a, "R0_A"), (b, "R0_B")):
+                p = pt[port]
+                self._stack(cell, p[0], p[1], p[0], via2=False)
+                net_pins.setdefault(net, []).append((p[0], p[1], True))
+                label_at.setdefault(net, (p[0], p[1]))
+            return
+        d, g, s, b = inst["nodes"]
+        if s == b and b in SUPPLY:
+            sp, tp = pt["U0_S"], pt["TAP_W"]
+            self._box(cell, LS_M1, tp[0] - LS_W1 / 2, sp[1] - sp[2] / 2,
+                      sp[0] - LS_W1 / 2, sp[1] + sp[2] / 2)
+        else:
+            assert s not in SUPPLY, f"{u['iname']}: supply source off its body"
+            sp = pt["U0_S"]
+            self._stack(cell, sp[0], sp[1], gs(sp[0] - CD_SHIFT), via2=False)
+            net_pins.setdefault(s, []).append((gs(sp[0] - CD_SHIFT), sp[1], True))
+            label_at.setdefault(s, (sp[0], sp[1]))
+        for net, port, sh in ((d, "U0_D", CD_SHIFT), (g, "U0_G", 0.0)):
+            assert net not in SUPPLY or port == "U0_G", \
+                f"{u['iname']}: supply on {port}"
+            p = pt[port]
+            self._stack(cell, p[0], p[1], gs(p[0] + sh), via2=False)
+            net_pins.setdefault(net, []).append((gs(p[0] + sh), p[1], True))
+            label_at.setdefault(net, (p[0], p[1]))
+        tp = pt["TAP_S"]
+        taps.append((b, tp[0], tp[1], True))
+        label_at.setdefault(b, (tp[0], tp[1]))
+
+    def _row_channels(self, cell, net_pins, taps, rail_x, y):
+        """One M2 track per multi-pin net (stacked from y at CD_TRACK_PITCH),
+        lanes from every pin up to its net's track, and the supply rails below
+        the row with one lane down per ring tap. Returns (net -> track y)."""
+        track_y = {}
+        for net, pins in net_pins.items():
+            if len(pins) < 2:
+                continue
+            track_y[net] = y
+            xs = [p[0] for p in pins]
+            self._box(cell, LS_M2, min(xs) - LS_W2 / 2, y - LS_W2 / 2, max(xs) + LS_W2 / 2, y + LS_W2 / 2)
+            for lx, y0, pad in pins:
+                self._box(cell, LS_M3, lx - LS_W3N / 2, y0 - M3_END, lx + LS_W3N / 2, y + M3_END)
+                if pad:  # only where _stack left an M2 pad for the cut to land on
+                    self._cut(cell, LS_VIA2, lx, y0)
+                self._cut(cell, LS_VIA2, lx, y)
+            y = gs(y + CD_TRACK_PITCH)
+        for net, tx, ty, pad in taps:
+            ry = CS_RAIL_Y[net]
+            if pad:
+                self._stack(cell, tx, ty)
+            else:
+                self._cut(cell, LS_VIA2, tx, ty)
+            self._box(cell, LS_M3, tx - LS_W3N / 2, ry - M3_END, tx + LS_W3N / 2, ty + M3_END)
+            self._cut(cell, LS_VIA2, tx, ry)
+            rail_x.setdefault(net, []).append(tx)
+        for net, xs in rail_x.items():
+            ry = CS_RAIL_Y[net]
+            self._box(cell, LS_M2, min(xs) - LS_W2 / 2, ry - LS_W2 / 2, max(xs) + LS_W2 / 2, ry + LS_W2 / 2)
+        return track_y
+
+    def _row_place_all(self, cell, subckt):
+        """Place every instance of subckt in netlist order as one row,
+        2 um between bounding boxes. Returns the units."""
+        units, x = [], 0.0
+        for inst in self.netlist[subckt]:
+            u = self._row_unit(cell, subckt, inst, x)
+            units.append(u)
+            x = gs(x + u["w"] + GAP_UM + 0.01)
+        return units
+
+    def comp_cell(self, subckt):
+        """efuse_comp on a one-row floorplan (netlist order west to east:
+        XMt XM1 XM2 XMx1 XMx2 XMr1 XMr2), routed coldrv-style: via1 + M2 pad +
+        via2 + M3 lane per signal pin, one M2 track per multi-pin net (tail,
+        outp, outn, clkn) above the row, vss / vdd33 rails below it. The five
+        signal-pin nets' lanes extend CS_EXPORT above the channel and their
+        (x, y) tops are recorded in self.comp_export so efuse_sense can tie
+        into them by overlapping M3; the rails are at CS_RAIL_Y so
+        efuse_sense's own rails merge with them where they cross the instance.
+        """
+        expected = {"XMt", "XM1", "XM2", "XMx1", "XMx2", "XMr1", "XMr2"}
+        assert {i["name"] for i in self.netlist[subckt]} == expected, \
+            f"efuse_comp netlist changed: {sorted(i['name'] for i in self.netlist[subckt])}"
+        cell = self.layout.create_cell(subckt)
+        net_pins, taps, label_at, rail_x = {}, [], {}, {n: [] for n in CS_RAIL_Y}
+        units = self._row_place_all(cell, subckt)
+        for u in units:
+            self._unit_pins(cell, u, net_pins, taps, label_at)
+        track_y = self._row_channels(cell, net_pins, taps, rail_x,
+                                     gs(max(u["top"] for u in units) + 1.5))
+        # Pin exports: inp / inn are single-pin nets here (no track), so their
+        # lanes and pin cuts are drawn now; clkn / outp / outn extend their
+        # existing track lanes up past the channel.
+        ytop = gs(max(track_y.values(), default=0.0) + CD_TRACK_PITCH + CS_EXPORT)
+        export = {}
+        for net, iname, port in (("inp", "XM1", "U0_G"), ("inn", "XM2", "U0_G")):
+            u = next(u for u in units if u["iname"] == iname)
+            lx, ypin = gs(u["pt"][port][0]), u["pt"][port][1]
+            self._box(cell, LS_M3, lx - LS_W3N / 2, ypin - M3_END, lx + LS_W3N / 2, ytop + M3_END)
+            self._cut(cell, LS_VIA2, lx, ypin)
+            export[net] = (lx, ytop)
+        for net in ("clkn", "outp", "outn"):
+            lx = net_pins[net][0][0]
+            self._box(cell, LS_M3, lx - LS_W3N / 2, track_y[net] - M3_END, lx + LS_W3N / 2, ytop + M3_END)
+            export[net] = (lx, ytop)
+        self.comp_export = export
+        for net, (lx, ly) in label_at.items():
+            self._label(cell, net, lx, ly)
+        self.cells[subckt] = cell
+        return cell
+
+    def sense_cell(self, subckt):
+        """efuse_sense on a one-row floorplan: the twenty leaf instances
+        (sixteen MOS, two ppolyf_u resistors, the W=60 select folded to six
+        fingers) and the routed efuse_comp instance, all in netlist order,
+        routed the same coldrv way (lanes up to one M2 track per multi-pin
+        net above the row, supply rails below). The comparator is entered
+        through shapes it already exposes: its five exported pin lanes are
+        extended (overlapping M3) up to their nets' tracks in this cell's
+        channel, and its rails merge with this cell's (same y, one long box).
+        """
+        expected = {"XMb", "XRb", "XMbs", "XMbp", "XMf", "XMrf", "XRref", "XMsw",
+                    "XMsel", "XMpca", "XMpcb", "XMnca", "XMncb", "Xcmp",
+                    "XMpqa", "XMpqb", "XMnqa", "XMnqb", "XMpba", "XMpbb",
+                    "XMnba", "XMnbb"}
+        assert {i["name"] for i in self.netlist[subckt]} == expected, \
+            f"efuse_sense netlist changed: {sorted(i['name'] for i in self.netlist[subckt])}"
+        cell = self.layout.create_cell(subckt)
+        net_pins, taps, label_at, rail_x = {}, [], {}, {n: [] for n in CS_RAIL_Y}
+        units = self._row_place_all(cell, subckt)
+        cmpu = next(u for u in units if u["sub"] == "efuse_comp")
+        # The comparator's rail span joins this cell's rails (same y), so they
+        # merge where they cross the instance; its five exported pin lanes
+        # become pin entries of their nets (no M2 pad at the tie-in point: the
+        # lane is efuse_comp's own M3, extended up by the channel tracks).
+        for net in CS_RAIL_Y:
+            rail_x[net] += [cmpu["dx"] + 0.5, cmpu["dx"] + cmpu["w"] - 0.5]
+        for u in units:
+            if u["sub"] is None:
+                self._unit_pins(cell, u, net_pins, taps, label_at)
+        nodes = cmpu["inst"]["nodes"]  # inp inn clkn outp outn vdd33 vss
+        for net, pin in zip(nodes[:5], ("inp", "inn", "clkn", "outp", "outn")):
+            lx, ytop = self.comp_export[pin]
+            net_pins.setdefault(net, []).append((gs(cmpu["dx"] + lx), ytop, False))
+        track_y = self._row_channels(cell, net_pins, taps, rail_x,
+                                     gs(max(u["top"] for u in units) + 1.5))
+        for net, (lx, ly) in label_at.items():
+            self._label(cell, net, lx, ly)
+        self.cells[subckt] = cell
+        return cell
+
 
 def masters(netlist, subckt):
     out = {}
@@ -675,7 +907,9 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
 
     b = Builder(klt, fuse_gds, netlist)
     # Leaf-level subcircuits first, in dependency order. efuse_ls is routed
-    # (ls_cell); the rest are one placement row each.
+    # (ls_cell), efuse_rowdrv / efuse_coldrv are routed from it and leaf
+    # devices (rowdrv_cell, coldrv_cell), efuse_comp and efuse_sense the same
+    # way (comp_cell, sense_cell); efuse_bitcell is one placement row.
     for name in ("efuse_bitcell", "efuse_ls", "efuse_rowdrv", "efuse_coldrv",
                  "efuse_comp", "efuse_sense"):
         if name == "efuse_ls":
@@ -684,6 +918,10 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
             b.rowdrv_cell(name)
         elif name == "efuse_coldrv":
             b.coldrv_cell(name)
+        elif name == "efuse_comp":
+            b.comp_cell(name)
+        elif name == "efuse_sense":
+            b.sense_cell(name)
         else:
             b.row_cell(name)
 
@@ -734,13 +972,26 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
         "bbox_um": [round(v * emitted.dbu, 4) for v in (bb.left, bb.bottom, bb.right, bb.top)],
         "array": {"rows": ROWS, "cols": COLS, "pitch_x_um": round(pitch_x, 4),
                   "pitch_y_um": round(pitch_y, 4)},
-        "caveat": "placed hierarchy; efuse_ls, efuse_rowdrv and efuse_coldrv are "
-                  "routed (see 'routed'), every other cell is placement-only: no "
-                  "routing, no connectivity, no DRC/LVS claim outside those three",
-        "routed": {"cells": ["efuse_ls", "efuse_rowdrv", "efuse_coldrv"],
+        "caveat": "placed hierarchy; efuse_ls, efuse_rowdrv, efuse_coldrv, "
+                  "efuse_comp and efuse_sense are routed (see 'routed'), every "
+                  "other cell is placement-only: no routing, no connectivity, "
+                  "no DRC/LVS claim outside those five",
+        "routed": {"cells": ["efuse_ls", "efuse_rowdrv", "efuse_coldrv",
+                             "efuse_comp", "efuse_sense"],
                    "planes": {"m1": "device pads and guard-ring taps",
                               "m2": "supply rails and horizontal runs",
                               "m3": "vertical stubs and lanes"}},
+        "resistors": {"device": "ppolyf_u",
+                      "rsh_ohm_sq": RSH_PPOLYF_U,
+                      "source": "sm141064.ngspice .param rsh_ppolyf_u (350) and the "
+                                "ppolyf_u model card's r_dl/r_dw deltas and its two series "
+                                "terminal resistors (ppolyf_u_t, rsh 60); the netlist "
+                                "states r_length/r_width and the drawn body is exactly "
+                                "that geometry",
+                      "note": "ohms_lvs_drawn is the deck's LVS value (drawn L/W * "
+                              "rsh), which both compare sides compute from the same "
+                              "geometry; ohms_sim_nominal applies the model deltas and both "
+                              "terminal resistors (25 C, typical) and is what the netlist's lengths were solved for"},
         "devices": b.devices,
     }
     Path(report_json).write_text(json.dumps(report, indent=2) + "\n")
