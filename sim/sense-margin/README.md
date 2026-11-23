@@ -89,8 +89,8 @@ PR #323 replaced both ideal resistors in `efuse_sense` with PDK `ppolyf_u` devic
 - Ideal-reference minimum signed margins: 28.8 / 22.2 / 15.5 mV (intact 140/200/260 ohm) and
   25.3 / 55.1 mV / 2.70 V (programmed 630/900/open), all binding at ss / 125 C / 2.97 V
   (open at sf / 125 C / 2.97 V) -- the baseline read 29.6 / 22.8 / 16.0, 26.0 / 56.6 mV /
-  2.70 V at the same corners, so the real `XRb` moves the ideal-reference margins by well
-  under a millivolt.
+  2.70 V at the same corners, so the real `XRb` moves the ideal-reference margins by
+  0.4-1.6 mV across the six fuse values (largest at 900 ohm).
 - Physical-`XRref` minimum signed margins: 29.7 / 20.5 / **10.9 mV** (intact; binding at
   fs or ff / 125 C / 2.97 V) and 21.0 / 50.7 mV / 2.70 V (programmed; ss / 125 C / 2.97 V,
   open at sf). The intact edge loses about 4.7 mV of margin against the ideal stand-in
