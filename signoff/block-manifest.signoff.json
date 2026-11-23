@@ -39,13 +39,13 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:599e2e73c5e86237e1a7c3ceee3ea4b090d2dd20873e33113bb4ee8e555a02b2",
+        "content_hash": "sha256:8c51b90232192503edeb80293226eae1600f1cf3c89372de29aa10c76cf5f617",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
           "t1_item": 1,
           "path": null,
-          "content_hash": "sha256:599e2e73c5e86237e1a7c3ceee3ea4b090d2dd20873e33113bb4ee8e555a02b2",
+          "content_hash": "sha256:8c51b90232192503edeb80293226eae1600f1cf3c89372de29aa10c76cf5f617",
           "input_verified": true,
           "members": [
             {
@@ -125,7 +125,7 @@
                 "path": "design/efuse_otp_array.spice",
                 "scope": "repo"
               },
-              "content_hash": "sha256:ccf79848bae16d8675004c8f5b1c9409c8335c4db9a90bc4ed4686049b2bd16e",
+              "content_hash": "sha256:beee583e8017d42fe39e03f795d542798a32ab1f6d78e855246627a266c9f350",
               "status": "verified"
             },
             {
@@ -181,7 +181,7 @@
                 "path": "design/efuse_sense.sch",
                 "scope": "repo"
               },
-              "content_hash": "sha256:1ca53d995b61635b4166b1b7b81ed0cb4eed6ecd90e38902614d6cb4a7ecbadb",
+              "content_hash": "sha256:190aa7ef35a6c1cefd923ea56eb2a5339b3d23422efe5f3e08b7645def5edf9d",
               "status": "verified"
             },
             {
@@ -289,7 +289,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:b93cb3be5a0e34f2a1741107995170a1f148f27564be696284f1523a87340c11",
+        "content_hash": "sha256:c6367fe868ece15427a4b97e550f9364b58da16db585e428654418b8c82d94ef",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -298,7 +298,7 @@
             "path": "layout/efuse_otp_array.gds",
             "scope": "repo"
           },
-          "content_hash": "sha256:b93cb3be5a0e34f2a1741107995170a1f148f27564be696284f1523a87340c11",
+          "content_hash": "sha256:c6367fe868ece15427a4b97e550f9364b58da16db585e428654418b8c82d94ef",
           "input_verified": true,
           "summary": "T1 item 2 (Layout): 3/3 attestation checks passed (klt signoff --attest)",
           "source": "layout/efuse_otp_array.gds",
@@ -310,7 +310,7 @@
           },
           "regeneration": {
             "generator": "layout/regen-gds.sh",
-            "regenerated_hash": "sha256:b93cb3be5a0e34f2a1741107995170a1f148f27564be696284f1523a87340c11",
+            "regenerated_hash": "sha256:c6367fe868ece15427a4b97e550f9364b58da16db585e428654418b8c82d94ef",
             "executed_by_klt": false
           }
         }
