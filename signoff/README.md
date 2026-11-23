@@ -241,9 +241,15 @@ they check that:
 - the sense-margin summarize self-test still passes
   (`sim/sense-margin/test_summarize.py`, hermetic, pins that the record
   describes the submitted request set rather than whatever reports are present);
-- each evidence directory has a `README.md`, and any `sim/**/records/*.json`
-  has the required fields, a PDK revision, and repo-relative paths only
-  (vacuously true while there are no records);
+- each evidence directory has a `README.md`, and every
+  `sim/*/records/*/record.json` parses, carries the required fields
+  (`pdk_revision`, `tool_versions`, `corners`), and holds repo-relative paths
+  only. The check reports how many records it graded, and zero matches is a
+  failure, not a pass. The 11 record directories committed before the
+  three-field requirement was enforced (the `LEGACY_DIRS` list in
+  `scripts/ci/check_evidence_format.py`, per the #118 operator ruling) may
+  omit `tool_versions` and `corners`; every other record, including a new
+  stamp under the same bench, carries all three;
 - files under `sim/**/records/` are only added, never modified, deleted or renamed;
 - each `layout/*report*.json` that records a `provenance.input.content_hash`
   still names a stream whose sha256 equals it

@@ -172,6 +172,9 @@ def main():
     rec = {
         **bench_record.header(a, backends, jobs, engines),
         "dut": "efuse_sense (with efuse_comp), extracted from design/efuse_otp_array.spice",
+        "corners": "%d per request: %d process x %d temperature x %d vdd33 (decision 0005); see pvt"
+                   % (len(process) * len(temp_c) * len(supplies),
+                      len(process), len(temp_c), len(supplies)),
         "pvt": {"process": process, "temp_c": temp_c,
                 "vdd33_v": [s["vdd33"] for s in supplies], "source": "decision 0005"},
         "assumptions": {

@@ -103,6 +103,9 @@ def main():
     rec = {
         **bench_record.header(a, backends, jobs, engines),
         "device": "nfet_06v0, L=0.7u, nf=1",
+        "corners": "%d per request: %d process x %d temperature x %d vprog; see pvt"
+                   % (len(process) * len(temp_c) * len(supplies),
+                      len(process), len(temp_c), len(supplies)),
         "pvt": {"process": process, "temp_c": temp_c,
                 "vprog_v": [s["vdd"] for s in supplies],
                 "fuse_ohm": fuse_ohms},

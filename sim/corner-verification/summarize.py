@@ -110,6 +110,9 @@ def main():
     rec = {
         **bench_record.header(a, backends, jobs, engines),
         "dut": "efuse_coldrv + efuse_rowdrv (each with efuse_ls) + efuse_bitcell, extracted from design/efuse_otp_array.spice; one selected cell",
+        "corners": "%d per request: %d process x %d temperature x %d supply pair (decision 0005); see pvt"
+                   % (len(process) * len(temp_c) * len(supplies),
+                      len(process), len(temp_c), len(supplies)),
         # The zipped (vdd33, vprog) pairs as the committed records spell them:
         # vdd33 in the decision-0005 two-decimal notation, vprog as parsed.
         "pvt": {"process": process, "temp_c": temp_c,

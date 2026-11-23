@@ -140,18 +140,38 @@ class Test(unittest.TestCase):
         # The provenance header is the one deliberate difference: committed
         # records keep `ngspice_version_local` (a probe this batch-only bench
         # never ran); a regenerated record names the engines that ran the
-        # corners. Strip both provenance keys and the loaded data must match.
+        # corners. Since #118 a regenerated record additionally carries the
+        # `tool_versions` and `corners` fields the CI record-format check
+        # requires, which the committed records predate; both are asserted
+        # separately below. Strip those provenance keys and the loaded data
+        # must match.
         def data(r):
             return {k: v for k, v in loaded(r).items()
-                    if k not in ("ngspice_version_local", "engine_versions")}
+                    if k not in ("ngspice_version_local", "engine_versions",
+                                 "tool_versions", "corners")}
         self.assertEqual(data(rec), data(self.committed),
                          "the named load must reproduce the committed record's data")
         engines = sorted({load_json(os.path.join(self.src, "sets", s, "report.json"))
                           .get("environment", {}).get("engine_version")
                           for s in self.stems} - {None})
         self.assertEqual(rec["engine_versions"], engines)
+        # The #118 fields, asserted on their own so the comparison with
+        # historical measurement data above stays meaningful: tool_versions
+        # restates the provenance inputs, corners restates the committed
+        # record's own pvt axes -- expected derived from that pvt, never a
+        # retyped literal, so a fixture bump cannot strand the assertion.
+        self.assertEqual(rec["tool_versions"],
+                         {"klt_sim": self.committed["klt_version"],
+                          "ngspice": engines})
+        pvt = self.committed["pvt"]
+        self.assertEqual(
+            rec["corners"],
+            "%d per request: %d process x %d temperature x %d vdd33 (decision 0005); see pvt"
+            % (len(pvt["process"]) * len(pvt["temp_c"]) * len(pvt["vdd33_v"]),
+               len(pvt["process"]), len(pvt["temp_c"]), len(pvt["vdd33_v"])))
         drifted = [k for k in PROSE if rec.get(k) != self.committed.get(k)]
-        if not drifted and "engine_versions" in self.committed:
+        if not drifted and "engine_versions" in self.committed \
+                and "tool_versions" in self.committed and "corners" in self.committed:
             self.assertEqual(raw, self.committed_bytes,
                              "no prose drift, so the re-summarize must be byte-identical")
 
