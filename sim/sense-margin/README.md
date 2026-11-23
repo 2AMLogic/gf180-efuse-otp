@@ -56,6 +56,11 @@ control set: if either report is absent the run is refused rather than recorded.
 - A4 intact 140-260 ohm and A5 programmed >= 630 ohm / open: only the 200 ohm and 900 ohm
   points are documented; the ranges around them are assumptions.
 - A6 reference 400 ohm (decision 0003).
+- **A8, new, not in the spec: fs/sf resistor corners hold the typical sheet rho.** The pinned PDK
+  model library declares `res_typical`, `res_ss` and `res_ff` but no `res_fs`/`res_sf`, so the
+  bias and reference resistors (`XRb`, and `XRref` in the `phys_*` requests) keep the typical sheet
+  rho at those two corners. Holding it there has no documented source, and it bounds what the
+  physical-reference requests can claim about corner dependence at fs/sf.
 - The fuse leg is the fuse resistor behind a series switch and select device matching the
   reference leg's (`nfet_06v0` 4u / 60u). No bitline capacitance, no column-mux leakage.
 - Program supply held at 5.0 V; it only gates the 6 V select devices here.

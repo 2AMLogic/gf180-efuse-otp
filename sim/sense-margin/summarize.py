@@ -175,6 +175,7 @@ def main():
             "intact_range_ohm": {"value": [float(x) for x in intact], "status": "assumption A4; only the 200 ohm point is documented (+/-30% is the assumed range)"},
             "programmed_range_ohm": {"value": ["630", "900", "open (1 Gohm)"], "status": "assumption A5; only the 900 ohm point is documented (-30% is the assumed lower edge)"},
             "reference_ohm": {"value": a.rref, "status": "assumption A6 (decision 0003); geometric midpoint of 200/900 is ~424 ohm"},
+            "A8_resistor_fs_sf_corner": "the PDK model library declares resistor sections res_typical/res_ss/res_ff and no res_fs/res_sf, so the fs and sf corners keep the typical sheet rho; this has no documented source (new assumption, not in spec/efuse-otp.md); two of the five process corners therefore do not exercise the resistor corner dependence",
             "fuse_model": "plain resistor of the stated value behind a series switch + select replica (nfet_06v0 4u / 60u, as in the reference leg); no bitline capacitance, no column-mux leakage",
             "program_supply_v": {"value": 5.0, "status": "assumption, held fixed; it only gates the 6 V select devices in this bench"},
             "clock": f"one rising edge at {a.t_edge}, amplitude tracks vdd33; sense_en held asserted",
