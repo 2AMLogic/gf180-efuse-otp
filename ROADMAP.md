@@ -37,6 +37,9 @@ Done and merged since the spec was ratified (decisions 0001 to 0005):
   (#30), nine `klt functional-verification` and three `klt sta` reports.
 - DRC clean on both partitions under the curated deck (#48, #49); item 8
   report attested (#62, #100); evidence-hygiene fixes #106 to #152.
+- Digital ERC supply spec (#302, digital half of #33's item 11): the compound
+  `erc`/`lvs`/`place-and-route` citation grades 11.digital `met`; 11.analog
+  stays with #33.
 
 The README's current-position line now reads "sense path simulated across PVT"
 (#181), matching this record.
@@ -79,9 +82,6 @@ curated #155 and #160. Issue and label state in this section is as read on
 - **Route `efuse_sense` and `efuse_comp`.** After the drivers. Done when each
   has a committed LVS report and the ideal resistor in `efuse_sense`, which the
   generator approximates, has a stated disposition.
-- **Cite 4.digital and run the digital ERC supply spec** (#33, digital half).
-  Unblocked by Now item 3. Done when a `klt erc` report for `efuse_otp_ctrl`
-  declares the supplies and 11.digital reads `met`.
 - **Cite 7.digital.** Unblocked by Now item 4 and #154 together.
 - **Rebase PR #94 and cite 5.digital** once the operator releases the
   ratification hold (see below). Done when 5.digital reads `met`.
