@@ -18,7 +18,7 @@ C {devices/lab_pin.sym} 270 230 0 0 {name=l3 lab=vbp}
 C {devices/lab_pin.sym} 270 200 0 0 {name=l4 lab=vdd33}
 C {symbols/ppolyf_u.sym} 470 200 0 0 {name=Rb
 W=1e-6
-L=5.425e-6
+L=5.08e-6
 model=ppolyf_u
 spiceprefix=X
 m=1}
@@ -46,8 +46,8 @@ C {devices/lab_pin.sym} 230 370 0 0 {name=l25 lab=vbp}
 C {devices/lab_pin.sym} 270 400 0 0 {name=l26 lab=sref}
 C {devices/lab_pin.sym} 270 370 0 0 {name=l27 lab=vdd33}
 C {symbols/ppolyf_u.sym} 470 370 0 0 {name=Rref
-W=1e-6
-L=1.085e-6
+W=1.05e-6
+L=0.8e-6
 model=ppolyf_u
 spiceprefix=X
 m=1}

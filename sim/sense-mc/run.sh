@@ -70,7 +70,7 @@ reqs=()
 # model library's resistor sections (res_typical/res_ss/res_ff) beside the MOS
 # corner; the PDK ships no fs/sf resistor section, so those two corners keep
 # the typical sheet rho (same assumption as sim/sense-margin/run.sh).
-RREF_LINE='^XRref rn1 sref vss ppolyf_u r_width=1e-6 r_length=1.085e-6 m=1$'
+RREF_LINE='^XRref rn1 sref vss ppolyf_u r_width=1.05e-6 r_length=0.8e-6 m=1$'
 # mk <stem> <kind: intact|prog> <rfuse> <rref> <n>
 mk() {
   local stem="$1" kind="$2" rf="$3" rr="$4" n="$5" sign

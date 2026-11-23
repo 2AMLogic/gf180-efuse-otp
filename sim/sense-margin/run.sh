@@ -15,7 +15,7 @@
 #
 # Exit 0 once the record is written. Pass/fail is data in record.json, not a
 # script error. A failed batch submit exits non-zero and does not fall back to a
-# local grid; a submit that left any of the eight expected reports missing or
+# local grid; a submit that left any of the expected reports missing or
 # without corners exits 4 from summarize.py without writing a record, because a
 # partial set is not evidence. --dry-run validates the request set with `klt sim
 # --dry-run` and deletes nothing it did not create (no record; it uses a temp dir).
@@ -55,17 +55,25 @@ reqs=()
 # the real device, so every deck needs the model library's resistor sections
 # (res_typical/res_ss/res_ff) beside the MOS corner; the PDK ships no fs/sf
 # resistor section, so those two corners keep the typical sheet rho (A8).
-RREF_LINE='^XRref rn1 sref vss ppolyf_u r_width=1e-6 r_length=1.085e-6 m=1$'
-mk() {                                   # mk <stem> <rfuse> <rref> <sign>
+RREF_LINE='^XRref rn1 sref vss ppolyf_u r_width=1.05e-6 r_length=0.8e-6 m=1$'
+mk() {                                   # mk <stem> <rfuse> <rref|phys> <sign>
   local stem="$1" rf="$2" rr="$3" sgn="$4" val="$2"   # sgn: +1 programmed (sbl > sref), -1 intact
   [[ "$rf" == open ]] && val=1G
   { sed -e "s#@DESIGN@#$lib/design.ngspice#" -e "s#@RFUSE@#$val#" "$here/sense.cir.in"
     echo
-    sub efuse_sense | sed -e "s#$RREF_LINE#Rref rn1 sref $rr#"
+    if [[ "$rr" == phys ]]; then      # keep the committed ppolyf_u XRref
+      sub efuse_sense
+    else
+      sub efuse_sense | sed -e "s#$RREF_LINE#Rref rn1 sref $rr#"
+    fi
     echo
     sub efuse_comp
   } > "$rec/$stem.cir"
-  grep -q "^Rref rn1 sref $rr\$" "$rec/$stem.cir" || { echo "run.sh: Rref line not found in efuse_sense" >&2; exit 1; }
+  if [[ "$rr" == phys ]]; then
+    grep -q "^XRref rn1 sref vss ppolyf_u " "$rec/$stem.cir" || { echo "run.sh: physical XRref not found in efuse_sense" >&2; exit 1; }
+  else
+    grep -q "^Rref rn1 sref $rr\$" "$rec/$stem.cir" || { echo "run.sh: Rref line not found in efuse_sense" >&2; exit 1; }
+  fi
   jq -n --arg net "$stem.cir" --arg lib "libs.tech/ngspice/sm141064.ngspice" \
         --arg tpre "$T_PRE" --arg tout "$T_OUT" --arg sgn "$sgn" \
         --argjson pvt_proc "$PVT_PROCESSES" --argjson pvt_temp "$PVT_TEMPERATURES_C" \
@@ -89,6 +97,9 @@ mk() {                                   # mk <stem> <rfuse> <rref> <sign>
 }
 for r in $INTACT_OHMS; do mk "bench_rf${r}_rr${RREF_OHM}" "$r" "$RREF_OHM" -1; done
 for r in $PROGRAMMED_OHMS; do mk "bench_rf${r}_rr${RREF_OHM}" "$r" "$RREF_OHM" 1; done
+# Physical reference: the same fuse values with the committed XRref left in the deck.
+for r in $INTACT_OHMS; do mk "phys_rf${r}_rrphys" "$r" phys -1; done
+for r in $PROGRAMMED_OHMS; do mk "phys_rf${r}_rrphys" "$r" phys 1; done
 for r in $RFUSE_CONTROL_OHMS; do mk "control_rf${r}_rr${RREF_CONTROL_OHM}" "$r" "$RREF_CONTROL_OHM" -1; done
 
 if [[ $dry -eq 1 ]]; then
@@ -104,7 +115,7 @@ bench_submit_set "$rec" "${reqs[@]}"
 echo "record: $rec"
 python3 -I "$here/summarize.py" "$rec" --rref "$RREF_OHM" --rref-control "$RREF_CONTROL_OHM" \
     --rfuse-intact "$INTACT_OHMS" --rfuse-programmed "$PROGRAMMED_OHMS" \
-    --rfuse-control "$RFUSE_CONTROL_OHMS" \
+    --rfuse-control "$RFUSE_CONTROL_OHMS" --physical-reference \
     --t-pre "$T_PRE" --t-out "$T_OUT" --t-edge "$T_EDGE" \
     --pdk-rev "$PDK_REVISION" --stamp "$stamp" \
     --klt "$(klt --version)"

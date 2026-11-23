@@ -3,7 +3,7 @@
   "dbu_um": 0.001,
   "bbox_um": [
     -20.26,
-    -64.57,
+    -64.62,
     1067.12,
     699.44
   ],
@@ -31,8 +31,8 @@
   "resistors": {
     "device": "ppolyf_u",
     "rsh_ohm_sq": 350.0,
-    "source": "sm141064.ngspice .param rsh_ppolyf_u (350) and the ppolyf_u model card's r_dl/r_dw deltas; the netlist states r_length/r_width and the drawn body is exactly that geometry",
-    "note": "ohms_lvs_drawn is the deck's LVS value (drawn L/W * rsh), which both compare sides compute from the same geometry; ohms_sim_nominal applies the model deltas and is what the netlist's lengths were solved for"
+    "source": "sm141064.ngspice .param rsh_ppolyf_u (350) and the ppolyf_u model card's r_dl/r_dw deltas and its two series terminal resistors (ppolyf_u_t, rsh 60); the netlist states r_length/r_width and the drawn body is exactly that geometry",
+    "note": "ohms_lvs_drawn is the deck's LVS value (drawn L/W * rsh), which both compare sides compute from the same geometry; ohms_sim_nominal applies the model deltas and both terminal resistors (25 C, typical) and is what the netlist's lengths were solved for"
   },
   "devices": [
     {
@@ -260,10 +260,10 @@
     {
       "cell": "efuse_sense__Rb",
       "device": "ppolyf_u",
-      "r_length_um": 5.425,
+      "r_length_um": 5.08,
       "r_width_um": 1.0,
-      "ohms_lvs_drawn": 1898.75,
-      "ohms_sim_nominal": 2000.78
+      "ohms_lvs_drawn": 1778.0,
+      "ohms_sim_nominal": 1999.99
     },
     {
       "cell": "efuse_sense__Mbs",
@@ -300,10 +300,10 @@
     {
       "cell": "efuse_sense__Rref",
       "device": "ppolyf_u",
-      "r_length_um": 1.085,
-      "r_width_um": 1.0,
-      "ohms_lvs_drawn": 379.75,
-      "ohms_sim_nominal": 400.15
+      "r_length_um": 0.8,
+      "r_width_um": 1.05,
+      "ohms_lvs_drawn": 266.67,
+      "ohms_sim_nominal": 400.39
     },
     {
       "cell": "efuse_sense__Msw",

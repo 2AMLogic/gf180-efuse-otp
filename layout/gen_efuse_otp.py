@@ -63,8 +63,12 @@ MAX_FINGER_W_UM = 10.0  # folded devices: fingers of at most this width
 # nominal R (2k / 400 ohm) and the drawn-geometry R the compare sees is
 # recorded per device in the report.
 RSH_PPOLYF_U = 350.0
-PPOLYF_U_DL_UM = 2e-5  # 2 * r_dl (2e-11 m per side)
+PPOLYF_U_DL_UM = 4e-5  # 2 * r_dl (2e-11 m per side: r_l = r_length - 2*r_dl)
 PPOLYF_U_DW_UM = 0.051  # 2 * r_dw (2.55e-8 m per side)
+# The model also puts a terminal resistor (rt1, rt2: `.model ppolyf_u_t`,
+# rsh 60 ohm/sq, l = 1 um, w = r_w) in series with the body at each end.
+RSH_PPOLYF_U_TERM = 60.0
+PPOLYF_U_TERM_L_UM = 1.0
 
 MOS_MODELS = {
     "nfet_03v3": ("nfet", ""),
@@ -85,6 +89,10 @@ LS_W1 = 0.42  # M1 routing width (pad width)
 LS_W2 = 0.42  # M2 routing width (rails and strips)
 LS_W3 = 0.42  # M3 routing width
 LS_W3N = 0.30  # M3 width where two verticals share a device column
+# End-of-line reach of a narrow (< 0.34 um) M3 lane past a via2 centre in the
+# comp/sense row routing: the 0.26 um cut's half size plus the 0.06 um V2.4b
+# end-of-line overlap (V2.4c is met by the same extension), rounded up to 0.20.
+M3_END = 0.20
 # Stated floorplan, um: bbox lower-left of each leaf, two device rows.
 LS_COL_X = {"XMpi": 0.0, "XMni": 0.0, "XMp1": 6.24, "XMn1": 6.24,
             "XMp2": 12.90, "XMn2": 12.90}
@@ -251,8 +259,9 @@ class Builder:
                                  "r_length_um": length, "r_width_um": w,
                                  "ohms_lvs_drawn": round(length / w * RSH_PPOLYF_U, 2),
                                  "ohms_sim_nominal": round(
-                                     (length - PPOLYF_U_DL_UM)
-                                     / (w - PPOLYF_U_DW_UM) * RSH_PPOLYF_U, 2)})
+                                     ((length - PPOLYF_U_DL_UM) * RSH_PPOLYF_U
+                                      + 2 * PPOLYF_U_TERM_L_UM * RSH_PPOLYF_U_TERM)
+                                     / (w - PPOLYF_U_DW_UM), 2)})
             return self.import_cell(gds, top, name)
         if master == "efuse":
             # The PDK primitive, copied as-is (only its dbu is rescaled by an
@@ -739,7 +748,7 @@ class Builder:
             xs = [p[0] for p in pins]
             self._box(cell, LS_M2, min(xs) - LS_W2 / 2, y - LS_W2 / 2, max(xs) + LS_W2 / 2, y + LS_W2 / 2)
             for lx, y0, pad in pins:
-                self._box(cell, LS_M3, lx - LS_W3N / 2, y0 - LS_W3N / 2, lx + LS_W3N / 2, y + LS_W3N / 2)
+                self._box(cell, LS_M3, lx - LS_W3N / 2, y0 - M3_END, lx + LS_W3N / 2, y + M3_END)
                 if pad:  # only where _stack left an M2 pad for the cut to land on
                     self._cut(cell, LS_VIA2, lx, y0)
                 self._cut(cell, LS_VIA2, lx, y)
@@ -750,7 +759,7 @@ class Builder:
                 self._stack(cell, tx, ty)
             else:
                 self._cut(cell, LS_VIA2, tx, ty)
-            self._box(cell, LS_M3, tx - LS_W3N / 2, ry - LS_W3N / 2, tx + LS_W3N / 2, ty + LS_W3N / 2)
+            self._box(cell, LS_M3, tx - LS_W3N / 2, ry - M3_END, tx + LS_W3N / 2, ty + M3_END)
             self._cut(cell, LS_VIA2, tx, ry)
             rail_x.setdefault(net, []).append(tx)
         for net, xs in rail_x.items():
@@ -796,12 +805,12 @@ class Builder:
         for net, iname, port in (("inp", "XM1", "U0_G"), ("inn", "XM2", "U0_G")):
             u = next(u for u in units if u["iname"] == iname)
             lx, ypin = gs(u["pt"][port][0]), u["pt"][port][1]
-            self._box(cell, LS_M3, lx - LS_W3N / 2, ypin - LS_W3N / 2, lx + LS_W3N / 2, ytop + LS_W3N / 2)
+            self._box(cell, LS_M3, lx - LS_W3N / 2, ypin - M3_END, lx + LS_W3N / 2, ytop + M3_END)
             self._cut(cell, LS_VIA2, lx, ypin)
             export[net] = (lx, ytop)
         for net in ("clkn", "outp", "outn"):
             lx = net_pins[net][0][0]
-            self._box(cell, LS_M3, lx - LS_W3N / 2, track_y[net] - LS_W3N / 2, lx + LS_W3N / 2, ytop + LS_W3N / 2)
+            self._box(cell, LS_M3, lx - LS_W3N / 2, track_y[net] - M3_END, lx + LS_W3N / 2, ytop + M3_END)
             export[net] = (lx, ytop)
         self.comp_export = export
         for net, (lx, ly) in label_at.items():
@@ -975,13 +984,14 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
         "resistors": {"device": "ppolyf_u",
                       "rsh_ohm_sq": RSH_PPOLYF_U,
                       "source": "sm141064.ngspice .param rsh_ppolyf_u (350) and the "
-                                "ppolyf_u model card's r_dl/r_dw deltas; the netlist "
+                                "ppolyf_u model card's r_dl/r_dw deltas and its two series "
+                                "terminal resistors (ppolyf_u_t, rsh 60); the netlist "
                                 "states r_length/r_width and the drawn body is exactly "
                                 "that geometry",
                       "note": "ohms_lvs_drawn is the deck's LVS value (drawn L/W * "
                               "rsh), which both compare sides compute from the same "
-                              "geometry; ohms_sim_nominal applies the model deltas and "
-                              "is what the netlist's lengths were solved for"},
+                              "geometry; ohms_sim_nominal applies the model deltas and both "
+                              "terminal resistors (25 C, typical) and is what the netlist's lengths were solved for"},
         "devices": b.devices,
     }
     Path(report_json).write_text(json.dumps(report, indent=2) + "\n")

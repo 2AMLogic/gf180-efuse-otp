@@ -113,7 +113,7 @@ class Test(unittest.TestCase):
     def test_real_tree_gates_thirteen_reports(self):
         problems, gated, skipped = cri.check(REPO_ROOT)
         self.assertEqual(problems, [])
-        self.assertEqual(gated, 16)
+        self.assertEqual(gated, 17)
         self.assertEqual(skipped, 1)
 
     def test_recorded_hash_mismatch_fails(self):

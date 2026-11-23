@@ -122,7 +122,7 @@
         "role": "source",
         "path": "design/efuse_sense.sch",
         "passed": true,
-        "content_hash": "sha256:203688a9e2dd24f7755befa527da0c0c6c251248868106b991ad5416091777a9"
+        "content_hash": "sha256:190aa7ef35a6c1cefd923ea56eb2a5339b3d23422efe5f3e08b7645def5edf9d"
       },
       {
         "check": "present",
@@ -136,7 +136,7 @@
         "role": "derived",
         "path": "design/efuse_otp_array.spice",
         "passed": true,
-        "content_hash": "sha256:e64e49131afd96de9c17b79c00cc84ebc16cf9ef9a502f0626ae07031433afff"
+        "content_hash": "sha256:beee583e8017d42fe39e03f795d542798a32ab1f6d78e855246627a266c9f350"
       },
       {
         "check": "command",
@@ -229,7 +229,7 @@
             "path": "design/efuse_otp_array.spice",
             "scope": "repo"
           },
-          "content_hash": "sha256:e64e49131afd96de9c17b79c00cc84ebc16cf9ef9a502f0626ae07031433afff"
+          "content_hash": "sha256:beee583e8017d42fe39e03f795d542798a32ab1f6d78e855246627a266c9f350"
         },
         {
           "path": {
@@ -278,7 +278,7 @@
             "path": "design/efuse_sense.sch",
             "scope": "repo"
           },
-          "content_hash": "sha256:203688a9e2dd24f7755befa527da0c0c6c251248868106b991ad5416091777a9"
+          "content_hash": "sha256:190aa7ef35a6c1cefd923ea56eb2a5339b3d23422efe5f3e08b7645def5edf9d"
         },
         {
           "path": {
@@ -295,7 +295,7 @@
           "content_hash": "sha256:93ea87453830d77b7805c42e3dca70fd6117fe2cebcb73ac83ee4a7a2e84cc46"
         }
       ],
-      "content_hash": "sha256:186badf0ea4c4d6a338124436f0d2ccf2b96ea14694e7d7d4faa096c86992af5"
+      "content_hash": "sha256:8c51b90232192503edeb80293226eae1600f1cf3c89372de29aa10c76cf5f617"
     }
   }
 }

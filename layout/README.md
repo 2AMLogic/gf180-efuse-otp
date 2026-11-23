@@ -81,11 +81,16 @@ layout/lvs.sh                 # rewrite the LVS reports (lvs-ctrl needs the PDK;
 layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-analog.attest.json)
 ```
 
-`sha256(efuse_otp_array.gds)` = `b93cb3be5a0e34f2a1741107995170a1f148f27564be696284f1523a87340c11`
-(klt 0.9.2, `gf180mcuC` at open_pdks `f6eeac7`; the stream exported at the foundry 0.001 µm
-database unit, #311: every working-grid coordinate is even, so the 2:1 coarsening changed only
-the units record — flattened geometry, texts, instances and array pitches are identical in
-microns, and the native DBU marker is gone). The previous hash
+`sha256(efuse_otp_array.gds)` = `c6367fe868ece15427a4b97e550f9364b58da16db585e428654418b8c82d94ef`
+(klt 0.9.2, `gf180mcuC` at open_pdks `f6eeac7`; the stream after routing
+`efuse_comp` and `efuse_sense`, replacing the two ideal resistors with PDK
+`ppolyf_u` devices sized for their terminal resistance (5.08 µm x 1 µm and
+0.8 µm x 1.05 µm, see "Resistors"), and ending every narrow Metal3 lane in
+those two cells 0.20 µm past its via2 centre so V2.4b/V2.4c report zero
+markers there). The previous hash
+`b93cb3be5a0e34f2a1741107995170a1f148f27564be696284f1523a87340c11` was the
+stream exported at the foundry 0.001 µm database unit (#311) before those cells
+were routed. Before it
 `133922ed156c68534147da03101307feff268163c732b4b3c3cbf997b6293b98` was the same layout at
 0.0005 µm after the via2-landing fix: via2
 cuts with no M3 above them were dropped, and pin-level via2 is cut only where an M2 pad exists.
@@ -252,8 +257,8 @@ floorplan pattern, the same planes and pitches `coldrv_cell` established —
 The schematic's two resistors are no longer ideal `R` cards.
 `design/efuse_sense.sch` instantiates the PDK's own resistor symbol
 (`symbols/ppolyf_u.sym`, `sm141064.ngspice`'s `.subckt ppolyf_u 1 2 3`), so
-the netlist carries `XRb nb vbp vss ppolyf_u r_width=1e-6 r_length=5.425e-6`
-and `XRref rn1 sref vss ppolyf_u r_width=1e-6 r_length=1.085e-6`, and the
+the netlist carries `XRb nb vbp vss ppolyf_u r_width=1e-6 r_length=5.08e-6`
+and `XRref rn1 sref vss ppolyf_u r_width=1.05e-6 r_length=0.8e-6`, and the
 generator draws `klt gen res_array` strips at exactly those dimensions — the
 same `SAB`/`RES_MK`/`Pplus`-marked geometry the deck's extraction recognises
 as one `ppolyf_u` device per strip at 350 Ω/sq.
@@ -263,12 +268,25 @@ as one `ppolyf_u` device per strip at 350 Ω/sq.
   the pinned klt's `decks/gf180mcu.py`, cross-citing the official KLayout LVS
   deck and the magic tech file's `resist (rpp)/active 350000`).
 - **The two resistance values.** The model card subtracts per-side deltas
-  (`r_dw` = 2.55e-8 m, `r_dl` = 2e-11 m) from the drawn width/length, so the
-  *simulated* resistance of a 1 µm-wide strip is ≈ +5.4 % over drawn L/W ×
-  350. The netlist's lengths are solved for the design's nominal values under
-  the *model* (2 kΩ and 400 Ω, decision 0003's reference): drawn 5.425 µm and
-  1.085 µm at 1 µm width give 2000.78 Ω and 400.15 Ω nominal. The deck's LVS
-  extraction compares the *drawn-geometry* R (1898.75 Ω and 379.75 Ω); both
+  (`r_dw` = 2.55e-8 m, `r_dl` = 2e-11 m, so `r_l = r_length - 2*r_dl`) from the
+  drawn width/length and puts a terminal resistor (`rt1`, `rt2`,
+  `.model ppolyf_u_t`, 60 Ω/sq, l = 1 µm, w = `r_w`) in series with the body
+  at each end. The *simulated* terminal-to-terminal resistance of a 1 µm-wide
+  strip is therefore drawn L/W × 350 plus ≈ 126 Ω of terminals, scaled by the
+  width delta. The netlist's lengths are solved for the design's nominal
+  values under that complete model (2 kΩ and 400 Ω, decision 0003's
+  reference), snapped to the 0.005 µm grid: drawn 5.08 µm x 1 µm (`XRb`) and 0.8 µm x 1.05 µm (`XRref`) give
+  2000.0 Ω and 400.39 Ω nominal; `XRref` is drawn 0.8 µm long because the native
+  `PRES.1` rule puts the Poly2 resistor's minimum width at 0.8 µm, which the
+  0.74 µm solution for 1 µm width violated. Measured, not only computed: both
+  `XR` cards from the committed netlist, second terminal and bulk grounded,
+  1 V across each, ngspice `.op` at 25 °C with the pinned `typical` and
+  `res_typical` sections, read 1999.985 Ω and 400.386 Ω (the generator's
+  `ohms_sim_nominal` reports 1999.99 and 400.39; XRref was measured at
+  0.74 µm / 1 µm as 399.353 Ω before the PRES.1 change, XRb unchanged). The previous lengths
+  (5.425 µm and 1.085 µm) omitted the terminals and read 2127.22 Ω and
+  526.59 Ω. The deck's LVS extraction compares the *drawn-geometry* R
+  (1778.00 Ω and 266.67 Ω); both
   compare sides compute it from the same stated `r_length`/`r_width`, so they
   agree by construction (`device_parameter_coverage` in `lvs-sense` records
   `R` as compared for both instances; `L`/`W`/`A`/`P` are secondary and not
@@ -276,16 +294,21 @@ as one `ppolyf_u` device per strip at 350 Ω/sq.
 - **Width.** 1 µm is an assumption (no sourced minimum beyond the DRC deck's
   own checks, which the strips pass).
 - **Benches.** `sim/sense-margin` and `sim/sense-mc` are value-parametric
-  studies of the reference, so their deck copies replace `XRref` with a plain
+  studies of the reference, so their sweep and control deck copies replace `XRref` with a plain
   `R` at the swept value (the same standing as the fuse stand-in; the
   committed netlist is untouched) and `XRb` stays the real device — the decks
   therefore include the model library's `res_*` sections beside the MOS corner
   (`fs`/`sf` have no resistor section in the PDK; those corners keep the
   typical sheet rho, recorded as an assumption in the bench). The probes
   (`sim/sense-margin/probe/gen_probe.sh`) include the same `res_*` section.
-  Re-running the two campaigns against the real `XRb` (whose sheet rho moves
-  with the resistor corners, ±20 % at ss/ff) is follow-up scope, not done
-  here; the recorded evidence stands as generated with the ideal resistors.
+  `sim/sense-margin/run.sh` also submits `phys_*` requests that leave the
+  committed `XRref` in the deck, so its terminal resistance and corner
+  dependence are in the nominal evidence. Re-running the two campaigns
+  (including `sim/sense-mc`, which centres its injected variation on a fixed
+  reference value) against the real `XRb` and the real `XRref` (whose sheet
+  rho moves with the resistor corners, ±20 % at ss/ff) is follow-up scope
+  (#321), not done here; the recorded evidence stands as generated with the
+  ideal resistors.
 
 ## efuse_comp / efuse_sense LVS
 
@@ -496,7 +519,7 @@ Sources (from the reports' `source_cell`):
   would be wrong: the PDK fuse stream is itself 0.001 µm off the grid in y, so
   its bbox, not its origin, is what is landed on the grid. The two `ppolyf_u`
   strips had lengths (5.714, 1.143 µm) off the grid; they are now snapped to
-  0.005 µm. (The strips' lengths today — 5.425 and 1.085 µm — are the
+  0.005 µm. (The strips' lengths today — 5.08 and 0.8 µm — are the
   netlist's own `ppolyf_u` geometry; see "Resistors" above.) The fuse cell's geometry is unchanged
   (`verify_fuse` against the PDK stream passes). Clean means clean under the
   curated deck's coverage below, which models no `EF.*` rule — though the pinned

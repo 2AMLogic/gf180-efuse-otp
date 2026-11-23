@@ -21,10 +21,11 @@ grid: 5 process (`typical`, `ff`, `ss`, `fs`, `sf`) x -40/25/125 C x vdd33 2.97/
 | `bench_rf140/200/260_rr400` | intact, 140 / 200 / 260 ohm (A4) | 400 ohm (A6) |
 | `bench_rf630/900/open_rr400` | programmed, 630 / 900 ohm / open (1 Gohm) (A5) | 400 ohm |
 | `control_rf140/260_rr200` | intact | 200 ohm: negative control |
+| `phys_rf<each fuse value>_rrphys` | the six fuse values above | the committed `XRref` (`ppolyf_u`, 0.74 µm x 1 µm) left in the deck, so its terminal resistance and corner dependence are exercised; recorded under `physical_reference` and counted in the headline verdicts (`--physical-reference`) |
 
 `summarize.py` is told which requests `run.sh` submitted (`--rfuse-intact`,
 `--rfuse-programmed`, `--rfuse-control` with `--rref`/`--rref-control`) and opens all
-eight reports by name rather than discovering whatever arrived. A request whose report
+expected reports by name rather than discovering whatever arrived. A request whose report
 is missing, or that came back carrying no corners, exits 4 and **writes no record** —
 a partial set is not evidence, the same rule `sim/program-select` and `sim/sense-mc`
 apply to their own sets. Reports that are all present but have points without values

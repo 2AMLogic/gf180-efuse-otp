@@ -172,7 +172,7 @@ Xb[0] bl[0] wl vss efuse_bitcell
 *.iopin vss
 XMb vbp vbp vdd33 vdd33 pfet_03v3 L=1u W=4u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
 + ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
-XRb nb vbp vss ppolyf_u r_width=1e-6 r_length=5.425e-6 m=1
+XRb nb vbp vss ppolyf_u r_width=1e-6 r_length=5.08e-6 m=1
 XMbs nb sense_en vss vss nfet_03v3 L=0.28u W=2u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
 + ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
 XMbp vbp sense_en vdd33 vdd33 pfet_03v3 L=0.28u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
@@ -181,7 +181,7 @@ XMf sbl vbp vdd33 vdd33 pfet_03v3 L=1u W=4u nf=1 ad='int((nf+1)/2) * W/nf * 0.18
 + ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
 XMrf sref vbp vdd33 vdd33 pfet_03v3 L=1u W=4u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
 + ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
-XRref rn1 sref vss ppolyf_u r_width=1e-6 r_length=1.085e-6 m=1
+XRref rn1 sref vss ppolyf_u r_width=1.05e-6 r_length=0.8e-6 m=1
 XMsw rn1 sense_en rn2 vss nfet_06v0 L=0.7u W=4u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
 + ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1
 XMsel rn2 vprog vss vss nfet_06v0 L=0.7u W=60u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
