@@ -58,11 +58,12 @@ Every run writes one klt report per parameter set. By default they go to
 (`build/requests/`) and klt's run artifacts; `run.sh --reports DIR` puts the
 reports in `DIR` instead.
 
-`verification/klt-fv.sh [outdir]` is a thin wrapper over that option and is how
+`verification/klt-fv.sh <outdir>` is a thin wrapper over that option and is how
 the committed reports in `sim/controller-fv/` were produced (9 sets, 12/12
-checks each; default outdir `sim/controller-fv`). Those are append-only
-evidence: regenerate to a temporary directory to compare, never over the
-committed files.
+checks each). The outdir is required — there is no default, and an omitted or
+empty argument prints usage and exits nonzero before the bench runs. Those are
+append-only evidence: regenerate to a temporary directory to compare, never
+over the committed files.
 
 `CONFIGS` in `runner.py` is the single table of parameter sets, and each
 set's expected pulse/settle counts reach the bench through the environment.
