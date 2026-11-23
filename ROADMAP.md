@@ -41,6 +41,9 @@ Done and merged since the spec was ratified (decisions 0001 to 0005):
   (#268), `efuse_comp` and `efuse_sense` with the bias and reference
   resistors drawn as PDK `ppolyf_u` devices (#303) — each LVS-matched against
   its `.subckt`.
+- Digital ERC supply spec (#302, digital half of #33's item 11): the compound
+  `erc`/`lvs`/`place-and-route` citation grades 11.digital `met`; 11.analog
+  stays with #33.
 
 The README's current-position line now reads "sense path simulated across PVT"
 (#181), matching this record.
@@ -78,9 +81,6 @@ curated #155 and #160. Issue and label state in this section is as read on
 
 ## Next
 
-- **Cite 4.digital and run the digital ERC supply spec** (#33, digital half).
-  Unblocked by Now item 3. Done when a `klt erc` report for `efuse_otp_ctrl`
-  declares the supplies and 11.digital reads `met`.
 - **Cite 7.digital.** Unblocked by Now item 4 and #154 together.
 - **Rebase PR #94 and cite 5.digital** once the operator releases the
   ratification hold (see below). Done when 5.digital reads `met`.

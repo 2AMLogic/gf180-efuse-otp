@@ -1,0 +1,63 @@
+{
+  "_comment": [
+    "T1 item 11 (digital) klt erc supply spec for layout/efuse_otp_ctrl.gds, top efuse_otp_ctrl.",
+    "Layer numbers are the gf180mcu drawing layers of the curated gf180mcu deck the DRC/LVS",
+    "reports already pin: Poly 30/0, Comp 22/0, Contact 33/0, Metal1 34/0 .. Metal5 81/0 with",
+    "Via1 35/0, Via2 38/0, Via3 40/0, Via4 41/0, Nwell 21/0, Nplus 32/0, Pplus 31/0.",
+    "The stackup covers every power.straps[].layer of layout/pnr-report.json (Metal1, Metal4,",
+    "Metal5) and the vias between them, per docs/cli/erc.md's supply-spec rule: a supply net",
+    "whose upper strap layers are missing from the stackup reads as several disconnected",
+    "islands. Label layers are the pin layers the stream actually carries text on (34/10 rail",
+    "labels, 36/10 signal pins, 81/10 the two top-level supply pins).",
+    "VDD and VSS are single-domain supplies: no islands (one electrical island each is the",
+    "expectation) and no same_net_as tie. The VNW/VPW texts inside the library cells are the",
+    "well/substrate-tap pin names, not separate domains: the taps contact the VDD/VSS rails",
+    "directly, which is what the ties below assert.",
+    "Ties, both wired up through Contact to the Metal1 row rails the tap cells",
+    "(power.tapcell_master gf180mcu_fd_sc_mcu7t5v0__filltie, distance 15 um) strap:",
+    "nwell_vdd -- each merged Nwell 21/0 shape must hold an n-well tap (Comp AND Nplus, the",
+    "gf180mcu tap boolean; inside Nwell that selects taps only, PMOS source/drain are Comp AND",
+    "Pplus) that reaches VDD.",
+    "psub_vss -- gf180mcu bulk is a p-type substrate with no drawn p-well, so the substrate",
+    "region is the top-cell extent minus Nwell (well_complement_of); its p-taps (Comp AND Pplus",
+    "outside Nwell; NMOS source/drain in the substrate are Comp AND Nplus) must reach VSS."
+  ],
+  "stackup": [
+    { "name": "Poly", "layer": "30/0", "role": "gate", "active_layer": "22/0" },
+    { "name": "Metal1", "layer": "34/0", "label_layer": "34/10" },
+    { "name": "Metal2", "layer": "36/0", "label_layer": "36/10" },
+    { "name": "Metal3", "layer": "42/0" },
+    { "name": "Metal4", "layer": "46/0" },
+    { "name": "Metal5", "layer": "81/0", "label_layer": "81/10" }
+  ],
+  "vias": [
+    { "name": "Contact", "layer": "33/0", "between": ["Poly", "Metal1"] },
+    { "name": "Via1", "layer": "35/0", "between": ["Metal1", "Metal2"] },
+    { "name": "Via2", "layer": "38/0", "between": ["Metal2", "Metal3"] },
+    { "name": "Via3", "layer": "40/0", "between": ["Metal3", "Metal4"] },
+    { "name": "Via4", "layer": "41/0", "between": ["Metal4", "Metal5"] }
+  ],
+  "nets": [
+    { "name": "VDD", "kind": "supply" },
+    { "name": "VSS", "kind": "supply" }
+  ],
+  "ties": [
+    {
+      "name": "nwell_vdd",
+      "well_layer": "21/0",
+      "tap_layer": "22/0",
+      "tap_requires": ["32/0"],
+      "connect_to": "Metal1",
+      "net": "VDD"
+    },
+    {
+      "name": "psub_vss",
+      "well_layer": null,
+      "well_complement_of": ["21/0"],
+      "tap_layer": "22/0",
+      "tap_requires": ["31/0"],
+      "connect_to": "Metal1",
+      "net": "VSS"
+    }
+  ]
+}

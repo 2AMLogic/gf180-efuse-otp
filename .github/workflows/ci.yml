@@ -108,7 +108,6 @@ jobs:
         run: |
           rc=0
           klt signoff --manifest signoff/block-manifest.json \
-            --tiers-doc signoff/design-evidence-tiers.md \
             --format json > "$RUNNER_TEMP/regraded.json" || rc=$?
           # 0 = all met, 3 = report produced with items unmet (expected today)
           if [ "$rc" -ne 0 ] && [ "$rc" -ne 3 ]; then
@@ -155,6 +154,19 @@ jobs:
         # digest from the pinned klt's own `klt stats --format json` and
         # attests both envelopes in one step.
         run: layout/attest.sh --check
+
+      - name: ERC supply report reproduces
+        # klt erc --check on the committed item 11 (digital) report through
+        # layout/erc.sh: re-hashes the stream, the supply spec and the deck
+        # against the report's own provenance (exit 3 = drifted). Needs the
+        # pinned klt via uvx only -- no PDK, no OpenROAD.
+        run: layout/erc.sh --check
+
+      - name: ERC supply spec negative control
+        # Proves the supply spec gates on the stackup: a scratch copy with the
+        # Metal4 strap layer removed must fragment both supplies
+        # (erc.unconnected_net on VDD and VSS, exit 3).
+        run: layout/erc.sh --negative-control
 
       - name: Committed streams have no unlanded via2
         # The deck does not model V2.3c/V2.3d/V2.4b/V2.4c, so this per-cell count
