@@ -60,8 +60,10 @@ decision-0005 PVT set with the fuse at 140/200/260 Ω. It writes
 current, Vgs, Vds, pass/fail against 10 mA, binding corner per width). The grid
 is 15 `klt sim` requests submitted with `--batch-set`, so it needs the batch
 fleet; a failed submit is reported and never re-run locally.
-`program-select.sch` is the schematic (netlist it with `klt netlist`); the
-swept deck is `cell.cir.in`. Result and derivation: `design/README.md`.
+The swept deck is [`program-select/cell.cir.in`](program-select/cell.cir.in); the
+cell as designed (the implemented 60 µm bitcell) is
+[`../design/efuse_bitcell.sch`](../design/efuse_bitcell.sch). Result and
+derivation: `design/README.md`.
 
 ## Program-current corner verification
 
