@@ -71,10 +71,7 @@ for r in $FUSE_OHMS; do
 done
 
 if [[ $dry -eq 1 ]]; then
-  bench_dry_run "${reqs[@]}"
-  rm -rf "$rec"
-  echo "dry run: request set validated; temp dir removed"
-  exit 0
+  bench_dry_run_exit "${reqs[@]}"
 fi
 
 # rc: 0 = all pass, 3 = a measurement failed, 4 = partial set (see bench_submit_set).
