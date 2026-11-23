@@ -41,9 +41,7 @@ T_EDGE=15n                               # clock edge; bias and sbl/sref settle 
 T_PRE=14.9n                              # margin read, just before the edge
 T_OUT=38n                                # latched sense_out read
 
-netlist="$repo/design/efuse_otp_array.spice"
-[[ -f "$netlist" ]] || { echo "run.sh: $netlist missing" >&2; exit 1; }
-sub() { bench_subckt "$netlist" "$1"; }  # one .subckt ... .ends block from the committed netlist
+bench_netlist "$repo/design/efuse_otp_array.spice"
 
 bench_new_record_dir "$here/records" "$dry"
 
@@ -103,10 +101,7 @@ for r in $PROGRAMMED_OHMS; do mk "phys_rf${r}_rrphys" "$r" phys 1; done
 for r in $RFUSE_CONTROL_OHMS; do mk "control_rf${r}_rr${RREF_CONTROL_OHM}" "$r" "$RREF_CONTROL_OHM" -1; done
 
 if [[ $dry -eq 1 ]]; then
-  bench_dry_run "${reqs[@]}"
-  rm -rf "$rec"
-  echo "dry run: request set validated; temp dir removed"
-  exit 0
+  bench_dry_run_exit "${reqs[@]}"
 fi
 
 # rc: 0 = all pass, 3 = a measurement failed, 4 = partial set (see bench_submit_set).
