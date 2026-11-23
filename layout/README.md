@@ -16,7 +16,7 @@ analog partition is below.
 | `efuse_otp_ctrl.asbuilt.v` | `verilog_path` output: the as-built gate-level netlist (CTS buffers, resizes, antenna diodes included). This, not `rtl/efuse_otp_ctrl.gl.v`, is the reference for the controller LVS run. |
 | `attest.sh` | Writes both T1 item 2 envelopes with the pinned klt's own producer, `klt signoff --attest 2 --input <stream>`: `pnr.attest.json` (digital) and `../signoff/item2-analog.attest.json` (analog). `--check` re-attests and fails (exit 3) if either committed envelope has drifted. The digital regeneration claim is a geometry digest, read from `klt stats --format json`'s `geometry_digest`; every field is the producer's. |
 | `pnr.attest.json` | The T1 item 2 (digital) envelope: `klt signoff --attest 2` bound to the routed GDS (readable, non-empty top cell, dbu on grid), with a `layout/pnr.sh` regeneration claim (geometry digest, so GDS write times do not matter). |
-| `lvs.sh` | Runs `klt lvs` with the pinned klt (`signoff/klt-pin.txt`) on `efuse_otp_ctrl.gds` against `efuse_otp_ctrl.asbuilt.v` and keeps the JSON report as found. `--check` re-hashes the stream, the netlist and the deck against the committed report (`--rerun` re-runs the compare). The gate-level reference resolves each standard cell's pin order from the library's own spice/cdl under `<PDK_ROOT>/gf180mcuD/libs.ref` (`PDK_ROOT`, default `~/.ciel`, passed to klt as `reference.pdk_root`), so CI (which installs no PDK) cannot run it. |
+| `lvs.sh` | Runs `klt lvs` with the pinned klt (`signoff/klt-pin.txt`) on `efuse_otp_ctrl.gds` against `efuse_otp_ctrl.asbuilt.v` and keeps the JSON report as found. `--check` re-hashes the stream, the netlist and the deck against the committed report; `--rerun` re-runs the compare — klt's own rerun for the analog parts, and for `lvs-ctrl` a fresh portable regeneration from the same shared request diffed against the committed evidence with the pinned klt's verdict-field rules (its report records `reference_conversion.pdk_root` as the `$PDK_ROOT` token, which pinned klt's own rerun resolves as a cwd-relative path, klayout-tools#7589). Checks leave the committed reports untouched. The gate-level reference resolves each standard cell's pin order from the library's own spice/cdl under `<PDK_ROOT>/gf180mcuD/libs.ref` (`PDK_ROOT`, default `~/.ciel`, passed to klt as `reference.pdk_root` and re-resolved from the environment at replay, so a relocated root verifies too), so CI (which installs no PDK) cannot run it. |
 | `lvs-ctrl.report.json` | Committed `--format json` LVS report (T1 item 4, digital): `status: match`, `power_connectivity.status: match` — see "LVS" below. |
 | `erc.sh` | Runs `klt erc` with the pinned klt on `efuse_otp_ctrl.gds` with `erc-ctrl.spec.json` (T1 item 11, digital), `--findings-only --omit-antenna-tables --deck gf180mcu`, and keeps the JSON report as found. `--check` re-hashes the stream, the spec and the deck against the committed report (`--rerun` re-runs the finding pass; the report does not echo `--top`, which replays only because the stream has a single top cell). `--negative-control` drops the Metal4 strap layer (and the vias naming it) from a scratch copy of the spec and requires both supplies to fragment. Needs no PDK and no OpenROAD — CI runs both. |
 | `erc-ctrl.spec.json` | The ERC supply spec: `VDD`/`VSS` as `kind: "supply"` nets, a stackup through every `power.straps[].layer` of `pnr-report.json` (Metal1, Metal4, Metal5 — and the rest of the routing stack, so nothing the supply touches is invisible to the graph), and the two well/substrate ties: each merged `Nwell` shape must hold an n-well tap (`Comp ∩ Nplus`, the gf180mcu tap boolean) reaching VDD, and the p-substrate (top-cell extent minus `Nwell` — gf180mcu bulk is a p-type substrate with no drawn p-well) must hold p-taps (`Comp ∩ Pplus`) reaching VSS, both through `Contact` up to the Metal1 rails. The `VNW`/`VPW` texts inside the library cells are tap pin names, not separate domains, so no `islands`/`same_net_as` declarations. |
@@ -30,6 +30,7 @@ layout/pnr.sh --check --rerun    # full: re-runs OpenROAD (about 2 minutes)
 layout/pnr.sh && layout/attest.sh   # regenerate, then re-attest (both item 2 envelopes)
 layout/attest.sh --check         # exit 3 = an item 2 envelope has drifted (CI runs this)
 layout/lvs.sh --check            # LVS report input hashes current (exit 3 = drifted)
+layout/lvs.sh --check --rerun    # full replay, controller included (needs the PDK; exit 3 = drift)
 layout/erc.sh --check            # ERC report input/spec/deck hashes current
 layout/erc.sh --negative-control # supply spec fails when a strap layer is missing
 ```
@@ -505,9 +506,11 @@ klayout==0.30.12`. The cause is the provisioned engine moving under an
 unchanged pin — `signoff/klt-pin.txt` pins klt, which resolves the
 klayout package; it does not pin klayout itself — not a layout change.
 The five per-cell reports are byte-compared the same way and drift with
-the engine too; the two partition reports are hash-gated only, which is
-why `layout/drc-ctrl.report.json` still recording 0.30.13 does not fail
-the gate.
+the engine too. The two partition reports (`array`, `ctrl`) are not
+byte-compared: `layout/drc.sh --check --rerun` delegates them to
+`klt drc --check --rerun`, whose verdict diff excludes
+`provenance.klayout_version`, which is why `layout/drc-ctrl.report.json`
+still recording 0.30.13 does not fail the gate.
 
 To adopt an engine version:
 
@@ -777,11 +780,15 @@ deck — against `layout/efuse_otp_ctrl.asbuilt.v` (`reference.form:
 "gate-level-verilog"`, `reference.library: gf180mcu_fd_sc_mcu7t5v0`) and keeps
 the report as found: `layout/lvs-ctrl.report.json`. It needs the PDK.
 The script header and `signoff/README.md` ("Re-run the
-controller LVS") say why and how the root is pinned.
+controller LVS") say why and how the root is pinned, and how
+`--check --rerun` replays this part.
 
-Pinned klt 0.9.2 and the KLayout 0.30.13 engine compared the filled
-0.001 µm controller against its original as-built netlist. The deck content
-hash was `sha256:c3f2cce49000857a3a71cb65203aabf0eb27cd0ee6b1c60e29792355c455c4b1`.
+Pinned klt 0.9.2 and the KLayout 0.30.14 engine compared the filled
+0.001 µm controller against its original as-built netlist (same
+engine-dependence caveat as DRC above; the report was re-run at engine 0.30.13
+and refreshed 2026-11-23 at 0.30.14, `match`/`match` both times, with only the
+engine-version fields changed). The deck content hash was
+`sha256:c3f2cce49000857a3a71cb65203aabf0eb27cd0ee6b1c60e29792355c455c4b1`.
 Both `status` and `power_connectivity.status` were **`match`**, with
 `error_count: 0`. The signoff record cites this report for `4.digital`.
 
