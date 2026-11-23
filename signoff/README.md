@@ -185,13 +185,28 @@ non-empty top cell and an on-grid database unit. See `layout/README.md`,
 `layout/lvs.sh` runs `klt lvs` on `layout/efuse_otp_ctrl.gds` against the
 as-built netlist `layout/efuse_otp_ctrl.asbuilt.v` with the pinned klt and
 keeps the report (`layout/lvs-ctrl.report.json`) as found; `--check` re-hashes
-the stream, the netlist and the deck against the committed report (`--rerun`
-re-runs the compare). It needs the PDK. The gate-level reference resolves each standard cell's pin order
-from the library's own spice/cdl under `<PDK_ROOT>/gf180mcuD/libs.ref`, so
-CI (which installs no PDK) cannot run it — the same local-only class as
-`rtl/regen-gl.sh`. `PDK_ROOT` defaults to `~/.ciel`, `layout/pnr.sh`'s
-default, and is passed to klt explicitly (`reference.pdk_root`) so the
-report records one resolved install instead of an ambiguous search.
+the stream, the netlist and the deck against the committed report, and
+`--check --rerun` re-runs the compare. It needs the PDK. The gate-level
+reference resolves each standard cell's pin order from the library's own
+spice/cdl under `<PDK_ROOT>/gf180mcuD/libs.ref`, so CI (which installs no
+PDK) cannot run it — the same local-only class as `rtl/regen-gl.sh`.
+`PDK_ROOT` defaults to `~/.ciel`, `layout/pnr.sh`'s default, and is passed
+to klt explicitly (`reference.pdk_root`) so the report records one resolved
+install instead of an ambiguous search. For the controller the rerun is the
+script's, not klt's own: the committed report records
+`reference_conversion.pdk_root` as the portable `$PDK_ROOT` token (the
+request sets `portable_paths: true`), and pinned klt's `--check --rerun`
+copies that token back into its reconstructed request verbatim, so its PDK
+search resolves it as a cwd-relative path and dies before the compare
+(klayout-tools#7589). `layout/lvs.sh --check --rerun` therefore keeps klt's
+cheap hash gate, regenerates a fresh portable report in scratch from the
+same shared request — the PDK root re-resolved from the invocation's
+environment, so the default and any relocated root verify alike — and diffs
+it against the committed evidence with the pinned klt's own verdict-field
+exclusion set, so the status, the power-connectivity verdict, the
+stream/reference hashes, the pin-order library evidence and
+`environment.engine_version` all stay compared. A check never rewrites the
+committed reports.
 
 Re-run it after anything that changes the routed stream or the as-built
 netlist (i.e. after `layout/pnr.sh` writes new ones). If the fresh report is
@@ -201,7 +216,11 @@ again `status: match` with `power_connectivity.status: match`, update the
 file's own digest, the same rule every other entry follows — and regenerate
 the record. That changes the record, so finish with the item 8 round trip
 under "Regenerate the record" (re-attest item 8, regenerate once more,
-byte-identical). A `status: mismatch` report is committed uncited instead,
+byte-identical). A refresh that moves only machine-local provenance — an
+engine-version bump under the same pin, like the 2026-11-23 re-record at
+klayout 0.30.14 — leaves the input hash, the `4.digital` citation and the
+record byte-identical, so no manifest edit and no item 8 round trip is
+needed. A `status: mismatch` report is committed uncited instead,
 `4.digital` stays `unmet`, and the mismatch classes are listed in
 `layout/README.md`, "LVS".
 

@@ -16,7 +16,7 @@ analog partition is below.
 | `efuse_otp_ctrl.asbuilt.v` | `verilog_path` output: the as-built gate-level netlist (CTS buffers, resizes, antenna diodes included). This, not `rtl/efuse_otp_ctrl.gl.v`, is the reference for the controller LVS run. |
 | `attest.sh` | Writes both T1 item 2 envelopes with the pinned klt's own producer, `klt signoff --attest 2 --input <stream>`: `pnr.attest.json` (digital) and `../signoff/item2-analog.attest.json` (analog). `--check` re-attests and fails (exit 3) if either committed envelope has drifted. The digital regeneration claim is a geometry digest, read from `klt stats --format json`'s `geometry_digest`; every field is the producer's. |
 | `pnr.attest.json` | The T1 item 2 (digital) envelope: `klt signoff --attest 2` bound to the routed GDS (readable, non-empty top cell, dbu on grid), with a `layout/pnr.sh` regeneration claim (geometry digest, so GDS write times do not matter). |
-| `lvs.sh` | Runs `klt lvs` with the pinned klt (`signoff/klt-pin.txt`) on `efuse_otp_ctrl.gds` against `efuse_otp_ctrl.asbuilt.v` and keeps the JSON report as found. `--check` re-hashes the stream, the netlist and the deck against the committed report (`--rerun` re-runs the compare). The gate-level reference resolves each standard cell's pin order from the library's own spice/cdl under `<PDK_ROOT>/gf180mcuD/libs.ref` (`PDK_ROOT`, default `~/.ciel`, passed to klt as `reference.pdk_root`), so CI (which installs no PDK) cannot run it. |
+| `lvs.sh` | Runs `klt lvs` with the pinned klt (`signoff/klt-pin.txt`) on `efuse_otp_ctrl.gds` against `efuse_otp_ctrl.asbuilt.v` and keeps the JSON report as found. `--check` re-hashes the stream, the netlist and the deck against the committed report; `--rerun` re-runs the compare — klt's own rerun for the analog parts, and for `lvs-ctrl` a fresh portable regeneration from the same shared request diffed against the committed evidence with the pinned klt's verdict-field rules (its report records `reference_conversion.pdk_root` as the `$PDK_ROOT` token, which pinned klt's own rerun resolves as a cwd-relative path, klayout-tools#7589). Checks leave the committed reports untouched. The gate-level reference resolves each standard cell's pin order from the library's own spice/cdl under `<PDK_ROOT>/gf180mcuD/libs.ref` (`PDK_ROOT`, default `~/.ciel`, passed to klt as `reference.pdk_root` and re-resolved from the environment at replay, so a relocated root verifies too), so CI (which installs no PDK) cannot run it. |
 | `lvs-ctrl.report.json` | Committed `--format json` LVS report (T1 item 4, digital): `status: match`, `power_connectivity.status: match` — see "LVS" below. |
 | `erc.sh` | Runs `klt erc` with the pinned klt on `efuse_otp_ctrl.gds` with `erc-ctrl.spec.json` (T1 item 11, digital), `--findings-only --omit-antenna-tables --deck gf180mcu`, and keeps the JSON report as found. `--check` re-hashes the stream, the spec and the deck against the committed report (`--rerun` re-runs the finding pass; the report does not echo `--top`, which replays only because the stream has a single top cell). `--negative-control` drops the Metal4 strap layer (and the vias naming it) from a scratch copy of the spec and requires both supplies to fragment. Needs no PDK and no OpenROAD — CI runs both. |
 | `erc-ctrl.spec.json` | The ERC supply spec: `VDD`/`VSS` as `kind: "supply"` nets, a stackup through every `power.straps[].layer` of `pnr-report.json` (Metal1, Metal4, Metal5 — and the rest of the routing stack, so nothing the supply touches is invisible to the graph), and the two well/substrate ties: each merged `Nwell` shape must hold an n-well tap (`Comp ∩ Nplus`, the gf180mcu tap boolean) reaching VDD, and the p-substrate (top-cell extent minus `Nwell` — gf180mcu bulk is a p-type substrate with no drawn p-well) must hold p-taps (`Comp ∩ Pplus`) reaching VSS, both through `Contact` up to the Metal1 rails. The `VNW`/`VPW` texts inside the library cells are tap pin names, not separate domains, so no `islands`/`same_net_as` declarations. |
@@ -30,6 +30,7 @@ layout/pnr.sh --check --rerun    # full: re-runs OpenROAD (about 2 minutes)
 layout/pnr.sh && layout/attest.sh   # regenerate, then re-attest (both item 2 envelopes)
 layout/attest.sh --check         # exit 3 = an item 2 envelope has drifted (CI runs this)
 layout/lvs.sh --check            # LVS report input hashes current (exit 3 = drifted)
+layout/lvs.sh --check --rerun    # full replay, controller included (needs the PDK; exit 3 = drift)
 layout/erc.sh --check            # ERC report input/spec/deck hashes current
 layout/erc.sh --negative-control # supply spec fails when a strap layer is missing
 ```
@@ -629,13 +630,17 @@ deck — against `layout/efuse_otp_ctrl.asbuilt.v` (`reference.form:
 "gate-level-verilog"`, `reference.library: gf180mcu_fd_sc_mcu7t5v0`) and keeps
 the report as found: `layout/lvs-ctrl.report.json`. It needs the PDK.
 The script header and `signoff/README.md` ("Re-run the
-controller LVS") say why and how the root is pinned.
+controller LVS") say why and how the root is pinned, and how
+`--check --rerun` replays this part.
 
 Verdict, klt 0.9.2 (deck content hash
 `sha256:c3f2cce49000857a3a71cb65203aabf0eb27cd0ee6b1c60e29792355c455c4b1`,
-klayout engine 0.30.13 — the same engine-dependence caveat as DRC above;
-re-run at the 0.9.2 pin 2026-11-17, `match`/`match` as before, the report's
-`schema_version` moved 2 → 3 with additive fields):
+klayout engine 0.30.14 — the same engine-dependence caveat as DRC above;
+re-run at the 0.9.2 pin 2026-11-17 at engine 0.30.13, `match`/`match`, the
+report's `schema_version` moving 2 → 3 with additive fields, and refreshed
+2026-11-23 at engine 0.30.14, `match`/`match` again with only the two
+engine-version fields changed — the stream, reference and pin-order hashes
+are untouched):
 **`status: match` and `power_connectivity.status: match`**, `error_count: 0`.
 It is cited for `4.digital` in `signoff/block-manifest.json` and the record
 reads `met`. Digests, both recorded in the report: layout
