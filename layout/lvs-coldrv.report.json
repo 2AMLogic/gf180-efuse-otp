@@ -115,17 +115,17 @@
   ],
   "environment": {
     "engine": "klayout",
-    "engine_version": "0.30.13",
+    "engine_version": "0.30.14",
     "netgen_binary": null,
-    "layout_sha256": "15f7e6d69d978f1a146cedd2e068248976a5ace3c370b9b9ba845d57a20db051",
-    "reference_sha256": "ccf79848bae16d8675004c8f5b1c9409c8335c4db9a90bc4ed4686049b2bd16e",
+    "layout_sha256": "888451a37e3fe9e398c9c0ae23c5fc413ad01edd2397c6a580e12fa315810d8e",
+    "reference_sha256": "beee583e8017d42fe39e03f795d542798a32ab1f6d78e855246627a266c9f350",
     "extracted_netlist": null
   },
   "provenance": {
     "klt_version": "0.9.2",
     "klt_git_commit": "046ba74652fc096bd97071fc3237f7159dd40183",
     "klt_reinstall_spec": "klayout-tools==0.9.2",
-    "klayout_version": "0.30.13",
+    "klayout_version": "0.30.14",
     "pdk": null,
     "deck": {
       "name": "gf180mcu",
@@ -144,7 +144,7 @@
       "options_hash": "sha256:6a7dc7660a470994263c5ca8ace6d8ac8c605d77e6876a9c5490949de6e7cb05"
     },
     "input": {
-      "content_hash": "sha256:15f7e6d69d978f1a146cedd2e068248976a5ace3c370b9b9ba845d57a20db051",
+      "content_hash": "sha256:888451a37e3fe9e398c9c0ae23c5fc413ad01edd2397c6a580e12fa315810d8e",
       "role": "layout"
     },
     "klayout_version_mismatch": true
@@ -170,13 +170,13 @@
     {
       "category": "topology",
       "severity": "warning",
-      "description": "device class has no counterpart on the other side, but no devices of this class were extracted either -- not a real topology mismatch: 'RES'",
+      "description": "device class has no counterpart on the other side, but no devices of this class were extracted either -- not a real topology mismatch: 'PPOLYF_U'",
       "side": "reference",
       "net": null,
       "device": {
         "layout": null,
         "reference": null,
-        "class": "RES"
+        "class": "PPOLYF_U"
       },
       "property": null,
       "details": null,

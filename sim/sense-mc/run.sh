@@ -50,9 +50,7 @@ DECISION_MIN=0.2             # resolved decision: sense_out/vdd33 at least 0.2 p
 T_PRE=14.9n
 T_OUT=38n
 
-netlist="$repo/design/efuse_otp_array.spice"
-[[ -f "$netlist" ]] || { echo "run.sh: $netlist missing" >&2; exit 1; }
-sub() { bench_subckt "$netlist" "$1"; }  # one .subckt block from the committed netlist
+bench_netlist "$repo/design/efuse_otp_array.spice"
 
 # All klt invocations run from the repo root with repo-relative record paths, so the paths
 # stored in set-report.json, set-manifest.json and the yield/samples files resolve from any
@@ -62,6 +60,15 @@ bench_new_record_dir "$repo/sim/sense-mc/records" "$dry"
 rec="${rec#"$repo/"}"                    # repo-relative (cwd is $repo); a dry-run temp dir is unchanged
 
 reqs=()
+# The netlist draws the reference as a PDK ppolyf_u resistor; this campaign
+# injects the reference tolerance as a design-owned multiplier on a plain-R
+# stand-in (A7 below), so the deck copy replaces that one instance with an
+# ideal R carrying {$rr*mc_inj_rref_r} -- the multiplier klt's injected draw
+# feeds. The bias resistor XRb stays the real device, so every deck needs the
+# model library's resistor sections (res_typical/res_ss/res_ff) beside the MOS
+# corner; the PDK ships no fs/sf resistor section, so those two corners keep
+# the typical sheet rho (same assumption as sim/sense-margin/run.sh).
+RREF_LINE='^XRref rn1 sref vss ppolyf_u r_width=1.05e-6 r_length=0.8e-6 m=1$'
 # mk <stem> <kind: intact|prog> <rfuse> <rref> <n>
 mk() {
   local stem="$1" kind="$2" rf="$3" rr="$4" n="$5" sign
@@ -69,11 +76,11 @@ mk() {
   # netlist is untouched. mc_inj_rref_r is emitted per sample by monte_carlo.injected.
   { sed -e "s#@DESIGN@#$lib/design.ngspice#" -e "s#@RFUSE@#$rf#" "$here/../sense-margin/sense.cir.in"
     echo
-    sub efuse_sense | sed -e "s#^Rref sref rn1 400 #Rref sref rn1 {$rr*mc_inj_rref_r} #"
+    sub efuse_sense | sed -e "s#$RREF_LINE#Rref rn1 sref {$rr*mc_inj_rref_r}#"
     echo
     sub efuse_comp
   } > "$rec/$stem.cir"
-  grep -q "^Rref sref rn1 {$rr\*mc_inj_rref_r} " "$rec/$stem.cir" || { echo "run.sh: Rref line not found" >&2; exit 1; }
+  grep -q "^Rref rn1 sref {$rr\*mc_inj_rref_r}\$" "$rec/$stem.cir" || { echo "run.sh: Rref line not found" >&2; exit 1; }
   if [[ $kind == intact ]]; then   # intact must read below the reference: positive = correct side
     margin="v(xsa.sref)-v(sbl)"; dec="0.5-v(sense_out)/v(vdd33)"
   else
@@ -87,7 +94,8 @@ mk() {
         --argjson pvt_3v3 "$PVT_SUPPLY_3V3" '
     {netlist:$net, engine:"ngspice",
      models:{lib:$lib, pdk:"gf180mcuD"},
-     corners:{process:($pvt_proc|map({name:., sections:[.]})),
+     corners:{process:($pvt_proc|map({name:.,
+              sections:[., ({"typical":"res_typical","ss":"res_ss","ff":"res_ff"}[.] // "res_typical")]})),
               supply_v:{vdd33:$pvt_3v3}, temperature_c:$pvt_temp},
      monte_carlo:{n:$n, seed:$seed, vary:"mismatch", seed_scope:"point",
                   mismatch_scale:$ms,
@@ -107,8 +115,7 @@ mk ctl_intact_rf${RFUSE_INTACT}_rr${RREF_CTL_INTACT} intact "$RFUSE_INTACT" "$RR
 mk ctl_prog_rf${RFUSE_PROG}_rr${RREF_CTL_PROG}   prog   "$RFUSE_PROG"   "$RREF_CTL_PROG"  "$N_CONTROL"
 
 if [[ $dry -eq 1 ]]; then
-  bench_dry_run "${reqs[@]}"
-  rm -rf "$rec"; echo "dry run: request set validated; temp dir removed"; exit 0
+  bench_dry_run_exit "${reqs[@]}"
 fi
 
 # rc: 0 = all pass, 3 = a measurement failed, 4 = partial set (see bench_submit_set).

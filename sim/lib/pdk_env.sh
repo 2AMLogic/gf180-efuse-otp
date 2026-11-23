@@ -75,6 +75,16 @@ bench_subckt() {
   awk -v n="$2" '$1==".subckt" && $2==n {p=1} p {print} p && $1==".ends" {exit}' "$1"
 }
 
+# bench_netlist <netlist>: refuse a missing netlist (run.sh: <netlist> missing)
+# and define sub() in the caller's shell -- not a subshell, or sub() would not
+# survive the return -- so sub <name> prints one .subckt ... .ends block from
+# that netlist. Sets netlist for sub() to read, as the callers did inline.
+bench_netlist() {
+  netlist="$1"
+  [[ -f "$netlist" ]] || { echo "run.sh: $netlist missing" >&2; exit 1; }
+  sub() { bench_subckt "$netlist" "$1"; }
+}
+
 # bench_new_record_dir <records dir> <dry 0|1>: sets stamp and rec. Dry runs get
 # a temp dir; otherwise a new append-only <records dir>/<stamp>-<pdk rev:7>,
 # created with a plain mkdir so an existing record is never overwritten.
@@ -96,6 +106,15 @@ bench_dry_run() {
   for q in "$@"; do
     klt sim --dry-run --format json --backend batch "$q" | jq -c '{unit_count,backend,warnings}'
   done
+}
+
+# bench_dry_run_exit <request.json...>: bench_dry_run, then remove the dry-run
+# temp dir $rec (set by bench_new_record_dir), report, and exit 0.
+bench_dry_run_exit() {
+  bench_dry_run "$@"
+  rm -rf "$rec"
+  echo "dry run: request set validated; temp dir removed"
+  exit 0
 }
 
 # bench_submit_set <rec> <request.json...>: submit the set to the batch fleet,
