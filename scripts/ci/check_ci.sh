@@ -11,8 +11,10 @@
 # PDK or a diff base -- those stay as named steps of ci.yml's harness job.
 set -euo pipefail
 
+ran=()
 run() {
   echo "==> $1"
+  ran+=("$1")
   shift
   "$@"
 }
@@ -29,4 +31,5 @@ run "bench_record load_reports self-test" python3 -I sim/lib/test_bench_record.p
 run "program-select summarize self-test" python3 -I sim/program-select/test_summarize.py
 run "sense-margin summarize self-test" python3 -I sim/sense-margin/test_summarize.py
 
-echo "check:ci OK -- hermetic checks only: checker self-tests, evidence format, attestation pin, report input hashes, item 6 spec binding, PVT grid binding, pdk_env self-test, klt helper self-test, bench_record load_reports self-test, program-select and sense-margin summarize self-tests. This does NOT run the CI steps that need an EDA tool, the PDK or a diff base (verification/run.sh, rtl/synth.sh, the klt signoff steps, check_sim_append_only.py), so a green check:ci is not a prediction that CI will pass."
+printf -v checks '%s, ' "${ran[@]}"
+echo "check:ci OK -- hermetic checks only: ${checks%, }. This does NOT run the CI steps that need an EDA tool, the PDK or a diff base (verification/run.sh, rtl/synth.sh, the klt signoff steps, check_sim_append_only.py), so a green check:ci is not a prediction that CI will pass."
