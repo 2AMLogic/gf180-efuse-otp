@@ -367,6 +367,22 @@ changed (klayout-tools#5601). CI does not run `drc.sh --check`, so this is a
 local-reproducibility caveat, not a CI gate.
 Both partitions and all three routed cells are clean under the curated deck.
 
+The per-cell curated reports are kept by the 2026-11-23 operator ruling
+([#277](https://github.com/2AMLogic/gf180-efuse-otp/issues/277), option a:
+keep the copies rather than drop the evidence), but on the pinned klt 0.9.2
+they carry no per-cell information beyond the array report. Violation checking
+is scoped to `--top`; the report JSON is not: it omits the requested top
+([klayout-tools#7000](https://github.com/2AMLogic/klayout-tools/issues/7000))
+and leaves `coverage.*` stream-wide
+([klayout-tools#7509](https://github.com/2AMLogic/klayout-tools/issues/7509))
+— a layer with zero shapes under the selected top, drawn elsewhere in the
+stream, still lands in `coverage.layers_checked`, and its rules in
+`coverage.rules_checked`. Every per-cell curated report in `layout/drc.sh`
+(whatever tops its `parts=` array names) is therefore currently byte-identical
+to `layout/drc-array.report.json` and stays so until a released klayout-tools
+ships both fixes and `signoff/klt-pin.txt` moves to it; the revisit is parked
+as [#342](https://github.com/2AMLogic/gf180-efuse-otp/issues/342).
+
 | Partition | status | violations |
 |---|---|---|
 | analog `efuse_otp_array` | `clean` | 0 (was 2560 `*.ongrid.1` hits at `45987b9`) |
