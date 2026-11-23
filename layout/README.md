@@ -530,7 +530,9 @@ To adopt an engine version:
    refresh.
 3. On each new native report confirm `status`, `violation_count` (array
    244, none of them a density rule; controller 0, clean),
-   every `violations[]` entry, `coverage.rules_checked` (771) and
+   every `violations[]` entry, `coverage.rules_checked` (763; the eight global-density rules are not
+   counted once fill clears them, as explained under the declared-categories
+   paragraph above) and
    `coverage.rules_skipped` (`[]`), and `coverage_assertion.satisfied:
    true`.
 4. `layout/drc.sh --check` and `layout/drc.sh --check --rerun` must both
