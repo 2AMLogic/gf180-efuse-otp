@@ -11,10 +11,17 @@ rec="${1:?usage: check-repro.sh <record dir>}"
 rec="$(cd "$rec" && pwd)"
 tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
 rc=0
-for stem in mc_intact_rf260_rr400 ctl_intact_rf260_rr200 mc_prog_rf630_rr400 ctl_prog_rf630_rr1000; do
+stems=(mc_intact_rf260_rr400 ctl_intact_rf260_rr200 mc_prog_rf630_rr400 ctl_prog_rf630_rr1000)
+# Physical-XRref nominals join whenever the record carries them; older records skip them.
+for stem in mc_intact_rf260_rrphys mc_prog_rf630_rrphys; do
+  [[ -f "$rec/$stem.json" ]] && stems+=("$stem")
+done
+for stem in "${stems[@]}"; do
   [[ -f "$rec/$stem.json" && -f "$rec/sets/$stem/report.json" ]] || { echo "check-repro: $stem missing in $rec" >&2; exit 2; }
   cp "$rec/$stem.cir" "$tmp/"
-  jq '.corners={process:[{name:"typical",sections:["typical"]}],supply_v:{vdd33:[3.3]},temperature_c:[25]} | .monte_carlo.n=1' \
+  # Keep each request's own `typical` sections (["typical"] on pre-#323 records,
+  # ["typical","res_typical"] on records whose decks carry ppolyf_u devices).
+  jq '.corners.process |= map(select(.name=="typical")) | .corners.supply_v={vdd33:[3.3]} | .corners.temperature_c=[25] | .monte_carlo.n=1' \
      "$rec/$stem.json" > "$tmp/$stem.json"
   klt sim --backend local --format json "$tmp/$stem.json" 2>/dev/null > "$tmp/$stem.local.json" || true
   want="$(jq -c '[.corners[]|select(.process=="typical" and .temperature_c==25 and .supply_v.vdd33==3.3 and .monte_carlo.sample_index==0)|

@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 # Run `klt lvs` with the pinned klt (never a host-installed one) on the digital
 # partition (layout/efuse_otp_ctrl.gds against the as-built gate-level netlist)
-# and on the routed analog cells efuse_ls, efuse_rowdrv and efuse_coldrv (each
-# the top of layout/efuse_otp_array.gds, against its .subckt in
-# design/efuse_otp_array.spice), keeping the JSON reports as committed evidence.
+# and on the routed analog cells efuse_ls, efuse_rowdrv, efuse_coldrv,
+# efuse_comp and efuse_sense (each the top of layout/efuse_otp_array.gds,
+# against its .subckt in design/efuse_otp_array.spice), keeping the JSON
+# reports as committed evidence.
 #   layout/lvs.sh           rewrite layout/lvs-ctrl.report.json,
 #                           layout/lvs-ls.report.json,
-#                           layout/lvs-rowdrv.report.json and
-#                           layout/lvs-coldrv.report.json
+#                           layout/lvs-rowdrv.report.json,
+#                           layout/lvs-coldrv.report.json,
+#                           layout/lvs-comp.report.json and
+#                           layout/lvs-sense.report.json
 #   layout/lvs.sh --check   klt lvs --check on the committed report (input and
 #                           deck hashes still match; add --rerun to re-run the
 #                           compare)
@@ -26,7 +29,8 @@ cd "$(dirname "$0")/.."
 export PDK="${PDK:-gf180mcuD}" PDK_ROOT="${PDK_ROOT:-$HOME/.ciel}"
 # shellcheck source=../signoff/klt.sh
 . signoff/klt.sh
-parts=(ctrl:efuse_otp_ctrl ls:efuse_ls rowdrv:efuse_rowdrv coldrv:efuse_coldrv)
+parts=(ctrl:efuse_otp_ctrl ls:efuse_ls rowdrv:efuse_rowdrv coldrv:efuse_coldrv
+       comp:efuse_comp sense:efuse_sense)
 if [ "${1:-}" = "--check" ]; then
   shift
   for p in "${parts[@]}"; do
@@ -40,16 +44,22 @@ for p in "${parts[@]}"; do
   rc=0
   # ctrl: the routed controller against its as-built gate-level netlist (needs
   # the PDK: the reference resolves each standard cell's pin order from the
-  # library's own spice/cdl). ls: the routed efuse_ls cell, extracted from the
-  # analog stream (top efuse_ls), against its .subckt in the analog netlist --
-  # simulation form (X cards calling PDK device subcircuits), which
-  # reference.form "subckt-call" converts; no PDK or library needed.
-  # rowdrv/coldrv: same, but the layout extracts flat (efuse_ls inlined), so
-  # the reference is flattened under the top (options.flatten_reference keeps
-  # only the top circuit) -- efuse_ls is compared as its devices, not as a
+  # library's own spice/cdl). ls/comp: the routed cell, extracted from the
+  # analog stream (top efuse_ls / efuse_comp), against its .subckt in the
+  # analog netlist -- simulation form (X cards calling PDK device
+  # subcircuits), which reference.form "subckt-call" converts; no PDK or
+  # library needed.
+  # rowdrv/coldrv/sense: same, but the reference is flattened under the top
+  # (options.flatten_reference keeps only the top circuit) -- efuse_ls in the
+  # drivers, efuse_comp in sense, is compared as its devices, not as a
   # hierarchical instance -- and combine_devices merges parallel devices on
-  # both sides: the reference's m=3 Mdrv (three W=100 copies) and the layout's
-  # three 10-finger units become one device each side.
+  # both sides: the reference's m=3 Mdrv (three W=100 copies), the layout's
+  # three 10-finger units and the folded W=60 select's six fingers each meet
+  # as one device each side.
+  # sense additionally sets reference.deck and options.compare_parameters so
+  # the netlist's ppolyf_u resistor calls convert against the deck's device
+  # table and their R (deck-derived from the stated r_length/r_width) is
+  # compared against the extracted strips' geometry-derived R.
   if [ "$part" = ctrl ]; then
     req=$(cat <<REQ
 {
@@ -63,6 +73,22 @@ for p in "${parts[@]}"; do
                  "top": "$top" },
   "options": { "power_connectivity": { "expected_nets": {
                "VDD": "VDD", "VNW": "VDD", "VPW": "VSS", "VSS": "VSS" } } },
+  "portable_paths": true
+}
+REQ
+)
+  elif [ "$part" = sense ]; then
+    req=$(cat <<REQ
+{
+  "layout": { "file": "layout/efuse_otp_array.gds", "top": "$top", "deck": "gf180mcu" },
+  "reference": { "netlist": "design/efuse_otp_array.spice",
+                 "form": "subckt-call",
+                 "deck": "gf180mcu",
+                 "top": "$top" },
+  "options": { "anchor_top_level_pins": true,
+               "flatten_reference": ["$top"],
+               "combine_devices": true,
+               "compare_parameters": { "ppolyf_u": ["R"] } },
   "portable_paths": true
 }
 REQ

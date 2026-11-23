@@ -33,12 +33,27 @@ run_drc() {
 }
 
 parts=(array:efuse_otp_array ctrl:efuse_otp_ctrl ls:efuse_ls:efuse_otp_array
-       rowdrv:efuse_rowdrv:efuse_otp_array coldrv:efuse_coldrv:efuse_otp_array)
+       rowdrv:efuse_rowdrv:efuse_otp_array coldrv:efuse_coldrv:efuse_otp_array
+       comp:efuse_comp:efuse_otp_array sense:efuse_sense:efuse_otp_array)
 for p in "${parts[@]}"; do
   IFS=: read -r part top file <<< "$p"
   report="layout/drc-$part.report.json"
   if "$check"; then
-    klt drc --check "$report" "$@"
+    if [ -n "${file:-}" ]; then
+      # Per-cell report. klt's own --rerun is top-less (klayout-tools#7000:
+      # the report records no --top, so the replay checks every top cell, and
+      # a cell-scoped coverage set drifts when the stream's other tops change
+      # the deck's applicable rules -- e.g. a voltage-domain marker under one
+      # cell beside a cell without one). The hash gate stays klt's; the full
+      # replay re-runs the recorded scoped invocation and byte-compares, the
+      # same contract the native loop below already uses.
+      klt drc --check "$report"
+      "$rerun" || continue
+      run_drc --deck gf180mcu --top "$top" "layout/$file.gds"
+      cmp "$tmp/report.json" "$report" || exit 3
+    else
+      klt drc --check "$report" "$@"
+    fi
   else
     run_drc --deck gf180mcu --top "$top" "layout/${file:-$top}.gds"
     cp "$tmp/report.json" "$report"

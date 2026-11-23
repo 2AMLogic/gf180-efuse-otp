@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 """Fold a sense-mc run into record.json.
 
-Called by run.sh with the record directory. Reads <stem>.json (the four requests run.sh
-submitted, for the corner grid and the graded decision limit), sets/<stem>/report.json (the
-four klt sim Monte Carlo reports) and yield/<pop>.yield.json (the cited klt yield report,
-margin_v only) and yield/<pop>.decision.yield.json (the uncited decision_margin report).
-Pass/fail is data in the record, not an exit status.
+Called by run.sh with the record directory. Reads <stem>.json (the six requests run.sh
+submitted -- two ideal-reference nominals, two physical-XRref nominals, two negative
+controls -- for the corner grid and the graded decision limit), sets/<stem>/report.json
+(the klt sim Monte Carlo reports) and yield/<pop>[_phys].yield.json (the cited klt yield
+report, margin_v only) and yield/<pop>[_phys].decision.yield.json (the uncited
+decision_margin report). Pass/fail is data in the record, not an exit status.
 
 Run constants are never retyped here: run.sh either passes one (--rref, --rfuse-intact, ...)
 or wrote it into the requests this reads back, so the record states the value the grid was
 actually submitted and graded under.
+
+--physical-reference summarizes the physical-XRref requests (stems *_rrphys, yields
+<pop>_phys) under `physical_reference`; without it the record carries only the ideal
+populations, so records predating the physical variant regenerate unchanged.
 """
 import argparse
 import collections
@@ -31,8 +36,13 @@ def stem(prefix, rfuse, rref):
     return f"{prefix}_rf{rfuse:g}_rr{rref:g}"
 
 
+def phys_stem(prefix, rfuse):
+    """The request stem of one population's physical-XRref nominal (run.sh's `phys` mode)."""
+    return f"{prefix}_rf{rfuse:g}_rrphys"
+
+
 def one_submitted(by_stem, what):
-    """The value all four submitted requests agree on; a disagreement is not summarizable."""
+    """The value all submitted requests agree on; a disagreement is not summarizable."""
     seen = {json.dumps(v, sort_keys=True): s for s, v in by_stem.items()}
     if len(seen) != 1:
         raise SystemExit(f"summarize.py: the requests disagree on the {what}: "
@@ -133,22 +143,31 @@ def main():
     ap.add_argument("--rref-ctl-prog", type=int, required=True)
     ap.add_argument("--min-samples", type=int, required=True)
     ap.add_argument("--ci-halfwidth", type=float, required=True)
+    ap.add_argument("--physical-reference", action="store_true",
+                    help="also read the two physical-XRref nominals (*_rrphys, yields "
+                         "<pop>_phys): the committed ppolyf_u reference with the injected "
+                         "tolerance on its series multiplier s, summarized under "
+                         "physical_reference")
     a = ap.parse_args()
 
     pops = {
         "intact": {"nominal": stem("mc_intact", a.rfuse_intact, a.rref),
                    "control": stem("ctl_intact", a.rfuse_intact, a.rref_ctl_intact),
+                   "phys": phys_stem("mc_intact", a.rfuse_intact),
                    "rfuse_ohm": a.rfuse_intact, "bound": "A4 upper edge"},
         "programmed": {"nominal": stem("mc_prog", a.rfuse_prog, a.rref),
                        "control": stem("ctl_prog", a.rfuse_prog, a.rref_ctl_prog),
+                       "phys": phys_stem("mc_prog", a.rfuse_prog),
                        "rfuse_ohm": a.rfuse_prog, "bound": "A5 lower edge"},
     }
 
     # What the grid was actually submitted and graded under, read back from the requests
     # run.sh wrote into this record rather than retyped: the corner grid and the
-    # decision_margin lower limit.
+    # decision_margin lower limit. The physical-reference nominals join the consistency
+    # check when they are part of the set.
+    roles = ("nominal", "control") + (("phys",) if a.physical_reference else ())
     reqs = {d[role]: jl(os.path.join(a.rec, d[role] + ".json"))
-            for d in pops.values() for role in ("nominal", "control")}
+            for d in pops.values() for role in roles}
     grid = one_submitted({k: v["corners"] for k, v in reqs.items()}, "corner grid")
     dmin = one_submitted({k: limit_min(v, "decision_margin") for k, v in reqs.items()},
                          "decision_margin lower limit")
@@ -159,30 +178,49 @@ def main():
     # (its `dec` expressions), so the pass rails are that midpoint plus/minus the limit.
     midpoint = 0.5
 
-    ypop = {"intact": "intact", "programmed": "prog"}
-    jobs, engines, out_pops = set(), set(), {}
-    for pop, d in pops.items():
+    def population(d, nominal, yield_name, reference):
+        """One nominal/control pair: per-set stats from the two reports, graded yields."""
         sets = {}
-        for role in ("nominal", "control"):
+        for role, s in (("nominal", nominal), ("control", d["control"])):
             rep = bench_record.collect_env(
-                jl(os.path.join(a.rec, "sets", d[role], "report.json")), None, jobs, engines)
-            sets[role] = {"stem": d[role], "corner_count": rep["corner_count"], "errored": rep["errored"],
+                jl(os.path.join(a.rec, "sets", s, "report.json")), None, jobs, engines)
+            sets[role] = {"stem": s, "corner_count": rep["corner_count"], "errored": rep["errored"],
                           "stats": set_stats(rep)}
-        y = os.path.join(a.rec, "yield", ypop[pop])
-        out_pops[pop] = {
+        y = os.path.join(a.rec, "yield", yield_name)
+        return {
             "rfuse_ohm": d["rfuse_ohm"], "why_this_value": d["bound"],
-            "rref_nominal_ohm": a.rref, "sets": sets,
-            "cited_yield_report": f"yield/{ypop[pop]}.yield.json",
+            "rref_nominal_ohm": a.rref, "reference": reference, "sets": sets,
+            "cited_yield_report": f"yield/{yield_name}.yield.json",
             "cited": graded(y + ".yield.json"),
-            "uncited_decision_report": f"yield/{ypop[pop]}.decision.yield.json",
+            "uncited_decision_report": f"yield/{yield_name}.decision.yield.json",
             "decision": graded(y + ".decision.yield.json"),
         }
 
-    cited_ok = all(
-        "error" not in p["cited"]
-        and all(m["sample_size_verdict"] == "sufficient" and m["negative_control_verdict"] == "detected"
-                for m in p["cited"]["measurements"])
-        for p in out_pops.values())
+    ypop = {"intact": "intact", "programmed": "prog"}
+    ideal_reference = ("ideal R stand-in at 400 ohm carrying the injected multiplier "
+                       "(mc_inj_rref_r); value-parametric by design")
+    physical_reference = ("committed XRref (ppolyf_u, 0.8 um x 1.05 um, 400.386 ohm at 25 C "
+                          "typical) with the injected tolerance on its series multiplier s "
+                          "(mc_inj_xrref_s), scaling terminal and body resistance together")
+    jobs, engines, out_pops, out_phys = set(), set(), {}, {}
+    for pop, d in pops.items():
+        out_pops[pop] = population(d, d["nominal"], ypop[pop], ideal_reference)
+        if a.physical_reference:
+            out_phys[pop] = population(d, d["phys"], ypop[pop] + "_phys", physical_reference)
+
+    def discipline(populations):
+        return all(
+            "error" not in p["cited"]
+            and all(m["sample_size_verdict"] == "sufficient" and m["negative_control_verdict"] == "detected"
+                    for m in p["cited"]["measurements"])
+            for p in populations.values())
+
+    cited_ok = discipline(out_pops)
+    finding_pops = {}
+    for pop, p in out_pops.items():
+        finding_pops[pop] = p
+        if a.physical_reference:
+            finding_pops[pop + " (physical XRref)"] = out_phys[pop]
     rec = {
         "pdk_revision": a.pdk_rev, "variant_pinned": bench_record.VARIANT_PINNED,
         "variant_simulated": bench_record.VARIANT_SIMULATED,
@@ -201,7 +239,11 @@ def main():
             "samples_per_nominal_request": a.n_nominal * n_corners,
             "samples_per_control_request": a.n_control * n_corners,
             "mismatch": f"PDK MOS mismatch at its model default (sw_stat_mismatch={a.mismatch_scale:g}); covers comparator pair, mirror and bias devices",
-            "reference_tolerance": f"klt-injected Gaussian multiplier on Rref, relative sigma {a.sigma_rref:g}",
+            "reference_tolerance": (
+                f"klt-injected Gaussian multiplier on Rref, relative sigma {a.sigma_rref:g}"
+                + ("; the physical-reference requests inject the same relative sigma on the committed "
+                   "XRref's series multiplier s, scaling terminal and body resistance together"
+                   if a.physical_reference else "")),
             "reproducibility": "the draws are a pure function of seed, seed_scope=point and the corner identity; re-running run.sh with the same constants reproduces the sample sequence",
         },
         "assumptions": {
@@ -209,6 +251,7 @@ def main():
             "A5_programmed_ohm": f">=630 up to open; only the 900 ohm point is documented. {a.rfuse_prog:g} (lower edge) is the binding programmed value here",
             "A6_reference_ohm": f"{a.rref:g} (decision 0003)",
             "A7_reference_relative_sigma": f"{a.sigma_rref:g}: NO documented source for the reference tolerance; a stated working value, not a fact (new assumption, not in spec/efuse-otp.md)",
+            "A8_resistor_fs_sf_corner": "the PDK model library declares resistor sections res_typical/res_ss/res_ff and no res_fs/res_sf, so the fs and sf corners keep the typical sheet rho; this has no documented source (new assumption, not in spec/efuse-otp.md); two of the five process corners therefore do not exercise the resistor corner dependence",
             "fuse_model": "plain resistor behind a series switch + select replica; the fuse value is not varied inside the Monte Carlo (the A4/A5 range edges are the evaluated points)",
             "not_covered": "bitline capacitance, column-mux leakage, supply noise, post-layout parasitics",
         },
@@ -221,8 +264,19 @@ def main():
         "min_samples": a.min_samples, "target_ci_halfwidth": a.ci_halfwidth, "confidence": 0.95,
         "populations": out_pops,
         "cited_evidence_meets_item6_discipline": cited_ok,
-        "decision_path_finding": decision_finding(out_pops),
+        "decision_path_finding": decision_finding(finding_pops),
     }
+    if a.physical_reference:
+        rec["physical_reference"] = {
+            "description": ("the same two nominal populations against the committed XRref (ppolyf_u "
+                            "device, including its terminal resistance and its corner dependence; "
+                            "fs/sf keep the typical sheet rho, A8) instead of the ideal stand-in; "
+                            "the injected tolerance multiplies its series parameter s, so terminal "
+                            "and body resistance vary together. Paired with the same value-skewed "
+                            "negative controls as the ideal populations"),
+            "populations": out_phys,
+            "cited_evidence_meets_item6_discipline": discipline(out_phys),
+        }
     bench_record.write_record(a.rec, rec)
 
 

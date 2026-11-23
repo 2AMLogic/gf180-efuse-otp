@@ -9,14 +9,14 @@ at the pin); this is the Monte Carlo layer on top of
 the `sim/sense-margin` bench (same DUT extraction, same deck, same grid).
 
 ```sh
-sim/sense-mc/run.sh --dry-run        # validates the four requests with `klt sim --dry-run`; runs nothing
+sim/sense-mc/run.sh --dry-run        # validates the six requests with `klt sim --dry-run`; runs nothing
 sim/sense-mc/run.sh                  # submits to the batch fleet, grades with `klt yield`, writes a record
 sim/sense-mc/check-repro.sh <record> # re-runs one sample at one corner locally and compares it with the record
 ```
 
 ## What it runs
 
-Four `klt sim` requests, submitted with `klt sim --batch-set` (batch only; a refused or
+Six `klt sim` requests, submitted with `klt sim --batch-set` (batch only; a refused or
 failed submit stops the script and is never re-run locally), each over the decision-0005 grid
 of 45 corners (5 process x -40/25/125 C x vdd33 2.97/3.30/3.63 V), with `monte_carlo` seeded
 (`seed` 36036, `seed_scope: point`, `vary: mismatch`):
@@ -25,6 +25,8 @@ of 45 corners (5 process x -40/25/125 C x vdd33 2.97/3.30/3.63 V), with `monte_c
 |---|---|---|---|---|
 | `mc_intact_rf260_rr400` | 260 ohm (A4 upper edge) | 400 ohm (A6) | 12 | nominal |
 | `mc_prog_rf630_rr400` | 630 ohm (A5 lower edge) | 400 ohm | 12 | nominal |
+| `mc_intact_rf260_rrphys` | 260 ohm | the committed `XRref` (`ppolyf_u`, 0.8 µm x 1.05 µm) | 12 | nominal, physical reference |
+| `mc_prog_rf630_rrphys` | 630 ohm | the committed `XRref` | 12 | nominal, physical reference |
 | `ctl_intact_rf260_rr200` | 260 ohm | 200 ohm | 6 | negative control: reference inside the intact range |
 | `ctl_prog_rf630_rr1000` | 630 ohm | 1000 ohm | 6 | negative control: reference above the programmed range |
 
@@ -35,10 +37,20 @@ Two sources of variation:
 
 - **Comparator / mirror offset**: the PDK's MOS mismatch (`monte_carlo.mismatch_scale: 1`,
   i.e. `sw_stat_mismatch=1`), active on every MOS device of `efuse_sense` and `efuse_comp`.
-- **Reference tolerance**: klt-injected Gaussian multiplier on `Rref`
-  (`monte_carlo.injected`, `mc_inj_rref_r`). The PDK does not mismatch-model the netlist's
-  ideal reference resistor, and the gf180mcu poly-resistor mismatch is structurally disabled in
-  the model, so the tolerance is design-owned.
+- **Reference tolerance**: klt-injected Gaussian multiplier on the reference
+  (`monte_carlo.injected`). The `rr400` requests carry it on a plain-`R` stand-in
+  (`mc_inj_rref_r`, value-parametric by design); the `rrphys` requests carry the same
+  relative sigma on the committed `XRref`'s series multiplier `s` (`mc_inj_xrref_s`), which
+  scales the `ppolyf_u` terminal resistors (`rt1`/`rt2`) and body resistor (`rb`) together,
+  so the injected tolerance moves the whole physical resistance including its
+  corner-dependent value (the PDK's own `mis_r` mismatch parameter would scale only the
+  body and under-apply the tolerance). The PDK does not mismatch-model the netlist's ideal
+  reference resistor, and the gf180mcu poly-resistor mismatch is structurally disabled in
+  the model, so the tolerance is design-owned either way.
+
+Each nominal is paired with its population's negative control through `klt yield-samples`;
+the physical-reference nominals reuse the same value-skewed controls (200/1000 ohm), which
+validate both populations' measurement and decision paths.
 
 ## Measurements and limits
 
@@ -57,6 +69,9 @@ at 95 %; `klt yield-samples` pairs each nominal with its control. The yield step
 - **A7, new, not in the spec: reference relative sigma 0.05.** No documented source exists for the
   reference tolerance; it is a stated working value, not a fact. Adopting a value is a spec change
   (decision record); this record does not make one.
+- **A8, new, not in the spec: fs/sf resistor corners hold the typical sheet rho.** The PDK model
+  library has no `res_fs`/`res_sf` section, so the bias resistor keeps the typical sheet rho at
+  those two corners (same assumption as `sim/sense-margin/README.md`); no documented source.
 - Not modelled: bitline capacitance, column-mux leakage, supply noise, post-layout parasitics.
 
 ## Result and what it does and does not show
@@ -155,3 +170,36 @@ A 1.0 yield over 540 samples bounds the failure rate below about 0.7 % at 95 % c
 not show zero failures. A7 (reference sigma 0.05) is still an assumption with no documented source,
 as are A4-A6. The item 1 analog and item 2 analog attestations, the array GDS and the re-graded
 record are refreshed for the new netlist (`design/regen-netlist.sh --check` passes on the pinned klt).
+
+## Re-run against the physical ppolyf_u reference (issue 321)
+
+PR #323 landed the physical `XRb` and `XRref` (`ppolyf_u`) in `design/efuse_otp_array.spice`; its
+review (finding 2) showed the ideal-400-ohm stand-in hides the reference's terminal resistance and
+corner dependence. `run.sh` now submits **six** requests: the four above plus the two
+physical-reference nominals (`mc_intact_rf260_rrphys`, `mc_prog_rf630_rrphys`), whose decks keep the
+committed `XRref` and whose injected tolerance multiplies its series parameter `s` (terminal + body
+resistance together). The requests select `res_ss` for ss, `res_ff` for ff and `res_typical` for
+typical/fs/sf (A8). New record: `records/20261123T140937Z-f6eeac7/record.json` (same seed, grid,
+sample counts and assumptions A4-A8; 6 batch jobs in `remote_job_ids`; previous records untouched).
+Comparison baseline: `records/20261105T084326Z-f6eeac7`.
+
+- `margin_v` (cited), ideal-reference nominals: yield 1.0 (95 % CI 0.9932-1.0) over 540 samples per
+  population, sample size `sufficient`, negative control `detected` (control yield 0.0) for both --
+  as in the baseline. Smallest sampled margin 10.8 mV (intact, ss / 125 C / 2.97 V; was 12 mV at the
+  same corner) and 21.9 mV (programmed, fs / 125 C / 2.97 V; was 22 mV at typical / 125 C / 2.97 V).
+- `margin_v` (cited), physical-XRref nominals: yield 1.0 (95 % CI 0.9932-1.0) over 540 samples per
+  population, `sufficient`, control `detected` for both. The physical reference tightens the analog
+  margin: smallest sampled margin **3.9 mV** (intact, ff / 125 C / 3.30 V) versus 10.8 mV with the
+  ideal stand-in, and 17.1 mV (programmed, ss / 125 C / 2.97 V) versus 21.9 mV -- the `ppolyf_u`
+  terminal resistance and its corner variation eat margin at the population edges, exactly the
+  effect the stand-in hid.
+- `decision_margin` (reported, not cited): yield 1.0 (CI lower bound 0.9932) for all four nominal
+  populations (0 of 540 samples fail each); controls detected. The baseline also read 1.0 for both
+  ideal populations.
+- Determinism: `check-repro.sh` reproduces all six stems of the new record (including both `rrphys`
+  decks) and stays backward-compatible with the four-stem historical records.
+
+No corner or MC population fails; the campaigns complete with the physical devices in the deck.
+The intact-edge physical margin (3.9 mV) is the number a further sense-path sizing question would
+start from -- nothing here resizes the circuit or relaxes the spec. A7 (sigma 0.05) remains an
+assumption without a documented source, as do A4-A6 and A8.
