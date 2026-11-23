@@ -120,7 +120,7 @@ re-attesting fails (exit 3 = stale).
 
 ## Re-attest item 8 (characterization report)
 
-After any edit to `measurements/characterization/README.md` or `attest/item8.json`:
+After any edit to `measurements/characterization/README.md` or `attest/item8.json`, or to any file the inventory hashes (including the committed `layout/lvs-*.report.json` evidence):
 
 ```sh
 uvx --from "$(cat signoff/klt-pin.txt)" klt signoff --attest 8 \
@@ -219,8 +219,11 @@ under "Regenerate the record" (re-attest item 8, regenerate once more,
 byte-identical). A refresh that moves only machine-local provenance — an
 engine-version bump under the same pin, like the 2026-11-23 re-record at
 klayout 0.30.14 — leaves the input hash, the `4.digital` citation and the
-record byte-identical, so no manifest edit and no item 8 round trip is
-needed. A `status: mismatch` report is committed uncited instead,
+record byte-identical, so no manifest edit and no second record-regeneration
+pass is needed — but item 8 must still be re-attested in the same commit,
+because the envelope pins the report's own raw bytes (`sha256-raw-bytes`),
+which an engine-version-only refresh changes (see "Re-attest item 8"). A
+`status: mismatch` report is committed uncited instead,
 `4.digital` stays `unmet`, and the mismatch classes are listed in
 `layout/README.md`, "LVS".
 
