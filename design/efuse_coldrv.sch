@@ -38,7 +38,7 @@ C {devices/lab_pin.sym} 1050 220 0 0 {name=l22 lab=pg}
 C {devices/lab_pin.sym} 1050 240 0 0 {name=l23 lab=vdd33}
 C {devices/lab_pin.sym} 1050 260 0 0 {name=l24 lab=vprog}
 C {devices/lab_pin.sym} 1050 280 0 0 {name=l25 lab=vss}
-C {symbols/pfet_06v0.sym} 250 370 0 0 {name=Mdrv L=0.5u W=100u nf=1 m=3 model=pfet_06v0 spiceprefix=X}
+C {symbols/pfet_06v0.sym} 250 370 0 0 {name=Mdrv L=0.55u W=100u nf=1 m=3 model=pfet_06v0 spiceprefix=X}
 C {devices/lab_pin.sym} 270 340 0 0 {name=l27 lab=vprog}
 C {devices/lab_pin.sym} 230 370 0 0 {name=l28 lab=pg}
 C {devices/lab_pin.sym} 270 400 0 0 {name=l29 lab=bl}
