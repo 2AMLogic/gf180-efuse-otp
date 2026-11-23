@@ -50,9 +50,7 @@ DECISION_MIN=0.2             # resolved decision: sense_out/vdd33 at least 0.2 p
 T_PRE=14.9n
 T_OUT=38n
 
-netlist="$repo/design/efuse_otp_array.spice"
-[[ -f "$netlist" ]] || { echo "run.sh: $netlist missing" >&2; exit 1; }
-sub() { bench_subckt "$netlist" "$1"; }  # one .subckt block from the committed netlist
+bench_netlist "$repo/design/efuse_otp_array.spice"
 
 # All klt invocations run from the repo root with repo-relative record paths, so the paths
 # stored in set-report.json, set-manifest.json and the yield/samples files resolve from any
@@ -107,8 +105,7 @@ mk ctl_intact_rf${RFUSE_INTACT}_rr${RREF_CTL_INTACT} intact "$RFUSE_INTACT" "$RR
 mk ctl_prog_rf${RFUSE_PROG}_rr${RREF_CTL_PROG}   prog   "$RFUSE_PROG"   "$RREF_CTL_PROG"  "$N_CONTROL"
 
 if [[ $dry -eq 1 ]]; then
-  bench_dry_run "${reqs[@]}"
-  rm -rf "$rec"; echo "dry run: request set validated; temp dir removed"; exit 0
+  bench_dry_run_exit "${reqs[@]}"
 fi
 
 # rc: 0 = all pass, 3 = a measurement failed, 4 = partial set (see bench_submit_set).
