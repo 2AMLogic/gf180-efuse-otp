@@ -16,7 +16,7 @@ The block's verdict of record against the klayout-tools evidence tiers.
 | `check-item6-digital.sh` | Fails when `spec/efuse-otp.md` changes (sha256) or an extract row no longer matches a line of it. Run after any spec change, re-derive the extract, then re-hash the manifest. |
 | `block-manifest.signoff.json` | Committed `klt signoff --manifest` output: the verdict of record. Items 1, 2, 8, 9 and 10 are `met` for both partitions; item 5 is `met` (analog); item 6 is `met` (analog) and `not_applicable` (digital); item 4 is `met` (digital, cited `layout/lvs-ctrl.report.json`); every other T1 row is `unmet` / `no_evidence`, and the T2, T3 and T4 rows are `unmet` / `tier_not_supported`. Item 6 analog `met` means the campaign discipline holds for the cited `margin_v` evidence (recorded seed, sufficient samples, detected negative control); it does not say the sense row is established, see `sim/sense-mc/README.md`. |
 | `../sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/{intact,prog}.yield.json` | Item 6, analog: the cited `klt yield` reports (`margin_v` only, post-#85 comparator), one per fuse population, cited with `rows: [P10]` in `block-manifest.json` (`6.analog`). The `*.decision.yield.json` files in the same record are not cited. Item 5 analog cites the six `bench_*` sense-margin corner reports of `sim/sense-margin/records/20261109T002043Z-f6eeac7` for P10 (they declare `margin_v >= 0`, signed so positive is the correct side; the `control_*` reports are not cited, the 260 ohm control fails by design) and reads `met`. |
-| `../layout/drc-*.report.json` | T1 item 3 stays uncited. Both partition reports are clean under the curated deck. The full native reports have 253 array and 9 controller violations. See [layout DRC results](../layout/README.md#drc-t1-item-3) and [#60](https://github.com/2AMLogic/gf180-efuse-otp/issues/60). |
+| `../layout/drc-*.report.json` | T1 item 3 stays uncited. Both partition reports are clean under the curated deck. The full native reports have 252 array and 8 controller violations (was 253 / 9 at 0.0005 µm: the `DBU` marker on each stream was resolved by the 0.001 µm export, #311, with no other count changed). See [layout DRC results](../layout/README.md#drc-t1-item-3) and [#60](https://github.com/2AMLogic/gf180-efuse-otp/issues/60). |
 | `../layout/lvs-ctrl.report.json` | Committed `klt lvs` report for T1 item 4, digital (`layout/lvs.sh`): `status: match` with `power_connectivity.status: match` against `layout/efuse_otp_ctrl.asbuilt.v` under the curated deck (same deck hash as the DRC reports, klt 0.9.2 — the pin), cited for `4.digital`. What the `match` reaches (and does not) is in `layout/README.md`, "LVS"; the re-run procedure is below. |
 | `klt-pin.txt` | The single place the grader version is pinned. CI installs `$(cat signoff/klt-pin.txt)`. |
 | `klt.sh` | The single sourced definition of how the scripts reach the pinned klt: reads `klt-pin.txt` once (resolved from its own location, not cwd), preflights `uvx` (exit 2), and defines `klt`, `klt_python`, `KLT_PIN`, `KLT_ARGV` and the `[yield]`-extras `KLT_YIELD` array. The `--no-function` source argument (`. signoff/klt.sh --no-function`; skip the functions, keep `KLT_PIN`/`KLT_YIELD` -- the shape `sim/sense-mc/run.sh` uses) is the opt-out: an argument is passed to the sourced file alone and cannot be inherited, so no environment variable can take a signoff script off the pinned klt. `verification/run.sh` keeps its own inline preflight by design: it is the exemplar and a content-hashed attestation input. |
@@ -25,7 +25,6 @@ The block's verdict of record against the klayout-tools evidence tiers.
 | `item1-digital.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.digital` in `block-manifest.json`, pinned by the envelope's own composite `provenance.input.content_hash` (see "Re-attest item 1 (digital)"). |
 | `item1-analog-inventory.json` | `t1-attestation-inventory` for T1 item 1, analog: the xschem schematics and cell symbols in `design/` and the netlist `design/efuse_otp_array.spice`, whose freshness `check` is `design/regen-netlist.sh --check` (`local_only`: it needs xschem). |
 | `item1-analog.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.analog`, pinned by the envelope's own composite `provenance.input.content_hash` (see "Re-attest item 1 (analog)"). |
-| `design-evidence-tiers.md` | Copy of the tiers doc shipped with the pinned klt (`klayout-tools==0.9.2`, `klayout_tools/data/design-evidence-tiers.md`), so the record does not move when an installed klt bundles a different doc. |
 
 ## Regenerate the record
 
@@ -34,12 +33,21 @@ Always with the pinned release, never a host-installed `klt`:
 ```sh
 uvx --from "$(cat signoff/klt-pin.txt)" klt signoff \
   --manifest signoff/block-manifest.json \
-  --tiers-doc signoff/design-evidence-tiers.md \
   --format json > signoff/block-manifest.signoff.json
 ```
 
 Exit 3 means the report was produced with items unmet; that is the expected
 state. Any other non-zero exit is a failure.
+
+The checklist itself comes from the pinned tool: `klt signoff` grades against
+the design-evidence tiers doc shipped inside the pinned release
+(`klayout-tools==0.9.2`;
+[`docs/design-evidence-tiers.md`](https://github.com/2AMLogic/klayout-tools/blob/v0.9.2/docs/design-evidence-tiers.md)
+at the tag — decision
+[0008](../spec/decisions/0008-vendored-tiers-doc-removal.md)). The record's
+`source_doc` names that doc by klt's source-relative label, not a path in this
+repo, and `source_doc_content_hash` pins its content, so a checklist change at
+a pin bump shows up in the re-grade `cmp` below and in CI.
 
 The item 8 envelope hashes `block-manifest.signoff.json`, so **any** regeneration
 that changes the record leaves it stale: re-attest item 8 (see "Re-attest item 8")
@@ -48,10 +56,10 @@ That second pass always is — items `8.*` are pinned by the inventory sha256, w
 a re-attest does not touch — so the two converge in one round. CI enforces this
 with an item 8 `--check` step.
 
-To bump the pin: change `klt-pin.txt`, replace `design-evidence-tiers.md` with
-the copy shipped in the new release, regenerate, and commit all three together.
+To bump the pin: change `klt-pin.txt`, regenerate, and commit both together.
 The committed netlist is a product of the pinned klt, so also run
-`rtl/regen-gl.sh` and re-attest (below) in the same commit.
+`rtl/regen-gl.sh` and re-attest (below) in the same commit. The new release's
+tiers doc replaces the old one inside the tool itself; nothing to copy.
 
 ## Re-attest item 1 (digital)
 
@@ -142,8 +150,9 @@ the sources and the netlist with `--check`; it does not re-run xschem.
 producer, `klt signoff --attest 2 --input <stream>`: `layout/pnr.attest.json`
 from `layout/efuse_otp_ctrl.gds` and `signoff/item2-analog.attest.json` from
 `layout/efuse_otp_array.gds`. Re-attest after regenerating either stream —
-digital, after a change to `rtl/efuse_otp_ctrl.gl.v`, `layout/pnr-request.json`
-or the pin; analog, after a change to `layout/gen_efuse_otp.py`,
+digital, after a change to `rtl/efuse_otp_ctrl.gl.v`, `layout/pnr-request.json`,
+`layout/dbu_export.py` (the final export both producers share) or the pin;
+analog, after a change to `layout/gen_efuse_otp.py`,
 `design/efuse_otp_array.spice` or the pin:
 
 ```sh
