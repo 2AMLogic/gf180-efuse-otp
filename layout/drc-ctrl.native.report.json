@@ -6,12 +6,10 @@
   },
   "deck": "pdk/gf180mcuD/libs.tech/klayout/tech/drc/gf180mcu.drc",
   "engine": "klayout",
-  "dbu_um": 0.0005,
-  "status": "violations",
-  "violation_count": 1,
-  "rule_counts": {
-    "DBU": 1
-  },
+  "dbu_um": 0.001,
+  "status": "clean",
+  "violation_count": 0,
+  "rule_counts": {},
   "coverage": {
     "deck_layers": [],
     "layers_checked": [],
@@ -60,7 +58,6 @@
       "CO.9",
       "CUP.2",
       "CUP.3",
-      "DBU",
       "DCF.11a",
       "DCF.12",
       "DCF.2b",
@@ -826,7 +823,6 @@
       "CO.9",
       "CUP.2",
       "CUP.3",
-      "DBU",
       "DCF.11a",
       "DCF.12",
       "DCF.2b",
@@ -1601,7 +1597,6 @@
       "CO.9",
       "CUP.2",
       "CUP.3",
-      "DBU",
       "DCF.11a",
       "DCF.12",
       "DCF.2b",
@@ -2328,41 +2323,7 @@
     "nothing_checked": false,
     "nothing_checked_reasons": []
   },
-  "violations": [
-    {
-      "rule": "DBU",
-      "description": "DBU : The design database unit must be 0.001",
-      "check": "external",
-      "layer": "DBU",
-      "cell": "efuse_otp_ctrl",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": 0,
-        "bottom": 0,
-        "right": 354710,
-        "top": 354710
-      },
-      "polygon": [
-        [
-          0,
-          0
-        ],
-        [
-          0,
-          354710
-        ],
-        [
-          354710,
-          354710
-        ],
-        [
-          354710,
-          0
-        ]
-      ]
-    }
-  ],
+  "violations": [],
   "coverage_assertion": {
     "kind": "expected_rule_category_names",
     "expected_names": [
@@ -2410,7 +2371,6 @@
       "CO.9",
       "CUP.2",
       "CUP.3",
-      "DBU",
       "DCF.11a",
       "DCF.12",
       "DCF.2b",
@@ -3176,7 +3136,6 @@
       "CO.9",
       "CUP.2",
       "CUP.3",
-      "DBU",
       "DCF.11a",
       "DCF.12",
       "DCF.2b",
@@ -3927,7 +3886,7 @@
       }
     },
     "input": {
-      "content_hash": "sha256:c4300cc05ad942eefb7fc9c1e5400f61684a67553b687e208e9f1817cf58f43a",
+      "content_hash": "sha256:5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748",
       "role": "layout"
     },
     "klayout_version_mismatch": true

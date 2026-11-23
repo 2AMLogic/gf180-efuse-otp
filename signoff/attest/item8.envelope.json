@@ -24,42 +24,42 @@
         "role": "evidence",
         "path": "layout/drc-array.report.json",
         "passed": true,
-        "content_hash": "sha256:daf92acf836ebd3e7f6240d9d758ce907127d208936b78248451c0ebb0c3c4e2"
+        "content_hash": "sha256:06c02830d1914ede3a8f523da6579bb7f50a765980638df56e83b45a335d4af2"
       },
       {
         "check": "present",
         "role": "evidence",
         "path": "layout/drc-ctrl.report.json",
         "passed": true,
-        "content_hash": "sha256:0212a345d5fc9c6ad11c87d96dcc4301f9fbd05bc6d1e39a061044efee6561d0"
+        "content_hash": "sha256:74313aeed186e0f6599ae7252f8182704a43541afcffdc8e31b43413918cf652"
       },
       {
         "check": "present",
         "role": "evidence",
         "path": "layout/efuse_otp_array.report.json",
         "passed": true,
-        "content_hash": "sha256:7777bbe679c4d9fff712efd697d74e006ddcf393c094cc4f97ced1984592ec3c"
+        "content_hash": "sha256:bf5035a90a93435b0913b80f2e9271ce68541071df14b164e9d45b237180813b"
       },
       {
         "check": "present",
         "role": "evidence",
         "path": "layout/lvs-ctrl.report.json",
         "passed": true,
-        "content_hash": "sha256:85d051f5be67a1d0a191b7408829834bc2538ee3bf93e81975a29c15e4135a3f"
+        "content_hash": "sha256:f96a30ab3b1e20e4febe6621e0531dd8a378fc7e2325c083afaa716feff369df"
       },
       {
         "check": "present",
         "role": "evidence",
         "path": "layout/pnr-report.json",
         "passed": true,
-        "content_hash": "sha256:a1c6bf1574983287f10705affc6b98e5cb1233be223688bf367d38c5e2e32cda"
+        "content_hash": "sha256:f2aecc730284645c11cda102c676d1519347bbe187dbda26e4422eee9d09f9c6"
       },
       {
         "check": "present",
         "role": "evidence",
         "path": "signoff/block-manifest.signoff.json",
         "passed": true,
-        "content_hash": "sha256:334ea15de0a397170dbfef85069a914b16daede6a0e9714850e8b5d2ac642be7"
+        "content_hash": "sha256:871a34d80998db2235ff2ae26b38e7c8501b2f448f3d855260bb6d23510b1751"
       },
       {
         "check": "present",
@@ -737,7 +737,7 @@
         "metric": "area",
         "envelope": "layout/pnr-report.json",
         "field": "die_area_um2",
-        "value": 31454.8,
+        "value": 27342.3,
         "passed": true
       },
       {
@@ -767,7 +767,7 @@
         "metric": "area",
         "envelope": "layout/pnr-report.json",
         "field": "die_area_um2",
-        "value": 31454.8,
+        "value": 27342.3,
         "passed": true
       },
       {
@@ -797,7 +797,7 @@
         "metric": "area",
         "envelope": "layout/pnr-report.json",
         "field": "die_area_um2",
-        "value": 31454.8,
+        "value": 27342.3,
         "passed": true
       },
       {
@@ -827,7 +827,7 @@
         "metric": "area",
         "envelope": "layout/pnr-report.json",
         "field": "die_area_um2",
-        "value": 31454.8,
+        "value": 27342.3,
         "passed": true
       },
       {
@@ -857,7 +857,7 @@
         "metric": "area",
         "envelope": "layout/pnr-report.json",
         "field": "die_area_um2",
-        "value": 31454.8,
+        "value": 27342.3,
         "passed": true
       },
       {

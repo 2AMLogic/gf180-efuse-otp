@@ -353,7 +353,7 @@ class Test(unittest.TestCase):
         self.assertTrue(any('evidence["10"]' in m for m in msgs), msgs)
         _, out = self.run_main(root)
         self.assertIn("block-manifest.json", out)
-        self.assertIn("design-evidence-tiers.md", out)
+        self.assertIn("klt signoff --manifest signoff/block-manifest.json", out)
 
     def test_manifest_entries_without_hash_skipped(self):
         root = make_root(self)

@@ -3,7 +3,9 @@
 Sense-path Monte Carlo campaign for T1 item 6 (statistical claims), analog partition. The
 ratified "Sense margin" row (`spec/efuse-otp.md` section 2) asks for positive margin over the
 A4/A5 ranges "including reference tolerance and comparator offset". A corner matrix cannot
-show that (`signoff/design-evidence-tiers.md`, item 6); this is the Monte Carlo layer on top of
+show that (item 6 of the design-evidence tiers doc shipped with the pinned
+klt, [`docs/design-evidence-tiers.md`](https://github.com/2AMLogic/klayout-tools/blob/v0.9.2/docs/design-evidence-tiers.md)
+at the pin); this is the Monte Carlo layer on top of
 the `sim/sense-margin` bench (same DUT extraction, same deck, same grid).
 
 ```sh

@@ -215,7 +215,7 @@ def main():
         return "stream has several top cells; pass --top"
     dbu = ly.dbu
     ext = kdb.Region(top.bbox())
-    area = ext.area() * dbu * dbu
+    extent_area = ext.area()  # square database units
 
     fuse = kdb.Region()
     for ld in FUSE_MARKS:
@@ -223,9 +223,6 @@ def main():
     fuse.merge()
 
     fill_cell = ly.create_cell("density_fill")
-
-    def pct(r):
-        return round(100.0 * r.area() * dbu * dbu / area, 2)
 
     report = {
         "schema_version": 1,
@@ -235,7 +232,7 @@ def main():
         "dbu_um": dbu,
         "extent_um": [round(v * dbu, 4) for v in
                       (top.bbox().left, top.bbox().bottom, top.bbox().right, top.bbox().top)],
-        "extent_area_um2": round(area, 1),
+        "extent_area_um2": round(extent_area * dbu * dbu, 1),
         "fill_cell": "density_fill",
         "fuse_keepout_um": FUSE_KEEPOUT_UM,
         "keepouts": {
@@ -253,27 +250,29 @@ def main():
         "layers": [],
     }
 
-    results = []
-
-    def emit(name, drawing_ld, dummy_ld, fill, drawn, rule, bound, desc):
+    def emit(name, drawing_ld, dummy_ld, fill, drawn, rule, bound, desc, upper_limit=None):
         li = fill_cell.shapes(ly.layer(*dummy_ld))
         n = 0
         for p in fill.each():
             li.insert(p)
             n += 1
-        total = pct(drawn + fill)
+        # Cross-multiply in square database units, including equality at each bound.
+        covered = 100 * (drawn + fill).area()
+        passes = covered >= bound * extent_area
+        if upper_limit is not None:
+            upper_rule, maximum = upper_limit
+            if covered > maximum * extent_area:
+                rule, bound = upper_rule, maximum
+                passes = False
         row = {
             "name": name, "drawing": f"{drawing_ld[0]}/{drawing_ld[1]}",
             "fill_layer": f"{dummy_ld[0]}/{dummy_ld[1]}",
-            "drawn_pct": pct(drawn), "fill_pct": pct(fill), "total_pct": total,
+            "drawn_pct": 100 * drawn.area() / extent_area,
+            "fill_pct": 100 * fill.area() / extent_area, "total_pct": covered / extent_area,
             "fill_shapes": n, "rule": rule, "bound": bound, "description": desc,
-            "pass": total > bound if rule in ("M1.4", "M2.4", "M3.4", "M4.4", "M5.4", "MT.3")
-            else total >= bound,
+            "pass": passes,
         }
-        if rule == "DCF.1b":
-            row["pass"] = 25.0 <= total <= 70.0  # DCF.1d maximum too
         report["layers"].append(row)
-        results.append(row["pass"])
 
     comp = region(ly, top, COMP)
     poly2 = region(ly, top, POLY2)
@@ -332,9 +331,9 @@ def main():
         comp_fill.insert(kdb.Box(b.left + over, b.bottom + over,
                                  b.right - over, b.top - over))
         poly2_fill.insert(b)
-    emit("COMP", COMP, COMP_DUMMY, comp_fill, comp, "DCF.1b", 25.0,
-         "COMP+dummy over extent, DCF.1b >= 25% / DCF.1d <= 70%")
-    emit("Poly2", POLY2, POLY2_DUMMY, poly2_fill, poly2, "PL.8", 14.0,
+    emit("COMP", COMP, COMP_DUMMY, comp_fill, comp, "DCF.1b", 25,
+         "COMP+dummy over extent, DCF.1b >= 25% / DCF.1d <= 70%", upper_limit=("DCF.1d", 70))
+    emit("Poly2", POLY2, POLY2_DUMMY, poly2_fill, poly2, "PL.8", 14,
          "Poly2+dummy over extent, PL.8 >= 14% (dummy poly2 covers dummy COMP, DPF.1)")
 
     for n, ld in METALS.items():
@@ -342,22 +341,25 @@ def main():
         metal_h = halos(ly, top, dbu, [(ld, METAL_SPACE_UM)], fuse)
         mfill = fill_class(ext, metal_h, dbu, METAL_GAP,
                            [(METAL_SIZE, METAL_GAP), (METAL2_SIZE, METAL2_GAP)])
-        emit(f"Metal{n}", ld, METAL_DUMMY[n], mfill, drawn, f"M{n}.4", 30.0,
-             f"Metal{n}+dummy over extent, M{n}.4 > 30%"
-             + ("; MT.3 > 30% shares this layer on the 5-level stack" if n == 5 else ""))
+        emit(f"Metal{n}", ld, METAL_DUMMY[n], mfill, drawn, f"M{n}.4", 30,
+             f"Metal{n}+dummy over extent, M{n}.4 >= 30%"
+             + ("; MT.3 >= 30% shares this layer on the 5-level stack" if n == 5 else ""))
+
+    report["all_pass"] = all(row["pass"] for row in report["layers"])
+    for row in report["layers"]:
+        print(f"{row['name']}: {row['drawn_pct']:.8g}% drawn + {row['fill_pct']:.8g}% fill "
+              f"= {row['total_pct']:.8g}% [{row['rule']}, {'pass' if row['pass'] else 'FAIL'}]",
+              file=sys.stdout if report["all_pass"] else sys.stderr)
+    if not report["all_pass"]:
+        return 5
 
     top.insert(kdb.CellInstArray(fill_cell.cell_index(), kdb.Trans()))
     opts = kdb.SaveLayoutOptions()
     opts.format = "GDS2"
     opts.gds2_write_timestamps = False
     ly.write(a.output, opts)
-
-    report["all_pass"] = all(results)
     Path(a.report).write_text(json.dumps(report, indent=2) + "\n")
-    for row in report["layers"]:
-        print(f"{row['name']}: {row['drawn_pct']}% drawn + {row['fill_pct']}% fill "
-              f"= {row['total_pct']}% [{row['rule']}, {'pass' if row['pass'] else 'FAIL'}]")
-    return 0 if report["all_pass"] else 5
+    return 0
 
 
 if __name__ == "__main__":

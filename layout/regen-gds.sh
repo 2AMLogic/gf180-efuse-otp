@@ -7,7 +7,10 @@
 # rules would still fail.
 #   layout/regen-gds.sh           rewrite the committed files
 #   layout/regen-gds.sh --check   exit 0 if they match, 3 if they have drifted
-# The generator also checks the fuse cell against the PDK primitive (exit 4).
+# The generator also checks the fuse cell against the PDK primitive (exit 4),
+# reads the emitted stream back to re-run that comparison on what ships, and
+# coarsens it to the foundry 0.001 um database unit (issue #311) at the final
+# write -- fatal on any coordinate the 2:1 conversion cannot represent exactly.
 set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=../sim/lib/pdk_env.sh

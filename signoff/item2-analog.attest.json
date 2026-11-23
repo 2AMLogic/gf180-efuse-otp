@@ -15,7 +15,7 @@
         "check": "stream_readable",
         "role": "layout",
         "passed": true,
-        "content_hash": "sha256:23f7bc7bf7706f647f928cd013962746e2a95cb5553e70b398cf137337e78b56"
+        "content_hash": "sha256:15f7e6d69d978f1a146cedd2e068248976a5ace3c370b9b9ba845d57a20db051"
       },
       {
         "check": "top_cell_non_empty",
@@ -29,7 +29,7 @@
         "check": "dbu_on_grid",
         "role": "layout",
         "passed": true,
-        "dbu": 0.0005
+        "dbu": 0.001
       }
     ]
   },
@@ -43,11 +43,11 @@
         "path": "layout/efuse_otp_array.gds",
         "scope": "repo"
       },
-      "content_hash": "sha256:23f7bc7bf7706f647f928cd013962746e2a95cb5553e70b398cf137337e78b56"
+      "content_hash": "sha256:15f7e6d69d978f1a146cedd2e068248976a5ace3c370b9b9ba845d57a20db051"
     },
     "regeneration": {
       "generator": "layout/regen-gds.sh",
-      "regenerated_hash": "sha256:23f7bc7bf7706f647f928cd013962746e2a95cb5553e70b398cf137337e78b56"
+      "regenerated_hash": "sha256:15f7e6d69d978f1a146cedd2e068248976a5ace3c370b9b9ba845d57a20db051"
     }
   }
 }
