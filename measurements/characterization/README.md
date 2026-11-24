@@ -3,7 +3,9 @@
 One row per ratified spec row (`spec/efuse-otp.md` section 2 parameters `P01`-`P13`
 and section 3 "can show" claims `C1`-`C3`), with the record each verdict rests on.
 This report **aggregates committed records; it produces no evidence and edits no
-`sim/` result.** State read at `main` `fafa4a6`, 2026-11-10.
+`sim/` result.** State read at `main` `fafa4a6`, 2026-11-10; the DRC rows (P02,
+P13) re-read at `6985308`, 2026-11-24 (the `sim/` records are append-only, so
+the earlier read stands for them).
 
 Verdict vocabulary: `met` (a committed record shows the bound over the stated
 conditions), `not met`, `partial` (record covers part of the bound), `not measured`
@@ -20,7 +22,7 @@ working value, not a fact, and a verdict against it says nothing about a real fu
 | Row | Spec row | Bound | Verdict | Binding corner | Statistical | Cited record |
 |---|---|---|---|---|---|---|
 | P01 | Array | 256 bits, 32 x 8 (fallback 1 x 8) | partial: controller bench runs 32 x 8 and 1 x 8 (RTL only); array layout committed, no array-level electrical result | n/a | no | `sim/controller-fv/32x8_nom.report.json`, `sim/controller-fv/1x8_nom.report.json`, `layout/efuse_otp_array.report.json` |
-| P02 | Fuse cell | PDK geometry per spec 1.1, no deviation | not measured: `EF.*` exact-value rules are not evaluated by the pinned klt deck (klayout-tools#4312) | n/a | no | `layout/drc-array.report.json` (clean under the curated deck; `EF.*` not in `rules_checked`), owning issue #60 |
+| P02 | Fuse cell | PDK geometry per spec 1.1, no deviation | met: committed stream clean under the curated deck and, on the PDK-native foundry deck, all 27 `EF.*` rules checked with 0 eFuse markers (#60); the array carries the `PLFUSE`/`EFUSE_MK` geometry those rules act on, and the placement-extent caveat is disclosed in `signoff/README.md` ("T1 item 3 disclosure") | n/a | no | `layout/drc-array.report.json`, `layout/drc-array.native.report.json` |
 | P03 | Program-select device | `nfet_06v0` per cell, width set by simulation | met for the swept grid: 60 um (L 0.7 um) is the smallest swept width passing the A2 requirement; Vgs 5.5 V, Vds 2.32 V as simulated | ss, 125 C, 4.5 V, fuse 260 ohm (see P06) | no | `sim/program-select/records/20261023T174839Z-f6eeac7/record.json` |
 | P04 | Program supply | external, 5.0 V +/-10% (A1) | `ASSUMPTION`: swept at 4.5/5.0/5.5 V as the grid axis; not a result | n/a | no | `sim/program-select/records/20261023T174839Z-f6eeac7/record.json` |
 | P05 | Pulse width | 10 us nominal, 1-100 us (A3) | `ASSUMPTION`: controller generates 1/10/100 us pulses at 10 MHz (and 100 us at 100 MHz) in an ideal-timing RTL bench; no analog result depends on it | n/a | no | `sim/controller-fv/32x8_min.report.json`, `32x8_nom.report.json`, `32x8_max.report.json`, `32x8_100MHz_max.report.json` |
@@ -31,7 +33,7 @@ working value, not a fact, and a verdict against it says nothing about a real fu
 | P10 | Sense margin | positive at every corner over A4/A5, incl. reference tolerance and comparator offset | `partial`, `ASSUMPTION` ranges. Corners: signed `margin_v` positive at every one of 6 fuse values x 45 corners (minimum 0.0160 V, intact 260 ohm). Monte Carlo (seed 36036, 540 samples per population, mismatch at PDK default plus 5 % relative-sigma reference tolerance): intact 260 ohm minimum 0.0122 V and programmed 630 ohm minimum 0.0223 V, 0 failing samples each; empirical yield 100 % with the honest statement "at least 99.3192 % at 95 % confidence, N = 540"; negative control detected. Pooled across corners (a worst-case envelope), normality rejected, so the parametric Cpk is indicative only. The reference-tolerance sigma is itself an assumption (no documented source) | corners: ss, 125 C, 2.97 V, intact 260 ohm; Monte Carlo: ss/125 C/2.97 V (intact), typical/125 C/2.97 V (programmed) | yes (offset, tolerance) | `sim/sense-margin/records/20261109T002043Z-f6eeac7/sets/bench_rf140_rr400/report.json`, `.../bench_rf200_rr400/report.json`, `.../bench_rf260_rr400/report.json`, `.../bench_rf630_rr400/report.json`, `.../bench_rf900_rr400/report.json`, `.../bench_rfopen_rr400/report.json`; `sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/intact.yield.json`, `.../prog.yield.json` |
 | P11 | Controller interface | synchronous: clock, address, program-enable, read-enable, data out, busy | met (RTL functional): 12/12 checks pass in all 9 parameter sets | n/a (no PVT in an RTL bench) | no | `sim/controller-fv/*.report.json` |
 | P12 | Controller behavior | arm state after reset; program drive inactive in reset and power-up; fixed settle count; address stable before enable | met (RTL functional); a negative control is defined in `verification/README.md` but no committed record of its result exists, so none is claimed | n/a (no PVT in an RTL bench) | no | `sim/controller-fv/*.report.json`, `verification/README.md` |
-| P13 | PVT corners / Signoff | corner set of decision 0005; DRC clean incl. `EF.*`; LVS with the fuse as a device; controller verified | not met: DRC clean only without `EF.*` (#60); LVS not run (#32); controller section below covers 5 of the decision-0005 corners | see Controller | no | `signoff/block-manifest.signoff.json`, `layout/drc-*.report.json`, `sim/controller-sta/*.report.json` |
+| P13 | PVT corners / Signoff | corner set of decision 0005; DRC clean incl. `EF.*`; LVS with the fuse as a device; controller verified | not met: DRC clean incl. `EF.*` is cited for both partitions (#60, `3.analog`/`3.digital` grade `met`); LVS not run (#32); controller section below covers 5 of the decision-0005 corners | see Controller | no | `signoff/block-manifest.signoff.json`, `layout/drc-array.report.json`, `layout/drc-array.native.report.json`, `layout/drc-ctrl.report.json`, `layout/drc-ctrl.native.report.json`, `sim/controller-sta/*.report.json` |
 
 ## Spec section 3 claims (what pre-silicon evidence can show)
 
@@ -77,7 +79,8 @@ estimated by the engine). Source: `sim/controller-sta/sta-100ns.report.json`
 
 ## Rows with no record yet
 
-Not omitted, only unmeasured: P02 (#60) and the LVS part of P13 (#32). P08, P09,
+Not omitted, only unmeasured: the LVS part of P13 (#32). P02 is measured
+above (#60). P08, P09,
 P10 and C2 are cited above from the post-#85 corner and Monte Carlo records; they
 rest on assumptions A4-A6 and the unsourced reference-tolerance sigma. Post-layout rows (#61) and the clock-target ratification
 (decision 0006, #35) will change the controller section; update the rows then.

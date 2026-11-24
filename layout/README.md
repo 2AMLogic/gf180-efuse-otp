@@ -435,7 +435,13 @@ claim, not a layout one).
 
 The controller passes the full foundry deck, and so does the array: 0 findings. Each partition clears the eight
 global-density rules and all 27 `EF.*` checks. The controller contains no
-fuse markers. T1 item 3 remains uncited for both partitions pending #60.
+fuse markers. T1 item 3 is cited for both partitions (#60): the
+`[curated, native]` compound evidence lists in `signoff/block-manifest.json`
+(`3.analog`/`3.digital`) grade `met` with both members `status: clean` and
+`input_verified`, and the claimant disclosure — the curated coverage quoted
+verbatim, the native envelopes' empty disclosure arrays explained, and the two
+scope caveats (the controller's vacuous `EF.*` zero, the array's
+placement-only extent) — is in `signoff/README.md`, "T1 item 3 disclosure".
 
 | Stream | Native report | Checked categories | `EF.*` markers | All markers |
 |---|---|---:|---:|---:|
@@ -774,20 +780,26 @@ Coverage, quoted from the reports (`coverage.*`):
 
 | | analog | digital |
 |---|---|---|
-| `rules_checked` | 55 rules | 72 rules |
-| `layers_in_stream_without_rules` | `34/10` | `0/0`, `21/10`, `34/10`, `36/10`, `63/63`, `81/10`, `204/10` |
-| `rules_skipped` | 71 rules; the eFuse-layer rules `efuse_mk.enclosing.lvs_source.1`, `efuse_mk.ongrid.1`, `efuse_mk.space.1`, `plfuse.ongrid.1`, `plfuse.separation.comp.1`, `plfuse.separation.nplus.1`, `plfuse.separation.sab.1` are **checked**; `plfuse.separation.esd.1` and `plfuse.separation.resistor.1` are skipped | 54 rules, including all nine eFuse-layer rules (the digital partition draws no `PLFUSE`/`EFUSE_MK`) |
+| `rules_checked` | 71 rules | 72 rules |
+| `layers_in_stream_without_rules` | `22/4`, `30/4`, `34/4`, `34/10`, `36/4`, `42/4`, `46/4`, `81/4` (the seven `/4` entries are the #310 density-fill dummy datatypes, absent before fill) | `0/0`, `21/10`, `22/4`, `30/4`, `34/4`, `34/10`, `36/4`, `36/10`, `42/4`, `46/4`, `63/63`, `81/4`, `81/10`, `204/10` (same seven `/4` fill datatypes plus the pre-fill text/label layers) |
+| `rules_skipped` | 55 rules; the eFuse-layer rules `efuse_mk.enclosing.lvs_source.1`, `efuse_mk.ongrid.1`, `efuse_mk.space.1`, `plfuse.ongrid.1`, `plfuse.separation.comp.1`, `plfuse.separation.nplus.1`, `plfuse.separation.sab.1` are **checked**; `plfuse.separation.esd.1` and `plfuse.separation.resistor.1` are skipped | 54 rules, including all nine eFuse-layer rules (the digital partition draws no `PLFUSE`/`EFUSE_MK`) |
 | `deck_scope` | both: 10.4.2 MIM Option B, 10.7 DRC_BJT Mark Layer, 7.12 Contact, 7.13 Metaln, 7.14 Vian, 7.15 MetalTop, 7.4 Nwell, 7.5 Comp, 7.7 Poly2, 7.8 Nplus, 7.9 Pplus, 9.1 Bond Pad, EF, ESD, GR, MDN, MDP, OFFGRID, SB | |
 
-**No foundry `EF.*` rule is modelled, but the pinned deck is no longer blind to
-the eFuse layers.** Two facts, measured from the reports under the pin and worth
+**No foundry `EF.*` rule is modelled by the curated deck, but the pinned deck
+is no longer blind to the eFuse layers, and the native deck runs the full
+foundry set.** Two facts, measured from the reports under the pin and worth
 keeping apart:
 
-- Neither report's `coverage.rules_checked` carries a rule named `EF.*`, and both
-  reports list every one of `EF.01`, `EF.02`, `EF.03`, `EF.04a`–`EF.04d`, `EF.05`–
-  `EF.13`, `EF.15`, `EF.16a`/`EF.16b`, `EF.18`, `EF.19`, `EF.21`, `EF.22a`/`EF.22b`
-  (24 rules) under `coverage.unmodeled_rules`. The exact-value `EF.*` set is still
-  not run (klayout-tools#4312).
+- Neither curated report's `coverage.rules_checked` carries a rule named
+  `EF.*`, and both reports list every one of `EF.01`, `EF.02`, `EF.03`,
+  `EF.04a`–`EF.04d`, `EF.05`–`EF.13`, `EF.15`, `EF.16a`/`EF.16b`, `EF.18`,
+  `EF.19`, `EF.21`, `EF.22a`/`EF.22b` (24 rules) under
+  `coverage.unmodeled_rules`. The exact-value `EF.*` set is therefore not run
+  by the curated deck — which is why the item 3 citation pairs every curated
+  report with its PDK-native counterpart above, which checks all 27 foundry
+  IDs (the gap was tracked as klayout-tools#4312; the parks were withdrawn
+  once #313 showed the native route evaluates the full set at the repository
+  pin).
 - The pinned klt 0.9.0 deck did gain an `EF` entry in `coverage.deck_scope` and
   now checks five eFuse-layer rules on the analog partition that klt 0.8.0 did
   not: `efuse_mk.enclosing.lvs_source.1`, `efuse_mk.space.1`,
@@ -898,10 +910,11 @@ names declared on both sides anchored by name first).
   item 4's analog partition as a whole still needs the fuse as a device
   (#32), and ERC is #33 — no analog LVS row is claimed. DRC status is not
   restated here: the `DRC (T1 item 3)` section above is the one place it is
-  reported. Whatever it reports is clean only under the curated deck's
-  coverage — `klt drc` does not run the `EF.*` rules at all
-  (`spec/efuse-otp.md` §1.3) — so T1 item 3 stays `unmet` and no envelope is
-  cited for it.
+  reported. Its claim is the compound curated-plus-native citation — clean
+  under the curated deck's coverage, which models no `EF.*` rule
+  (`spec/efuse-otp.md` §1.3), and clean under the PDK-native foundry deck,
+  which checks all 27 `EF.*` IDs — cited for `3.analog`/`3.digital` in
+  `signoff/block-manifest.json` (#60).
 - Cell-to-cell clearance is a fixed 2 µm between bounding boxes, not a
   rule-derived spacing.
 - **The item 2 envelopes claim the stream, not the circuit.** Both are written by

@@ -22,6 +22,26 @@
       "file": "signoff/item2-analog.attest.json",
       "content_hash": "sha256:48c590fc6095311d9c286d3d2093e004952aef7585eb2ac28c18dfa5f8918d9c"
     },
+    "3.analog": [
+      {
+        "file": "layout/drc-array.report.json",
+        "content_hash": "sha256:48c590fc6095311d9c286d3d2093e004952aef7585eb2ac28c18dfa5f8918d9c"
+      },
+      {
+        "file": "layout/drc-array.native.report.json",
+        "content_hash": "sha256:48c590fc6095311d9c286d3d2093e004952aef7585eb2ac28c18dfa5f8918d9c"
+      }
+    ],
+    "3.digital": [
+      {
+        "file": "layout/drc-ctrl.report.json",
+        "content_hash": "sha256:5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748"
+      },
+      {
+        "file": "layout/drc-ctrl.native.report.json",
+        "content_hash": "sha256:5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748"
+      }
+    ],
     "4.digital": {
       "file": "layout/lvs-ctrl.report.json",
       "content_hash": "sha256:5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748"
@@ -114,11 +134,11 @@
     },
     "8.analog": {
       "file": "signoff/attest/item8.envelope.json",
-      "content_hash": "sha256:32ce6ba0c388613b09175442c236de533b37b54f21ef7c2a52a7cf915890cd85"
+      "content_hash": "sha256:536ec692635a94ee8f186f78fe186f870738f10cef173179d4904d5c7340d0ac"
     },
     "8.digital": {
       "file": "signoff/attest/item8.envelope.json",
-      "content_hash": "sha256:32ce6ba0c388613b09175442c236de533b37b54f21ef7c2a52a7cf915890cd85"
+      "content_hash": "sha256:536ec692635a94ee8f186f78fe186f870738f10cef173179d4904d5c7340d0ac"
     },
     "11.digital": [
       {

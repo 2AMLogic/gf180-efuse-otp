@@ -3,21 +3,28 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 8,
-  "summary": "T1 item 8 (Characterization report): 82/82 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 8 (Characterization report): 86/86 attestation checks passed (klt signoff --attest)",
   "source": "signoff/attest/item8.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 82,
-    "passed_count": 82,
+    "check_count": 86,
+    "passed_count": 86,
     "checks": [
       {
         "check": "present",
         "role": "report",
         "path": "measurements/characterization/README.md",
         "passed": true,
-        "content_hash": "sha256:69843f20f7ed64ab29ed33f10ed9a5bd7a7660e3f3b49c9cea00a3149bc6e0ba"
+        "content_hash": "sha256:943eeeec25fdcc720f63ab624e71320b8ce04905a761204e7857ffe20c799851"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "layout/drc-array.native.report.json",
+        "passed": true,
+        "content_hash": "sha256:9d9251c6c3663b97cc060fd883172d28f2df9552d153b8583b78ee4b7bc017b8"
       },
       {
         "check": "present",
@@ -25,6 +32,13 @@
         "path": "layout/drc-array.report.json",
         "passed": true,
         "content_hash": "sha256:d6617f81b3925ec61e8742c632c60d3cd55111acd2fd90ed5da7a9176254b88c"
+      },
+      {
+        "check": "present",
+        "role": "evidence",
+        "path": "layout/drc-ctrl.native.report.json",
+        "passed": true,
+        "content_hash": "sha256:a357549e45bed064dd9af01c9acfabe779ec9ed6b91fbe6a77d6d1ead8979af1"
       },
       {
         "check": "present",
@@ -59,7 +73,7 @@
         "role": "evidence",
         "path": "signoff/block-manifest.signoff.json",
         "passed": true,
-        "content_hash": "sha256:b5f53e09dde4e9f1faff2825672550c9dc536dd357d96ff7b47f77dfcfc0ee6f"
+        "content_hash": "sha256:ac2943f6d0fb6b893b7561821bf4a03d68f890dc3995b0de110c68f71acc09e9"
       },
       {
         "check": "present",
@@ -259,6 +273,7 @@
         "role": "spec_row",
         "row": "P02",
         "envelopes": [
+          "layout/drc-array.native.report.json",
           "layout/drc-array.report.json"
         ],
         "passed": true
@@ -396,7 +411,9 @@
         "role": "spec_row",
         "row": "P13",
         "envelopes": [
+          "layout/drc-array.native.report.json",
           "layout/drc-array.report.json",
+          "layout/drc-ctrl.native.report.json",
           "layout/drc-ctrl.report.json",
           "layout/lvs-ctrl.report.json",
           "layout/pnr-report.json",
@@ -408,11 +425,37 @@
       {
         "check": "command",
         "role": "freshness",
+        "target": "layout/drc-array.native.report.json",
+        "argv": [
+          "test",
+          "-s",
+          "layout/drc-array.native.report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
         "target": "layout/drc-array.report.json",
         "argv": [
           "test",
           "-s",
           "layout/drc-array.report.json"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true
+      },
+      {
+        "check": "command",
+        "role": "freshness",
+        "target": "layout/drc-ctrl.native.report.json",
+        "argv": [
+          "test",
+          "-s",
+          "layout/drc-ctrl.native.report.json"
         ],
         "cwd": ".",
         "exit_status": 0,
@@ -892,7 +935,7 @@
         "path": "signoff/attest/item8.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:32ce6ba0c388613b09175442c236de533b37b54f21ef7c2a52a7cf915890cd85"
+      "content_hash": "sha256:536ec692635a94ee8f186f78fe186f870738f10cef173179d4904d5c7340d0ac"
     }
   }
 }
