@@ -2,10 +2,70 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-24
+
+- **PR #325**: fix: extend M3 ends that land via2 cuts to the 0.06 um enclosure minimum
+- **PR #368**: docs(layout): scope the deck-drift caveat to the measured field set, not just the hash
+- **PR #361**: feat(layout): resize 6 V PMOS to L=0.55 um and clear generated-core DRC findings
+- **PR #347**: fix: state both ppolyf_u drawn geometries in the efuse_sense annotation
+- **PR #363**: chore: gitignore layout/.pnr.* staging directories
+- **Issue #308** (closed): Correct Metal3 enclosure at via2 in the level shifter and column driver
+- **Issue #357** (closed): docs(layout): tighten the engine-drift caveat — the curated deck's rule and layer sets move too, not just its hash
+- **Issue #366** (closed): Analog LVS reports record a stale reference_sha256, so layout/lvs.sh --check fails on main
+- **Issue #309** (closed): Resolve native DRC findings on the generated PMOS and sense resistor cores
+- **Issue #344** (closed): design/efuse_sense.sch annotation still says both resistors are 1 um wide
+- **Issue #360** (closed): layout/.pnr.* staging directory is not gitignored
+
+### 2026-11-23
+
+- **PR #362**: docs(layout): re-record checklist expects 763 rules_checked
+- **PR #326**: feat(layout): add density fill clearing the eight global-density rules on both partitions
+- **PR #355**: ci: source signoff/klt.sh in harness steps instead of pipx-installing klt
+- **PR #356**: fix(layout): replay controller LVS from a re-resolved PDK root
+- **PR #353**: docs(layout): correct how --check --rerun treats the partition reports
+- **PR #358**: docs(sense-margin): state measured XRb ideal-reference shift range
+- **PR #338**: ci: derive check:ci summary from run(); signoff README defers to it
+- **PR #336**: fix: require an explicit outdir in verification/klt-fv.sh
+- **PR #354**: docs(sim): remove unchecked program-select drawing, link bench deck and designed cell
+- **PR #335**: test: cover dbu_export coarsen, rejections and marker rebuild
+- **PR #350**: fix(layout): re-record ctrl native DRC at klayout 0.30.14; document engine-bump re-recording
+- **PR #348**: sim: add physical-XRref sense-mc variant and re-run both sense campaigns
+- **PR #346**: refactor(sim): derive the corner benches' pvt grid from the loaded reports
+- **PR #343**: docs: record the #277 per-cell DRC ruling and the klt --top coverage limitation
+- **PR #323**: feat(layout): route efuse_comp and efuse_sense, LVS-match both cells
+- **PR #339**: chore: ignore loom-daemon account-ranking state file in .gitignore
+- **PR #330**: refactor(sim): hoist dry-run teardown and netlist guard into pdk_env.sh
+- **PR #316**: feat(layout): klt erc supply spec for the routed controller, cite 11.digital
+- **PR #329**: chore(signoff): drop vendored design-evidence-tiers.md and --tiers-doc override
+- **PR #327**: feat(layout): export both partition streams at the 0.001 um foundry dbu
+- **Issue #359** (closed): layout/README.md: native-report re-record checklist still cites 771 checked categories (now 763)
+- **Issue #310** (closed): Meet the active, Poly2 and metal density checks on both partitions
+- **Issue #324** (closed): Drop the second klayout-tools installation from the CI harness
+- **Issue #349** (closed): layout/lvs.sh --check --rerun stops on the controller: lvs-ctrl.report.json records the literal $PDK_ROOT as reference_conversion.pdk_root
+- **Issue #352** (closed): docs(layout): clarify curated partition DRC --rerun behavior in layout/README.md
+- **Issue #351** (closed): sim/sense-margin/README.md: 'well under a millivolt' overstates the ideal-reference delta at 900 ohm
+- **Issue #332** (closed): Replace the remaining check:ci enumerations in signoff/README.md and check_ci.sh
+- **Issue #289** (closed): Remove the implicit controller report destination from klt-fv.sh
+- **Issue #334** (closed): Replace embedded re-attestation recipes with signoff guide section references
+- **Issue #120** (closed): Remove sim/program-select/program-select.sch: never netlisted, drifted from the simulated deck (W=10u vs 20-100 um swept)
+- **Issue #328** (closed): Hermetic unit tests for layout/dbu_export.py (the shared final-write export)
+- **Issue #345** (closed): Restore byte-identical native DRC replay after KLayout engine drift
+- **Issue #321** (closed): Re-run sense-margin and sense-mc campaigns against the real ppolyf_u bias and reference resistors
+- **Issue #341** (closed): Remove hardcoded decision-0005 PVT grid literals from the three corner-bench summarizers
+- **Issue #277** (closed): Keep per-cell DRC reports, file klt --top coverage-scoping gap, and document the pinned limitation
+- **Issue #303** (closed): Route efuse_comp and efuse_sense in the layout generator and LVS-match each (third slice of the analog routing)
+- **Issue #337** (closed): Loom-managed .gitignore does not cover the daemon's account-ranking state file
+- **Issue #179** (closed): Hoist the last hand-copied run.sh boilerplate into sim/lib/pdk_env.sh: the ngspice-version provenance regex is byte-identical in 5 benches
+- **Issue #302** (closed): T1 item 11 (digital): klt erc supply spec for the routed controller, cited as 11.digital
+- **Issue #131** (closed): Remove the vendored signoff/design-evidence-tiers.md: byte-identical to the copy the pinned klt already ships and reads by default
+- **Issue #311** (closed): Emit both partition streams at the foundry database unit
+
 ### 2026-11-21
 
 - **PR #313**: feat: run foundry DRC on both eFuse partitions
 - **Issue #301** (closed): T1 item 3: evaluate the foundry EF.* rules by running the PDK-native gf180mcu deck (klt drc --engine klayout) on both partitions
+- **PR #322**: docs: restate the DRC tool survey in spec 1.3 through decision record 0007
+- **Issue #318** (closed): Reconcile the curated DRC inventory and native deck invocation in spec §1.3
 
 ### 2026-11-20
 
