@@ -93,6 +93,44 @@ class DensityTests(unittest.TestCase):
             self.assertEqual((layout / name).read_bytes(), contents, name)
         subprocess.run(checksum_cmd, cwd=layout, check=True, capture_output=True)
 
+    def test_metal2_third_pass_reaches_floor(self):
+        """Bands too narrow for a 3 um square: only Metal2's third pass reaches M2.4 (#365)."""
+        sys.path.insert(0, str(LAYOUT))
+        import fill_partitions as fp
+        layout = kdb.Layout()
+        layout.dbu = 0.0005
+        top = layout.create_cell("efuse_otp_array")
+        # 2.1 um stripes on a 9 um pitch across a 400 um die: each keeps 2 um
+        # (DM.n.3), so a 2.9 um band stays free between neighbours and none at
+        # the top or bottom edge. The die is large enough to stay under DCF.1d.
+        for k in range(45):
+            top.shapes(layout.layer(36, 0)).insert(
+                kdb.Box(0, 4000 + 18000 * k, 800000, 8200 + 18000 * k))
+        layout.write(str(self.route))
+        report = self.root / "fill.json"
+        cmd = [sys.executable, "-I", LAYOUT / "fill_partitions.py", "--input", self.route,
+               "--output", self.root / "filled.gds", "--report", report]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        written = json.loads(report.read_text())
+        self.assertEqual(written["pattern_um"]["metal_third_square"], 2.0)
+        self.assertEqual(written["pattern_um"]["metal_third_pitch"], 3.0)
+        self.assertEqual(written["pattern_um"]["metal_third_layers"], ["Metal2"])
+        metal2 = next(row for row in written["layers"] if row["name"] == "Metal2")
+        self.assertGreaterEqual(metal2["total_pct"], 30)
+        # The first two passes alone cannot get there: no 6 um or 3 um square fits a band.
+        ly = kdb.Layout()
+        ly.read(str(self.route))
+        cell = ly.cell("efuse_otp_array")
+        ext = kdb.Region(cell.bbox())
+        halos_r = fp.halos(ly, cell, ly.dbu, [(fp.METALS[2], fp.METAL_SPACE_UM)], kdb.Region())
+        drawn = fp.region(ly, cell, fp.METALS[2]).area()
+        two = fp.fill_class(ext, halos_r, ly.dbu, fp.METAL_GAP, fp.metal_passes(2)[:2]).area()
+        three = fp.fill_class(ext, halos_r, ly.dbu, fp.METAL_GAP, fp.metal_passes(2)).area()
+        self.assertLess(drawn + two, 0.30 * ext.area())
+        self.assertGreaterEqual(drawn + three, 0.30 * ext.area())
+        self.assertEqual([len(fp.metal_passes(n)) for n in fp.METALS], [2, 3, 2, 2, 2])
+
 
 if __name__ == "__main__":
     unittest.main()
