@@ -451,10 +451,12 @@ global-density rules and all 27 `EF.*` checks. The controller contains no
 fuse markers. T1 item 3 is cited for both partitions (#60): the
 `[curated, native]` compound evidence lists in `signoff/block-manifest.json`
 (`3.analog`/`3.digital`) grade `met` with both members `status: clean` and
-`input_verified`, and the claimant disclosure — the curated coverage quoted
-verbatim, the native envelopes' empty disclosure arrays explained, and the two
-scope caveats (the controller's vacuous `EF.*` zero, the array's
-placement-only extent) — is in `signoff/README.md`, "T1 item 3 disclosure".
+`input_verified`. Each graded citation copies three coverage fields from its
+report (`layers_in_stream_without_rules`, `rules_skipped` and `deck_scope`).
+The native citations have three empty arrays. The native reports below list
+the 27 foundry `EF.*` rule IDs in `coverage.rules_checked`. For the curated
+values, the controller's lack of fuse geometry and the array's placement-only
+extent, see the [item 3 disclosure](../signoff/README.md#t1-item-3-disclosure-drc-coverage-quoted-from-the-cited-envelopes).
 
 | Stream | Native report | Checked categories | `EF.*` markers | All markers |
 |---|---|---:|---:|---:|
