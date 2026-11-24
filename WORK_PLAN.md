@@ -20,13 +20,11 @@ _None._
 `loom:important`; taken before unlabelled work.
 
 - **#35**: T1 item 5 (corner verification, digital): klt sta and klt functional-verification for the controller
-- **#364**: Licence: replace this repo's current licence with the canonical proprietary text (2am#8353)
 
 ## Ready
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#35**: T1 item 5 (corner verification, digital): klt sta and klt functional-verification for the controller
 - **#306**: Route the eFuse bitcell and eight-bit row and verify their extracted connections
 
 ## In Progress
@@ -35,7 +33,6 @@ Issues currently being built (`loom:building`).
 
 - **#60**: T1 item 3 (DRC clean): own the EF.* deck gap after #31 closed — cite both clean klt drc reports once EF.* is evaluated upstream
 - **#118**: Make the CI record-format check read the committed sim records: its glob matches 0 of 15 and it passes vacuously
-- **#367**: layout/gen_efuse_otp.py: row_cell advances on footprint() while _row_place_all advances on the grown bbox
 
 ## PRs Awaiting Review
 
@@ -47,17 +44,17 @@ _None._
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-_None._
+- **#94**: spec: ratify 10 MHz controller clock and cite STA + functional reports for item 5 digital
 
 ## Proposed
 
 Issues carrying `loom:curated`.
 
 - **#3**: Track the gap to T1 (klayout-tools design-evidence-tiers.md) *(curated)*
+- **#33**: T1 item 11 (power delivery): klt erc supply spec for the 3.3 V, 5 V program and ground nets *(curated)*
 - **#60**: T1 item 3 (DRC clean): own the EF.* deck gap after #31 closed — cite both clean klt drc reports once EF.* is evaluated upstream *(curated)*
 - **#118**: Make the CI record-format check read the committed sim records: its glob matches 0 of 15 and it passes vacuously *(curated)*
 - **#306**: Route the eFuse bitcell and eight-bit row and verify their extracted connections *(curated)*
-- **#367**: layout/gen_efuse_otp.py: row_cell advances on footprint() while _row_place_all advances on the grown bbox *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -75,11 +72,11 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Very important | 1 |
-| Important | 2 |
-| Ready (`loom:issue`) | 2 |
-| In Progress (`loom:building`) | 3 |
+| Important | 1 |
+| Ready (`loom:issue`) | 1 |
+| In Progress (`loom:building`) | 2 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 0 |
+| Approved PRs awaiting merge | 1 |
 | Curated | 5 |
 | Architect / Hermit proposals | 3 |
 | Active epics | 0 |
