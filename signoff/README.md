@@ -34,7 +34,7 @@ The block's verdict of record against the klayout-tools evidence tiers.
 `3.analog` and `3.digital` cite a two-member compound evidence list per
 partition — the curated report first, then the PDK-native report — each member
 pinned by its report's `provenance.input.content_hash` (the partition stream's
-own sha256: `48c590fc…` for `layout/efuse_otp_array.gds`, `5644e40b…` for
+own sha256: `fb7df824…` for `layout/efuse_otp_array.gds`, `b80bfb50…` for
 `layout/efuse_otp_ctrl.gds`). `klt signoff` grades `status: "clean"` and
 `input_verified: true` on both members, and the graded record's `citations[]`
 carries each member's `coverage` block verbatim; the quotes below are this

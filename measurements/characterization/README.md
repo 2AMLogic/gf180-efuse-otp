@@ -4,7 +4,7 @@ One row per ratified spec row (`spec/efuse-otp.md` section 2 parameters `P01`-`P
 and section 3 "can show" claims `C1`-`C3`), with the record each verdict rests on.
 This report **aggregates committed records; it produces no evidence and edits no
 `sim/` result.** State read at `main` `fafa4a6`, 2026-11-10; the DRC rows (P02,
-P13) re-read at `6985308`, 2026-11-24 (the `sim/` records are append-only, so
+P13) re-read at `3a40550`, 2026-11-24 (the `sim/` records are append-only, so
 the earlier read stands for them).
 
 Verdict vocabulary: `met` (a committed record shows the bound over the stated
