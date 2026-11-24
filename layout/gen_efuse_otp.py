@@ -220,6 +220,7 @@ class Builder:
         self.cells = {}
         self.reports = {}  # leaf cell name -> that leaf's klt gen JSON report
         self.devices = []  # report rows
+        self.anchor = {}  # leaf cell index -> pre-growth bbox (footprint)
 
     def import_cell(self, gds, src_name, dst_name):
         src = kdb.Layout()
@@ -262,7 +263,9 @@ class Builder:
                                      ((length - PPOLYF_U_DL_UM) * RSH_PPOLYF_U
                                       + 2 * PPOLYF_U_TERM_L_UM * RSH_PPOLYF_U_TERM)
                                      / (w - PPOLYF_U_DW_UM), 2)})
-            return self.import_cell(gds, top, name)
+            cell = self.import_cell(gds, top, name)
+            self.grow_resistor_implants(cell)
+            return cell
         if master == "efuse":
             # The PDK primitive, copied as-is (only its dbu is rescaled by an
             # exact integer); not routed through any generator.
@@ -283,10 +286,87 @@ class Builder:
         if m > 1:
             row["m"] = m  # drawn as m placed units of this cell (coldrv_cell)
         self.devices.append(row)
-        return self.import_cell(gds, top, name)
+        cell = self.import_cell(gds, top, name)
+        if (flavor, vflavor) == ("pfet", "medium_voltage"):
+            self.grow_mv_pmos_wells(cell)
+        return cell
+
+    # The generated 6 V PMOS guard ring (N+ COMP in Nwell, under Dualgate) is
+    # drawn with Nwell 0.15 um and Dualgate 0.13 um beyond the ring COMP; the
+    # deck wants Nwell overlap of NCOMP >= 0.16 um (DF.4d_MV) and Dualgate
+    # enclosure of COMP >= 0.24 um (DV.6). Grow both over the whole cell.
+    NWELL_LAYER, DUALGATE_LAYER = (21, 0), (55, 0)
+    NWELL_GROW_UM, DUALGATE_GROW_UM = 0.01, 0.12
+
+    # The generated ppolyf_u body has Pplus only over the body and salicide
+    # block 0.22 um past the poly in width. The deck's resistor is poly under
+    # Pplus, SAB and RES_MK: PRES.5/PP.9 want Pplus >= 0.3 um beyond it, PRES.6
+    # wants SAB >= 0.28 um past it in width, SB.13 wants SAB area >= 2 um^2.
+    POLY_LAYER, PPLUS_LAYER, SAB_LAYER = (30, 0), (31, 0), (49, 0)
+    CONTACT_LAYER, CONTACT_SAB_SPACE_UM, CONTACT_POLY_ENC_UM = (33, 0), 0.22, 0.07
+    PPLUS_GROW_UM, SAB_MIN_GROW_UM, SAB_MIN_AREA_UM2 = 0.3, 0.28, 2.0
+
+    def grow_resistor_implants(self, cell):
+        self.anchor[cell.cell_index()] = cell.bbox()
+        idx = {k: self.layout.find_layer(*k)
+               for k in (self.POLY_LAYER, self.PPLUS_LAYER, self.SAB_LAYER)}
+        for k, v in idx.items():
+            if v is None:
+                raise ValueError(f"{cell.name}: layer {k} missing from the generated resistor")
+        poly = kdb.Region(cell.begin_shapes_rec(idx[self.POLY_LAYER]))
+        sab = kdb.Region(cell.begin_shapes_rec(idx[self.SAB_LAYER]))
+        pb, sb = poly.bbox(), sab.bbox()
+        g = round(self.PPLUS_GROW_UM / DBU_UM)
+        cell.shapes(idx[self.PPLUS_LAYER]).insert(
+            kdb.Box(pb.left - g, pb.bottom - g, pb.right + g, pb.top + g))
+        # SAB: widen across the body (y, the width direction) until both the
+        # overlap and the area minimum hold, on the rule grid.
+        need_um = max(self.SAB_MIN_GROW_UM,
+                      (self.SAB_MIN_AREA_UM2 / (sb.width() * DBU_UM) - pb.height() * DBU_UM) / 2)
+        gy = snap(math.ceil(need_um / DBU_UM - 1e-9))
+        cell.shapes(idx[self.SAB_LAYER]).insert(
+            kdb.Box(sb.left, pb.bottom - gy, sb.right, pb.top + gy))
+        # PRES.7: head contacts must sit >= 0.22 um from the SAB (the generated
+        # ones sit 0.15 um). Slide each outward; the poly keeps >= 0.07 um
+        # (CO.5a) of enclosure past it, asserted.
+        cli = self.layout.find_layer(*self.CONTACT_LAYER)
+        if cli is None:
+            raise ValueError(f"{cell.name}: contact layer missing from the generated resistor")
+        # import_cell leaves the generated shapes in an unrotated, unshifted
+        # child of the returned cell; the slide edits them where they live.
+        for sub in [cell] + [self.layout.cell(i) for i in cell.called_cells()]:
+            shapes = sub.shapes(cli)
+            for sh in list(shapes.each()):
+                b = sh.bbox()
+                if b.right <= sb.left:
+                    shift = -snap(max(0, round(self.CONTACT_SAB_SPACE_UM / DBU_UM) - (sb.left - b.right)))
+                elif b.left >= sb.right:
+                    shift = snap(max(0, round(self.CONTACT_SAB_SPACE_UM / DBU_UM) - (b.left - sb.right)))
+                else:
+                    raise ValueError(f"{cell.name}: contact {b} sits under the SAB")
+                moved = b.moved(shift, 0)
+                if min(moved.left - pb.left, pb.right - moved.right) < round(self.CONTACT_POLY_ENC_UM / DBU_UM):
+                    raise ValueError(f"{cell.name}: sliding the contact leaves <0.07 um of poly enclosure")
+                shapes.erase(sh)
+                shapes.insert(moved)
+
+    def grow_mv_pmos_wells(self, cell):
+        self.anchor[cell.cell_index()] = cell.bbox()
+        for (lay, dt), grow in ((self.NWELL_LAYER, self.NWELL_GROW_UM),
+                                (self.DUALGATE_LAYER, self.DUALGATE_GROW_UM)):
+            li = self.layout.find_layer(lay, dt)
+            if li is None:
+                raise ValueError(f"{cell.name}: layer {lay}/{dt} missing from the generated cell")
+            reg = kdb.Region(cell.begin_shapes_rec(li)).sized(round(grow / DBU_UM))
+            cell.shapes(li).insert(reg)
 
     def bbox(self, cell):
-        return cell.bbox()
+        return self.footprint(cell)
+
+    def footprint(self, cell):
+        """The bbox placement and routing are floorplanned against: a leaf's
+        drawn extent before grow_mv_pmos_wells widened its Nwell/Dualgate."""
+        return self.anchor.get(cell.cell_index(), cell.bbox())
 
     def place(self, parent, child, x_um, y_um, rows=1, cols=1, pitch_x_um=0.0, pitch_y_um=0.0,
               away_x=True, away_y=True):
@@ -298,7 +378,7 @@ class Builder:
         from the placed neighbours (up, or down with away_* False) so the
         clearance is never reduced; the pitches are rounded up to the grid.
         """
-        bb = child.bbox()
+        bb = self.footprint(child)
         dx = snap(round(x_um / DBU_UM), away_x) - bb.left
         dy = snap(round(y_um / DBU_UM), away_y) - bb.bottom
         trans = kdb.Trans(dx, dy)
@@ -311,7 +391,7 @@ class Builder:
                 kdb.Vector(0, snap(round(pitch_y_um / DBU_UM))), cols, rows))
 
     def size(self, cell):
-        bb = cell.bbox()
+        bb = self.footprint(cell)
         return bb.width() * DBU_UM, bb.height() * DBU_UM
 
     def row_cell(self, subckt):
