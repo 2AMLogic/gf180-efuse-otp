@@ -33,9 +33,9 @@ The block's verdict of record against the klayout-tools evidence tiers.
 
 `3.analog` and `3.digital` cite a two-member compound evidence list per
 partition — the curated report first, then the PDK-native report — each member
-pinned by its report's `provenance.input.content_hash` (the partition stream's
-own sha256: `fb7df824…` for `layout/efuse_otp_array.gds`, `b80bfb50…` for
-`layout/efuse_otp_ctrl.gds`). `klt signoff` grades `status: "clean"` and
+pinned by its report's `provenance.input.content_hash`. The SHA-256 prefixes
+are `0ba0e28a…` for `layout/efuse_otp_array.gds` and `b80bfb50…` for
+`layout/efuse_otp_ctrl.gds`. `klt signoff` grades `status: "clean"` and
 `input_verified: true` on both members, and the graded record's `citations[]`
 carries each member's `coverage` block verbatim; the quotes below are this
 repo's own disclosure, re-read from the committed envelopes, not from memory.
@@ -114,15 +114,19 @@ main script `tech/drc/gf180mcu.drc`, `decks=all`) does not populate them and
 klt leaves them empty rather than measuring a native equivalent. What the
 native envelope records instead is `coverage.rules_checked`: 763 rule
 categories with `coverage_assertion.satisfied: true`, including all 27 foundry
-`EF.*` IDs — `EF.01`–`EF.13`, `EF.15`–`EF.19`, `EF.21`, `EF.22` with their
-lettered sub-rules, plus `EF.14`, `EF.17` and `EF.20`, which the curated deck
-does not even list (it models no `EF.*` rule and carries 24 of the IDs under
-`coverage.unmodeled_rules`). The eight global-density rules the fill cleared
-(`DCF.1b`, `PL.8`, `M1.4`–`M5.4`, `MT.3`) are not in `rules_checked`: the deck
-emits a density category only on a finding, so a passing fill leaves no
-category behind; their execution on the committed streams is evidenced by the
-deck's own density-ratio logger output, quoted in `layout/README.md` ("Density
-fill (#310)").
+`EF.*` IDs. Of those, 24 appear in the curated deck's
+`coverage.unmodeled_rules` (`EF.01`–`EF.03`, `EF.04a`–`EF.04d`,
+`EF.05`–`EF.13`, `EF.15`, `EF.16a`, `EF.16b`, `EF.18`, `EF.19`, `EF.21`,
+`EF.22a` and `EF.22b`). The other three are `EF.14`, `EF.17` and `EF.20`.
+
+The native deck emits a global-density category only on a finding. Both
+native reports have zero findings, so `DCF.1b`, `PL.8`, `M1.4`–`M5.4` and
+`MT.3` are absent from `coverage.rules_checked`. For the array, the fill
+generator records the layer ratios and passing bounds in
+[`fill-array.report.json`](../layout/fill-array.report.json). For the
+controller, the deck logger captured the ratios for all eight rules in a
+standalone run. The [density table](../layout/README.md#density-fill-310)
+lists the ratios beside each stream's SHA-256.
 
 ### Scope caveats on the `EF.*` zero-marker result
 

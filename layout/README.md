@@ -484,7 +484,8 @@ For each variant, an empty-layout `--list-rule-categories` run independently
 declared 763 categories. The script requires the 27 foundry IDs in that
 set of expectations and adds any finding-producing categories from a first
 pass over the stream. The deck emits a density category only on a finding.
-The native ratio logs below show that all eight calculations ran. Both reports
+The density table below gives the fill generator's ratios for the array and
+the native deck's logged ratios for the controller. Both reports
 record `coverage_assertion.satisfied: true`, all 27
 IDs in `coverage.rules_checked`, and zero `EF.*` markers. The native list
 includes EF.14, EF.17 and EF.20 in addition to the 24 IDs the curated deck
@@ -641,32 +642,30 @@ margin. On the existing 165.355 µm square die, the native deck measures
 25.26876 % COMP and 26.21314 % Poly2. The filled stream uses the original
 routed controller and matches its as-built netlist.
 
-Measured inputs and counts (the eight rules each report 0 markers). The
-array column's extent and ratios are the `extent_area_um2` and per-layer
-`total_pct` of the committed `layout/fill-array.report.json`, rounded to 2
-dp (the fill generator's own accounting on the resized placement, not a
-deck-logger capture). The controller column's ratios are the deck's own
-`logger` output — `Executing rule <id>` / `<layer> ratio: <v> %` —
-captured from a standalone `klayout -b -r gf180mcu.drc` run, which is how a
-zero-count density execution is evidenced since the deck emits a category
-only on failure:
+Both native reports have zero markers. The array column uses `extent_um`,
+`extent_area_um2` and each layer's `total_pct` from the fill generator's
+[`fill-array.report.json`](fill-array.report.json). Ratios are rounded to
+two decimal places. On this five-metal stack, M5.4 and MT.3 use the same
+Metal5 ratio. The controller ratios come from the deck logger in a
+standalone `klayout -b -r gf180mcu.drc` run.
 
 | | Array | Controller |
 |---|---|---|
 | Stream / top | `layout/efuse_otp_array.gds` / `efuse_otp_array` | `layout/efuse_otp_ctrl.gds` / `efuse_otp_ctrl` |
-| sha256 | `fb7df824035300e7f4bf01d05a45970f911c5034eaa32b0c1c96cec07df3f25d` | `b80bfb50d000e21b7816da70e221111c7a7d0ef67d21d3379e60022fd70cbf5f` |
-| Extent (µm) | −20.26, −64.62 → 1079.12, 699.44 (839 992 µm²) | 0, 0 → 165.355, 165.355 (27 342 µm²) |
+| sha256 | `0ba0e28ab9a9efd531d5c190863b96c9edda5a6770c3e8f6e3c8c356ba16d806` | `b80bfb50d000e21b7816da70e221111c7a7d0ef67d21d3379e60022fd70cbf5f` |
+| Extent (µm) | −20.29, −64.62 → 1083.68, 699.44 (843 499.3 µm²) | 0, 0 → 165.355, 165.355 (27 342 µm²) |
 | PDK variant / deck options | `gf180mcuC`, `decks=all`, `threads=1` | `gf180mcuD`, `decks=all`, `threads=1` |
-| DCF.1b COMP | 0 markers, ratio 43.26 % | 0 markers, ratio 25.27 % |
-| PL.8 Poly2 | 0 markers, ratio 49.62 % | 0 markers, ratio 26.21 % |
-| M1.4 | 0 markers, ratio 57.88 % | 0 markers, ratio 40.38 % |
-| M2.4 | 0 markers, ratio 61.54 % | 0 markers, ratio 35.13 % |
-| M3.4 | 0 markers, ratio 60.58 % | 0 markers, ratio 33.77 % |
-| M4.4 | 0 markers, ratio 65.87 % | 0 markers, ratio 66.94 % |
-| M5.4 | 0 markers, ratio 65.87 % | 0 markers, ratio 73.88 % |
-| MT.3 | 0 markers, ratio 65.87 % | 0 markers, ratio 73.88 % |
+| DCF.1b COMP | 0 markers, ratio 44.91 % | 0 markers, ratio 25.27 % |
+| PL.8 Poly2 | 0 markers, ratio 51.63 % | 0 markers, ratio 26.21 % |
+| M1.4 | 0 markers, ratio 58.02 % | 0 markers, ratio 40.38 % |
+| M2.4 | 0 markers, ratio 61.37 % | 0 markers, ratio 35.13 % |
+| M3.4 | 0 markers, ratio 60.21 % | 0 markers, ratio 33.77 % |
+| M4.4 | 0 markers, ratio 65.89 % | 0 markers, ratio 66.94 % |
+| M5.4 | 0 markers, ratio 65.89 % | 0 markers, ratio 73.88 % |
+| MT.3 | 0 markers, ratio 65.89 % | 0 markers, ratio 73.88 % |
 
-**The two streams after #365.** Both are the generators' output with the third
+**Third Metal2 pass (#365, before the array placement change in #376).**
+Both streams were the generators' output with the third
 Metal2 pass: `layout/regen-gds.sh` for the array and `layout/pnr.sh` for the
 controller. On each, layer 36/4 is the only layer whose geometry moved — 1404
 added squares on the array (fill 60.43 % → 61.09 %) and 72 on the controller
@@ -681,8 +680,8 @@ entry on this worker). Every DRC, LVS and ERC report was regenerated next;
 each changed only in the input stream's hash, with every verdict, count and
 `rules_checked` (763) as before, and the standalone deck runs on the new
 streams (`decks=all`, `threads=1`) both ended `DRC RESULT: SUCCESS (0
-violations)`. The deck's own Metal2 ratio equals the generator's `total_pct`
-on both partitions (61.543321 % and 35.128053 %).
+violations)`. At that revision the deck's Metal2 ratio matched the
+generator's `total_pct` on both partitions (61.543321 % and 35.128053 %).
 
 **Before and after fill.** (Historical: the measurement #326 made at
 `5d23757`, on the pre-resize L = 0.50 µm array; on the current committed
