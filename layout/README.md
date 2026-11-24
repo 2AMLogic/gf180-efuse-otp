@@ -84,7 +84,7 @@ layout/lvs.sh                 # rewrite the LVS reports (lvs-ctrl needs the PDK;
 layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-analog.attest.json)
 ```
 
-The filled array hashes to `888451a37e3fe9e398c9c0ae23c5fc413ad01edd2397c6a580e12fa315810d8e`.
+The filled array hashes to `02994974b6b89ea8c17bb94a665f79eaf1f926072717c500980dad79320fc4f0`.
 At open_pdks `f6eeac7`, `regen-gds.sh --check` rebuilds and byte-compares
 the filled 0.001 µm stream and its fill report. Before fill, the stream
 (after routing `efuse_comp` and `efuse_sense`, replacing the two ideal
@@ -92,7 +92,7 @@ resistors with PDK `ppolyf_u` devices sized for their terminal resistance
 (5.08 µm x 1 µm and 0.8 µm x 1.05 µm, see "Resistors"), and ending every
 narrow Metal3 lane in those two cells 0.20 µm past its via2 centre so
 V2.4b/V2.4c report zero markers there) hashed to
-`c6367fe868ece15427a4b97e550f9364b58da16db585e428654418b8c82d94ef`.
+`96034f41c9fda63a9c49e602ded0899c5021852d4236b5aca254ecef1631dff4`.
 The previous unfilled hash
 `b93cb3be5a0e34f2a1741107995170a1f148f27564be696284f1523a87340c11` was the
 stream exported at the foundry 0.001 µm database unit (#311) before those cells
@@ -426,14 +426,15 @@ claim, not a layout one).
 
 ### PDK-native results
 
-The controller passes the full foundry deck. The array has 244 findings
-in the geometry tracked by #308 and #309. Each partition clears the eight
+The controller passes the full foundry deck. The array has 200 findings,
+all `V2.4b`/`V2.4c` (100 each), in the geometry tracked by #308; every
+#309 rule is at zero on this stream. Each partition clears the eight
 global-density rules and all 27 `EF.*` checks. The controller contains no
 fuse markers. T1 item 3 remains uncited for both partitions pending #60.
 
 | Stream | Native report | Checked categories | `EF.*` markers | All markers |
 |---|---|---:|---:|---:|
-| Array | [drc-array.native.report.json](drc-array.native.report.json) | 763 | 0 | 244 |
+| Array | [drc-array.native.report.json](drc-array.native.report.json) | 763 | 0 | 200 |
 | Controller | [drc-ctrl.native.report.json](drc-ctrl.native.report.json) | 763 | 0 | 0 |
 
 At the original 0.0005 µm database unit, #313 recorded 253 array and 9
@@ -468,7 +469,7 @@ lists as unmodeled.
 | Finding | Array | Controller | Follow-up |
 |---|---:|---:|---|
 | Metal3 enclosure of via2 (V2.4b, V2.4c) | 200 | 0 | [Level shifter and column driver #308](https://github.com/2AMLogic/gf180-efuse-otp/issues/308) — all of it in `efuse_coldrv` (94 each of V2.4b / V2.4c) and `efuse_ls` (6 each); the routed `efuse_comp` / `efuse_sense` contribute zero |
-| PMOS (DF.4d_MV, DV.6, PL.2_MV) and resistor geometry (PP.9, PRES.5, PRES.6, SB.13) | 44 | 0 | [Generated device cores #309](https://github.com/2AMLogic/gf180-efuse-otp/issues/309) |
+| ~~PMOS (DF.4d_MV, DV.6, PL.2_MV) and resistor geometry (PP.9, PRES.5, PRES.6, SB.13)~~ 44 → 0 | 0 | 0 | Resolved by [#309](https://github.com/2AMLogic/gf180-efuse-otp/issues/309): Mdrv/Mp1/Mp2 at L = 0.55 µm (operator ruling, 6 V rule PL.2_MV); the leaf generator widens the 6 V PMOS guard-ring Nwell (+0.01 µm) and Dualgate (+0.12 µm), and gives each `ppolyf_u` core Pplus 0.3 µm past the poly, a salicide block 0.28 µm past it in width (and ≥ 2 µm²) and head contacts 0.22 µm from the block |
 | Global density (DCF.1b, PL.8, M1.4 through M5.4, MT.3) | 0 | 0 | [Density #310](https://github.com/2AMLogic/gf180-efuse-otp/issues/310) |
 | ~~DBU (0.0005 µm, required 0.001 µm)~~ 1 → 0 per stream | — | — | Resolved by [#311](https://github.com/2AMLogic/gf180-efuse-otp/issues/311): both producers export at 0.001 µm ([klt generator default #5721](https://github.com/2AMLogic/klayout-tools/issues/5721) stays open upstream) |
 
@@ -529,7 +530,7 @@ To adopt an engine version:
    is a finding to investigate before the baseline is accepted, not a
    refresh.
 3. On each new native report confirm `status`, `violation_count` (array
-   244, none of them a density rule; controller 0, clean),
+   200, all `V2.4b`/`V2.4c`, none of them a density rule; controller 0, clean),
    every `violations[]` entry, `coverage.rules_checked` (763; the eight global-density rules are not
    counted once fill clears them, as explained under the declared-categories
    paragraph above) and
@@ -604,29 +605,35 @@ margin. On the existing 165.355 µm square die, the native deck measures
 25.26876 % COMP and 26.21314 % Poly2. The filled stream uses the original
 routed controller and matches its as-built netlist.
 
-Measured inputs and counts (the eight rules each report 0 markers; the
-ratios are the deck's own `logger` output — `Executing rule <id>` /
-`<layer> ratio: <v> %` — captured from a standalone `klayout -b -r
-gf180mcu.drc` run per variant, which is how a zero-count density execution
-is evidenced since the deck emits a category only on failure):
+Measured inputs and counts (the eight rules each report 0 markers). The
+array column's extent and ratios are the `extent_area_um2` and per-layer
+`total_pct` of the committed `layout/fill-array.report.json`, rounded to 2
+dp (the fill generator's own accounting on the resized placement, not a
+deck-logger capture). The controller column's ratios are the deck's own
+`logger` output — `Executing rule <id>` / `<layer> ratio: <v> %` —
+captured from a standalone `klayout -b -r gf180mcu.drc` run, which is how a
+zero-count density execution is evidenced since the deck emits a category
+only on failure:
 
 | | Array | Controller |
 |---|---|---|
 | Stream / top | `layout/efuse_otp_array.gds` / `efuse_otp_array` | `layout/efuse_otp_ctrl.gds` / `efuse_otp_ctrl` |
-| sha256 | `888451a37e3fe9e398c9c0ae23c5fc413ad01edd2397c6a580e12fa315810d8e` | `5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748` |
-| Extent (µm) | −20.26, −64.62 → 1067.12, 699.44 (830 824 µm²) | 0, 0 → 165.355, 165.355 (27 342 µm²) |
+| sha256 | `02994974b6b89ea8c17bb94a665f79eaf1f926072717c500980dad79320fc4f0` | `5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748` |
+| Extent (µm) | −20.26, −64.62 → 1079.12, 699.44 (839 992 µm²) | 0, 0 → 165.355, 165.355 (27 342 µm²) |
 | PDK variant / deck options | `gf180mcuC`, `decks=all`, `threads=1` | `gf180mcuD`, `decks=all`, `threads=1` |
-| DCF.1b COMP | 0 markers, ratio 43.32 % | 0 markers, ratio 25.27 % |
-| PL.8 Poly2 | 0 markers, ratio 49.67 % | 0 markers, ratio 26.21 % |
-| M1.4 | 0 markers, ratio 57.85 % | 0 markers, ratio 40.38 % |
-| M2.4 | 0 markers, ratio 60.47 % | 0 markers, ratio 34.07 % |
-| M3.4 | 0 markers, ratio 60.48 % | 0 markers, ratio 33.77 % |
-| M4.4 | 0 markers, ratio 66.16 % | 0 markers, ratio 66.94 % |
-| M5.4 | 0 markers, ratio 66.16 % | 0 markers, ratio 73.88 % |
-| MT.3 | 0 markers, ratio 66.16 % | 0 markers, ratio 73.88 % |
+| DCF.1b COMP | 0 markers, ratio 43.26 % | 0 markers, ratio 25.27 % |
+| PL.8 Poly2 | 0 markers, ratio 49.62 % | 0 markers, ratio 26.21 % |
+| M1.4 | 0 markers, ratio 57.88 % | 0 markers, ratio 40.38 % |
+| M2.4 | 0 markers, ratio 60.87 % | 0 markers, ratio 34.07 % |
+| M3.4 | 0 markers, ratio 60.58 % | 0 markers, ratio 33.77 % |
+| M4.4 | 0 markers, ratio 65.87 % | 0 markers, ratio 66.94 % |
+| M5.4 | 0 markers, ratio 65.87 % | 0 markers, ratio 73.88 % |
+| MT.3 | 0 markers, ratio 65.87 % | 0 markers, ratio 73.88 % |
 
-**Before and after fill.** Against the 0.001 µm unfilled reports at
-`5d23757`, the array went from 252 to 244 findings and the controller from
+**Before and after fill.** (Historical: the measurement #326 made at
+`5d23757`, on the pre-resize L = 0.50 µm array; on the current committed
+stream the array has 200 markers, `V2.4b`/`V2.4c` x 100 each.) Against the
+0.001 µm unfilled reports at `5d23757`, the array went from 252 to 244 findings and the controller from
 8 to 0. Comparing the full finding records, including rule, cell and
 location, shows that each partition lost exactly one marker for each of the
 eight density rules. All 244 remaining array records match the baseline.
