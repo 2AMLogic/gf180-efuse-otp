@@ -84,9 +84,20 @@ layout/lvs.sh                 # rewrite the LVS reports (lvs-ctrl needs the PDK;
 layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-analog.attest.json)
 ```
 
-The filled array hashes to `fb7df824035300e7f4bf01d05a45970f911c5034eaa32b0c1c96cec07df3f25d`.
+The filled array hashes to `0ba0e28ab9a9efd531d5c190863b96c9edda5a6770c3e8f6e3c8c356ba16d806`.
 At open_pdks `f6eeac7`, `regen-gds.sh --check` rebuilds and byte-compares
-the filled 0.001 µm stream and its fill report. The third Metal2 fill pass (#365) changed the filled stream from `48c590fc6095311d9c286d3d2093e004952aef7585eb2ac28c18dfa5f8918d9c`: 1404
+the filled 0.001 µm stream and its fill report. The grown-left placement fix (#376) changed the filled stream from `fb7df824035300e7f4bf01d05a45970f911c5034eaa32b0c1c96cec07df3f25d`:
+`place()` now lands a grown leaf's west (grown) bbox edge at the cursor x — the same
+extent the row cursors step on — instead of its pre-growth west edge, so a grown leaf
+after an ungrown neighbour keeps the full `GAP_UM` grown separation. The drawn geometry
+that moves is every grown leaf shifting east by its west overhang: the two 6 V PMOS in
+`efuse_ls` (+0.09 µm each, the cell 0.03 µm wider east), the three `Mdrv` units in
+`efuse_coldrv` (+0.12/+0.30/+0.48 µm, the cell 0.57 µm wider, so the array column pitch
+grows 135.14 -> 135.71 µm, the top-level stream 4.56 µm wider east and the row drivers
+0.03 µm further west), and the two `ppolyf_u` resistors in `efuse_sense` (+0.30 µm each,
+interior to that cell's bbox); `efuse_comp` and `efuse_bitcell` move nothing (no grown
+leaves), the routing follows the pads (all LVS reports still match), and every DRC
+report stays clean. The third Metal2 fill pass (#365) changed the filled stream from `48c590fc6095311d9c286d3d2093e004952aef7585eb2ac28c18dfa5f8918d9c`: 1404
 2 µm Metal2 dummy squares were added where the 6 µm and 3 µm passes left free area, and
 no other layer moved. Before that, the via2 Metal3-enclosure fix (#308) changed the filled stream from `02994974b6b89ea8c17bb94a665f79eaf1f926072717c500980dad79320fc4f0`: every M3 end
 that lands a via2 cut in `efuse_ls` (the six marked `LS_W3N` strip ends) and `efuse_coldrv` (every
