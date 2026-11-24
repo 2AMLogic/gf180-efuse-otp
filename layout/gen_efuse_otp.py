@@ -403,7 +403,10 @@ class Builder:
             child = (self.cells[inst["master"]] if inst["kind"] == "x" and inst["master"] in self.netlist
                      else self.leaf(subckt, inst))
             self.place(cell, child, x, 0.0)
-            x += self.size(child)[0] + GAP_UM + GRID_DBU * DBU_UM  # snap slack
+            # Advance on the grown extent (child.bbox(), as _row_place_all does),
+            # not footprint(): the footprint omits the Nwell/Dualgate growth, so a
+            # grown MV PMOS leaf would eat into the gap to its neighbour.
+            x += child.bbox().width() * DBU_UM + GAP_UM + GRID_DBU * DBU_UM  # snap slack
         self.cells[subckt] = cell
         return cell
 
