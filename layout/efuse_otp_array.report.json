@@ -4,13 +4,13 @@
   "bbox_um": [
     -20.26,
     -64.62,
-    1067.12,
+    1079.12,
     699.44
   ],
   "array": {
     "rows": 32,
     "cols": 8,
-    "pitch_x_um": 133.64,
+    "pitch_x_um": 135.14,
     "pitch_y_um": 21.92
   },
   "caveat": "placed hierarchy; efuse_ls, efuse_rowdrv, efuse_coldrv, efuse_comp and efuse_sense are routed (see 'routed'), every other cell is placement-only: no routing, no connectivity, no DRC/LVS claim outside those five",
@@ -84,7 +84,7 @@
       "cell": "efuse_ls__Mp1",
       "device": "pfet_06v0",
       "w_um": 1.0,
-      "l_um": 0.5,
+      "l_um": 0.55,
       "fingers": 1,
       "finger_w_um": 1.0
     },
@@ -92,7 +92,7 @@
       "cell": "efuse_ls__Mp2",
       "device": "pfet_06v0",
       "w_um": 1.0,
-      "l_um": 0.5,
+      "l_um": 0.55,
       "fingers": 1,
       "finger_w_um": 1.0
     },
@@ -132,7 +132,7 @@
       "cell": "efuse_coldrv__Mdrv",
       "device": "pfet_06v0",
       "w_um": 100.0,
-      "l_um": 0.5,
+      "l_um": 0.55,
       "fingers": 10,
       "finger_w_um": 10.0,
       "m": 3

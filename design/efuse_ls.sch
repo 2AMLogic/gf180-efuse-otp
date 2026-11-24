@@ -29,12 +29,12 @@ C {devices/lab_pin.sym} 930 170 0 0 {name=l16 lab=out}
 C {devices/lab_pin.sym} 890 200 0 0 {name=l17 lab=inb}
 C {devices/lab_pin.sym} 930 230 0 0 {name=l18 lab=vss}
 C {devices/lab_pin.sym} 930 200 0 0 {name=l19 lab=vss}
-C {symbols/pfet_06v0.sym} 1130 200 0 0 {name=Mp1 L=0.5u W=1u nf=1 m=1 model=pfet_06v0 spiceprefix=X}
+C {symbols/pfet_06v0.sym} 1130 200 0 0 {name=Mp1 L=0.55u W=1u nf=1 m=1 model=pfet_06v0 spiceprefix=X}
 C {devices/lab_pin.sym} 1150 170 0 0 {name=l21 lab=vprog}
 C {devices/lab_pin.sym} 1110 200 0 0 {name=l22 lab=out}
 C {devices/lab_pin.sym} 1150 230 0 0 {name=l23 lab=x1}
 C {devices/lab_pin.sym} 1150 200 0 0 {name=l24 lab=vprog}
-C {symbols/pfet_06v0.sym} 250 370 0 0 {name=Mp2 L=0.5u W=1u nf=1 m=1 model=pfet_06v0 spiceprefix=X}
+C {symbols/pfet_06v0.sym} 250 370 0 0 {name=Mp2 L=0.55u W=1u nf=1 m=1 model=pfet_06v0 spiceprefix=X}
 C {devices/lab_pin.sym} 270 340 0 0 {name=l26 lab=vprog}
 C {devices/lab_pin.sym} 230 370 0 0 {name=l27 lab=x1}
 C {devices/lab_pin.sym} 270 400 0 0 {name=l28 lab=out}
