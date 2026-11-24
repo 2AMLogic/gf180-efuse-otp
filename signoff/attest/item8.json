@@ -2,7 +2,7 @@
   "schema_version": 1,
   "kind": "t1-attestation-inventory",
   "t1_item": 8,
-  "description": "Characterization report: measurements/characterization/README.md aggregates the committed records per ratified spec row (P01-P13, C1-C3). P08, P09, P10 and C2 cite the graded post-#85 sense-margin corner reports (sim/sense-margin/records/20261109T002043Z-f6eeac7, margin_v >= 0 declared) and, for P10 and C2, the sense-mc klt yield reports; no placeholder citations. Each cited record's freshness command is a presence check only (the records are append-only evidence, not regenerated). Controller Fmax, area and power are bound per klt sta corner (power is an engine-default estimate).",
+  "description": "Characterization report: measurements/characterization/README.md aggregates the committed records per ratified spec row (P01-P13, C1-C3). P08, P09, P10 and C2 cite the graded post-#85 sense-margin corner reports (sim/sense-margin/records/20261109T002043Z-f6eeac7, margin_v >= 0 declared) and, for P10 and C2, the sense-mc klt yield reports; P02 and P13 cite the committed partition DRC reports, curated and PDK-native (the native reports check all 27 foundry EF.* rules); no placeholder citations. Each cited record's freshness command is a presence check only (the records are append-only evidence, not regenerated). Controller Fmax, area and power are bound per klt sta corner (power is an engine-default estimate).",
   "report": "measurements/characterization/README.md",
   "spec_rows": [
     "P01",
@@ -36,6 +36,7 @@
       "sim/controller-fv/32x8_nom.report.json"
     ],
     "P02": [
+      "layout/drc-array.native.report.json",
       "layout/drc-array.report.json"
     ],
     "P03": [
@@ -107,7 +108,9 @@
       "sim/controller-fv/32x8_nom.report.json"
     ],
     "P13": [
+      "layout/drc-array.native.report.json",
       "layout/drc-array.report.json",
+      "layout/drc-ctrl.native.report.json",
       "layout/drc-ctrl.report.json",
       "layout/lvs-ctrl.report.json",
       "layout/pnr-report.json",
@@ -140,11 +143,25 @@
     ]
   },
   "envelope_checks": {
+    "layout/drc-array.native.report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "layout/drc-array.native.report.json"
+      ]
+    },
     "layout/drc-array.report.json": {
       "argv": [
         "test",
         "-s",
         "layout/drc-array.report.json"
+      ]
+    },
+    "layout/drc-ctrl.native.report.json": {
+      "argv": [
+        "test",
+        "-s",
+        "layout/drc-ctrl.native.report.json"
       ]
     },
     "layout/drc-ctrl.report.json": {

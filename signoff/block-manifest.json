@@ -22,6 +22,26 @@
       "file": "signoff/item2-analog.attest.json",
       "content_hash": "sha256:0ba0e28ab9a9efd531d5c190863b96c9edda5a6770c3e8f6e3c8c356ba16d806"
     },
+    "3.analog": [
+      {
+        "file": "layout/drc-array.report.json",
+        "content_hash": "sha256:0ba0e28ab9a9efd531d5c190863b96c9edda5a6770c3e8f6e3c8c356ba16d806"
+      },
+      {
+        "file": "layout/drc-array.native.report.json",
+        "content_hash": "sha256:0ba0e28ab9a9efd531d5c190863b96c9edda5a6770c3e8f6e3c8c356ba16d806"
+      }
+    ],
+    "3.digital": [
+      {
+        "file": "layout/drc-ctrl.report.json",
+        "content_hash": "sha256:b80bfb50d000e21b7816da70e221111c7a7d0ef67d21d3379e60022fd70cbf5f"
+      },
+      {
+        "file": "layout/drc-ctrl.native.report.json",
+        "content_hash": "sha256:b80bfb50d000e21b7816da70e221111c7a7d0ef67d21d3379e60022fd70cbf5f"
+      }
+    ],
     "4.digital": {
       "file": "layout/lvs-ctrl.report.json",
       "content_hash": "sha256:b80bfb50d000e21b7816da70e221111c7a7d0ef67d21d3379e60022fd70cbf5f"
@@ -114,11 +134,11 @@
     },
     "8.analog": {
       "file": "signoff/attest/item8.envelope.json",
-      "content_hash": "sha256:32ce6ba0c388613b09175442c236de533b37b54f21ef7c2a52a7cf915890cd85"
+      "content_hash": "sha256:536ec692635a94ee8f186f78fe186f870738f10cef173179d4904d5c7340d0ac"
     },
     "8.digital": {
       "file": "signoff/attest/item8.envelope.json",
-      "content_hash": "sha256:32ce6ba0c388613b09175442c236de533b37b54f21ef7c2a52a7cf915890cd85"
+      "content_hash": "sha256:536ec692635a94ee8f186f78fe186f870738f10cef173179d4904d5c7340d0ac"
     },
     "11.digital": [
       {
