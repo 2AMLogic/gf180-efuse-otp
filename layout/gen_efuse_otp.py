@@ -397,6 +397,13 @@ class Builder:
         return dx * DBU_UM, dy * DBU_UM
 
     def size(self, cell):
+        """A composite cell's extent for the top-level floorplan. Refuses a
+        grown leaf (an anchor entry) outright: place() anchors x on the grown
+        bbox (#379), so a pre-growth width handed out here and stepped into
+        a cursor would re-create #376 -- every cursor steps on bbox()."""
+        assert cell.cell_index() not in self.anchor, \
+            f"{cell.name}: size() takes composite cells only; a grown leaf's " \
+            "pre-growth width must not step a cursor -- use bbox()"
         bb = self.footprint(cell)
         return bb.width() * DBU_UM, bb.height() * DBU_UM
 
