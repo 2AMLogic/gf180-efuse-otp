@@ -1,0 +1,26 @@
+klt: batch job klt-sim-58909984e4a9 submitting to s3://<bucket>/jobs/klt-sim-58909984e4a9
+klt: batch job klt-sim-bedaad168322 submitting to s3://<bucket>/jobs/klt-sim-bedaad168322
+klt: batch job klt-sim-fe4e38fbf6c7 submitting to s3://<bucket>/jobs/klt-sim-fe4e38fbf6c7
+klt: batch job klt-sim-3a81a016d6a6 submitting to s3://<bucket>/jobs/klt-sim-3a81a016d6a6
+klt sim: batch job klt-sim-fe4e38fbf6c7 (/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/prog_rf260.json): submitted
+klt sim: batch job klt-sim-bedaad168322 (/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/prog_rf140.json): submitted
+klt sim: batch job klt-sim-3a81a016d6a6 (/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/prog_rf200.json): submitted
+klt sim: batch job klt-sim-58909984e4a9 (/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/control_rf260_w4u.json): submitted
+klt sim: batch job klt-sim-fe4e38fbf6c7 launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-fe4e38fbf6c7`
+klt sim: batch job klt-sim-fe4e38fbf6c7 state=no status.json yet elapsed=1s
+klt sim: batch job klt-sim-bedaad168322 launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-bedaad168322`
+klt sim: batch job klt-sim-bedaad168322 state=no status.json yet elapsed=1s
+klt sim: batch job klt-sim-3a81a016d6a6 launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-3a81a016d6a6`
+klt sim: batch job klt-sim-3a81a016d6a6 state=no status.json yet elapsed=1s
+klt sim: batch job klt-sim-58909984e4a9 launched; re-attach with `klt sim <request> --backend batch --attach klt-sim-58909984e4a9`
+klt sim: batch job klt-sim-58909984e4a9 state=no status.json yet elapsed=1s
+klt sim: batch job klt-sim-fe4e38fbf6c7 (/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/prog_rf260.json): done
+klt sim: batch job klt-sim-bedaad168322 (/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/prog_rf140.json): done
+klt sim: batch job klt-sim-3a81a016d6a6 (/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/prog_rf200.json): running
+klt sim: batch job klt-sim-3a81a016d6a6 state=running elapsed=32s
+klt sim: batch job klt-sim-58909984e4a9 (/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/control_rf260_w4u.json): failed
+klt sim: batch job klt-sim-3a81a016d6a6 (/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/prog_rf200.json): done
+klt: warning: 2 installs provide PDK variant 'gf180mcuD'; read /home/ubuntu/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7 (PDK_ROOT environment variable), skipped /home/ubuntu/.ciel (search root: ~/.ciel). Resolution is first-match-wins, so a pinned open_pdks build may not be the one this client read -- set $PDK_ROOT to choose which install this client resolves (the only client-side pin backend 'batch' accepts); the runner reads its own install, selected by models.pdk.
+klt: warning: 2 installs provide PDK variant 'gf180mcuD'; read /home/ubuntu/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7 (PDK_ROOT environment variable), skipped /home/ubuntu/.ciel (search root: ~/.ciel). Resolution is first-match-wins, so a pinned open_pdks build may not be the one this client read -- set $PDK_ROOT to choose which install this client resolves (the only client-side pin backend 'batch' accepts); the runner reads its own install, selected by models.pdk.
+klt: warning: 2 installs provide PDK variant 'gf180mcuD'; read /home/ubuntu/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7 (PDK_ROOT environment variable), skipped /home/ubuntu/.ciel (search root: ~/.ciel). Resolution is first-match-wins, so a pinned open_pdks build may not be the one this client read -- set $PDK_ROOT to choose which install this client resolves (the only client-side pin backend 'batch' accepts); the runner reads its own install, selected by models.pdk.
+klt: warning: 2 installs provide PDK variant 'gf180mcuD'; read /home/ubuntu/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7 (PDK_ROOT environment variable), skipped /home/ubuntu/.ciel (search root: ~/.ciel). Resolution is first-match-wins, so a pinned open_pdks build may not be the one this client read -- set $PDK_ROOT to choose which install this client resolves (the only client-side pin backend 'batch' accepts); the runner reads its own install, selected by models.pdk.

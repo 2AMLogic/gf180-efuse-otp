@@ -92,6 +92,7 @@ LS_W1 = 0.42  # M1 routing width (pad width)
 LS_W2 = 0.42  # M2 routing width (rails and strips)
 LS_W3 = 0.42  # M3 routing width
 LS_W3N = 0.30  # M3 width where two verticals share a device column
+LS_V2_END = LS_VIA_SIZE / 2 + 0.06  # M3 end that lands a via2 reaches this far past the cut centre: on M3 narrower than 0.34 um the cut needs 0.06 um of end overlap (V2.4b) and, its side overlap below 0.04 um, 0.06 um on the adjacent edges too (V2.4c)
 # End-of-line reach of a narrow (< 0.34 um) M3 lane past a via2 centre in the
 # comp/sense row routing: the 0.26 um cut's half size plus the 0.06 um V2.4b
 # end-of-line overlap (V2.4c is met by the same extension), rounded up to 0.20.
@@ -237,6 +238,7 @@ class Builder:
         self.cells = {}
         self.reports = {}  # leaf cell name -> that leaf's klt gen JSON report
         self.devices = []  # report rows
+        self.anchor = {}  # leaf cell index -> pre-growth bbox (footprint)
 
     def import_cell(self, gds, src_name, dst_name):
         src = kdb.Layout()
@@ -279,7 +281,9 @@ class Builder:
                                      ((length - PPOLYF_U_DL_UM) * RSH_PPOLYF_U
                                       + 2 * PPOLYF_U_TERM_L_UM * RSH_PPOLYF_U_TERM)
                                      / (w - PPOLYF_U_DW_UM), 2)})
-            return self.import_cell(gds, top, name)
+            cell = self.import_cell(gds, top, name)
+            self.grow_resistor_implants(cell)
+            return cell
         if master == "efuse":
             # The PDK primitive, copied as-is (only its dbu is rescaled by an
             # exact integer); not routed through any generator.
@@ -300,10 +304,87 @@ class Builder:
         if m > 1:
             row["m"] = m  # drawn as m placed units of this cell (coldrv_cell)
         self.devices.append(row)
-        return self.import_cell(gds, top, name)
+        cell = self.import_cell(gds, top, name)
+        if (flavor, vflavor) == ("pfet", "medium_voltage"):
+            self.grow_mv_pmos_wells(cell)
+        return cell
+
+    # The generated 6 V PMOS guard ring (N+ COMP in Nwell, under Dualgate) is
+    # drawn with Nwell 0.15 um and Dualgate 0.13 um beyond the ring COMP; the
+    # deck wants Nwell overlap of NCOMP >= 0.16 um (DF.4d_MV) and Dualgate
+    # enclosure of COMP >= 0.24 um (DV.6). Grow both over the whole cell.
+    NWELL_LAYER, DUALGATE_LAYER = (21, 0), (55, 0)
+    NWELL_GROW_UM, DUALGATE_GROW_UM = 0.01, 0.12
+
+    # The generated ppolyf_u body has Pplus only over the body and salicide
+    # block 0.22 um past the poly in width. The deck's resistor is poly under
+    # Pplus, SAB and RES_MK: PRES.5/PP.9 want Pplus >= 0.3 um beyond it, PRES.6
+    # wants SAB >= 0.28 um past it in width, SB.13 wants SAB area >= 2 um^2.
+    POLY_LAYER, PPLUS_LAYER, SAB_LAYER = (30, 0), (31, 0), (49, 0)
+    CONTACT_LAYER, CONTACT_SAB_SPACE_UM, CONTACT_POLY_ENC_UM = (33, 0), 0.22, 0.07
+    PPLUS_GROW_UM, SAB_MIN_GROW_UM, SAB_MIN_AREA_UM2 = 0.3, 0.28, 2.0
+
+    def grow_resistor_implants(self, cell):
+        self.anchor[cell.cell_index()] = cell.bbox()
+        idx = {k: self.layout.find_layer(*k)
+               for k in (self.POLY_LAYER, self.PPLUS_LAYER, self.SAB_LAYER)}
+        for k, v in idx.items():
+            if v is None:
+                raise ValueError(f"{cell.name}: layer {k} missing from the generated resistor")
+        poly = kdb.Region(cell.begin_shapes_rec(idx[self.POLY_LAYER]))
+        sab = kdb.Region(cell.begin_shapes_rec(idx[self.SAB_LAYER]))
+        pb, sb = poly.bbox(), sab.bbox()
+        g = round(self.PPLUS_GROW_UM / DBU_UM)
+        cell.shapes(idx[self.PPLUS_LAYER]).insert(
+            kdb.Box(pb.left - g, pb.bottom - g, pb.right + g, pb.top + g))
+        # SAB: widen across the body (y, the width direction) until both the
+        # overlap and the area minimum hold, on the rule grid.
+        need_um = max(self.SAB_MIN_GROW_UM,
+                      (self.SAB_MIN_AREA_UM2 / (sb.width() * DBU_UM) - pb.height() * DBU_UM) / 2)
+        gy = snap(math.ceil(need_um / DBU_UM - 1e-9))
+        cell.shapes(idx[self.SAB_LAYER]).insert(
+            kdb.Box(sb.left, pb.bottom - gy, sb.right, pb.top + gy))
+        # PRES.7: head contacts must sit >= 0.22 um from the SAB (the generated
+        # ones sit 0.15 um). Slide each outward; the poly keeps >= 0.07 um
+        # (CO.5a) of enclosure past it, asserted.
+        cli = self.layout.find_layer(*self.CONTACT_LAYER)
+        if cli is None:
+            raise ValueError(f"{cell.name}: contact layer missing from the generated resistor")
+        # import_cell leaves the generated shapes in an unrotated, unshifted
+        # child of the returned cell; the slide edits them where they live.
+        for sub in [cell] + [self.layout.cell(i) for i in cell.called_cells()]:
+            shapes = sub.shapes(cli)
+            for sh in list(shapes.each()):
+                b = sh.bbox()
+                if b.right <= sb.left:
+                    shift = -snap(max(0, round(self.CONTACT_SAB_SPACE_UM / DBU_UM) - (sb.left - b.right)))
+                elif b.left >= sb.right:
+                    shift = snap(max(0, round(self.CONTACT_SAB_SPACE_UM / DBU_UM) - (b.left - sb.right)))
+                else:
+                    raise ValueError(f"{cell.name}: contact {b} sits under the SAB")
+                moved = b.moved(shift, 0)
+                if min(moved.left - pb.left, pb.right - moved.right) < round(self.CONTACT_POLY_ENC_UM / DBU_UM):
+                    raise ValueError(f"{cell.name}: sliding the contact leaves <0.07 um of poly enclosure")
+                shapes.erase(sh)
+                shapes.insert(moved)
+
+    def grow_mv_pmos_wells(self, cell):
+        self.anchor[cell.cell_index()] = cell.bbox()
+        for (lay, dt), grow in ((self.NWELL_LAYER, self.NWELL_GROW_UM),
+                                (self.DUALGATE_LAYER, self.DUALGATE_GROW_UM)):
+            li = self.layout.find_layer(lay, dt)
+            if li is None:
+                raise ValueError(f"{cell.name}: layer {lay}/{dt} missing from the generated cell")
+            reg = kdb.Region(cell.begin_shapes_rec(li)).sized(round(grow / DBU_UM))
+            cell.shapes(li).insert(reg)
 
     def bbox(self, cell):
-        return cell.bbox()
+        return self.footprint(cell)
+
+    def footprint(self, cell):
+        """The bbox placement and routing are floorplanned against: a leaf's
+        drawn extent before grow_mv_pmos_wells widened its Nwell/Dualgate."""
+        return self.anchor.get(cell.cell_index(), cell.bbox())
 
     def place(self, parent, child, x_um, y_um, rows=1, cols=1, pitch_x_um=0.0, pitch_y_um=0.0,
               away_x=True, away_y=True, rot=0):
@@ -319,7 +400,7 @@ class Builder:
         down with away_* False) so the clearance is never reduced; the pitches
         are rounded up to the grid.
         """
-        bb = child.bbox().transformed(kdb.Trans(rot, False, 0, 0))
+        bb = self.footprint(child).transformed(kdb.Trans(rot, False, 0, 0))
         dx = snap(round(x_um / DBU_UM), away_x) - bb.left
         dy = snap(round(y_um / DBU_UM), away_y) - bb.bottom
         trans = kdb.Trans(rot, False, dx, dy)
@@ -334,7 +415,7 @@ class Builder:
         return trans
 
     def size(self, cell):
-        bb = cell.bbox()
+        bb = self.footprint(cell)
         return bb.width() * DBU_UM, bb.height() * DBU_UM
 
     def row_cell(self, subckt):
@@ -596,7 +677,7 @@ class Builder:
         yh = LS_M3_HORIZ_Y["x1"]
         self._ls_pad3(cell, d_n1, via2=False)
         self._box(cell, LS_M2, d_n1[0], d_n1[1] - LS_W2 / 2, jx + LS_W3N / 2, d_n1[1] + LS_W2 / 2)
-        self._ls_vstrip(cell, jx, d_n1[1], yh, LS_W3N)
+        self._ls_vstrip(cell, jx, d_n1[1], yh, LS_W3N, land0=True)
         self._cut(cell, LS_VIA2, jx, d_n1[1])
         self._box(cell, LS_M2, d_p1[0], d_p1[1] - LS_W2 / 2, jx + LS_W3N / 2, d_p1[1] + LS_W2 / 2)
         self._cut(cell, LS_VIA2, jx, d_p1[1])
@@ -605,7 +686,7 @@ class Builder:
         # half-width past the junction): one more 0.06 um would close the gap
         # to the `out` vertical at XMp2.D+0.06 below 0.28 um.
         self._ls_hstrip(cell, jx, g_p2[0] + LS_W3N / 2 - LS_W3 / 2, yh, LS_W3)
-        self._ls_vstrip(cell, g_p2[0], g_p2[1], yh, LS_W3N)
+        self._ls_vstrip(cell, g_p2[0], g_p2[1], yh, LS_W3N, land0=True)
         self._ls_pad3(cell, g_p2)
         # out: XMn2.D west on M2 at pad height, M3 up to the channel, east on
         # M2, M3 up past XMp2.D (tapped there) to a top M3 run that drops west
@@ -619,15 +700,15 @@ class Builder:
         ym, yh = LS_TRACK_Y["out"], LS_M3_HORIZ_Y["out"]
         self._ls_pad3(cell, d_n2, via2=False)
         self._box(cell, LS_M2, jx - LS_W3N / 2, d_n2[1] - LS_W2 / 2, d_n2[0], d_n2[1] + LS_W2 / 2)
-        self._ls_vstrip(cell, jx, d_n2[1], ym, LS_W3N)
+        self._ls_vstrip(cell, jx, d_n2[1], ym, LS_W3N, land0=True, land1=True)
         self._cut(cell, LS_VIA2, jx, d_n2[1])
         self._box(cell, LS_M2, jx - LS_W3N / 2, ym - LS_W2 / 2, mx + LS_W3N / 2, ym + LS_W2 / 2)
         self._cut(cell, LS_VIA2, jx, ym)
-        self._ls_vstrip(cell, mx, ym, yh, LS_W3N)
+        self._ls_vstrip(cell, mx, ym, yh, LS_W3N, land0=True)
         self._cut(cell, LS_VIA2, mx, ym)
         self._ls_pad3(cell, d_p2, via2_x=mx)
         self._ls_hstrip(cell, g_p1[0], mx, yh, LS_W3)
-        self._ls_vstrip(cell, g_p1[0], g_p1[1], yh, LS_W3N)
+        self._ls_vstrip(cell, g_p1[0], g_p1[1], yh, LS_W3N, land0=True)
         self._ls_pad3(cell, g_p1)
 
     def _ls_labels(self, cell, ports):
@@ -658,9 +739,18 @@ class Builder:
         if via2:
             self._cut(cell, LS_VIA2, via2_x if via2_x is not None else cx, cy)
 
-    def _ls_vstrip(self, cell, x, y0, y1, w):
-        lo, hi = min(y0, y1), max(y0, y1)
-        self._box(cell, LS_M3, x - w / 2, lo - w / 2, x + w / 2, hi + w / 2)
+    def _ls_vstrip(self, cell, x, y0, y1, w, land0=False, land1=False):
+        """Vertical M3 strip between two endpoints, a w/2 shoulder past each
+        end. land0/land1 mark an end whose endpoint centres a via2 cut: that
+        shoulder alone leaves w/2 - 0.13 um of end overlap (0.02 um on
+        LS_W3N), so the strip reaches LS_V2_END past the endpoint instead."""
+        # Each land flag stays with its own endpoint whichever order the
+        # caller passes them in: sort (y, flag) pairs, not the bare ys.
+        (lo, land_lo), (hi, land_hi) = sorted([(y0, land0), (y1, land1)],
+                                              key=lambda p: p[0])
+        e = max(0.0, LS_V2_END - w / 2)
+        self._box(cell, LS_M3, x - w / 2, lo - w / 2 - (e if land_lo else 0.0),
+                  x + w / 2, hi + w / 2 + (e if land_hi else 0.0))
 
     def _ls_hstrip(self, cell, x0, x1, y, w):
         lo, hi = min(x0, x1), max(x0, x1)
@@ -804,8 +894,9 @@ class Builder:
             xs = [p[0] for p in pins]
             self._box(cell, LS_M2, min(xs) - LS_W2 / 2, y - LS_W2 / 2, max(xs) + LS_W2 / 2, y + LS_W2 / 2)
             for lx, y0, pad in pins:
-                self._box(cell, LS_M3, lx - LS_W3N / 2, y0 - LS_W3N / 2, lx + LS_W3N / 2, y + LS_W3N / 2)
-                if pad:  # only where _stack left an M2 pad for the cut to land on
+                # land0 only where _stack left an M2 pad for the cut to land on
+                self._ls_vstrip(cell, lx, y0, y, LS_W3N, land0=pad, land1=True)
+                if pad:
                     self._cut(cell, LS_VIA2, lx, y0)
                 self._cut(cell, LS_VIA2, lx, y)
             y = gs(y + CD_TRACK_PITCH)
@@ -815,7 +906,7 @@ class Builder:
                 self._stack(cell, tx, ty)
             else:
                 self._cut(cell, LS_VIA2, tx, ty)
-            self._box(cell, LS_M3, tx - LS_W3N / 2, ry - LS_W3N / 2, tx + LS_W3N / 2, ty + LS_W3N / 2)
+            self._ls_vstrip(cell, tx, ty, ry, LS_W3N, land0=True, land1=True)
             self._cut(cell, LS_VIA2, tx, ry)
             rail_x[net].append(tx)
         for net, xs in rail_x.items():

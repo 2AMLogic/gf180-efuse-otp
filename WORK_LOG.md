@@ -2,8 +2,15 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-21
+
+- **PR #313**: feat: run foundry DRC on both eFuse partitions
+- **Issue #301** (closed): T1 item 3: evaluate the foundry EF.* rules by running the PDK-native gf180mcu deck (klt drc --engine klayout) on both partitions
+
 ### 2026-11-20
 
+- **PR #315**: fix: compare every decoded PVT export so JSON null fails the grid check
+- **Issue #314** (closed): Compare each decoded PVT axis directly so JSON null fails the grid check
 - **PR #299**: test: register per-test cleanup for checker self-test fixture trees
 - **Issue #298** (closed): Clean up the 61 fixture directories left by each checker self-test run
 - **PR #295**: refactor: draw efuse_ls routing through the shared cell-taking box/cut helpers

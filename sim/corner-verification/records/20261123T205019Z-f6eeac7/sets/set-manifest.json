@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "requests": [
+    {
+      "index": 0,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/prog_rf140.json",
+      "dir": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/sets/prog_rf140",
+      "status": "pass",
+      "job_id": "klt-sim-bedaad168322",
+      "job_ids": [
+        "klt-sim-bedaad168322"
+      ],
+      "attempts": 1
+    },
+    {
+      "index": 1,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/prog_rf200.json",
+      "dir": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/sets/prog_rf200",
+      "status": "pass",
+      "job_id": "klt-sim-3a81a016d6a6",
+      "job_ids": [
+        "klt-sim-3a81a016d6a6"
+      ],
+      "attempts": 1
+    },
+    {
+      "index": 2,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/prog_rf260.json",
+      "dir": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/sets/prog_rf260",
+      "status": "pass",
+      "job_id": "klt-sim-fe4e38fbf6c7",
+      "job_ids": [
+        "klt-sim-fe4e38fbf6c7"
+      ],
+      "attempts": 1
+    },
+    {
+      "index": 3,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/control_rf260_w4u.json",
+      "dir": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/sets/control_rf260_w4u",
+      "status": "fail",
+      "job_id": "klt-sim-58909984e4a9",
+      "job_ids": [
+        "klt-sim-58909984e4a9"
+      ],
+      "attempts": 1
+    }
+  ]
+}

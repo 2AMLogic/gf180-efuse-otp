@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "status": "fail",
+  "request_count": 4,
+  "max_in_flight": 4,
+  "submitted": 4,
+  "refused": 0,
+  "refused_codes": [],
+  "requests": [
+    {
+      "index": 0,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/prog_rf140.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-bedaad168322",
+      "job_ids": [
+        "klt-sim-bedaad168322"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/sets/prog_rf140/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-bedaad168322",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/prog_rf200.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-3a81a016d6a6",
+      "job_ids": [
+        "klt-sim-3a81a016d6a6"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/sets/prog_rf200/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-3a81a016d6a6",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/prog_rf260.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-fe4e38fbf6c7",
+      "job_ids": [
+        "klt-sim-fe4e38fbf6c7"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/sets/prog_rf260/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-fe4e38fbf6c7",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/control_rf260_w4u.json",
+      "status": "fail",
+      "exit_code": 3,
+      "job_id": "klt-sim-58909984e4a9",
+      "job_ids": [
+        "klt-sim-58909984e4a9"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-309/sim/corner-verification/records/20261123T205019Z-f6eeac7/sets/control_rf260_w4u/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-58909984e4a9",
+          "last_state": "failed",
+          "interrupted_observations": 0
+        }
+      ]
+    }
+  ]
+}

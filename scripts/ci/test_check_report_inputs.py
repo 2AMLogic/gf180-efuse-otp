@@ -114,7 +114,12 @@ class Test(unittest.TestCase):
         problems, gated, skipped = cri.check(REPO_ROOT)
         self.assertEqual(problems, [])
         self.assertEqual(gated, 21)
-        self.assertEqual(skipped, 1)
+        # Skipped (no provenance.input.content_hash): efuse_otp_array.report.json
+        # (generator report) plus the two fill-*.report.json files, whose input
+        # is the generators' unwritten intermediate -- the filled streams are
+        # gated by regen-gds.sh/pnr.sh byte compares and the drc.sh input
+        # hashes instead (#310).
+        self.assertEqual(skipped, 3)
 
     def test_recorded_hash_mismatch_fails(self):
         files = clean_tree()
