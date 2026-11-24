@@ -96,8 +96,9 @@ record under `sim/sense-margin/` and `sim/sense-mc/`. That claim rests on the
 reference-tolerance sigma — rows P10/C2 grade `partial` in
 [`measurements/characterization/README.md`](measurements/characterization/README.md)
 — not on a real fuse's margins. Both streams pass the curated DRC deck.
-The native deck reports 244 violations on the array and is clean on the
-controller (0 violations; #60). Array LVS is still unmet (#32), so the array DRC/LVS-clean rung
+The native deck reports 200 violations on the array and is clean on the
+controller (0 violations; #60); the current counts are tabulated in
+[`layout/README.md`](layout/README.md). Array LVS is still unmet (#32), so the array DRC/LVS-clean rung
 remains open.
 
 ## Reproduce
