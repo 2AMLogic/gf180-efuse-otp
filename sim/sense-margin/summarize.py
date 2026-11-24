@@ -96,6 +96,9 @@ def main():
     ap.add_argument("--rfuse-intact", required=True)
     ap.add_argument("--rfuse-programmed", required=True)
     ap.add_argument("--rfuse-control", required=True)
+    ap.add_argument("--physical-reference", action="store_true",
+                    help="also read phys_rf<ohm>_rrphys: the same fuse values against the "
+                         "committed XRref (a ppolyf_u device) left in the deck")
     ap.add_argument("--t-pre", required=True)
     ap.add_argument("--t-out", required=True)
     ap.add_argument("--t-edge", required=True)
@@ -122,19 +125,26 @@ def main():
                 for rf in intact + programmed]
     requests += [("control", rf, ohms(a.rref_control),
                   "control_rf%s_rr%g" % (rf, a.rref_control)) for rf in controls]
+    if a.physical_reference:
+        requests += [("phys", rf, None, "phys_rf%s_rrphys" % rf) for rf in intact + programmed]
     reports = bench_record.load_reports(a.rec, [stem for _, _, _, stem in requests])
+    # The PVT grid the corners actually ran, read back from the reports rather
+    # than retyped from decision 0005, so `pvt` cannot contradict point_list.
+    process, temp_c, supplies = bench_record.pvt_axes(reports)
 
-    bench, control = {}, {}
+    bench, control, phys = {}, {}, {}
     backends, jobs, engines = set(), set(), set()
     for kind, rf, rr, stem in requests:
         rep = bench_record.collect_env(reports[stem], backends, jobs, engines)
         pts = points(rep, rf, rf in programmed)
-        (bench if kind == "bench" else control)[rf] = (rr, pts)
+        {"bench": bench, "control": control, "phys": phys}[kind][rf] = (rr, pts)
 
     fuses = {}
     for rf in intact + programmed:
         fuses[rf] = dict(per_fuse(bench[rf][1]), population="programmed (A5)" if rf in programmed else "intact (A4)")
 
+    physical = {rf: dict(per_fuse(pts), population=fuses[rf]["population"])
+                for rf, (_, pts) in sorted(phys.items())}
     flips = []
     for rf, (rr, pts) in sorted(control.items()):
         nominal = {key(p): p for p in bench.get(rf, (None, []))[1]}
@@ -152,16 +162,23 @@ def main():
     complete = all(f["complete"] for f in fuses.values())
     bench_margin_ok = complete and all(f["all_margin_positive"] for f in fuses.values())
     bench_decision_ok = complete and all(f["all_decisions_ok"] for f in fuses.values())
+    if a.physical_reference:
+        # The physical reference is part of the nominal evidence, not an extra:
+        # the headline verdicts cover it too.
+        complete = complete and all(f["complete"] for f in physical.values())
+        bench_margin_ok = bench_margin_ok and complete and all(f["all_margin_positive"] for f in physical.values())
+        bench_decision_ok = bench_decision_ok and complete and all(f["all_decisions_ok"] for f in physical.values())
 
     rec = {
         **bench_record.header(a, backends, jobs, engines),
         "dut": "efuse_sense (with efuse_comp), extracted from design/efuse_otp_array.spice",
-        "pvt": {"process": ["typical", "ff", "ss", "fs", "sf"], "temp_c": [-40, 25, 125],
-                "vdd33_v": [2.97, 3.30, 3.63], "source": "decision 0005"},
+        "pvt": {"process": process, "temp_c": temp_c,
+                "vdd33_v": [s["vdd33"] for s in supplies], "source": "decision 0005"},
         "assumptions": {
             "intact_range_ohm": {"value": [float(x) for x in intact], "status": "assumption A4; only the 200 ohm point is documented (+/-30% is the assumed range)"},
             "programmed_range_ohm": {"value": ["630", "900", "open (1 Gohm)"], "status": "assumption A5; only the 900 ohm point is documented (-30% is the assumed lower edge)"},
             "reference_ohm": {"value": a.rref, "status": "assumption A6 (decision 0003); geometric midpoint of 200/900 is ~424 ohm"},
+            "A8_resistor_fs_sf_corner": "the PDK model library declares resistor sections res_typical/res_ss/res_ff and no res_fs/res_sf, so the fs and sf corners keep the typical sheet rho; this has no documented source (new assumption, not in spec/efuse-otp.md); two of the five process corners therefore do not exercise the resistor corner dependence",
             "fuse_model": "plain resistor of the stated value behind a series switch + select replica (nfet_06v0 4u / 60u, as in the reference leg); no bitline capacitance, no column-mux leakage",
             "program_supply_v": {"value": 5.0, "status": "assumption, held fixed; it only gates the 6 V select devices in this bench"},
             "clock": f"one rising edge at {a.t_edge}, amplitude tracks vdd33; sense_en held asserted",
@@ -190,6 +207,13 @@ def main():
                     "analog margin positive at every point: %s; comparator decision correct and resolved at every point: %s; "
                     "negative control flips sign: %s" % (bench_margin_ok, bench_decision_ok, control_ok)),
     }
+    if a.physical_reference:
+        rec["physical_reference"] = {
+            "description": "the same fuse values against the committed XRref (ppolyf_u device, "
+                           "including its terminal resistance and its corner dependence; fs/sf keep "
+                           "the typical sheet rho, A8), not the ideal stand-in",
+            "fuses": physical,
+        }
     bench_record.write_record(a.rec, rec)
     if not complete:
         print("incomplete: some points have no values "

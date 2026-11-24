@@ -15,7 +15,7 @@
         "check": "stream_readable",
         "role": "layout",
         "passed": true,
-        "content_hash": "sha256:2cd9b515e8688c64fd9c844769eb43d5bdbc3aaa31da92dd1a480693bc117fa4"
+        "content_hash": "sha256:e2bfdd888952143f998216b60bc6fdcac80ec0489c5487095bbcc899868bb5b8"
       },
       {
         "check": "top_cell_non_empty",
@@ -29,13 +29,13 @@
         "check": "dbu_on_grid",
         "role": "layout",
         "passed": true,
-        "dbu": 0.0005
+        "dbu": 0.001
       }
     ]
   },
   "provenance": {
     "klt_version": "0.9.2",
-    "klayout_version": "0.30.13",
+    "klayout_version": "0.30.14",
     "pdk": null,
     "deck": null,
     "input": {
@@ -43,11 +43,11 @@
         "path": "layout/efuse_otp_array.gds",
         "scope": "repo"
       },
-      "content_hash": "sha256:2cd9b515e8688c64fd9c844769eb43d5bdbc3aaa31da92dd1a480693bc117fa4"
+      "content_hash": "sha256:e2bfdd888952143f998216b60bc6fdcac80ec0489c5487095bbcc899868bb5b8"
     },
     "regeneration": {
       "generator": "layout/regen-gds.sh",
-      "regenerated_hash": "sha256:2cd9b515e8688c64fd9c844769eb43d5bdbc3aaa31da92dd1a480693bc117fa4"
+      "regenerated_hash": "sha256:e2bfdd888952143f998216b60bc6fdcac80ec0489c5487095bbcc899868bb5b8"
     }
   }
 }

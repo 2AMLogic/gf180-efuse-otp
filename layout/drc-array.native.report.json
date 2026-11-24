@@ -6,22 +6,13 @@
   },
   "deck": "pdk/gf180mcuC/libs.tech/klayout/tech/drc/gf180mcu.drc",
   "engine": "klayout",
-  "dbu_um": 0.0005,
+  "dbu_um": 0.001,
   "status": "violations",
-  "violation_count": 53,
+  "violation_count": 44,
   "rule_counts": {
-    "DBU": 1,
-    "DCF.1b": 1,
     "DF.4d_MV": 16,
     "DV.6": 3,
-    "M1.4": 1,
-    "M2.4": 1,
-    "M3.4": 1,
-    "M4.4": 1,
-    "M5.4": 1,
-    "MT.3": 1,
     "PL.2_MV": 12,
-    "PL.8": 1,
     "PP.9": 2,
     "PRES.5": 2,
     "PRES.6": 8,
@@ -75,10 +66,8 @@
       "CO.9",
       "CUP.2",
       "CUP.3",
-      "DBU",
       "DCF.11a",
       "DCF.12",
-      "DCF.1b",
       "DCF.2b",
       "DCF.4",
       "DCF.5",
@@ -258,23 +247,18 @@
       "M1.2a",
       "M1.2b",
       "M1.3",
-      "M1.4",
       "M2.1",
       "M2.2a",
       "M2.2b",
       "M2.3",
-      "M2.4",
       "M3.1",
       "M3.2a",
       "M3.2b",
       "M3.3",
-      "M3.4",
       "M4.1",
       "M4.2a",
       "M4.2b",
       "M4.3",
-      "M4.4",
-      "M5.4",
       "MC.1",
       "MC.2",
       "MC.3",
@@ -412,7 +396,6 @@
       "MT.1",
       "MT.2a",
       "MT.2b",
-      "MT.3",
       "MT.4",
       "NAT.1",
       "NAT.10",
@@ -498,7 +481,6 @@
       "PL.6",
       "PL.7_LV",
       "PL.7_MV",
-      "PL.8",
       "PL.9",
       "PP.1",
       "PP.10",
@@ -849,10 +831,8 @@
       "CO.9",
       "CUP.2",
       "CUP.3",
-      "DBU",
       "DCF.11a",
       "DCF.12",
-      "DCF.1b",
       "DCF.2b",
       "DCF.4",
       "DCF.5",
@@ -1032,23 +1012,18 @@
       "M1.2a",
       "M1.2b",
       "M1.3",
-      "M1.4",
       "M2.1",
       "M2.2a",
       "M2.2b",
       "M2.3",
-      "M2.4",
       "M3.1",
       "M3.2a",
       "M3.2b",
       "M3.3",
-      "M3.4",
       "M4.1",
       "M4.2a",
       "M4.2b",
       "M4.3",
-      "M4.4",
-      "M5.4",
       "MC.1",
       "MC.2",
       "MC.3",
@@ -1186,7 +1161,6 @@
       "MT.1",
       "MT.2a",
       "MT.2b",
-      "MT.3",
       "MT.4",
       "NAT.1",
       "NAT.10",
@@ -1272,7 +1246,6 @@
       "PL.6",
       "PL.7_LV",
       "PL.7_MV",
-      "PL.8",
       "PL.9",
       "PP.1",
       "PP.10",
@@ -1632,10 +1605,8 @@
       "CO.9",
       "CUP.2",
       "CUP.3",
-      "DBU",
       "DCF.11a",
       "DCF.12",
-      "DCF.1b",
       "DCF.2b",
       "DCF.4",
       "DCF.5",
@@ -1815,23 +1786,18 @@
       "M1.2a",
       "M1.2b",
       "M1.3",
-      "M1.4",
       "M2.1",
       "M2.2a",
       "M2.2b",
       "M2.3",
-      "M2.4",
       "M3.1",
       "M3.2a",
       "M3.2b",
       "M3.3",
-      "M3.4",
       "M4.1",
       "M4.2a",
       "M4.2b",
       "M4.3",
-      "M4.4",
-      "M5.4",
       "MC.1",
       "MC.2",
       "MC.3",
@@ -1969,7 +1935,6 @@
       "MT.1",
       "MT.2a",
       "MT.2b",
-      "MT.3",
       "MT.4",
       "NAT.1",
       "NAT.10",
@@ -2055,7 +2020,6 @@
       "PL.6",
       "PL.7_LV",
       "PL.7_MV",
-      "PL.8",
       "PL.9",
       "PP.1",
       "PP.10",
@@ -2369,72 +2333,6 @@
   },
   "violations": [
     {
-      "rule": "DBU",
-      "description": "DBU : The design database unit must be 0.001",
-      "check": "external",
-      "layer": "DBU",
-      "cell": "efuse_otp_array",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": -40520,
-        "bottom": -96940,
-        "right": 2134240,
-        "top": 1398880
-      },
-      "polygon": [
-        [
-          -40520,
-          -96940
-        ],
-        [
-          -40520,
-          1398880
-        ],
-        [
-          2134240,
-          1398880
-        ],
-        [
-          2134240,
-          -96940
-        ]
-      ]
-    },
-    {
-      "rule": "DCF.1b",
-      "description": "DCF.1b : Global density for active layers (COMP+ Dummy COMP) shall be >= 25%",
-      "check": "external",
-      "layer": "DCF.1b",
-      "cell": "efuse_otp_array",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": -40520,
-        "bottom": -96940,
-        "right": 2134240,
-        "top": 1398880
-      },
-      "polygon": [
-        [
-          -40520,
-          -96940
-        ],
-        [
-          -40520,
-          1398880
-        ],
-        [
-          2134240,
-          1398880
-        ],
-        [
-          2134240,
-          -96940
-        ]
-      ]
-    },
-    {
       "rule": "DF.4d_MV",
       "description": "DF.4d_MV : Min. (Nwell overlap of NCOMP) outside DNWELL. : 0.16\u00b5m",
       "check": "external",
@@ -2443,10 +2341,10 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": -2440,
-        "bottom": -2251,
-        "right": -2140,
-        "top": 26331
+        "left": -1220,
+        "bottom": -1126,
+        "right": -1070,
+        "top": 13166
       },
       "polygon": null
     },
@@ -2459,10 +2357,10 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": -2440,
-        "bottom": 26109,
-        "right": -2140,
-        "top": 27171
+        "left": -1220,
+        "bottom": 13054,
+        "right": -1070,
+        "top": 13586
       },
       "polygon": null
     },
@@ -2475,10 +2373,10 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": -2251,
-        "bottom": -2440,
-        "right": -1189,
-        "top": -2140
+        "left": -1126,
+        "bottom": -1220,
+        "right": -594,
+        "top": -1070
       },
       "polygon": null
     },
@@ -2491,10 +2389,10 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": -2251,
-        "bottom": 27060,
-        "right": 24691,
-        "top": 27360
+        "left": -1126,
+        "bottom": 13530,
+        "right": 12346,
+        "top": 13680
       },
       "polygon": null
     },
@@ -2507,10 +2405,10 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": -1411,
-        "bottom": -2440,
-        "right": 24691,
-        "top": -2140
+        "left": -706,
+        "bottom": -1220,
+        "right": 12346,
+        "top": -1070
       },
       "polygon": null
     },
@@ -2523,10 +2421,10 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 24580,
-        "bottom": -2251,
-        "right": 24880,
-        "top": -1189
+        "left": 12290,
+        "bottom": -1126,
+        "right": 12440,
+        "top": -594
       },
       "polygon": null
     },
@@ -2539,10 +2437,10 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 24580,
-        "bottom": -1411,
-        "right": 24880,
-        "top": 26331
+        "left": 12290,
+        "bottom": -706,
+        "right": 12440,
+        "top": 13166
       },
       "polygon": null
     },
@@ -2555,10 +2453,10 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 24580,
-        "bottom": 26109,
-        "right": 24880,
-        "top": 27171
+        "left": 12290,
+        "bottom": 13054,
+        "right": 12440,
+        "top": 13586
       },
       "polygon": null
     },
@@ -2571,10 +2469,10 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": -2440,
-        "bottom": -2251,
-        "right": -2140,
-        "top": 7091
+        "left": -1220,
+        "bottom": -1126,
+        "right": -1070,
+        "top": 3546
       },
       "polygon": null
     },
@@ -2587,10 +2485,10 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": -2251,
-        "bottom": -2440,
-        "right": 5251,
-        "top": -2140
+        "left": -1126,
+        "bottom": -1220,
+        "right": 2626,
+        "top": -1070
       },
       "polygon": null
     },
@@ -2603,10 +2501,10 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": -2251,
-        "bottom": 6980,
-        "right": 5251,
-        "top": 7280
+        "left": -1126,
+        "bottom": 3490,
+        "right": 2626,
+        "top": 3640
       },
       "polygon": null
     },
@@ -2619,10 +2517,10 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 5140,
-        "bottom": -2251,
-        "right": 5440,
-        "top": 7091
+        "left": 2570,
+        "bottom": -1126,
+        "right": 2720,
+        "top": 3546
       },
       "polygon": null
     },
@@ -2635,10 +2533,10 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": -2440,
-        "bottom": -2251,
-        "right": -2140,
-        "top": 7091
+        "left": -1220,
+        "bottom": -1126,
+        "right": -1070,
+        "top": 3546
       },
       "polygon": null
     },
@@ -2651,10 +2549,10 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": -2251,
-        "bottom": -2440,
-        "right": 5251,
-        "top": -2140
+        "left": -1126,
+        "bottom": -1220,
+        "right": 2626,
+        "top": -1070
       },
       "polygon": null
     },
@@ -2667,10 +2565,10 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": -2251,
-        "bottom": 6980,
-        "right": 5251,
-        "top": 7280
+        "left": -1126,
+        "bottom": 3490,
+        "right": 2626,
+        "top": 3640
       },
       "polygon": null
     },
@@ -2683,10 +2581,10 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 5140,
-        "bottom": -2251,
-        "right": 5440,
-        "top": 7091
+        "left": 2570,
+        "bottom": -1126,
+        "right": 2720,
+        "top": 3546
       },
       "polygon": null
     },
@@ -2699,43 +2597,43 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": -2402,
-        "bottom": -2402,
-        "right": 24842,
-        "top": 27322
+        "left": -1201,
+        "bottom": -1201,
+        "right": 12421,
+        "top": 13661
       },
       "polygon": [
         [
-          -2402,
-          -2402
+          -1201,
+          -1201
         ],
         [
-          -2402,
-          27322
+          -1201,
+          13661
         ],
         [
-          24842,
-          27322
+          12421,
+          13661
         ],
         [
-          24842,
-          -2402
+          12421,
+          -1201
         ],
         [
-          -2138,
-          -2138
+          -1069,
+          -1069
         ],
         [
-          24578,
-          -2138
+          12289,
+          -1069
         ],
         [
-          24578,
-          27058
+          12289,
+          13529
         ],
         [
-          -2138,
-          27058
+          -1069,
+          13529
         ]
       ]
     },
@@ -2748,43 +2646,43 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": -2402,
-        "bottom": -2402,
-        "right": 5402,
-        "top": 7242
+        "left": -1201,
+        "bottom": -1201,
+        "right": 2701,
+        "top": 3621
       },
       "polygon": [
         [
-          -2402,
-          -2402
+          -1201,
+          -1201
         ],
         [
-          -2402,
-          7242
+          -1201,
+          3621
         ],
         [
-          5402,
-          7242
+          2701,
+          3621
         ],
         [
-          5402,
-          -2402
+          2701,
+          -1201
         ],
         [
-          -2138,
-          -2138
+          -1069,
+          -1069
         ],
         [
-          5138,
-          -2138
+          2569,
+          -1069
         ],
         [
-          5138,
-          6978
+          2569,
+          3489
         ],
         [
-          -2138,
-          6978
+          -1069,
+          3489
         ]
       ]
     },
@@ -2797,241 +2695,43 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": -2402,
-        "bottom": -2402,
-        "right": 5402,
-        "top": 7242
+        "left": -1201,
+        "bottom": -1201,
+        "right": 2701,
+        "top": 3621
       },
       "polygon": [
         [
-          -2402,
-          -2402
+          -1201,
+          -1201
         ],
         [
-          -2402,
-          7242
+          -1201,
+          3621
         ],
         [
-          5402,
-          7242
+          2701,
+          3621
         ],
         [
-          5402,
-          -2402
+          2701,
+          -1201
         ],
         [
-          -2138,
-          -2138
+          -1069,
+          -1069
         ],
         [
-          5138,
-          -2138
+          2569,
+          -1069
         ],
         [
-          5138,
-          6978
+          2569,
+          3489
         ],
         [
-          -2138,
-          6978
-        ]
-      ]
-    },
-    {
-      "rule": "M1.4",
-      "description": "M1.4 : Metal1 coverage over the entire die shall be >30%\n                  (Refer to section 13.0 for Dummy Metal fill guidelines.\n                   Customer needs to ensure enough dummy metal to satisfy Metal1 coverage) : 30%",
-      "check": "external",
-      "layer": "M1.4",
-      "cell": "efuse_otp_array",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": -40520,
-        "bottom": -96940,
-        "right": 2134240,
-        "top": 1398880
-      },
-      "polygon": [
-        [
-          -40520,
-          -96940
-        ],
-        [
-          -40520,
-          1398880
-        ],
-        [
-          2134240,
-          1398880
-        ],
-        [
-          2134240,
-          -96940
-        ]
-      ]
-    },
-    {
-      "rule": "M2.4",
-      "description": "M2.4 : Metal2 coverage over the entire die shall be >30%\n                  (Refer to section 13.0 for Dummy Metal fill guidelines.\n                   Customer needs to ensure enough dummy metal to satisfy Metal2 coverage) : 30%",
-      "check": "external",
-      "layer": "M2.4",
-      "cell": "efuse_otp_array",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": -40520,
-        "bottom": -96940,
-        "right": 2134240,
-        "top": 1398880
-      },
-      "polygon": [
-        [
-          -40520,
-          -96940
-        ],
-        [
-          -40520,
-          1398880
-        ],
-        [
-          2134240,
-          1398880
-        ],
-        [
-          2134240,
-          -96940
-        ]
-      ]
-    },
-    {
-      "rule": "M3.4",
-      "description": "M3.4 : metal3 coverage over the entire die shall be >30%\n                      (Refer to section 13.0 for Dummy Metal fill guidelines.\n                      Customer needs to ensure enough dummy metal to satisfy metal3 coverage) : 30%",
-      "check": "external",
-      "layer": "M3.4",
-      "cell": "efuse_otp_array",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": -40520,
-        "bottom": -96940,
-        "right": 2134240,
-        "top": 1398880
-      },
-      "polygon": [
-        [
-          -40520,
-          -96940
-        ],
-        [
-          -40520,
-          1398880
-        ],
-        [
-          2134240,
-          1398880
-        ],
-        [
-          2134240,
-          -96940
-        ]
-      ]
-    },
-    {
-      "rule": "M4.4",
-      "description": "M4.4 : metal4 coverage over the entire die shall be >30%\n                      (Refer to section 13.0 for Dummy Metal fill guidelines.\n                      Customer needs to ensure enough dummy metal to satisfy metal4 coverage) : 30%",
-      "check": "external",
-      "layer": "M4.4",
-      "cell": "efuse_otp_array",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": -40520,
-        "bottom": -96940,
-        "right": 2134240,
-        "top": 1398880
-      },
-      "polygon": [
-        [
-          -40520,
-          -96940
-        ],
-        [
-          -40520,
-          1398880
-        ],
-        [
-          2134240,
-          1398880
-        ],
-        [
-          2134240,
-          -96940
-        ]
-      ]
-    },
-    {
-      "rule": "M5.4",
-      "description": "M5.4 : metal5 coverage over the entire die shall be >30%\n                      (Refer to section 13.0 for Dummy Metal fill guidelines.\n                      Customer needs to ensure enough dummy metal to satisfy metal5 coverage) : 30%",
-      "check": "external",
-      "layer": "M5.4",
-      "cell": "efuse_otp_array",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": -40520,
-        "bottom": -96940,
-        "right": 2134240,
-        "top": 1398880
-      },
-      "polygon": [
-        [
-          -40520,
-          -96940
-        ],
-        [
-          -40520,
-          1398880
-        ],
-        [
-          2134240,
-          1398880
-        ],
-        [
-          2134240,
-          -96940
-        ]
-      ]
-    },
-    {
-      "rule": "MT.3",
-      "description": "MT.3 : MetalTop coverage over the entire die shall be >30%\n                                  (Refer to section 10.3 for Dummy Metal-fill guidelines.\n                                  Customer needs to ensure enough dummy metal to satisfy Metaln coverage) : 30%",
-      "check": "external",
-      "layer": "MT.3",
-      "cell": "efuse_otp_array",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": -40520,
-        "bottom": -96940,
-        "right": 2134240,
-        "top": 1398880
-      },
-      "polygon": [
-        [
-          -40520,
-          -96940
-        ],
-        [
-          -40520,
-          1398880
-        ],
-        [
-          2134240,
-          1398880
-        ],
-        [
-          2134240,
-          -96940
+          -1069,
+          3489
         ]
       ]
     },
@@ -3044,27 +2744,27 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 1000,
-        "bottom": 1640,
-        "right": 2000,
-        "top": 21640
+        "left": 500,
+        "bottom": 820,
+        "right": 1000,
+        "top": 10820
       },
       "polygon": [
         [
-          1000,
-          1640
+          500,
+          820
+        ],
+        [
+          500,
+          10820
         ],
         [
           1000,
-          21640
+          10820
         ],
         [
-          2000,
-          21640
-        ],
-        [
-          2000,
-          1640
+          1000,
+          820
         ]
       ]
     },
@@ -3077,27 +2777,60 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 3160,
-        "bottom": 1640,
-        "right": 4160,
-        "top": 21640
+        "left": 1580,
+        "bottom": 820,
+        "right": 2080,
+        "top": 10820
       },
       "polygon": [
         [
-          3160,
-          1640
+          1580,
+          820
+        ],
+        [
+          1580,
+          10820
+        ],
+        [
+          2080,
+          10820
+        ],
+        [
+          2080,
+          820
+        ]
+      ]
+    },
+    {
+      "rule": "PL.2_MV",
+      "description": "PL.2_MV : Gate Width (Channel Length).",
+      "check": "external",
+      "layer": "PL.2_MV",
+      "cell": "efuse_coldrv__Mdrv_leaf7__core",
+      "source_cell": null,
+      "source_path": null,
+      "bbox": {
+        "left": 2660,
+        "bottom": 820,
+        "right": 3160,
+        "top": 10820
+      },
+      "polygon": [
+        [
+          2660,
+          820
+        ],
+        [
+          2660,
+          10820
         ],
         [
           3160,
-          21640
+          10820
         ],
         [
-          4160,
-          21640
-        ],
-        [
-          4160,
-          1640
+          3160,
+          820
         ]
       ]
     },
@@ -3110,27 +2843,60 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 5320,
-        "bottom": 1640,
-        "right": 6320,
-        "top": 21640
+        "left": 3740,
+        "bottom": 820,
+        "right": 4240,
+        "top": 10820
       },
       "polygon": [
+        [
+          3740,
+          820
+        ],
+        [
+          3740,
+          10820
+        ],
+        [
+          4240,
+          10820
+        ],
+        [
+          4240,
+          820
+        ]
+      ]
+    },
+    {
+      "rule": "PL.2_MV",
+      "description": "PL.2_MV : Gate Width (Channel Length).",
+      "check": "external",
+      "layer": "PL.2_MV",
+      "cell": "efuse_coldrv__Mdrv_leaf7__core",
+      "source_cell": null,
+      "source_path": null,
+      "bbox": {
+        "left": 4820,
+        "bottom": 820,
+        "right": 5320,
+        "top": 10820
+      },
+      "polygon": [
+        [
+          4820,
+          820
+        ],
+        [
+          4820,
+          10820
+        ],
         [
           5320,
-          1640
+          10820
         ],
         [
           5320,
-          21640
-        ],
-        [
-          6320,
-          21640
-        ],
-        [
-          6320,
-          1640
+          820
         ]
       ]
     },
@@ -3143,27 +2909,60 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 7480,
-        "bottom": 1640,
-        "right": 8480,
-        "top": 21640
+        "left": 5900,
+        "bottom": 820,
+        "right": 6400,
+        "top": 10820
       },
       "polygon": [
+        [
+          5900,
+          820
+        ],
+        [
+          5900,
+          10820
+        ],
+        [
+          6400,
+          10820
+        ],
+        [
+          6400,
+          820
+        ]
+      ]
+    },
+    {
+      "rule": "PL.2_MV",
+      "description": "PL.2_MV : Gate Width (Channel Length).",
+      "check": "external",
+      "layer": "PL.2_MV",
+      "cell": "efuse_coldrv__Mdrv_leaf7__core",
+      "source_cell": null,
+      "source_path": null,
+      "bbox": {
+        "left": 6980,
+        "bottom": 820,
+        "right": 7480,
+        "top": 10820
+      },
+      "polygon": [
+        [
+          6980,
+          820
+        ],
+        [
+          6980,
+          10820
+        ],
         [
           7480,
-          1640
+          10820
         ],
         [
           7480,
-          21640
-        ],
-        [
-          8480,
-          21640
-        ],
-        [
-          8480,
-          1640
+          820
         ]
       ]
     },
@@ -3176,27 +2975,60 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 9640,
-        "bottom": 1640,
-        "right": 10640,
-        "top": 21640
+        "left": 8060,
+        "bottom": 820,
+        "right": 8560,
+        "top": 10820
       },
       "polygon": [
+        [
+          8060,
+          820
+        ],
+        [
+          8060,
+          10820
+        ],
+        [
+          8560,
+          10820
+        ],
+        [
+          8560,
+          820
+        ]
+      ]
+    },
+    {
+      "rule": "PL.2_MV",
+      "description": "PL.2_MV : Gate Width (Channel Length).",
+      "check": "external",
+      "layer": "PL.2_MV",
+      "cell": "efuse_coldrv__Mdrv_leaf7__core",
+      "source_cell": null,
+      "source_path": null,
+      "bbox": {
+        "left": 9140,
+        "bottom": 820,
+        "right": 9640,
+        "top": 10820
+      },
+      "polygon": [
+        [
+          9140,
+          820
+        ],
+        [
+          9140,
+          10820
+        ],
         [
           9640,
-          1640
+          10820
         ],
         [
           9640,
-          21640
-        ],
-        [
-          10640,
-          21640
-        ],
-        [
-          10640,
-          1640
+          820
         ]
       ]
     },
@@ -3209,159 +3041,27 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 11800,
-        "bottom": 1640,
-        "right": 12800,
-        "top": 21640
+        "left": 10220,
+        "bottom": 820,
+        "right": 10720,
+        "top": 10820
       },
       "polygon": [
         [
-          11800,
-          1640
+          10220,
+          820
         ],
         [
-          11800,
-          21640
+          10220,
+          10820
         ],
         [
-          12800,
-          21640
+          10720,
+          10820
         ],
         [
-          12800,
-          1640
-        ]
-      ]
-    },
-    {
-      "rule": "PL.2_MV",
-      "description": "PL.2_MV : Gate Width (Channel Length).",
-      "check": "external",
-      "layer": "PL.2_MV",
-      "cell": "efuse_coldrv__Mdrv_leaf7__core",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": 13960,
-        "bottom": 1640,
-        "right": 14960,
-        "top": 21640
-      },
-      "polygon": [
-        [
-          13960,
-          1640
-        ],
-        [
-          13960,
-          21640
-        ],
-        [
-          14960,
-          21640
-        ],
-        [
-          14960,
-          1640
-        ]
-      ]
-    },
-    {
-      "rule": "PL.2_MV",
-      "description": "PL.2_MV : Gate Width (Channel Length).",
-      "check": "external",
-      "layer": "PL.2_MV",
-      "cell": "efuse_coldrv__Mdrv_leaf7__core",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": 16120,
-        "bottom": 1640,
-        "right": 17120,
-        "top": 21640
-      },
-      "polygon": [
-        [
-          16120,
-          1640
-        ],
-        [
-          16120,
-          21640
-        ],
-        [
-          17120,
-          21640
-        ],
-        [
-          17120,
-          1640
-        ]
-      ]
-    },
-    {
-      "rule": "PL.2_MV",
-      "description": "PL.2_MV : Gate Width (Channel Length).",
-      "check": "external",
-      "layer": "PL.2_MV",
-      "cell": "efuse_coldrv__Mdrv_leaf7__core",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": 18280,
-        "bottom": 1640,
-        "right": 19280,
-        "top": 21640
-      },
-      "polygon": [
-        [
-          18280,
-          1640
-        ],
-        [
-          18280,
-          21640
-        ],
-        [
-          19280,
-          21640
-        ],
-        [
-          19280,
-          1640
-        ]
-      ]
-    },
-    {
-      "rule": "PL.2_MV",
-      "description": "PL.2_MV : Gate Width (Channel Length).",
-      "check": "external",
-      "layer": "PL.2_MV",
-      "cell": "efuse_coldrv__Mdrv_leaf7__core",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": 20440,
-        "bottom": 1640,
-        "right": 21440,
-        "top": 21640
-      },
-      "polygon": [
-        [
-          20440,
-          1640
-        ],
-        [
-          20440,
-          21640
-        ],
-        [
-          21440,
-          21640
-        ],
-        [
-          21440,
-          1640
+          10720,
+          820
         ]
       ]
     },
@@ -3374,26 +3074,26 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 1000,
+        "left": 500,
         "bottom": 0,
-        "right": 2000,
-        "top": 2000
+        "right": 1000,
+        "top": 1000
       },
       "polygon": [
         [
-          1000,
+          500,
           0
         ],
         [
+          500,
+          1000
+        ],
+        [
           1000,
-          2000
+          1000
         ],
         [
-          2000,
-          2000
-        ],
-        [
-          2000,
+          1000,
           0
         ]
       ]
@@ -3407,60 +3107,27 @@
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 1000,
+        "left": 500,
         "bottom": 0,
-        "right": 2000,
-        "top": 2000
+        "right": 1000,
+        "top": 1000
       },
       "polygon": [
         [
-          1000,
+          500,
           0
         ],
         [
+          500,
+          1000
+        ],
+        [
           1000,
-          2000
+          1000
         ],
         [
-          2000,
-          2000
-        ],
-        [
-          2000,
+          1000,
           0
-        ]
-      ]
-    },
-    {
-      "rule": "PL.8",
-      "description": "PL.8 : Poly2 coverage over the entire die shall be 14%.\n                  Dummy poly2 lines must be added to meet the minimum poly2 density requirement. : 14%",
-      "check": "external",
-      "layer": "PL.8",
-      "cell": "efuse_otp_array",
-      "source_cell": null,
-      "source_path": null,
-      "bbox": {
-        "left": -40520,
-        "bottom": -96940,
-        "right": 2134240,
-        "top": 1398880
-      },
-      "polygon": [
-        [
-          -40520,
-          -96940
-        ],
-        [
-          -40520,
-          1398880
-        ],
-        [
-          2134240,
-          1398880
-        ],
-        [
-          2134240,
-          -96940
         ]
       ]
     },
@@ -3469,47 +3136,47 @@
       "description": "PP.9 : Overlap of unsalicided Poly2. : 0.18\u00b5m",
       "check": "external",
       "layer": "PP.9",
-      "cell": "efuse_sense__b_leaf12__core",
+      "cell": "efuse_sense__Rb_leaf12__core",
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 1038,
-        "bottom": -2,
-        "right": 12472,
-        "top": 2002
+        "left": 519,
+        "bottom": -1,
+        "right": 5601,
+        "top": 1001
       },
       "polygon": [
         [
-          1038,
-          -2
+          519,
+          -1
         ],
         [
-          1038,
-          2002
+          519,
+          1001
         ],
         [
-          12472,
-          2002
+          5601,
+          1001
         ],
         [
-          12472,
-          -2
+          5601,
+          -1
         ],
         [
-          1042,
-          2
+          521,
+          1
         ],
         [
-          12468,
-          2
+          5599,
+          1
         ],
         [
-          12468,
-          1998
+          5599,
+          999
         ],
         [
-          1042,
-          1998
+          521,
+          999
         ]
       ]
     },
@@ -3518,47 +3185,47 @@
       "description": "PP.9 : Overlap of unsalicided Poly2. : 0.18\u00b5m",
       "check": "external",
       "layer": "PP.9",
-      "cell": "efuse_sense__ref_leaf14__core",
+      "cell": "efuse_sense__Rref_leaf14__core",
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 1038,
-        "bottom": -2,
-        "right": 3332,
-        "top": 2002
+        "left": 519,
+        "bottom": -1,
+        "right": 1321,
+        "top": 1051
       },
       "polygon": [
         [
-          1038,
-          -2
+          519,
+          -1
         ],
         [
-          1038,
-          2002
+          519,
+          1051
         ],
         [
-          3332,
-          2002
+          1321,
+          1051
         ],
         [
-          3332,
-          -2
+          1321,
+          -1
         ],
         [
-          1042,
-          2
+          521,
+          1
         ],
         [
-          3328,
-          2
+          1319,
+          1
         ],
         [
-          3328,
-          1998
+          1319,
+          1049
         ],
         [
-          1042,
-          1998
+          521,
+          1049
         ]
       ]
     },
@@ -3567,47 +3234,47 @@
       "description": "PRES.5 : Minimum Plus implant overlap of Poly2 resistor: 0.3\u00b5m",
       "check": "external",
       "layer": "PRES.5",
-      "cell": "efuse_sense__b_leaf12__core",
+      "cell": "efuse_sense__Rb_leaf12__core",
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 1038,
-        "bottom": -2,
-        "right": 12472,
-        "top": 2002
+        "left": 519,
+        "bottom": -1,
+        "right": 5601,
+        "top": 1001
       },
       "polygon": [
         [
-          1038,
-          -2
+          519,
+          -1
         ],
         [
-          1038,
-          2002
+          519,
+          1001
         ],
         [
-          12472,
-          2002
+          5601,
+          1001
         ],
         [
-          12472,
-          -2
+          5601,
+          -1
         ],
         [
-          1042,
-          2
+          521,
+          1
         ],
         [
-          12468,
-          2
+          5599,
+          1
         ],
         [
-          12468,
-          1998
+          5599,
+          999
         ],
         [
-          1042,
-          1998
+          521,
+          999
         ]
       ]
     },
@@ -3616,47 +3283,47 @@
       "description": "PRES.5 : Minimum Plus implant overlap of Poly2 resistor: 0.3\u00b5m",
       "check": "external",
       "layer": "PRES.5",
-      "cell": "efuse_sense__ref_leaf14__core",
+      "cell": "efuse_sense__Rref_leaf14__core",
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 1038,
-        "bottom": -2,
-        "right": 3332,
-        "top": 2002
+        "left": 519,
+        "bottom": -1,
+        "right": 1321,
+        "top": 1051
       },
       "polygon": [
         [
-          1038,
-          -2
+          519,
+          -1
         ],
         [
-          1038,
-          2002
+          519,
+          1051
         ],
         [
-          3332,
-          2002
+          1321,
+          1051
         ],
         [
-          3332,
-          -2
+          1321,
+          -1
         ],
         [
-          1042,
-          2
+          521,
+          1
         ],
         [
-          3328,
-          2
+          1319,
+          1
         ],
         [
-          3328,
-          1998
+          1319,
+          1049
         ],
         [
-          1042,
-          1998
+          521,
+          1049
         ]
       ]
     },
@@ -3665,14 +3332,14 @@
       "description": "PRES.6 : Minimum salicide block overlap of Poly2 resistor in width direction: 0.28\u00b5m",
       "check": "external",
       "layer": "PRES.6",
-      "cell": "efuse_sense__b_leaf12__core",
+      "cell": "efuse_sense__Rb_leaf12__core",
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 1040,
-        "bottom": -440,
-        "right": 1040,
-        "top": 2440
+        "left": 520,
+        "bottom": -220,
+        "right": 520,
+        "top": 1220
       },
       "polygon": null
     },
@@ -3681,13 +3348,13 @@
       "description": "PRES.6 : Minimum salicide block overlap of Poly2 resistor in width direction: 0.28\u00b5m",
       "check": "external",
       "layer": "PRES.6",
-      "cell": "efuse_sense__b_leaf12__core",
+      "cell": "efuse_sense__Rb_leaf12__core",
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 1040,
-        "bottom": -440,
-        "right": 12470,
+        "left": 520,
+        "bottom": -220,
+        "right": 5600,
         "top": 0
       },
       "polygon": null
@@ -3697,14 +3364,14 @@
       "description": "PRES.6 : Minimum salicide block overlap of Poly2 resistor in width direction: 0.28\u00b5m",
       "check": "external",
       "layer": "PRES.6",
-      "cell": "efuse_sense__b_leaf12__core",
+      "cell": "efuse_sense__Rb_leaf12__core",
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 1040,
-        "bottom": 2000,
-        "right": 12470,
-        "top": 2440
+        "left": 520,
+        "bottom": 1000,
+        "right": 5600,
+        "top": 1220
       },
       "polygon": null
     },
@@ -3713,14 +3380,14 @@
       "description": "PRES.6 : Minimum salicide block overlap of Poly2 resistor in width direction: 0.28\u00b5m",
       "check": "external",
       "layer": "PRES.6",
-      "cell": "efuse_sense__b_leaf12__core",
+      "cell": "efuse_sense__Rb_leaf12__core",
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 12470,
-        "bottom": -440,
-        "right": 12470,
-        "top": 2440
+        "left": 5600,
+        "bottom": -220,
+        "right": 5600,
+        "top": 1220
       },
       "polygon": null
     },
@@ -3729,14 +3396,14 @@
       "description": "PRES.6 : Minimum salicide block overlap of Poly2 resistor in width direction: 0.28\u00b5m",
       "check": "external",
       "layer": "PRES.6",
-      "cell": "efuse_sense__ref_leaf14__core",
+      "cell": "efuse_sense__Rref_leaf14__core",
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 1040,
-        "bottom": -440,
-        "right": 1040,
-        "top": 2440
+        "left": 520,
+        "bottom": -220,
+        "right": 520,
+        "top": 1270
       },
       "polygon": null
     },
@@ -3745,13 +3412,13 @@
       "description": "PRES.6 : Minimum salicide block overlap of Poly2 resistor in width direction: 0.28\u00b5m",
       "check": "external",
       "layer": "PRES.6",
-      "cell": "efuse_sense__ref_leaf14__core",
+      "cell": "efuse_sense__Rref_leaf14__core",
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 1040,
-        "bottom": -440,
-        "right": 3330,
+        "left": 520,
+        "bottom": -220,
+        "right": 1320,
         "top": 0
       },
       "polygon": null
@@ -3761,14 +3428,14 @@
       "description": "PRES.6 : Minimum salicide block overlap of Poly2 resistor in width direction: 0.28\u00b5m",
       "check": "external",
       "layer": "PRES.6",
-      "cell": "efuse_sense__ref_leaf14__core",
+      "cell": "efuse_sense__Rref_leaf14__core",
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 1040,
-        "bottom": 2000,
-        "right": 3330,
-        "top": 2440
+        "left": 520,
+        "bottom": 1050,
+        "right": 1320,
+        "top": 1270
       },
       "polygon": null
     },
@@ -3777,14 +3444,14 @@
       "description": "PRES.6 : Minimum salicide block overlap of Poly2 resistor in width direction: 0.28\u00b5m",
       "check": "external",
       "layer": "PRES.6",
-      "cell": "efuse_sense__ref_leaf14__core",
+      "cell": "efuse_sense__Rref_leaf14__core",
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 3330,
-        "bottom": -440,
-        "right": 3330,
-        "top": 2440
+        "left": 1320,
+        "bottom": -220,
+        "right": 1320,
+        "top": 1270
       },
       "polygon": null
     },
@@ -3793,31 +3460,31 @@
       "description": "SB.13 : Min. area (um2) : 2\u00b5m\u00b2",
       "check": "external",
       "layer": "SB.13",
-      "cell": "efuse_sense__ref_leaf14__core",
+      "cell": "efuse_sense__Rref_leaf14__core",
       "source_cell": null,
       "source_path": null,
       "bbox": {
-        "left": 1040,
-        "bottom": -440,
-        "right": 3330,
-        "top": 2440
+        "left": 520,
+        "bottom": -220,
+        "right": 1320,
+        "top": 1270
       },
       "polygon": [
         [
-          1040,
-          -440
+          520,
+          -220
         ],
         [
-          1040,
-          2440
+          520,
+          1270
         ],
         [
-          3330,
-          2440
+          1320,
+          1270
         ],
         [
-          3330,
-          -440
+          1320,
+          -220
         ]
       ]
     }
@@ -3869,10 +3536,8 @@
       "CO.9",
       "CUP.2",
       "CUP.3",
-      "DBU",
       "DCF.11a",
       "DCF.12",
-      "DCF.1b",
       "DCF.2b",
       "DCF.4",
       "DCF.5",
@@ -4052,23 +3717,18 @@
       "M1.2a",
       "M1.2b",
       "M1.3",
-      "M1.4",
       "M2.1",
       "M2.2a",
       "M2.2b",
       "M2.3",
-      "M2.4",
       "M3.1",
       "M3.2a",
       "M3.2b",
       "M3.3",
-      "M3.4",
       "M4.1",
       "M4.2a",
       "M4.2b",
       "M4.3",
-      "M4.4",
-      "M5.4",
       "MC.1",
       "MC.2",
       "MC.3",
@@ -4206,7 +3866,6 @@
       "MT.1",
       "MT.2a",
       "MT.2b",
-      "MT.3",
       "MT.4",
       "NAT.1",
       "NAT.10",
@@ -4292,7 +3951,6 @@
       "PL.6",
       "PL.7_LV",
       "PL.7_MV",
-      "PL.8",
       "PL.9",
       "PP.1",
       "PP.10",
@@ -4643,10 +4301,8 @@
       "CO.9",
       "CUP.2",
       "CUP.3",
-      "DBU",
       "DCF.11a",
       "DCF.12",
-      "DCF.1b",
       "DCF.2b",
       "DCF.4",
       "DCF.5",
@@ -4826,23 +4482,18 @@
       "M1.2a",
       "M1.2b",
       "M1.3",
-      "M1.4",
       "M2.1",
       "M2.2a",
       "M2.2b",
       "M2.3",
-      "M2.4",
       "M3.1",
       "M3.2a",
       "M3.2b",
       "M3.3",
-      "M3.4",
       "M4.1",
       "M4.2a",
       "M4.2b",
       "M4.3",
-      "M4.4",
-      "M5.4",
       "MC.1",
       "MC.2",
       "MC.3",
@@ -4980,7 +4631,6 @@
       "MT.1",
       "MT.2a",
       "MT.2b",
-      "MT.3",
       "MT.4",
       "NAT.1",
       "NAT.10",
@@ -5066,7 +4716,6 @@
       "PL.6",
       "PL.7_LV",
       "PL.7_MV",
-      "PL.8",
       "PL.9",
       "PP.1",
       "PP.10",
@@ -5380,7 +5029,7 @@
     "klt_version": "0.9.2",
     "klt_git_commit": "046ba74652fc096bd97071fc3237f7159dd40183",
     "klt_reinstall_spec": "klayout-tools==0.9.2",
-    "klayout_version": "0.30.13",
+    "klayout_version": "0.30.14",
     "pdk": {
       "name": "gf180mcuC",
       "source": "--pdk-root flag",
@@ -5402,7 +5051,7 @@
       }
     },
     "input": {
-      "content_hash": "sha256:2cd9b515e8688c64fd9c844769eb43d5bdbc3aaa31da92dd1a480693bc117fa4",
+      "content_hash": "sha256:e2bfdd888952143f998216b60bc6fdcac80ec0489c5487095bbcc899868bb5b8",
       "role": "layout"
     },
     "klayout_version_mismatch": true

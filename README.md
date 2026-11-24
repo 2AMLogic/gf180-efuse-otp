@@ -21,7 +21,9 @@ caveats). Committed on `main`:
   path ([`efuse_sense.sch`](design/efuse_sense.sch),
   [`efuse_comp.sch`](design/efuse_comp.sch)) and its margin campaign in
   [`sim/sense-margin/`](sim/sense-margin/) (#28);
-- a placed analog layout stream and the routed controller layout
+- a placed analog layout stream whose fuse-free cells are routed and
+  LVS-matched (level shifters, row/column drivers, comparator and sense path),
+  and the routed controller layout
   ([`layout/efuse_otp_ctrl.gds`](layout/efuse_otp_ctrl.gds),
   [`layout/pnr-report.json`](layout/pnr-report.json));
 - DRC reports for both partitions
@@ -105,7 +107,7 @@ and never replaces a committed one.
 | Controller bench | `verification/run.sh` | python3, uv, network for the pinned klt and cocotb, Icarus Verilog 13.0 | `ALL CHECKS PASSED` |
 | Controller negative control | `verification/run.sh --negative-control` | same | `NEGATIVE CONTROL OK` (exit 0 only if every seeded defect is caught) |
 | Latch check | `rtl/synth.sh` | Yosys 0.67 | exit 0 and no output; Yosys asserts no latch cell survives synthesis and names any it finds. Log in `flow/build/synth.log` |
-| Signoff record | `uvx --from "$(cat signoff/klt-pin.txt)" klt signoff --manifest signoff/block-manifest.json --tiers-doc signoff/design-evidence-tiers.md --format json > signoff/block-manifest.signoff.json` | uv; exit 3 (items unmet) is expected | byte-identical to the committed `signoff/block-manifest.signoff.json` |
+| Signoff record | `uvx --from "$(cat signoff/klt-pin.txt)" klt signoff --manifest signoff/block-manifest.json --format json > signoff/block-manifest.signoff.json` | uv; exit 3 (items unmet) is expected | byte-identical to the committed `signoff/block-manifest.signoff.json` |
 
 `verification/run.sh` refuses any Icarus version other than the pinned one;
 `ALLOW_TOOL_MISMATCH=1` overrides this and is not used in CI. `rtl/synth.sh`

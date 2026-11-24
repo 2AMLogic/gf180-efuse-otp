@@ -98,9 +98,17 @@ rtl/.klt/
 /.loom-local/
 # <<< loom-managed <<<
 
+# loom-daemon's per-provider account ranking state, e.g.
+# .loom/account-ranking.codex, written into the primary checkout. The managed
+# block above does not list it, so untracked it trips check-main-clean.sh
+# (exit 3). Local rule: remove once a Loom resync ships the pattern inside the
+# managed block (EPHEMERAL_PATTERNS in loom-daemon/src/init/post_init.rs).
+/.loom/account-ranking.*
+
 # Repo Skills machine-local install metadata (absolute source path + timestamp)
 .claude/skills/repo/.install-local.json
 layout/.klt/
+layout/.pnr.*/
 sta/.klt/
 
 # Repo Skills Codex-side machine-local install metadata (never committed)
