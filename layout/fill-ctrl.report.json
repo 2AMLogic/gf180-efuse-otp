@@ -50,6 +50,11 @@
     "metal_pitch": 7.0,
     "metal_second_square": 3.0,
     "metal_second_pitch": 4.0,
+    "metal_third_square": 2.0,
+    "metal_third_pitch": 3.0,
+    "metal_third_layers": [
+      "Metal2"
+    ],
     "frame_max_width": 25.0
   },
   "layers": [
@@ -97,9 +102,9 @@
       "drawing": "36/0",
       "fill_layer": "36/4",
       "drawn_pct": 8.460659229263998,
-      "fill_pct": 25.61408016507653,
-      "total_pct": 34.074739394340526,
-      "fill_shapes": 113,
+      "fill_pct": 26.667394087211875,
+      "total_pct": 35.12805331647587,
+      "fill_shapes": 185,
       "rule": "M2.4",
       "bound": 30,
       "description": "Metal2+dummy over extent, M2.4 >= 30%",

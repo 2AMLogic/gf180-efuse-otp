@@ -17,7 +17,10 @@ What it adds, inside the design extent (the top cell's bounding box) only:
   same 5.0/5.6 relation the PDK's own fill scripts use.
 * **Metal1..Metal5 dummy** (34/4, 36/4, 42/4, 46/4, 81/4) per layer: the
   same frame + a lattice of 6 um squares at 7 um pitch, then a second pass
-  of 3 um squares at 4 um pitch over what remains. On the 5-level stack
+  of 3 um squares at 4 um pitch over what remains. Metal2 alone then gets a
+  third pass of 2 um squares at 3 um pitch over what still remains (#365):
+  the bitcell/row routing's 2 um space to drawn metal leaves bands too narrow
+  for a 3 um square, and the two passes left M2.4 short. On the 5-level stack
   Metal5 is MetalTop, so the Metal5 fill serves M5.4 and MT.3 together.
 
 Every keep-out below is a foundry rule value from the PDK's own DRC rule
@@ -26,7 +29,8 @@ checked by the same native deck ``layout/drc.sh`` replays; the one number
 that is not a rule is the 6 um space kept from every fuse marker on every
 filled layer, which adopts DM.8's dummy-metal-to-fuse-marker space as the
 fuse keep-out for all fill (this PDK's eFuse marks itself with PLFUSE
-125/5 and EFUSE_MK 80/5, which DM.8 does not list). All geometry is on the
+125/5 and EFUSE_MK 80/5, which DM.8 does not list). No deck rule bounds a
+dummy square's width (see ``METAL_THIRD_SIZE``). All geometry is on the
 0.005 um rule grid: sizes, pitches, halos and keeps are multiples of it
 and the metal dummy-dummy keep uses 1.0 um where DM.2b asks 0.98.
 
@@ -95,6 +99,13 @@ POLY2_ANNULUS_MARGIN_UM = 0.3  # comp annulus = poly2 annulus eroded by this
 POLY2_GAP_MIN_UM = 1.1  # DPF.2b: keep covers this far from the poly2 annulus
 METAL_SIZE, METAL_GAP = 6.0, 1.0  # gap >= DM.n.2b 0.98 (1.0 stays on grid)
 METAL2_SIZE, METAL2_GAP = 3.0, 1.0
+# Third pass, Metal2 only (#365). The pinned deck sets no dummy-metal width:
+# rule_decks/dummy_metal.rb checks DM.n.2b (space), DM.n.3 and DM.n.8 only,
+# and M2.1 runs on metal2_drawn 36/0, not metal2_dummy 36/4 (metal.rb,
+# generic_layers.rb). The size therefore follows the PDK's own fill,
+# scripts/fill_metal.rb, which draws a 2.0 um square under its "DM.1" comment.
+METAL_THIRD_SIZE, METAL_THIRD_GAP = 2.0, 1.0
+METAL_THIRD_LAYERS = (2,)  # layer numbers that get the third pass
 FRAME_MAX_W_UM = 25.0
 FRAME_STEP_UM = 0.5
 GRID_UM = 0.005  # the rule grid; every size above is a multiple of it
@@ -199,6 +210,15 @@ def fill_class(ext, halos_r, dbu, keep_um, sizes):
     return fill
 
 
+def metal_passes(n):
+    """(square, gap) lattice passes for metal layer n: the 6 um and 3 um
+    squares every layer gets, then for Metal2 alone the 2 um third pass."""
+    passes = [(METAL_SIZE, METAL_GAP), (METAL2_SIZE, METAL2_GAP)]
+    if n in METAL_THIRD_LAYERS:
+        passes.append((METAL_THIRD_SIZE, METAL_THIRD_GAP))
+    return passes
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--input", required=True)
@@ -245,6 +265,9 @@ def main():
             "feol_square": FEOL_SIZE, "feol_pitch": FEOL_SIZE + FEOL_GAP,
             "metal_square": METAL_SIZE, "metal_pitch": METAL_SIZE + METAL_GAP,
             "metal_second_square": METAL2_SIZE, "metal_second_pitch": METAL2_SIZE + METAL2_GAP,
+            "metal_third_square": METAL_THIRD_SIZE,
+            "metal_third_pitch": METAL_THIRD_SIZE + METAL_THIRD_GAP,
+            "metal_third_layers": [f"Metal{n}" for n in METAL_THIRD_LAYERS],
             "frame_max_width": FRAME_MAX_W_UM,
         },
         "layers": [],
@@ -339,8 +362,7 @@ def main():
     for n, ld in METALS.items():
         drawn = region(ly, top, ld)
         metal_h = halos(ly, top, dbu, [(ld, METAL_SPACE_UM)], fuse)
-        mfill = fill_class(ext, metal_h, dbu, METAL_GAP,
-                           [(METAL_SIZE, METAL_GAP), (METAL2_SIZE, METAL2_GAP)])
+        mfill = fill_class(ext, metal_h, dbu, METAL_GAP, metal_passes(n))
         emit(f"Metal{n}", ld, METAL_DUMMY[n], mfill, drawn, f"M{n}.4", 30,
              f"Metal{n}+dummy over extent, M{n}.4 >= 30%"
              + ("; MT.3 >= 30% shares this layer on the 5-level stack" if n == 5 else ""))

@@ -84,9 +84,11 @@ layout/lvs.sh                 # rewrite the LVS reports (lvs-ctrl needs the PDK;
 layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-analog.attest.json)
 ```
 
-The filled array hashes to `48c590fc6095311d9c286d3d2093e004952aef7585eb2ac28c18dfa5f8918d9c`.
+The filled array hashes to `fb7df824035300e7f4bf01d05a45970f911c5034eaa32b0c1c96cec07df3f25d`.
 At open_pdks `f6eeac7`, `regen-gds.sh --check` rebuilds and byte-compares
-the filled 0.001 µm stream and its fill report. The via2 Metal3-enclosure fix (#308) changed the filled stream from `02994974b6b89ea8c17bb94a665f79eaf1f926072717c500980dad79320fc4f0`: every M3 end
+the filled 0.001 µm stream and its fill report. The third Metal2 fill pass (#365) changed the filled stream from `48c590fc6095311d9c286d3d2093e004952aef7585eb2ac28c18dfa5f8918d9c`: 1404
+2 µm Metal2 dummy squares were added where the 6 µm and 3 µm passes left free area, and
+no other layer moved. Before that, the via2 Metal3-enclosure fix (#308) changed the filled stream from `02994974b6b89ea8c17bb94a665f79eaf1f926072717c500980dad79320fc4f0`: every M3 end
 that lands a via2 cut in `efuse_ls` (the six marked `LS_W3N` strip ends) and `efuse_coldrv` (every
 lane end) now reaches 0.06 µm past the cut edge, closing V2.4b/V2.4c there while lane widths,
 positions and spacings are unchanged. Before fill and that fix, the stream
@@ -593,7 +595,15 @@ What it draws, all on the 0.005 µm rule grid:
 - **Metals**: per layer, a frame strip along the die edge plus a lattice of
   6 µm squares at 7 µm pitch, then a second pass of 3 µm squares at 4 µm
   pitch over what remains, each pass kept 1.0 µm from the last (DM.n.2b asks
-  0.98; 1.0 stays on grid).
+  0.98; 1.0 stays on grid). Metal2 alone then gets a third pass of 2 µm
+  squares at 3 µm pitch over what still remains (#365): the `efuse_bitcell`
+  / `efuse_row` routing (#312) keeps 2 µm from drawn Metal2, which leaves
+  bands too narrow for a 3 µm square, and with only the two passes that
+  routed array stops short of M2.4's 30 %. The pinned deck sets no
+  dummy-metal width — `rule_decks/dummy_metal.rb` checks DM.n.2b, DM.n.3 and
+  DM.n.8 only, and M2.1 runs on 36/0, not the 36/4 dummy — so the 2 µm
+  square is the one the PDK's own `scripts/fill_metal.rb` draws under its
+  `DM.1` comment.
 - **Keep-outs**, every value a foundry rule from the PDK's own rule decks:
   comp dummy keeps 3.5 µm from COMP, 1.5 from Poly2, 1.3/4/1.3/1.3 from
   Nwell/DNWELL/LVPWELL/Dualgate, 3.5 from RES_MK (DCF.4/5/6abcd/8a, plus
@@ -627,17 +637,35 @@ only on failure:
 | | Array | Controller |
 |---|---|---|
 | Stream / top | `layout/efuse_otp_array.gds` / `efuse_otp_array` | `layout/efuse_otp_ctrl.gds` / `efuse_otp_ctrl` |
-| sha256 | `48c590fc6095311d9c286d3d2093e004952aef7585eb2ac28c18dfa5f8918d9c` | `5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748` |
+| sha256 | `fb7df824035300e7f4bf01d05a45970f911c5034eaa32b0c1c96cec07df3f25d` | `b80bfb50d000e21b7816da70e221111c7a7d0ef67d21d3379e60022fd70cbf5f` |
 | Extent (µm) | −20.26, −64.62 → 1079.12, 699.44 (839 992 µm²) | 0, 0 → 165.355, 165.355 (27 342 µm²) |
 | PDK variant / deck options | `gf180mcuC`, `decks=all`, `threads=1` | `gf180mcuD`, `decks=all`, `threads=1` |
 | DCF.1b COMP | 0 markers, ratio 43.26 % | 0 markers, ratio 25.27 % |
 | PL.8 Poly2 | 0 markers, ratio 49.62 % | 0 markers, ratio 26.21 % |
 | M1.4 | 0 markers, ratio 57.88 % | 0 markers, ratio 40.38 % |
-| M2.4 | 0 markers, ratio 60.87 % | 0 markers, ratio 34.07 % |
+| M2.4 | 0 markers, ratio 61.54 % | 0 markers, ratio 35.13 % |
 | M3.4 | 0 markers, ratio 60.58 % | 0 markers, ratio 33.77 % |
 | M4.4 | 0 markers, ratio 65.87 % | 0 markers, ratio 66.94 % |
 | M5.4 | 0 markers, ratio 65.87 % | 0 markers, ratio 73.88 % |
 | MT.3 | 0 markers, ratio 65.87 % | 0 markers, ratio 73.88 % |
+
+**The two streams after #365.** Both are the generators' output with the third
+Metal2 pass: `layout/regen-gds.sh` for the array and `layout/pnr.sh` for the
+controller. On each, layer 36/4 is the only layer whose geometry moved — 1404
+added squares on the array (fill 60.43 % → 61.09 %) and 72 on the controller
+(25.61 % → 26.67 %) — every added polygon exactly 2 × 2 µm, none removed, and
+no pair under DM.2b's 0.98 µm, DM.3's 2.0 µm or DM.8's 6 µm. P&R reproduced:
+`pnr-report.json` keeps its status, stage, both violation counts, wirelength,
+areas and slack, the as-built netlist is byte-identical, and the report
+differs from its predecessor only in
+per-run provenance (invocation ids, log paths, the generated scripts' hashes,
+`provenance.klayout_version` 0.30.13 → 0.30.14, and no `~/.volare` ambiguity
+entry on this worker). Every DRC, LVS and ERC report was regenerated next;
+each changed only in the input stream's hash, with every verdict, count and
+`rules_checked` (763) as before, and the standalone deck runs on the new
+streams (`decks=all`, `threads=1`) both ended `DRC RESULT: SUCCESS (0
+violations)`. The deck's own Metal2 ratio equals the generator's `total_pct`
+on both partitions (61.543321 % and 35.128053 %).
 
 **Before and after fill.** (Historical: the measurement #326 made at
 `5d23757`, on the pre-resize L = 0.50 µm array; on the current committed
@@ -821,7 +849,7 @@ Both `status` and `power_connectivity.status` were **`match`**, with
 
 | LVS input | SHA-256 |
 |---|---|
-| Filled controller GDS (`provenance.input.content_hash`) | `5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748` |
+| Filled controller GDS (`provenance.input.content_hash`) | `b80bfb50d000e21b7816da70e221111c7a7d0ef67d21d3379e60022fd70cbf5f` |
 | As-built netlist (`environment.reference_sha256`) | `921a3d477c8b10a67554b086d478bcd9a360b1a961fcd3c893bcde01c9da1628` |
 
 How the compare is shaped (this is not the extraction's default):
