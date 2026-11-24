@@ -4,6 +4,8 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-24
 
+- **PR #382**: test(layout): guard coldrv_cell cursor and refuse grown leaves in Builder.size()
+- **Issue #380** (closed): layout/gen_efuse_otp.py: the two remaining footprint-vs-grown-extent trap sites (coldrv_cell's untested leaf cursor, Builder.size())
 - **PR #379**: fix(layout): land placed leaves on the grown bbox west edge
 - **Issue #376** (closed): layout/gen_efuse_otp.py: place() lands the footprint but both row builders step on the grown bbox, so a grown leaf after an ungrown one keeps only 1.885 um
 - **PR #375**: Replace Apache-2.0 licence with canonical Two AM Logic proprietary text
