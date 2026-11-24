@@ -1,0 +1,277 @@
+{
+  "schema_version": 1,
+  "status": "fail",
+  "request_count": 14,
+  "max_in_flight": 4,
+  "submitted": 14,
+  "refused": 0,
+  "refused_codes": [],
+  "requests": [
+    {
+      "index": 0,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/bench_rf140_rr400.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-5c125b1ae849",
+      "job_ids": [
+        "klt-sim-5c125b1ae849"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/sets/bench_rf140_rr400/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-5c125b1ae849",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/bench_rf200_rr400.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-c7b225816f6a",
+      "job_ids": [
+        "klt-sim-c7b225816f6a"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/sets/bench_rf200_rr400/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-c7b225816f6a",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/bench_rf260_rr400.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-6ef765e20f26",
+      "job_ids": [
+        "klt-sim-6ef765e20f26"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/sets/bench_rf260_rr400/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-6ef765e20f26",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/bench_rf630_rr400.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-7870dc818a03",
+      "job_ids": [
+        "klt-sim-7870dc818a03"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/sets/bench_rf630_rr400/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-7870dc818a03",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/bench_rf900_rr400.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-d50496cd9517",
+      "job_ids": [
+        "klt-sim-d50496cd9517"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/sets/bench_rf900_rr400/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-d50496cd9517",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/bench_rfopen_rr400.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-26cb38760faa",
+      "job_ids": [
+        "klt-sim-26cb38760faa"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/sets/bench_rfopen_rr400/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-26cb38760faa",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/phys_rf140_rrphys.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-0a8d6836c299",
+      "job_ids": [
+        "klt-sim-0a8d6836c299"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/sets/phys_rf140_rrphys/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-0a8d6836c299",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/phys_rf200_rrphys.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-9da1f25a4ddd",
+      "job_ids": [
+        "klt-sim-9da1f25a4ddd"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/sets/phys_rf200_rrphys/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-9da1f25a4ddd",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/phys_rf260_rrphys.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-95493673dde3",
+      "job_ids": [
+        "klt-sim-95493673dde3"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/sets/phys_rf260_rrphys/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-95493673dde3",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/phys_rf630_rrphys.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-2a980ad9a99d",
+      "job_ids": [
+        "klt-sim-2a980ad9a99d"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/sets/phys_rf630_rrphys/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-2a980ad9a99d",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/phys_rf900_rrphys.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-d9e51bf729a8",
+      "job_ids": [
+        "klt-sim-d9e51bf729a8"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/sets/phys_rf900_rrphys/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-d9e51bf729a8",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/phys_rfopen_rrphys.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-b90b9c5000e0",
+      "job_ids": [
+        "klt-sim-b90b9c5000e0"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/sets/phys_rfopen_rrphys/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-b90b9c5000e0",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 12,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/control_rf140_rr200.json",
+      "status": "pass",
+      "exit_code": 0,
+      "job_id": "klt-sim-891d4b98d90f",
+      "job_ids": [
+        "klt-sim-891d4b98d90f"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/sets/control_rf140_rr200/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-891d4b98d90f",
+          "last_state": "done",
+          "interrupted_observations": 0
+        }
+      ]
+    },
+    {
+      "index": 13,
+      "request": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/control_rf260_rr200.json",
+      "status": "fail",
+      "exit_code": 3,
+      "job_id": "klt-sim-631239d72153",
+      "job_ids": [
+        "klt-sim-631239d72153"
+      ],
+      "report": "/home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-321/sim/sense-margin/records/20261123T140330Z-f6eeac7/sets/control_rf260_rr200/report.json",
+      "error": null,
+      "shards": [
+        {
+          "job_id": "klt-sim-631239d72153",
+          "last_state": "failed",
+          "interrupted_observations": 0
+        }
+      ]
+    }
+  ]
+}

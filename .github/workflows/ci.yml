@@ -63,9 +63,6 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
-      - name: Install pinned klt
-        run: pipx install "$(cat signoff/klt-pin.txt)"
-
       - name: Install uv
         # layout/attest.sh (and every other generator in this repo) reaches the
         # pinned klt through `uvx --from "$(cat signoff/klt-pin.txt)"`, never a
@@ -91,6 +88,19 @@ jobs:
         # deliberately omits.
         run: ./scripts/ci/check_ci.sh
 
+      - name: dbu_export unit tests
+        # layout/dbu_export.py is the shared final-write producer behind both
+        # committed partition streams (gen_efuse_otp.py imports coarsen();
+        # pnr.sh shells out with --pin-markers), but CI never regenerates a
+        # stream, so the module's own logic and rejection paths have no other
+        # automated coverage. Synthetic in-memory fixtures only: no PDK, no
+        # OpenROAD, no committed stream. Deliberately not part of
+        # scripts/ci/check_ci.sh, which runs under the host python3 with no
+        # klayout binding -- a missing binding here must fail this step.
+        run: |
+          . signoff/klt.sh
+          klt_python -I -m unittest discover -s layout -p 'test_dbu_export.py' -v
+
       - name: Sim records append-only
         env:
           EVENT: ${{ github.event_name }}
@@ -106,6 +116,7 @@ jobs:
 
       - name: Re-grade signoff record
         run: |
+          . signoff/klt.sh
           rc=0
           klt signoff --manifest signoff/block-manifest.json \
             --format json > "$RUNNER_TEMP/regraded.json" || rc=$?
@@ -118,6 +129,7 @@ jobs:
 
       - name: Item 10 attestation is current
         run: |
+          . signoff/klt.sh
           klt signoff --attest 10 --inventory signoff/attest/item10.json \
             --check signoff/attest/item10.envelope.json
 
@@ -125,6 +137,7 @@ jobs:
         # Re-hashes the bench files and re-checks the pins; the cold-start command
         # is local_only (needs the PDK, ngspice, Icarus) and is not re-run here.
         run: |
+          . signoff/klt.sh
           klt signoff --attest 9 --inventory signoff/attest/item9.json \
             --check signoff/attest/item9.envelope.json
 
@@ -133,6 +146,7 @@ jobs:
         # record regeneration without a re-attest leaves this envelope stale
         # (exit 3).
         run: |
+          . signoff/klt.sh
           klt signoff --attest 8 --inventory signoff/attest/item8.json \
             --check signoff/attest/item8.envelope.json
 
@@ -140,6 +154,7 @@ jobs:
         # Re-hashes the schematics, symbols and netlist; the xschem freshness
         # check is local_only and is not re-run here (no xschem on the runner).
         run: |
+          . signoff/klt.sh
           klt signoff --attest 1 --inventory signoff/item1-analog-inventory.json \
             --check signoff/item1-analog.attest.json
 
@@ -154,6 +169,19 @@ jobs:
         # digest from the pinned klt's own `klt stats --format json` and
         # attests both envelopes in one step.
         run: layout/attest.sh --check
+
+      - name: ERC supply report reproduces
+        # klt erc --check on the committed item 11 (digital) report through
+        # layout/erc.sh: re-hashes the stream, the supply spec and the deck
+        # against the report's own provenance (exit 3 = drifted). Needs the
+        # pinned klt via uvx only -- no PDK, no OpenROAD.
+        run: layout/erc.sh --check
+
+      - name: ERC supply spec negative control
+        # Proves the supply spec gates on the stackup: a scratch copy with the
+        # Metal4 strap layer removed must fragment both supplies
+        # (erc.unconnected_net on VDD and VSS, exit 3).
+        run: layout/erc.sh --negative-control
 
       - name: Committed streams have no unlanded via2
         # The deck does not model V2.3c/V2.3d/V2.4b/V2.4c, so this per-cell count

@@ -87,6 +87,9 @@ def main():
     stems = ["prog_rf" + r for r in a.fuse_ohms.split()]
     stems.append("control_rf260_w" + a.w_control)
     reports = bench_record.load_reports(a.rec, stems)
+    # The PVT grid the corners actually ran, read back from the reports rather
+    # than retyped from decision 0005, so `pvt` cannot contradict point_list.
+    process, temp_c, supplies = bench_record.pvt_axes(reports)
 
     backends, jobs, engines = set(), set(), set()
 
@@ -107,8 +110,12 @@ def main():
     rec = {
         **bench_record.header(a, backends, jobs, engines),
         "dut": "efuse_coldrv + efuse_rowdrv (each with efuse_ls) + efuse_bitcell, extracted from design/efuse_otp_array.spice; one selected cell",
-        "pvt": {"process": ["typical", "ff", "ss", "fs", "sf"], "temp_c": [-40, 25, 125],
-                "supplies_v": "vdd33 and vprog step together (klt sim zips supply_v axes): (2.97, 4.5), (3.30, 5.0), (3.63, 5.5)",
+        # The zipped (vdd33, vprog) pairs as the committed records spell them:
+        # vdd33 in the decision-0005 two-decimal notation, vprog as parsed.
+        "pvt": {"process": process, "temp_c": temp_c,
+                "supplies_v": "vdd33 and vprog step together (klt sim zips supply_v axes): "
+                              + ", ".join("(%.2f, %s)" % (s["vdd33"], s["vprog"])
+                                          for s in supplies),
                 "source": "decision 0005"},
         "requirement": {"i_fuse_min_a": a.ireq, "source": "assumption A2, spec/efuse-otp.md section 2 (no PDK source)"},
         "assumptions": {

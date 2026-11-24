@@ -44,6 +44,9 @@ def main():
     # rule sim/sense-mc/run.sh applies to its own set.
     expected = [(r, w, "cell_r%d_w%d" % (r, w)) for r in fuse_ohms for w in widths_um]
     reports = bench_record.load_reports(a.rec, [stem for _, _, stem in expected])
+    # The PVT grid the corners actually ran, read back from the reports rather
+    # than retyped from decision 0005, so `pvt` cannot contradict point_list.
+    process, temp_c, supplies = bench_record.pvt_axes(reports)
 
     widths = {}
     backends, jobs, engines = set(), set(), set()
@@ -100,8 +103,8 @@ def main():
     rec = {
         **bench_record.header(a, backends, jobs, engines),
         "device": "nfet_06v0, L=0.7u, nf=1",
-        "pvt": {"process": ["typical", "ff", "ss", "fs", "sf"],
-                "temp_c": [-40, 25, 125], "vprog_v": [4.5, 5.0, 5.5],
+        "pvt": {"process": process, "temp_c": temp_c,
+                "vprog_v": [s["vdd"] for s in supplies],
                 "fuse_ohm": fuse_ohms},
         "requirement": {"i_fuse_min_a": a.ireq, "source": "assumption A2, spec/efuse-otp.md section 2 (no PDK source)"},
         "assumptions": {

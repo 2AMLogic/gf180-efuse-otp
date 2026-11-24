@@ -112,6 +112,16 @@ printf '.subckt a x\nR1 x 0 1\n.ends\n.subckt b y\nR2 y 0 2\n.ends\n' > "$tmp/nl
 out="$(CIEL_ROOT="$tmp/ok" bash -c 'source "$1"; bench_subckt "$2" b' _ "$here/pdk_env.sh" "$tmp/nl.spice" 2>&1)"
 [[ "$out" == $'.subckt b y\nR2 y 0 2\n.ends' ]] || { echo "FAIL bench_subckt: $out"; fail=1; }
 
+# bench_netlist: a missing netlist refuses with the run.sh message; a present
+# one defines sub() in the caller's shell (it must survive the helper's
+# return, so no subshell) printing one .subckt ... .ends block.
+out="$(CIEL_ROOT="$tmp/ok" bash -c 'source "$1"; bench_netlist "$2-missing.spice"' _ "$here/pdk_env.sh" "$tmp/nl" 2>&1)"; rc=$?
+check "bench_netlist missing netlist exits 1" 1 "$rc"
+[[ "$out" == "run.sh: $tmp/nl-missing.spice missing" ]] || { echo "FAIL bench_netlist missing message: $out"; fail=1; }
+out="$(CIEL_ROOT="$tmp/ok" bash -c 'source "$1"; bench_netlist "$2"; sub b' _ "$here/pdk_env.sh" "$tmp/nl.spice" 2>&1)"; rc=$?
+check "bench_netlist defines a working sub in the caller" 0 "$rc"
+[[ "$out" == $'.subckt b y\nR2 y 0 2\n.ends' ]] || { echo "FAIL bench_netlist sub output: $out"; fail=1; }
+
 rd="$tmp/records"
 out="$(CIEL_ROOT="$tmp/ok" bash -c 'source "$1"; bench_new_record_dir "$2" 0; echo "$rec"; [[ -d "$rec" ]] && [[ "$rec" == "$2/$stamp-${PDK_REVISION:0:7}" ]]' _ "$here/pdk_env.sh" "$rd" 2>&1)"; rc=$?
 check "bench_new_record_dir creates record dir" 0 "$rc"
@@ -135,6 +145,15 @@ out="$(PATH="$fb:$PATH" CIEL_ROOT="$tmp/ok" bash -c 'source "$1"; bench_dry_run 
 check "bench_dry_run exits 0" 0 "$rc"
 [[ "$(grep -c -- '--dry-run --format json --backend batch' "$FAKE_KLT_LOG")" == 2 ]] || { echo "FAIL bench_dry_run argv: $(cat "$FAKE_KLT_LOG")"; fail=1; }
 [[ "$out" == *'"unit_count":1'* ]] || { echo "FAIL bench_dry_run output: $out"; fail=1; }
+
+# bench_dry_run_exit: validate, then remove the caller's $rec, report, exit 0.
+dre="$tmp/dry-exit"; mkdir -p "$dre"; echo '{}' > "$dre/a.json"; : > "$FAKE_KLT_LOG"
+out="$(PATH="$fb:$PATH" CIEL_ROOT="$tmp/ok" bash -c 'source "$1"; rec="$2"; bench_dry_run_exit "$2/a.json"' _ "$here/pdk_env.sh" "$dre" 2>&1)"; rc=$?
+check "bench_dry_run_exit exits 0" 0 "$rc"
+[[ "$(tail -1 <<<"$out")" == "dry run: request set validated; temp dir removed" ]] || { echo "FAIL bench_dry_run_exit message: $out"; fail=1; }
+[[ ! -e "$dre" ]] || { echo "FAIL bench_dry_run_exit removes the temp dir"; fail=1; }
+grep -q -- '--dry-run --format json --backend batch' "$FAKE_KLT_LOG" || { echo "FAIL bench_dry_run_exit klt argv: $(cat "$FAKE_KLT_LOG")"; fail=1; }
+
 for want in 0 3 4 2; do
   : > "$FAKE_KLT_LOG"; mkdir -p "$tmp/rec$want"
   out="$(FAKE_KLT_RC=$want PATH="$fb:$PATH" CIEL_ROOT="$tmp/ok" bash -c 'set -e; source "$1"; bench_submit_set "$2" a.json b.json; echo "rc=$rc"' _ "$here/pdk_env.sh" "$tmp/rec$want" 2>&1)"; got=$?

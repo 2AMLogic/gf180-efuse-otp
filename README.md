@@ -21,13 +21,19 @@ caveats). Committed on `main`:
   path ([`efuse_sense.sch`](design/efuse_sense.sch),
   [`efuse_comp.sch`](design/efuse_comp.sch)) and its margin campaign in
   [`sim/sense-margin/`](sim/sense-margin/) (#28);
-- a placed analog layout stream and the routed controller layout
+- a placed analog layout stream whose fuse-free cells are routed and
+  LVS-matched (level shifters, row/column drivers, comparator and sense path),
+  and the routed controller layout
   ([`layout/efuse_otp_ctrl.gds`](layout/efuse_otp_ctrl.gds),
   [`layout/pnr-report.json`](layout/pnr-report.json));
-- curated and PDK-native DRC reports for both partitions. The native deck
-  checked 27 foundry `EF.*` rules on each stream and reported zero eFuse
-  markers ([array report](layout/drc-array.native.report.json),
-  [controller report](layout/drc-ctrl.native.report.json));
+- curated ([array](layout/drc-array.report.json),
+  [controller](layout/drc-ctrl.report.json)) and PDK-native DRC reports for
+  both partitions. The native deck checked 27 foundry `EF.*` rules on each
+  stream and reported zero eFuse markers ([array
+  report](layout/drc-array.native.report.json), [controller
+  report](layout/drc-ctrl.native.report.json)); the controller draws no PLFUSE
+  or EFUSE_MK, so its zero markers are vacuous and only the array stream gives
+  the `EF.*` checks fuse geometry to act on;
 - the signoff record.
 
 The controller, level shifter, row driver and column driver have matching

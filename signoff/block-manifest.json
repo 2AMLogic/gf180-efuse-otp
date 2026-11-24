@@ -12,19 +12,19 @@
     },
     "1.analog": {
       "file": "signoff/item1-analog.attest.json",
-      "content_hash": "sha256:599e2e73c5e86237e1a7c3ceee3ea4b090d2dd20873e33113bb4ee8e555a02b2"
+      "content_hash": "sha256:0b5d8ec75f1c815c291e343a37c28a18fc94afb5b1b703f9518fec6979a33528"
     },
     "2.digital": {
       "file": "layout/pnr.attest.json",
-      "content_hash": "sha256:d6b4497b582d0755135176ceaaf22c71e5b62154084dcbc1943dd363703f37dc"
+      "content_hash": "sha256:5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748"
     },
     "2.analog": {
       "file": "signoff/item2-analog.attest.json",
-      "content_hash": "sha256:b93cb3be5a0e34f2a1741107995170a1f148f27564be696284f1523a87340c11"
+      "content_hash": "sha256:888451a37e3fe9e398c9c0ae23c5fc413ad01edd2397c6a580e12fa315810d8e"
     },
     "4.digital": {
       "file": "layout/lvs-ctrl.report.json",
-      "content_hash": "sha256:d6b4497b582d0755135176ceaaf22c71e5b62154084dcbc1943dd363703f37dc"
+      "content_hash": "sha256:5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748"
     },
     "9": {
       "file": "signoff/attest/item9.envelope.json",
@@ -119,7 +119,21 @@
     "8.digital": {
       "file": "signoff/attest/item8.envelope.json",
       "content_hash": "sha256:32ce6ba0c388613b09175442c236de533b37b54f21ef7c2a52a7cf915890cd85"
-    }
+    },
+    "11.digital": [
+      {
+        "file": "layout/erc-ctrl.report.json",
+        "content_hash": "sha256:5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748"
+      },
+      {
+        "file": "layout/lvs-ctrl.report.json",
+        "content_hash": "sha256:5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748"
+      },
+      {
+        "file": "layout/pnr-report.json",
+        "content_hash": "sha256:840543dd0ba0efb2d261c243e292b468fe11cb1380237787f786c191272c5d00"
+      }
+    ]
   },
   "partition_boundary": {
     "analog": "design/efuse_otp_array.sch (array, row/column drivers with level shifters, sense path incl. comparator) is the analog partition. Boundary nets it exposes: inputs row_sel[31:0], col_sel[7:0], prog_strobe, sense_en (3.3 V, from the controller) and clk (the system clock, routed to the comparator and gated there with sense_en; the clock is a digital-side net that terminates in the analog partition); output sense_out (the comparator's latched result); supplies vdd33, vprog, vss.",
