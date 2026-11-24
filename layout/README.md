@@ -510,8 +510,12 @@ The five per-cell reports are byte-compared the same way and drift with
 the engine too. The two partition reports (`array`, `ctrl`) are not
 byte-compared: `layout/drc.sh --check --rerun` delegates them to
 `klt drc --check --rerun`, whose verdict diff excludes
-`provenance.klayout_version`, which is why `layout/drc-ctrl.report.json`
-still recording 0.30.13 does not fail the gate.
+`provenance.klayout_version` — which is why `layout/drc-ctrl.report.json`
+still recording 0.30.13 does not fail the gate **on that field**: the
+exclusion covers the version fields, not the whole gate. On deck-content
+drift the partition reports can still exit 3, with or without `--rerun`
+(`[DRIFTED] provenance.deck.content_hash`; the "Curated results" caveat
+below records the measured field set).
 
 To adopt an engine version:
 
@@ -659,9 +663,18 @@ clean as before). The 0.9.0 deck hash was
 (klayout 0.30.13; #154 re-ran both partitions under it).
 That hash is engine-dependent and `signoff/klt-pin.txt` does not constrain the
 klayout engine, so a future install of the same pin can resolve a different
-engine and make `layout/drc.sh --check` report `drifted` with nothing else
-changed (klayout-tools#5601). CI does not run `drc.sh --check`, so this is a
-local-reproducibility caveat, not a CI gate.
+engine and make `layout/drc.sh --check` report `drifted` — and not only on
+the hash: measured with the same pinned klt 0.9.2 resolving klayout 0.30.14
+([#357](https://github.com/2AMLogic/gf180-efuse-otp/issues/357)), the curated
+deck's rule and layer sets moved too — `coverage.deck_layers` gained `166/5`,
+`coverage.rules_skipped` and `coverage.inapplicable` gained
+`comp.width.moscap.1`, `coverage.approximated_rules` went from `None` to four
+entries, and `provenance.deck.released` flipped from `True` to `False`,
+alongside the `provenance.deck.content_hash` drift (klayout-tools#5601).
+Step 2 of "To adopt an engine version" above states the rule: a moved rule or
+layer set is "a finding to investigate before the baseline is accepted, not a
+refresh." CI does not run `drc.sh --check`, so this is a local-reproducibility
+caveat, not a CI gate.
 Both partitions and all five routed cells are clean under the curated deck.
 
 The curated reports for the cells of the analog stream (the `parts=` entries
