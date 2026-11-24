@@ -4,12 +4,16 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-24
 
+- **PR #375**: Replace Apache-2.0 licence with canonical Two AM Logic proprietary text
+- **PR #370**: fix(layout): advance row_cell cursor on the grown bbox
 - **PR #373**: feat(layout): add a third 2 um Metal2 fill pass and regenerate both partition streams
 - **PR #325**: fix: extend M3 ends that land via2 cuts to the 0.06 um enclosure minimum
 - **PR #368**: docs(layout): scope the deck-drift caveat to the measured field set, not just the hash
 - **PR #361**: feat(layout): resize 6 V PMOS to L=0.55 um and clear generated-core DRC findings
 - **PR #347**: fix: state both ppolyf_u drawn geometries in the efuse_sense annotation
 - **PR #363**: chore: gitignore layout/.pnr.* staging directories
+- **Issue #364** (closed): Licence: replace this repo's current licence with the canonical proprietary text
+- **Issue #367** (closed): layout/gen_efuse_otp.py: row_cell advances on footprint() while _row_place_all advances on the grown bbox
 - **Issue #365** (closed): Metal2 density fill falls short of M2.4 floor once efuse_bitcell/efuse_row routing is merged (blocks PR #312)
 - **Issue #308** (closed): Correct Metal3 enclosure at via2 in the level shifter and column driver
 - **Issue #357** (closed): docs(layout): tighten the engine-drift caveat — the curated deck's rule and layer sets move too, not just its hash
