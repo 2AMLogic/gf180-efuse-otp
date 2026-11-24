@@ -84,9 +84,12 @@ layout/lvs.sh                 # rewrite the LVS reports (lvs-ctrl needs the PDK;
 layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-analog.attest.json)
 ```
 
-The filled array hashes to `02994974b6b89ea8c17bb94a665f79eaf1f926072717c500980dad79320fc4f0`.
+The filled array hashes to `48c590fc6095311d9c286d3d2093e004952aef7585eb2ac28c18dfa5f8918d9c`.
 At open_pdks `f6eeac7`, `regen-gds.sh --check` rebuilds and byte-compares
-the filled 0.001 µm stream and its fill report. Before fill, the stream
+the filled 0.001 µm stream and its fill report. The via2 Metal3-enclosure fix (#308) changed the filled stream from `02994974b6b89ea8c17bb94a665f79eaf1f926072717c500980dad79320fc4f0`: every M3 end
+that lands a via2 cut in `efuse_ls` (the six marked `LS_W3N` strip ends) and `efuse_coldrv` (every
+lane end) now reaches 0.06 µm past the cut edge, closing V2.4b/V2.4c there while lane widths,
+positions and spacings are unchanged. Before fill and that fix, the stream
 (after routing `efuse_comp` and `efuse_sense`, replacing the two ideal
 resistors with PDK `ppolyf_u` devices sized for their terminal resistance
 (5.08 µm x 1 µm and 0.8 µm x 1.05 µm, see "Resistors"), and ending every
@@ -109,7 +112,11 @@ placed-only stream at the same pin (itself a re-run of the 0.8.0 stream
 `186be6b6e0ba5200154a20b6e66bda85b629aea378d76b6e683918dd0d412224`, byte-different
 only in GDS record order — klayout-tools#5499 stopped writing KLayout's
 `$$$CONTEXT_INFO$$$` structure; streams carry no write time, so the check is a
-byte compare).
+byte compare). CI runs `layout/check_via2_landing.sh` on both streams (the via2 overlap
+check) and verifies the report input hashes, but neither re-measures the enclosure: a
+fresh report can carry V2.4b/V2.4c markers and still pass both. The enclosure result is the
+V2.4b/V2.4c count in the native array report, replayed locally with
+`layout/drc.sh --check --rerun`.
 
 ## efuse_ls routing
 
@@ -426,15 +433,13 @@ claim, not a layout one).
 
 ### PDK-native results
 
-The controller passes the full foundry deck. The array has 200 findings,
-all `V2.4b`/`V2.4c` (100 each), in the geometry tracked by #308; every
-#309 rule is at zero on this stream. Each partition clears the eight
+The controller passes the full foundry deck, and so does the array: 0 findings. Each partition clears the eight
 global-density rules and all 27 `EF.*` checks. The controller contains no
 fuse markers. T1 item 3 remains uncited for both partitions pending #60.
 
 | Stream | Native report | Checked categories | `EF.*` markers | All markers |
 |---|---|---:|---:|---:|
-| Array | [drc-array.native.report.json](drc-array.native.report.json) | 763 | 0 | 200 |
+| Array | [drc-array.native.report.json](drc-array.native.report.json) | 763 | 0 | 0 |
 | Controller | [drc-ctrl.native.report.json](drc-ctrl.native.report.json) | 763 | 0 | 0 |
 
 At the original 0.0005 µm database unit, #313 recorded 253 array and 9
@@ -468,7 +473,7 @@ lists as unmodeled.
 
 | Finding | Array | Controller | Follow-up |
 |---|---:|---:|---|
-| Metal3 enclosure of via2 (V2.4b, V2.4c) | 200 | 0 | [Level shifter and column driver #308](https://github.com/2AMLogic/gf180-efuse-otp/issues/308) — all of it in `efuse_coldrv` (94 each of V2.4b / V2.4c) and `efuse_ls` (6 each); the routed `efuse_comp` / `efuse_sense` contribute zero |
+| Metal3 enclosure of via2 (V2.4b, V2.4c) | 0 | 0 | fixed ([#308](https://github.com/2AMLogic/gf180-efuse-otp/issues/308)): every M3 end landing a via2 in `efuse_ls` and `efuse_coldrv` reaches 0.06 µm past the cut edge (it was 94 each of V2.4b / V2.4c in `efuse_coldrv` and 6 each in `efuse_ls`) |
 | ~~PMOS (DF.4d_MV, DV.6, PL.2_MV) and resistor geometry (PP.9, PRES.5, PRES.6, SB.13)~~ 44 → 0 | 0 | 0 | Resolved by [#309](https://github.com/2AMLogic/gf180-efuse-otp/issues/309): Mdrv/Mp1/Mp2 at L = 0.55 µm (operator ruling, 6 V rule PL.2_MV); the leaf generator widens the 6 V PMOS guard-ring Nwell (+0.01 µm) and Dualgate (+0.12 µm), and gives each `ppolyf_u` core Pplus 0.3 µm past the poly, a salicide block 0.28 µm past it in width (and ≥ 2 µm²) and head contacts 0.22 µm from the block |
 | Global density (DCF.1b, PL.8, M1.4 through M5.4, MT.3) | 0 | 0 | [Density #310](https://github.com/2AMLogic/gf180-efuse-otp/issues/310) |
 | ~~DBU (0.0005 µm, required 0.001 µm)~~ 1 → 0 per stream | — | — | Resolved by [#311](https://github.com/2AMLogic/gf180-efuse-otp/issues/311): both producers export at 0.001 µm ([klt generator default #5721](https://github.com/2AMLogic/klayout-tools/issues/5721) stays open upstream) |
@@ -510,8 +515,12 @@ The five per-cell reports are byte-compared the same way and drift with
 the engine too. The two partition reports (`array`, `ctrl`) are not
 byte-compared: `layout/drc.sh --check --rerun` delegates them to
 `klt drc --check --rerun`, whose verdict diff excludes
-`provenance.klayout_version`, which is why `layout/drc-ctrl.report.json`
-still recording 0.30.13 does not fail the gate.
+`provenance.klayout_version` — which is why `layout/drc-ctrl.report.json`
+still recording 0.30.13 does not fail the gate **on that field**: the
+exclusion covers the version fields, not the whole gate. On deck-content
+drift the partition reports can still exit 3, with or without `--rerun`
+(`[DRIFTED] provenance.deck.content_hash`; the "Curated results" caveat
+below records the measured field set).
 
 To adopt an engine version:
 
@@ -530,7 +539,7 @@ To adopt an engine version:
    is a finding to investigate before the baseline is accepted, not a
    refresh.
 3. On each new native report confirm `status`, `violation_count` (array
-   200, all `V2.4b`/`V2.4c`, none of them a density rule; controller 0, clean),
+   0, controller 0, clean),
    every `violations[]` entry, `coverage.rules_checked` (763; the eight global-density rules are not
    counted once fill clears them, as explained under the declared-categories
    paragraph above) and
@@ -618,7 +627,7 @@ only on failure:
 | | Array | Controller |
 |---|---|---|
 | Stream / top | `layout/efuse_otp_array.gds` / `efuse_otp_array` | `layout/efuse_otp_ctrl.gds` / `efuse_otp_ctrl` |
-| sha256 | `02994974b6b89ea8c17bb94a665f79eaf1f926072717c500980dad79320fc4f0` | `5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748` |
+| sha256 | `48c590fc6095311d9c286d3d2093e004952aef7585eb2ac28c18dfa5f8918d9c` | `5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748` |
 | Extent (µm) | −20.26, −64.62 → 1079.12, 699.44 (839 992 µm²) | 0, 0 → 165.355, 165.355 (27 342 µm²) |
 | PDK variant / deck options | `gf180mcuC`, `decks=all`, `threads=1` | `gf180mcuD`, `decks=all`, `threads=1` |
 | DCF.1b COMP | 0 markers, ratio 43.26 % | 0 markers, ratio 25.27 % |
@@ -632,11 +641,11 @@ only on failure:
 
 **Before and after fill.** (Historical: the measurement #326 made at
 `5d23757`, on the pre-resize L = 0.50 µm array; on the current committed
-stream the array has 200 markers, `V2.4b`/`V2.4c` x 100 each.) Against the
+stream the array has 0 markers: #308 and #309 cleared all of them.) Against the
 0.001 µm unfilled reports at `5d23757`, the array went from 252 to 244 findings and the controller from
 8 to 0. Comparing the full finding records, including rule, cell and
 location, shows that each partition lost exactly one marker for each of the
-eight density rules. All 244 remaining array records match the baseline.
+eight density rules. All 244 remaining array records match the baseline; the #308 enclosure fix then removed the 200 V2.4b/V2.4c records, leaving 44 (every other record unchanged), which #309 then cleared, leaving 0.
 Both partitions and all three routed cells remain
 `clean` under the curated deck, all four LVS compares remain `match`
 (controller power included), the via2-landing gate reports 0/0 in every
@@ -659,9 +668,18 @@ clean as before). The 0.9.0 deck hash was
 (klayout 0.30.13; #154 re-ran both partitions under it).
 That hash is engine-dependent and `signoff/klt-pin.txt` does not constrain the
 klayout engine, so a future install of the same pin can resolve a different
-engine and make `layout/drc.sh --check` report `drifted` with nothing else
-changed (klayout-tools#5601). CI does not run `drc.sh --check`, so this is a
-local-reproducibility caveat, not a CI gate.
+engine and make `layout/drc.sh --check` report `drifted` — and not only on
+the hash: measured with the same pinned klt 0.9.2 resolving klayout 0.30.14
+([#357](https://github.com/2AMLogic/gf180-efuse-otp/issues/357)), the curated
+deck's rule and layer sets moved too — `coverage.deck_layers` gained `166/5`,
+`coverage.rules_skipped` and `coverage.inapplicable` gained
+`comp.width.moscap.1`, `coverage.approximated_rules` went from `None` to four
+entries, and `provenance.deck.released` flipped from `True` to `False`,
+alongside the `provenance.deck.content_hash` drift (klayout-tools#5601).
+Step 2 of "To adopt an engine version" above states the rule: a moved rule or
+layer set is "a finding to investigate before the baseline is accepted, not a
+refresh." CI does not run `drc.sh --check`, so this is a local-reproducibility
+caveat, not a CI gate.
 Both partitions and all five routed cells are clean under the curated deck.
 
 The curated reports for the cells of the analog stream (the `parts=` entries
