@@ -1,5 +1,5 @@
 ** klt-netlist-inputs: {"pdk_variant": "gf180mcuC", "rcfile": "xschemrc", "xschem_version": "3.4.7"}
-** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-303/design/efuse_otp_array.sch
+** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-344/design/efuse_otp_array.sch
 **.subckt efuse_otp_array
 *+ row_sel[31],row_sel[30],row_sel[29],row_sel[28],row_sel[27],row_sel[26],row_sel[25],row_sel[24],row_sel[23],row_sel[22],row_sel[21],row_sel[20],row_sel[19],row_sel[18],row_sel[17],row_sel[16],row_sel[15],row_sel[14],row_sel[13],row_sel[12],row_sel[11],row_sel[10],row_sel[9],row_sel[8],row_sel[7],row_sel[6],row_sel[5],row_sel[4],row_sel[3],row_sel[2],row_sel[1],row_sel[0] col_sel[7],col_sel[6],col_sel[5],col_sel[4],col_sel[3],col_sel[2],col_sel[1],col_sel[0] prog_strobe sense_en clk sense_out vdd33
 *+ vprog vss
@@ -89,8 +89,8 @@ Xsa sbl sense_en clk sense_out vdd33 vprog vss efuse_sense
 **.ends
 
 * expanding   symbol:  efuse_rowdrv.sym # of pins=5
-** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-303/design/efuse_rowdrv.sym
-** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-303/design/efuse_rowdrv.sch
+** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-344/design/efuse_rowdrv.sym
+** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-344/design/efuse_rowdrv.sch
 .subckt efuse_rowdrv row_sel wl vdd33 vprog vss
 *.ipin row_sel
 *.opin wl
@@ -102,8 +102,8 @@ Xls row_sel wl vdd33 vprog vss efuse_ls
 
 
 * expanding   symbol:  efuse_coldrv.sym # of pins=8
-** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-303/design/efuse_coldrv.sym
-** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-303/design/efuse_coldrv.sch
+** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-344/design/efuse_coldrv.sym
+** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-344/design/efuse_coldrv.sch
 .subckt efuse_coldrv col_sel prog_strobe sense_en bl sbl vdd33 vprog vss
 *.ipin col_sel
 *.ipin prog_strobe
@@ -142,8 +142,8 @@ XMrs bl rd sbl vss nfet_06v0 L=0.7u W=4u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' 
 
 
 * expanding   symbol:  efuse_row.sym # of pins=3
-** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-303/design/efuse_row.sym
-** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-303/design/efuse_row.sch
+** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-344/design/efuse_row.sym
+** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-344/design/efuse_row.sch
 .subckt efuse_row bl[7] bl[6] bl[5] bl[4] bl[3] bl[2] bl[1] bl[0] wl vss
 *.iopin bl[7],bl[6],bl[5],bl[4],bl[3],bl[2],bl[1],bl[0]
 *.ipin wl
@@ -160,8 +160,8 @@ Xb[0] bl[0] wl vss efuse_bitcell
 
 
 * expanding   symbol:  efuse_sense.sym # of pins=7
-** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-303/design/efuse_sense.sym
-** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-303/design/efuse_sense.sch
+** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-344/design/efuse_sense.sym
+** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-344/design/efuse_sense.sch
 .subckt efuse_sense sbl sense_en clk sense_out vdd33 vprog vss
 *.iopin sbl
 *.ipin sense_en
@@ -215,8 +215,8 @@ XMnbb qb sense_out vss vss nfet_03v3 L=0.28u W=1u nf=1 ad='int((nf+1)/2) * W/nf 
 
 
 * expanding   symbol:  efuse_ls.sym # of pins=5
-** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-303/design/efuse_ls.sym
-** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-303/design/efuse_ls.sch
+** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-344/design/efuse_ls.sym
+** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-344/design/efuse_ls.sch
 .subckt efuse_ls in out vdd33 vprog vss
 *.ipin in
 *.opin out
@@ -239,8 +239,8 @@ XMp2 out x1 vprog vprog pfet_06v0 L=0.5u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.
 
 
 * expanding   symbol:  efuse_bitcell.sym # of pins=3
-** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-303/design/efuse_bitcell.sym
-** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-303/design/efuse_bitcell.sch
+** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-344/design/efuse_bitcell.sym
+** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-344/design/efuse_bitcell.sch
 .subckt efuse_bitcell bl wl vss
 *.iopin bl
 *.ipin wl
@@ -252,8 +252,8 @@ XXsel n wl vss vss nfet_06v0 L=0.7u W=60u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u'
 
 
 * expanding   symbol:  efuse_comp.sym # of pins=7
-** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-303/design/efuse_comp.sym
-** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-303/design/efuse_comp.sch
+** sym_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-344/design/efuse_comp.sym
+** sch_path: /home/ubuntu/GitHub/gf180-efuse-otp/.loom/worktrees/issue-344/design/efuse_comp.sch
 .subckt efuse_comp inp inn clkn outp outn vdd33 vss
 *.ipin inp
 *.ipin inn
