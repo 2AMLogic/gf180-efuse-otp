@@ -4,6 +4,8 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-24
 
+- **PR #379**: fix(layout): land placed leaves on the grown bbox west edge
+- **Issue #376** (closed): layout/gen_efuse_otp.py: place() lands the footprint but both row builders step on the grown bbox, so a grown leaf after an ungrown one keeps only 1.885 um
 - **PR #375**: Replace Apache-2.0 licence with canonical Two AM Logic proprietary text
 - **PR #370**: fix(layout): advance row_cell cursor on the grown bbox
 - **PR #373**: feat(layout): add a third 2 um Metal2 fill pass and regenerate both partition streams
