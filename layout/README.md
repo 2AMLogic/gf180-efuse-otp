@@ -426,14 +426,15 @@ claim, not a layout one).
 
 ### PDK-native results
 
-The controller passes the full foundry deck. The array has 244 findings
-in the geometry tracked by #308 and #309. Each partition clears the eight
+The controller passes the full foundry deck. The array has 200 findings,
+all `V2.4b`/`V2.4c` (100 each), in the geometry tracked by #308; every
+#309 rule is at zero on this stream. Each partition clears the eight
 global-density rules and all 27 `EF.*` checks. The controller contains no
 fuse markers. T1 item 3 remains uncited for both partitions pending #60.
 
 | Stream | Native report | Checked categories | `EF.*` markers | All markers |
 |---|---|---:|---:|---:|
-| Array | [drc-array.native.report.json](drc-array.native.report.json) | 763 | 0 | 244 |
+| Array | [drc-array.native.report.json](drc-array.native.report.json) | 763 | 0 | 200 |
 | Controller | [drc-ctrl.native.report.json](drc-ctrl.native.report.json) | 763 | 0 | 0 |
 
 At the original 0.0005 µm database unit, #313 recorded 253 array and 9
@@ -529,7 +530,7 @@ To adopt an engine version:
    is a finding to investigate before the baseline is accepted, not a
    refresh.
 3. On each new native report confirm `status`, `violation_count` (array
-   244, none of them a density rule; controller 0, clean),
+   200, all `V2.4b`/`V2.4c`, none of them a density rule; controller 0, clean),
    every `violations[]` entry, `coverage.rules_checked` (763; the eight global-density rules are not
    counted once fill clears them, as explained under the declared-categories
    paragraph above) and
