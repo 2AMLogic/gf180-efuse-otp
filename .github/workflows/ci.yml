@@ -100,6 +100,7 @@ jobs:
         run: |
           . signoff/klt.sh
           klt_python -I -m unittest discover -s layout -p 'test_dbu_export.py' -v
+          klt_python -I -m unittest discover -s layout -p 'test_row_cell.py' -v
 
       - name: Sim records append-only
         env:

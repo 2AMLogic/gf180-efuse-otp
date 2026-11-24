@@ -2,15 +2,15 @@
   "top_cell": "efuse_otp_array",
   "dbu_um": 0.001,
   "bbox_um": [
-    -20.26,
+    -20.29,
     -64.62,
-    1079.12,
+    1083.68,
     699.44
   ],
   "array": {
     "rows": 32,
     "cols": 8,
-    "pitch_x_um": 135.14,
+    "pitch_x_um": 135.71,
     "pitch_y_um": 21.92
   },
   "caveat": "placed hierarchy; efuse_ls, efuse_rowdrv, efuse_coldrv, efuse_comp and efuse_sense are routed (see 'routed'), every other cell is placement-only: no routing, no connectivity, no DRC/LVS claim outside those five",

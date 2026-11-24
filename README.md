@@ -151,4 +151,4 @@ measurements/  silicon characterization (empty until tape-out)
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE).
+Proprietary. Copyright Two AM Logic Inc. No licence is granted; see [LICENSE](LICENSE). This repository is private and stays private.

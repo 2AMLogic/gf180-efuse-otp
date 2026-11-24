@@ -289,7 +289,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:48c590fc6095311d9c286d3d2093e004952aef7585eb2ac28c18dfa5f8918d9c",
+        "content_hash": "sha256:0ba0e28ab9a9efd531d5c190863b96c9edda5a6770c3e8f6e3c8c356ba16d806",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -298,7 +298,7 @@
             "path": "layout/efuse_otp_array.gds",
             "scope": "repo"
           },
-          "content_hash": "sha256:48c590fc6095311d9c286d3d2093e004952aef7585eb2ac28c18dfa5f8918d9c",
+          "content_hash": "sha256:0ba0e28ab9a9efd531d5c190863b96c9edda5a6770c3e8f6e3c8c356ba16d806",
           "input_verified": true,
           "summary": "T1 item 2 (Layout): 3/3 attestation checks passed (klt signoff --attest)",
           "source": "layout/efuse_otp_array.gds",
@@ -310,7 +310,7 @@
           },
           "regeneration": {
             "generator": "layout/regen-gds.sh",
-            "regenerated_hash": "sha256:48c590fc6095311d9c286d3d2093e004952aef7585eb2ac28c18dfa5f8918d9c",
+            "regenerated_hash": "sha256:0ba0e28ab9a9efd531d5c190863b96c9edda5a6770c3e8f6e3c8c356ba16d806",
             "executed_by_klt": false
           }
         }
@@ -332,7 +332,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748",
+        "content_hash": "sha256:b80bfb50d000e21b7816da70e221111c7a7d0ef67d21d3379e60022fd70cbf5f",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -341,7 +341,7 @@
             "path": "layout/efuse_otp_ctrl.gds",
             "scope": "repo"
           },
-          "content_hash": "sha256:5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748",
+          "content_hash": "sha256:b80bfb50d000e21b7816da70e221111c7a7d0ef67d21d3379e60022fd70cbf5f",
           "input_verified": true,
           "summary": "T1 item 2 (Layout): 3/3 attestation checks passed (klt signoff --attest)",
           "source": "layout/efuse_otp_ctrl.gds",
@@ -353,7 +353,7 @@
           },
           "regeneration": {
             "generator": "layout/pnr.sh",
-            "regenerated_hash": "sha256:40505ce72140031d81b1528800e6dc77f58c5cca574097cacabeb30f29b84e1d",
+            "regenerated_hash": "sha256:88a57b497ef633308550728731dafb685806ff22c3165ec22f98aa45ad60dcdf",
             "executed_by_klt": false,
             "hash_kind": "geometry"
           }
@@ -415,7 +415,7 @@
         "command": null,
         "kind": "lvs",
         "check_status": "match",
-        "content_hash": "sha256:5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748",
+        "content_hash": "sha256:b80bfb50d000e21b7816da70e221111c7a7d0ef67d21d3379e60022fd70cbf5f",
         "input_verified": true,
         "exit_status": 0
       }
@@ -1199,7 +1199,7 @@
         "command": null,
         "kind": "erc",
         "check_status": "not_checked",
-        "content_hash": "sha256:5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748",
+        "content_hash": "sha256:b80bfb50d000e21b7816da70e221111c7a7d0ef67d21d3379e60022fd70cbf5f",
         "input_verified": true,
         "exit_status": 0,
         "parts": [
@@ -1208,7 +1208,7 @@
             "command": null,
             "kind": "erc",
             "check_status": "not_checked",
-            "content_hash": "sha256:5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748",
+            "content_hash": "sha256:b80bfb50d000e21b7816da70e221111c7a7d0ef67d21d3379e60022fd70cbf5f",
             "input_verified": true,
             "exit_status": 0
           },
@@ -1217,7 +1217,7 @@
             "command": null,
             "kind": "lvs",
             "check_status": "match",
-            "content_hash": "sha256:5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748",
+            "content_hash": "sha256:b80bfb50d000e21b7816da70e221111c7a7d0ef67d21d3379e60022fd70cbf5f",
             "input_verified": true,
             "exit_status": 0
           },
