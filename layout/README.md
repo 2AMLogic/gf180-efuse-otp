@@ -604,29 +604,35 @@ margin. On the existing 165.355 µm square die, the native deck measures
 25.26876 % COMP and 26.21314 % Poly2. The filled stream uses the original
 routed controller and matches its as-built netlist.
 
-Measured inputs and counts (the eight rules each report 0 markers; the
-ratios are the deck's own `logger` output — `Executing rule <id>` /
-`<layer> ratio: <v> %` — captured from a standalone `klayout -b -r
-gf180mcu.drc` run per variant, which is how a zero-count density execution
-is evidenced since the deck emits a category only on failure):
+Measured inputs and counts (the eight rules each report 0 markers). The
+array column's extent and ratios are the `extent_area_um2` and per-layer
+`total_pct` of the committed `layout/fill-array.report.json`, rounded to 2
+dp (the fill generator's own accounting on the resized placement, not a
+deck-logger capture). The controller column's ratios are the deck's own
+`logger` output — `Executing rule <id>` / `<layer> ratio: <v> %` —
+captured from a standalone `klayout -b -r gf180mcu.drc` run, which is how a
+zero-count density execution is evidenced since the deck emits a category
+only on failure:
 
 | | Array | Controller |
 |---|---|---|
 | Stream / top | `layout/efuse_otp_array.gds` / `efuse_otp_array` | `layout/efuse_otp_ctrl.gds` / `efuse_otp_ctrl` |
 | sha256 | `02994974b6b89ea8c17bb94a665f79eaf1f926072717c500980dad79320fc4f0` | `5644e40bbee411e95c059d06238e6a6132957a15696f9a9954b7d81f5eb9d748` |
-| Extent (µm) | −20.26, −64.62 → 1067.12, 699.44 (830 824 µm²) | 0, 0 → 165.355, 165.355 (27 342 µm²) |
+| Extent (µm) | −20.26, −64.62 → 1079.12, 699.44 (839 992 µm²) | 0, 0 → 165.355, 165.355 (27 342 µm²) |
 | PDK variant / deck options | `gf180mcuC`, `decks=all`, `threads=1` | `gf180mcuD`, `decks=all`, `threads=1` |
-| DCF.1b COMP | 0 markers, ratio 43.32 % | 0 markers, ratio 25.27 % |
-| PL.8 Poly2 | 0 markers, ratio 49.67 % | 0 markers, ratio 26.21 % |
-| M1.4 | 0 markers, ratio 57.85 % | 0 markers, ratio 40.38 % |
-| M2.4 | 0 markers, ratio 60.47 % | 0 markers, ratio 34.07 % |
-| M3.4 | 0 markers, ratio 60.48 % | 0 markers, ratio 33.77 % |
-| M4.4 | 0 markers, ratio 66.16 % | 0 markers, ratio 66.94 % |
-| M5.4 | 0 markers, ratio 66.16 % | 0 markers, ratio 73.88 % |
-| MT.3 | 0 markers, ratio 66.16 % | 0 markers, ratio 73.88 % |
+| DCF.1b COMP | 0 markers, ratio 43.26 % | 0 markers, ratio 25.27 % |
+| PL.8 Poly2 | 0 markers, ratio 49.62 % | 0 markers, ratio 26.21 % |
+| M1.4 | 0 markers, ratio 57.88 % | 0 markers, ratio 40.38 % |
+| M2.4 | 0 markers, ratio 60.87 % | 0 markers, ratio 34.07 % |
+| M3.4 | 0 markers, ratio 60.58 % | 0 markers, ratio 33.77 % |
+| M4.4 | 0 markers, ratio 65.87 % | 0 markers, ratio 66.94 % |
+| M5.4 | 0 markers, ratio 65.87 % | 0 markers, ratio 73.88 % |
+| MT.3 | 0 markers, ratio 65.87 % | 0 markers, ratio 73.88 % |
 
-**Before and after fill.** Against the 0.001 µm unfilled reports at
-`5d23757`, the array went from 252 to 244 findings and the controller from
+**Before and after fill.** (Historical: the measurement #326 made at
+`5d23757`, on the pre-resize L = 0.50 µm array; on the current committed
+stream the array has 200 markers, `V2.4b`/`V2.4c` x 100 each.) Against the
+0.001 µm unfilled reports at `5d23757`, the array went from 252 to 244 findings and the controller from
 8 to 0. Comparing the full finding records, including rule, cell and
 location, shows that each partition lost exactly one marker for each of the
 eight density rules. All 244 remaining array records match the baseline.
