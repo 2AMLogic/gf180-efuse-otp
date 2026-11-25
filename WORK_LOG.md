@@ -2,6 +2,10 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-25
+
+- **PR #387**: Restore Apache-2.0 licence ahead of going public
+
 ### 2026-11-24
 
 - **Issue #378** (closed): signoff/README.md: the T1 item 3 EF.* enumeration contradicts itself on EF.17
