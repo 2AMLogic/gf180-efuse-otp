@@ -21,8 +21,8 @@ drifted #146 -> #177 -> #169), and pvt_axes(), which derives a record's `pvt`
 grid from the loaded reports so no summarizer keeps a second hand-typed copy
 of the decision-0005 grid for run.sh to simulate past (#341) -- and emit a
 byte-identical record header.
-sim/sense-mc also uses load_reports(), collect_env() and write_record(). Its
-header records klt_sim_version and klt_yield_pin and omits the backend.
+sim/sense-mc shares only collect_env() and write_record(): its header names
+different tool keys (klt_sim_version, klt_yield_pin, no backend).
 
 The simulator version in a record is the one that ran the corners, read from the
 reports (`environment.engine_version`), not a probe of whatever simulator the
