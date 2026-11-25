@@ -33,7 +33,7 @@ assert_eq() {
 # shellcheck source=../lib/config-resolver.sh
 source "$CONFIG_RESOLVER_LIB"
 
-# Always disable the private-defaults tier for deterministic test output --
+# Disable the host's private-defaults tier for deterministic test output --
 # it would otherwise read whatever happens to exist at
 # ~/.local/share/loom/config/defaults.json on the CI/dev host.
 export LOOM_CONFIG_DEFAULTS_FILE=""
@@ -214,6 +214,48 @@ g checkout -q --detach HEAD
 g commit -q --allow-empty -m diverge
 git -C "$repo" checkout -q -- .loom/config.json
 assert_eq "$(loom_resolve_config "$repo")" '{"a":1}' "diverged HEAD reads the working copy"
+rm -rf "$repo"
+
+# --- Test 13: a tier larger than Linux's single-argument limit (#399) ---
+echo "Test 13: large private defaults survive resolution and forge selection"
+repo=$(new_repo)
+mkdir -p "$repo/.loom" "$repo/.loom-local" "$repo/bin"
+export LOOM_CONFIG_DEFAULTS_FILE="$repo/defaults.json"
+jq -nc '{payload: ("x" * 204800)}' > "$LOOM_CONFIG_DEFAULTS_FILE"
+echo '[]' > "$repo/.loom/config.json"
+echo '{"forge":{"type":"gitea"}}' > "$repo/.loom-local/local.json"
+
+rc=0
+loom_resolve_config "$repo" > "$repo/resolved.json" 2> "$repo/resolve.err" || rc=$?
+assert_eq "$rc" 0 "large tier resolves successfully"
+if [[ -s "$repo/resolve.err" ]]; then
+    fail "unexpected resolver stderr: $(cat "$repo/resolve.err")"
+else
+    pass "large tier resolves without diagnostics"
+fi
+jq -c '. + {forge: {type: "gitea"}}' "$LOOM_CONFIG_DEFAULTS_FILE" > "$repo/expected.json"
+if cmp -s "$repo/expected.json" "$repo/resolved.json"; then
+    pass "one compact object preserves the full payload and the local forge setting"
+else
+    fail "expected one compact object with the full payload and the local forge setting"
+fi
+assert_eq "$(loom_config_get "$repo" forge.type fallback)" "gitea" "dotted lookup finds the local setting alongside large defaults"
+
+# Stub both filing commands so an accidental GitHub fallback stays offline.
+cat > "$repo/bin/gh" <<'EOF'
+#!/usr/bin/env bash
+echo "$0" >> "$REPO_ROOT/forge-calls"
+exit 1
+EOF
+chmod +x "$repo/bin/gh"
+ln -s gh "$repo/bin/loom-daemon"
+: > "$repo/forge-calls"
+rc=0
+REPO_ROOT="$repo" LOOM_FORGE_TYPE="" PATH="$repo/bin:$PATH" LOOM_DAEMON_BIN="$repo/bin/loom-daemon" \
+    "$SCRIPTS_DIR/create-issue.sh" --title probe --body probe 2> "$repo/create.err" || rc=$?
+assert_eq "$rc" 2 "create-issue exits at the unsupported forge check"
+assert_contains "$(cat "$repo/create.err")" "GitHub-specific; on gitea" "create-issue honors forge.type from the local tier"
+assert_eq "$(cat "$repo/forge-calls")" "" "no filing command invoked"
 rm -rf "$repo"
 
 # --- Summary ---
