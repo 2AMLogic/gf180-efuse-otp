@@ -34,7 +34,8 @@ run_drc() {
 
 parts=(array:efuse_otp_array ctrl:efuse_otp_ctrl ls:efuse_ls:efuse_otp_array
        rowdrv:efuse_rowdrv:efuse_otp_array coldrv:efuse_coldrv:efuse_otp_array
-       comp:efuse_comp:efuse_otp_array sense:efuse_sense:efuse_otp_array)
+       comp:efuse_comp:efuse_otp_array sense:efuse_sense:efuse_otp_array
+       bitcell:efuse_bitcell:efuse_otp_array row:efuse_row:efuse_otp_array)
 for p in "${parts[@]}"; do
   IFS=: read -r part top file <<< "$p"
   report="layout/drc-$part.report.json"

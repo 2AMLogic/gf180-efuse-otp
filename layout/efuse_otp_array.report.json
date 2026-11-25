@@ -13,20 +13,50 @@
     "pitch_x_um": 135.71,
     "pitch_y_um": 21.92
   },
-  "caveat": "placed hierarchy; efuse_ls, efuse_rowdrv, efuse_coldrv, efuse_comp and efuse_sense are routed (see 'routed'), every other cell is placement-only: no routing, no connectivity, no DRC/LVS claim outside those five",
+  "caveat": "placed hierarchy; efuse_bitcell, efuse_ls, efuse_rowdrv, efuse_coldrv, efuse_comp, efuse_sense and efuse_row are routed (see 'routed'), every other cell is placement-only: no routing, no connectivity, no DRC/LVS claim outside those seven",
   "routed": {
     "cells": [
+      "efuse_bitcell",
       "efuse_ls",
       "efuse_rowdrv",
       "efuse_coldrv",
       "efuse_comp",
-      "efuse_sense"
+      "efuse_sense",
+      "efuse_row"
     ],
     "planes": {
-      "m1": "device pads and guard-ring taps",
-      "m2": "supply rails and horizontal runs",
+      "m1": "device pads, guard-ring taps and the source-ring bridge",
+      "m2": "supply rails, horizontal runs and stubs",
       "m3": "vertical stubs and lanes"
     }
+  },
+  "program_path": {
+    "claim": "path delivery only (spec section 3): no claim that the fuse changes state or that a pulse programs it",
+    "target": ">= 10 mA through the fuse at the worst corner (spec section 2, assumption A2: no PDK source)",
+    "simulated": "sim/corner-verification record 20261108T235928Z-f6eeac7: schematic-level, all 135 points pass; binding corner ss / 125 C / vdd33 2.97 V / vprog 4.5 V / 260 ohm at 10.97 mA (its 20 ohm route is an assumption, not this layout)",
+    "current_limits": "none documented: the pinned PDK tree carries no metal or via current limit (searched the klt deck, the PDK DRC/LVS rule decks, libs.tech and libs.ref); the geometry below is recorded against the 10 mA target, not rated against a foundry limit",
+    "bitcell_segments": [
+      {
+        "net": "bl",
+        "entry": "fuse in pad (M1, 5.295 x 0.81 um, PDK)",
+        "stack": "via1 x2 + M2 pad 0.97 x 0.42 + via2 x2 + M3 lane 0.97 wide"
+      },
+      {
+        "net": "fuse element",
+        "layers": "PDK primitive, geometry unmodified (verify_fuse); not extractable as a device by the curated deck"
+      },
+      {
+        "net": "n",
+        "entry": "fuse out pad (M1, 4.535 x 1.75 um, PDK)",
+        "stack": "via1 x2, M2 run 6.82 x 0.42 um, via1 x3 on the 0.42 um select drain strap"
+      },
+      {
+        "net": "vss",
+        "entry": "select source strap, 8.1 x 0.42 um M1",
+        "stack": "M1 bridge 1.49 x 0.42 into the guard ring, via1 x2, M2 rail 0.42 um (row rail)"
+      }
+    ],
+    "finding": "the narrowest points are the two 0.26 um via2 cuts at the bl entry and the two 0.26 um via1 cuts at the vss exit, one stack per bitcell; no documented GF180 current limit exists to rate them against 10 mA, so the metal delivery is an open item for the array-level program path (#307), widening or accepting them"
   },
   "resistors": {
     "device": "ppolyf_u",

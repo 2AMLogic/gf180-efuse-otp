@@ -1,0 +1,482 @@
+{
+  "schema_version": 3,
+  "engine": "klayout",
+  "layout": {
+    "path": "layout/efuse_otp_array.gds",
+    "scope": "repo"
+  },
+  "reference": {
+    "path": "design/efuse_otp_array.spice",
+    "scope": "repo"
+  },
+  "top": "efuse_row",
+  "reference_top": "EFUSE_ROW",
+  "reference_conversion": {
+    "form": "subckt-call",
+    "deck": null,
+    "device_map": null
+  },
+  "parameter_tolerance": null,
+  "options": {
+    "combine_devices": true,
+    "combine_devices_per_circuit": null,
+    "combine_devices_max_attempts": 5,
+    "flatten_layout": false,
+    "flatten_reference": [
+      "efuse_row"
+    ],
+    "netgen_setup": null,
+    "parameter_tolerance": null,
+    "compare_parameters": null,
+    "power_connectivity": null,
+    "anchor_top_level_pins": true,
+    "strict_top_level_pin_count": false,
+    "compare_mos_flavour": false,
+    "ignore_mos_bulk": false,
+    "supply_nets": [
+      "GND",
+      "VCC",
+      "VDD",
+      "VGND",
+      "VPWR",
+      "VSS"
+    ],
+    "finfet_bulk": null
+  },
+  "hints_applied": null,
+  "constant_nets_applied": null,
+  "status": "mismatch",
+  "power_connectivity": {
+    "status": "unchecked",
+    "reason": "reference.form is 'subckt-call', whose reference netlist carries its own power/ground pins and nets -- they take part in the ordinary compare, so this check (which exists to cover the signal-only 'gate-level-verilog' form) does not apply",
+    "power_pins": [],
+    "power_pins_derivation": null,
+    "instance_count": 0,
+    "expected_nets": null,
+    "unchecked_expected_pins": [],
+    "excluded_pins": [],
+    "findings": [],
+    "finding_count": 0
+  },
+  "body_verification": {
+    "status": "verified",
+    "reason": null,
+    "device_classes": [],
+    "device_count": 0,
+    "findings": [],
+    "finding_count": 0
+  },
+  "device_parameter_coverage": [],
+  "mismatch_count": 13,
+  "error_count": 1,
+  "category_counts": {
+    "reference.unresolved_subckt_call": 1,
+    "topology": 10,
+    "topology.flattened": 1,
+    "topology.top_level_pins_anchored": 1
+  },
+  "category_error_counts": {
+    "reference.unresolved_subckt_call": 1
+  },
+  "counts": {
+    "nets": {
+      "layout": 10,
+      "reference": 18,
+      "matched": 18
+    },
+    "devices": {
+      "layout": 8,
+      "reference": 8,
+      "matched": 8
+    },
+    "pins": {
+      "layout": 10,
+      "reference": 10,
+      "matched": 18
+    }
+  },
+  "device_classes": [
+    "nfet",
+    "pfet",
+    "bjt",
+    "cap_mim_2f0_m4m5_noshield",
+    "cap_nmos_03v3",
+    "cap_nmos_03v3_dn",
+    "cap_pmos_03v3",
+    "cap_pmos_03v3_dn",
+    "cap_nmos_06v0",
+    "cap_nmos_06v0_dn",
+    "cap_pmos_06v0",
+    "cap_pmos_06v0_dn",
+    "cap_nmos_03v3_b",
+    "cap_pmos_03v3_b",
+    "cap_nmos_06v0_b",
+    "cap_pmos_06v0_b",
+    "resistor",
+    "diode_nd2ps_06v0",
+    "diode_pd2nw_06v0"
+  ],
+  "environment": {
+    "engine": "klayout",
+    "engine_version": "0.30.14",
+    "netgen_binary": null,
+    "layout_sha256": "5e553ab4dd5bf90555423260ff6f40e9f4bd611277fe37d775b22963559a51c9",
+    "reference_sha256": "48eb3a59f93d6fecd7b1bc5b5c0d471244785b8cbdd0e5ba3dd0f219bea82d52",
+    "extracted_netlist": null
+  },
+  "provenance": {
+    "klt_version": "0.9.2",
+    "klt_git_commit": "046ba74652fc096bd97071fc3237f7159dd40183",
+    "klt_reinstall_spec": "klayout-tools==0.9.2",
+    "klayout_version": "0.30.14",
+    "pdk": null,
+    "deck": {
+      "name": "gf180mcu",
+      "content_hash": "sha256:c3f2cce49000857a3a71cb65203aabf0eb27cd0ee6b1c60e29792355c455c4b1",
+      "released": true,
+      "options": {
+        "metal_top": "9K",
+        "mim_cap": "cap_mim_2f0_m4m5_noshield",
+        "poly_res": "1k"
+      },
+      "options_explicit": {
+        "metal_top": false,
+        "mim_cap": false,
+        "poly_res": false
+      },
+      "options_hash": "sha256:6a7dc7660a470994263c5ca8ace6d8ac8c605d77e6876a9c5490949de6e7cb05"
+    },
+    "input": {
+      "content_hash": "sha256:5e553ab4dd5bf90555423260ff6f40e9f4bd611277fe37d775b22963559a51c9",
+      "role": "layout"
+    },
+    "klayout_version_mismatch": true
+  },
+  "mismatches": [
+    {
+      "category": "reference.unresolved_subckt_call",
+      "severity": "error",
+      "description": "reference instance 'XF' in circuit 'EFUSE_BITCELL' calls subcircuit 'EFUSE', which is not defined in the reference netlist, was not converted to a device, and has no same-named layout circuit -- the reader substitutes an empty placeholder, so whatever device(s) it stands for are never compared. Define the subcircuit, map it to a device class (reference.form \"subckt-call\" + reference.device_map), or write it as a plain-element card (see docs/cli/lvs.md, \"reference.unresolved_subckt_call\")",
+      "side": "reference",
+      "net": null,
+      "device": null,
+      "property": null,
+      "details": {
+        "callee": "EFUSE",
+        "reader_circuit": "EFUSE(PBLOW=0)",
+        "pin_count": 2
+      },
+      "circuit": {
+        "layout": null,
+        "reference": "EFUSE_BITCELL"
+      },
+      "instance": {
+        "layout": null,
+        "reference": "XF"
+      },
+      "subcircuit": {
+        "layout": null,
+        "reference": "EFUSE"
+      }
+    },
+    {
+      "category": "topology",
+      "severity": "warning",
+      "description": "nets were paired ambiguously; the comparer resolved it structurally (consider a hints.same_nets entry to pin this down)",
+      "side": "both",
+      "net": {
+        "layout": "bl|bl[0]|n",
+        "reference": "B[0]_N"
+      },
+      "device": null,
+      "property": null,
+      "details": null,
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "topology",
+      "severity": "warning",
+      "description": "nets were paired ambiguously; the comparer resolved it structurally (consider a hints.same_nets entry to pin this down)",
+      "side": "both",
+      "net": {
+        "layout": "bl|bl[1]|n",
+        "reference": "B[1]_N"
+      },
+      "device": null,
+      "property": null,
+      "details": null,
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "topology",
+      "severity": "warning",
+      "description": "nets were paired ambiguously; the comparer resolved it structurally (consider a hints.same_nets entry to pin this down)",
+      "side": "both",
+      "net": {
+        "layout": "bl|bl[2]|n",
+        "reference": "B[2]_N"
+      },
+      "device": null,
+      "property": null,
+      "details": null,
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "topology",
+      "severity": "warning",
+      "description": "nets were paired ambiguously; the comparer resolved it structurally (consider a hints.same_nets entry to pin this down)",
+      "side": "both",
+      "net": {
+        "layout": "bl|bl[3]|n",
+        "reference": "B[3]_N"
+      },
+      "device": null,
+      "property": null,
+      "details": null,
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "topology",
+      "severity": "warning",
+      "description": "nets were paired ambiguously; the comparer resolved it structurally (consider a hints.same_nets entry to pin this down)",
+      "side": "both",
+      "net": {
+        "layout": "bl|bl[4]|n",
+        "reference": "B[4]_N"
+      },
+      "device": null,
+      "property": null,
+      "details": null,
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "topology",
+      "severity": "warning",
+      "description": "nets were paired ambiguously; the comparer resolved it structurally (consider a hints.same_nets entry to pin this down)",
+      "side": "both",
+      "net": {
+        "layout": "bl|bl[5]|n",
+        "reference": "B[5]_N"
+      },
+      "device": null,
+      "property": null,
+      "details": null,
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "topology",
+      "severity": "warning",
+      "description": "nets were paired ambiguously; the comparer resolved it structurally (consider a hints.same_nets entry to pin this down)",
+      "side": "both",
+      "net": {
+        "layout": "bl|bl[6]|n",
+        "reference": "B[6]_N"
+      },
+      "device": null,
+      "property": null,
+      "details": null,
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "topology",
+      "severity": "warning",
+      "description": "nets were paired ambiguously; the comparer resolved it structurally (consider a hints.same_nets entry to pin this down)",
+      "side": "both",
+      "net": {
+        "layout": "bl|bl[7]|n",
+        "reference": "B[7]_N"
+      },
+      "device": null,
+      "property": null,
+      "details": null,
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "topology",
+      "severity": "warning",
+      "description": "device class has no counterpart on the other side, but no devices of this class were extracted either -- not a real topology mismatch: 'bjt'",
+      "side": "layout",
+      "net": null,
+      "device": {
+        "layout": null,
+        "reference": null,
+        "class": "bjt"
+      },
+      "property": null,
+      "details": null,
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "topology",
+      "severity": "warning",
+      "description": "device class has no counterpart on the other side, but no devices of this class were extracted either -- not a real topology mismatch: 'PPOLYF_U'",
+      "side": "reference",
+      "net": null,
+      "device": {
+        "layout": null,
+        "reference": null,
+        "class": "PPOLYF_U"
+      },
+      "property": null,
+      "details": null,
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "topology.flattened",
+      "severity": "warning",
+      "description": "options.flatten_reference flattened the reference netlist before comparing: 9 circuit(s) were collapsed into 2 top-level circuit(s), substituting every subcircuit-call instance in place -- this compare verified topology only after removing the original hierarchy boundaries on this side (kept un-flattened: EFUSE_ROW) (see docs/cli/lvs.md, \"topology.flattened\")",
+      "side": "reference",
+      "net": null,
+      "device": null,
+      "property": null,
+      "details": null,
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "topology.top_level_pins_anchored",
+      "severity": "warning",
+      "description": "2 top-level pin name(s) declared on both sides were anchored by name before comparing (options.anchor_top_level_pins): each one's layout net is asserted to match the reference net of the same-named pin, which the comparer's own topology-only net pairing does not otherwise require. Without it, two boundary nets with identical topology (e.g. two bits of a black-box macro's bus) are interchangeable and a swap between them compares clean -- see docs/cli/lvs.md, \"Top-level pin anchoring\"",
+      "side": "both",
+      "net": null,
+      "device": null,
+      "property": null,
+      "details": {
+        "pins": [
+          "VSS",
+          "WL"
+        ],
+        "pin_count": 2,
+        "pins_truncated": false,
+        "layout_only_pins": [
+          "BL,BL[0],N",
+          "BL,BL[1],N",
+          "BL,BL[2],N",
+          "BL,BL[3],N",
+          "BL,BL[4],N",
+          "BL,BL[5],N",
+          "BL,BL[6],N",
+          "BL,BL[7],N"
+        ],
+        "layout_only_pin_count": 8,
+        "layout_only_pins_truncated": false
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    }
+  ],
+  "net_correspondence": [
+    {
+      "layout": null,
+      "reference": "BL[0]",
+      "pin": false
+    },
+    {
+      "layout": null,
+      "reference": "BL[1]",
+      "pin": false
+    },
+    {
+      "layout": null,
+      "reference": "BL[2]",
+      "pin": false
+    },
+    {
+      "layout": null,
+      "reference": "BL[3]",
+      "pin": false
+    },
+    {
+      "layout": null,
+      "reference": "BL[4]",
+      "pin": false
+    },
+    {
+      "layout": null,
+      "reference": "BL[5]",
+      "pin": false
+    },
+    {
+      "layout": null,
+      "reference": "BL[6]",
+      "pin": false
+    },
+    {
+      "layout": null,
+      "reference": "BL[7]",
+      "pin": false
+    },
+    {
+      "layout": "bl|bl[0]|n",
+      "reference": "B[0]_N",
+      "pin": true
+    },
+    {
+      "layout": "bl|bl[1]|n",
+      "reference": "B[1]_N",
+      "pin": true
+    },
+    {
+      "layout": "bl|bl[2]|n",
+      "reference": "B[2]_N",
+      "pin": true
+    },
+    {
+      "layout": "bl|bl[3]|n",
+      "reference": "B[3]_N",
+      "pin": true
+    },
+    {
+      "layout": "bl|bl[4]|n",
+      "reference": "B[4]_N",
+      "pin": true
+    },
+    {
+      "layout": "bl|bl[5]|n",
+      "reference": "B[5]_N",
+      "pin": true
+    },
+    {
+      "layout": "bl|bl[6]|n",
+      "reference": "B[6]_N",
+      "pin": true
+    },
+    {
+      "layout": "bl|bl[7]|n",
+      "reference": "B[7]_N",
+      "pin": true
+    },
+    {
+      "layout": "vss",
+      "reference": "VSS",
+      "pin": true
+    },
+    {
+      "layout": "wl",
+      "reference": "WL",
+      "pin": true
+    }
+  ]
+}

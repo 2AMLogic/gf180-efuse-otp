@@ -24,7 +24,10 @@ What it does
     routed the same way (comp_cell, sense_cell): one via1 + M2 pad + via2 +
     M3 lane per signal pin, one M2 track per multi-pin net above the row,
     supply rails below it, and the PDK resistors drawn at the netlist's stated
-    geometry. Every other cell remains placement-only.
+    geometry. `efuse_bitcell` (the PDK fuse plus the 180-deg-rotated select
+    NFET) and `efuse_row` (8 bitcells plus the shared wl/vss rails) are routed
+    too (bitcell_cell, array_row_cell; see layout/README.md, "efuse_bitcell /
+    efuse_row routing"). Every other cell remains placement-only.
 
 What it does not do: draw inter-device or inter-block routing outside those
 five cells, or check anything. Connectivity elsewhere is not claimed; DRC,
@@ -112,6 +115,20 @@ CD_TRACK_PITCH = 0.72  # M2 signal tracks above the device row (0.42 um wide)
 CD_RAIL_Y = {"vss": -1.5, "vdd33": -2.22, "vprog": -2.94}  # M2 supply rails below the row
 CD_LANE_PITCH = 0.72  # M3 lanes added beside the efuse_ls instance
 CD_LS_RAIL_END = 16.0  # east end of efuse_ls's vss rail (ls_cell)
+
+# efuse_bitcell / efuse_row routing (bitcell_cell, array_row_cell; see
+# layout/README.md, "efuse_bitcell / efuse_row routing"). All values um.
+BC_SEL_X = 13.285  # select (rotated 180 deg) bbox west edge: fuse east edge + 2.005
+BC_PAD_Y = 2.19  # centre y of both fuse M1 pads (asserted against the PDK cell)
+BC_BL_CUT_X = (0.93, 1.48)  # two via1+via2 stacks, from the in pad's west edge
+BC_BL_LANE_Y0 = -1.35  # bl M3 lane south end (crosses the wl rail below the cell)
+BC_N_FUSE_CUT_DX = (-1.38, -0.38)  # via1s on the fuse out pad, from its east edge
+BC_N_SEL_CUT_DX = (0.175, 0.875, 1.575)  # via1s on the drain strap, from its exit pad
+BC_WL_STUB_Y0 = -1.24  # wl M2 stub down to the row rail (rail top edge)
+BC_VSS_CUT_DY = (0.0, -0.55)  # two via1s on the ring east strap (0.55 >= 0.26+0.26)
+BC_VSS_PAD_DY = -0.71  # M2 pad from below the lower cut to the rail top edge
+ROW_WL_RAIL_Y = (-1.24, -0.82)  # M2 word-line rail under the bitcells
+ROW_VSS_RAIL_Y = (7.25, 7.67)  # M2 return rail through the select row
 
 # efuse_comp / efuse_sense routing (comp_cell, sense_cell and layout/README.md,
 # "efuse_comp routing" / "efuse_sense routing"). Both cells reuse the coldrv
@@ -368,28 +385,32 @@ class Builder:
         return self.anchor.get(cell.cell_index(), cell.bbox())
 
     def place(self, parent, child, x_um, y_um, rows=1, cols=1, pitch_x_um=0.0, pitch_y_um=0.0,
-              away_x=True, away_y=True):
-        """Instance of child with its grown bbox left at x_um and its footprint
-        bottom at y_um, snapped.
+              away_x=True, away_y=True, rot=0):
+        """Instance of child with its (rotated) grown bbox left at x_um and its
+        (rotated) footprint bottom at y_um, snapped.
 
-        x anchors on the grown bbox().left -- the same extent every row cursor
-        steps on -- so the grown-to-grown separation is GAP_UM whatever each
-        neighbour's west overhang (#376); y stays on the pre-growth footprint,
-        which no cursor steps on. The child's bbox edges are vertices (guard
-        rings; the PDK fuse stream's own origin is off the grid by one stream
-        dbu), so landing them on the rule grid puts every vertex on it. Both
-        edges are rounded away from the placed neighbours (up, or down with
-        away_* False) so the clearance is never reduced; the pitches are
-        rounded up to the grid. Returns the applied displacement in um: port
-        tables computed from the child's own reported coordinates must add it
-        to land on the drawn pads.
+        rot is a klayout rotation index (0..3, no mirroring; 2 = 180 deg) --
+        the bbox is rotated first and its lower-left landed on the rule grid,
+        exactly as for rot=0. x anchors on the grown bbox().left -- the same
+        extent every row cursor steps on -- so the grown-to-grown separation is
+        GAP_UM whatever each neighbour's west overhang (#376); y stays on the
+        pre-growth footprint, which no cursor steps on. The child's bbox edges
+        are vertices (guard rings; the PDK fuse stream's own origin is off the
+        grid by one stream dbu), so landing them on the rule grid puts every
+        vertex on it. Both edges are rounded away from the placed neighbours
+        (up, or down with away_* False) so the clearance is never reduced; the
+        pitches are rounded up to the grid. Returns the applied displacement in
+        um: port tables computed from the child's own reported coordinates must
+        add it (after any rotation) to land on the drawn pads.
         """
-        dx = snap(round(x_um / DBU_UM), away_x) - child.bbox().left
-        dy = snap(round(y_um / DBU_UM), away_y) - self.footprint(child).bottom
-        trans = kdb.Trans(dx, dy)
+        rot_t = kdb.Trans(rot, False, 0, 0)
+        dx = snap(round(x_um / DBU_UM), away_x) - child.bbox().transformed(rot_t).left
+        dy = snap(round(y_um / DBU_UM), away_y) - self.footprint(child).transformed(rot_t).bottom
+        trans = kdb.Trans(rot, False, dx, dy)
         if rows == 1 and cols == 1:
             parent.insert(kdb.CellInstArray(child.cell_index(), trans))
         else:
+            assert rot == 0, "array placement with rotation is not needed yet"
             parent.insert(kdb.CellInstArray(
                 child.cell_index(), trans,
                 kdb.Vector(snap(round(pitch_x_um / DBU_UM)), 0),
@@ -423,7 +444,145 @@ class Builder:
         self.cells[subckt] = cell
         return cell
 
-    # -- efuse_ls: the one routed cell ------------------------------------
+    # -- efuse_bitcell: fuse + select, all four nets drawn ---------------
+
+    def bitcell_cell(self, subckt):
+        """efuse_bitcell: the PDK fuse and the rotated select NFET, routed.
+
+        Floorplan (um, this cell's own coordinates): the fuse at the origin
+        (bbox 11.28 x 4.38, PDK geometry untouched, `verify_fuse` guards it);
+        the select NFET east of it rotated 180 deg, so its 0.42 um drain
+        strap exit faces west at the same height as the fuse out pad --
+        `n` is then one M2 run over the gap: via1 x2 on the out pad, via1 x3
+        along the strap (the program current crosses the pad/strap metal, the
+        cuts sit between them east of the EFUSE_MK box, which M2 must not
+        cross). `bl` leaves the fuse in pad on a 0.97 um M3 lane running
+        south out of the cell (over the fuse only M3 may run: EF.18/19),
+        stacked via1+via2 twice under it. `wl` drops from the gate pad to
+        the row's M2 rail below the cell. The source strap is merged into
+        its own guard ring with an M1 bridge (source and body are both vss,
+        as in ls_cell) and the ring leaves east through two via1s into the
+        row's M2 return rail. The fuse cell's own 'in'/'out' 34/10 texts
+        are dropped: they would rename the bl/n pad nets at extraction
+        (verify_fuse compares geometry; its Region sides ignore texts).
+        """
+        insts = {i["name"]: i for i in self.netlist[subckt]}
+        assert set(insts) == {"XXf", "XXsel"}, f"{subckt} netlist changed: {sorted(insts)}"
+        f, s = insts["XXf"], insts["XXsel"]
+        assert f["kind"] == "x" and f["master"] == "efuse" and f["nodes"] == ["bl", "n"], \
+            f"{subckt}: XXf is no longer 'bl n efuse'"
+        assert s["kind"] == "x" and s["master"] == "nfet_06v0" \
+            and s["nodes"] == ["n", "wl", "vss", "vss"], \
+            f"{subckt}: XXsel is no longer 'n wl vss vss nfet_06v0'"
+        cell = self.layout.create_cell(subckt)
+        for pair in (LS_M2, LS_VIA1, LS_M3, LS_VIA2):
+            self.layout.layer(*pair)
+
+        # fuse: bbox lower-left at the origin; the two M1 pad boxes and the
+        # 'in'/'out' texts are read from the imported PDK cell itself.
+        fuse = self.leaf(subckt, f)
+        lbl_i, m1_i = self.layout.layer(*LS_M1_LBL), self.layout.layer(*LS_M1)
+        pads = {}
+        for t in list(fuse.shapes(lbl_i).each()):
+            p = t.text.trans.disp
+            for b in fuse.shapes(m1_i).each():
+                if b.box.contains(p):
+                    pads[t.text.string] = b.box
+            fuse.shapes(lbl_i).erase(t)
+        assert set(pads) == {"in", "out"}, "PDK fuse cell must carry in/out pad texts"
+        dx0, dy0 = self.place(cell, fuse, 0.0, 0.0)
+        t0 = kdb.Trans(round(dx0 / DBU_UM), round(dy0 / DBU_UM))
+        pin, pout = pads["in"].transformed(t0), pads["out"].transformed(t0)
+        yc = pin.center().y * DBU_UM
+        assert abs(yc - BC_PAD_Y) < 1e-9 and abs(pout.center().y * DBU_UM - yc) < 1e-9, \
+            "fuse M1 pads no longer share a centre height"
+
+        # select, rotated 180 deg: U0_D faces west at pad height, U0_G exits
+        # south, TAP_W is the ring's east strap.
+        sel = self.leaf(subckt, s)
+        rep = self.reports[f"{subckt}__Xsel"]
+        dx1, dy1 = self.place(cell, sel, BC_SEL_X, 0.0, rot=2)
+        t1 = kdb.Trans(2, False, round(dx1 / DBU_UM), round(dy1 / DBU_UM))
+
+        def port(name):
+            p = next(p for p in rep["ports"] if p["name"] == name)
+            v = t1 * kdb.Point(round(p["x_um"] / DBU_UM), round(p["y_um"] / DBU_UM))
+            return gs(v.x * DBU_UM), gs(v.y * DBU_UM)
+
+        d, g, se, tw = port("U0_D"), port("U0_G"), port("U0_S"), port("TAP_W")
+        assert abs(d[1] - 2.26) < 1e-9 and abs(d[1] - yc) <= 0.075, \
+            "select drain strap no longer faces the fuse out pad"
+
+        # n: five via1s under one M2 run from the out pad to the drain strap.
+        nx = [gs(pout.right * DBU_UM + dx) for dx in BC_N_FUSE_CUT_DX] \
+            + [gs(d[0] + dx) for dx in BC_N_SEL_CUT_DX]
+        for x in nx:
+            self._cut(cell, LS_VIA1, x, BC_PAD_Y)
+        self._box(cell, LS_M2, min(nx) - 0.21, BC_PAD_Y - 0.21, max(nx) + 0.21, BC_PAD_Y + 0.21)
+        # bl: two via1+via2 stacks on the in pad's west end (west of the
+        # EFUSE_MK box, which M1/M2 must not cross), one 0.97 um M3 lane
+        # south out of the cell under them.
+        bcx = [gs(pin.left * DBU_UM + x) for x in BC_BL_CUT_X]
+        for x in bcx:
+            self._cut(cell, LS_VIA1, x, BC_PAD_Y)
+            self._cut(cell, LS_VIA2, x, BC_PAD_Y)
+        self._box(cell, LS_M2, bcx[0] - 0.21, BC_PAD_Y - 0.21, bcx[-1] + 0.21, BC_PAD_Y + 0.21)
+        self._box(cell, LS_M3, bcx[0] - 0.21, BC_BL_LANE_Y0, bcx[-1] + 0.21, BC_PAD_Y + 0.21)
+        # wl: via1 on the gate pad, M2 stub down to the row rail.
+        self._cut(cell, LS_VIA1, g[0], g[1])
+        self._box(cell, LS_M2, g[0] - 0.21, BC_WL_STUB_Y0, g[0] + 0.21, g[1] + 0.21)
+        # vss: M1 bridge source strap -> ring, then two via1s on the ring's
+        # east strap into an M2 pad at the row rail height.
+        self._box(cell, LS_M1, se[0] - 0.21, se[1] - 0.21, tw[0] + 0.21, se[1] + 0.21)
+        ry = sum(ROW_VSS_RAIL_Y) / 2
+        for dy in BC_VSS_CUT_DY:
+            self._cut(cell, LS_VIA1, tw[0], gs(ry + dy))
+        self._box(cell, LS_M2, tw[0] - 0.21, gs(ry + BC_VSS_PAD_DY),
+                  tw[0] + 0.21, ROW_VSS_RAIL_Y[1])
+
+        for net, x, y in (("bl", (bcx[0] + bcx[-1]) / 2, BC_PAD_Y),
+                          ("n", pout.center().x * DBU_UM, BC_PAD_Y),
+                          ("wl", g[0], g[1]), ("vss", tw[0], ry)):
+            self._label(cell, net, gs(x), gs(y))
+        # pin access points for the row and top-level routing (array_row_cell,
+        # #307): the bl lane, the wl stub and the vss pad, all in-cell coords.
+        self.bc_ports = {"bl": ((bcx[0] + bcx[-1]) / 2, BC_PAD_Y), "wl": g, "vss": (tw[0], ry)}
+        self.cells[subckt] = cell
+        return cell
+
+    def array_row_cell(self, pitch_x):
+        """efuse_row: 8 bitcells at the column pitch plus the shared rails.
+
+        One M2 wl rail below the bitcells (each gate stub drops into it) and
+        one M2 vss rail through the select row (each bitcell's ring-east
+        via1s land on it); both span the full row and exit west. The eight
+        bl lanes are the bitcells' own M3 lanes, one per column, already
+        crossing the wl rail on M3; bl[7] is the west-most column, matching
+        the .subckt pin order (bl[7] first). Labels sit on M1 pads of the
+        first bitcell's instances (wl, vss) and on each column's fuse in
+        pad (bl[i]).
+        """
+        assert hasattr(self, "bc_ports"), "bitcell_cell must run before array_row_cell"
+        cell = self.layout.create_cell("efuse_row")
+        bit = self.cells["efuse_bitcell"]
+        # Identity placement (target = the bitcell's own bbox origin, which is
+        # on the grid): the rails below are stated in bitcell coordinates, so
+        # the instances must not be shifted to a different origin.
+        bb = bit.bbox()
+        assert bb.left == 0, f"efuse_bitcell bbox left {bb.left} != 0"
+        self.place(cell, bit, bb.left * DBU_UM, bb.bottom * DBU_UM, 1, COLS, pitch_x)
+        w = gs((COLS - 1) * pitch_x + self.size(bit)[0])
+        self._box(cell, LS_M2, 0.0, ROW_WL_RAIL_Y[0], w, ROW_WL_RAIL_Y[1])
+        self._box(cell, LS_M2, 0.0, ROW_VSS_RAIL_Y[0], w, ROW_VSS_RAIL_Y[1])
+        bp = self.bc_ports
+        self._label(cell, "wl", bp["wl"][0], bp["wl"][1])
+        self._label(cell, "vss", bp["vss"][0], bp["vss"][1])
+        for k in range(COLS):
+            self._label(cell, f"bl[{COLS - 1 - k}]", gs(bp["bl"][0] + k * pitch_x), bp["bl"][1])
+        self.cells["efuse_row"] = cell
+        return cell
+
+    # -- efuse_ls: routed two-row floorplan ------------------------------
 
     def ls_cell(self, subckt):
         """efuse_ls on a stated two-row floorplan, with drawn routing.
@@ -986,6 +1145,8 @@ def verify_fuse(layout, cell_name, pdk_gds):
     ref_layers = set()
     for li in ref.layer_indexes():
         info = ref.get_info(li)
+        if not kdb.Region(ref_top.begin_shapes_rec(li)).count():
+            continue  # text-only layer (the PDK cell's in/out port labels)
         ref_layers.add((info.layer, info.datatype))
         mi = layout.find_layer(info.layer, info.datatype)
         mine = kdb.Region(cell.begin_shapes_rec(mi)) if mi is not None else kdb.Region()
@@ -995,9 +1156,10 @@ def verify_fuse(layout, cell_name, pdk_gds):
                   file=sys.stderr)
             sys.exit(4)
     mine_layers = {(layout.get_info(i).layer, layout.get_info(i).datatype)
-                   for i in layout.layer_indexes() if not cell.bbox_per_layer(i).empty()}
+                   for i in layout.layer_indexes()
+                   if kdb.Region(cell.begin_shapes_rec(i)).count()}
     if mine_layers != ref_layers:
-        print("fuse layer set differs from the PDK primitive", file=sys.stderr)
+        print("fuse geometry layer set differs from the PDK primitive", file=sys.stderr)
         sys.exit(4)
 
 
@@ -1010,13 +1172,15 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
     assert masters(netlist, "efuse_row") == {"efuse_bitcell": COLS}, "efuse_row is not 8 bitcells"
 
     b = Builder(klt, fuse_gds, netlist)
-    # Leaf-level subcircuits first, in dependency order. efuse_ls is routed
-    # (ls_cell), efuse_rowdrv / efuse_coldrv are routed from it and leaf
-    # devices (rowdrv_cell, coldrv_cell), efuse_comp and efuse_sense the same
-    # way (comp_cell, sense_cell); efuse_bitcell is one placement row.
+    # Leaf-level subcircuits first, in dependency order. efuse_bitcell and
+    # efuse_ls are routed (bitcell_cell, ls_cell), efuse_rowdrv / efuse_coldrv
+    # are routed from it and leaf devices (rowdrv_cell, coldrv_cell), efuse_comp
+    # and efuse_sense the same way (comp_cell, sense_cell).
     for name in ("efuse_bitcell", "efuse_ls", "efuse_rowdrv", "efuse_coldrv",
                  "efuse_comp", "efuse_sense"):
-        if name == "efuse_ls":
+        if name == "efuse_bitcell":
+            b.bitcell_cell(name)
+        elif name == "efuse_ls":
             b.ls_cell(name)
         elif name == "efuse_rowdrv":
             b.rowdrv_cell(name)
@@ -1029,17 +1193,14 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
         else:
             b.row_cell(name)
 
-    bit_w, bit_h = b.size(b.cells["efuse_bitcell"])
+    bit_w, _ = b.size(b.cells["efuse_bitcell"])
     rd_w, rd_h = b.size(b.cells["efuse_rowdrv"])
     cd_w, cd_h = b.size(b.cells["efuse_coldrv"])
     sa_w, sa_h = b.size(b.cells["efuse_sense"])
     pitch_x = max(bit_w, cd_w) + GAP_UM  # bit lines line up with the column drivers
-    pitch_y = max(bit_h, rd_h) + GAP_UM  # word lines line up with the row drivers
-
-    # efuse_row: 8 bitcells at the column pitch (one array instance).
-    row = b.layout.create_cell("efuse_row")
-    b.place(row, b.cells["efuse_bitcell"], 0.0, 0.0, 1, COLS, pitch_x)
-    b.cells["efuse_row"] = row
+    row = b.array_row_cell(pitch_x)  # 8 routed bitcells at the column pitch
+    _, row_h = b.size(row)
+    pitch_y = max(row_h, rd_h) + GAP_UM  # word lines line up with the row drivers
 
     t = b.layout.create_cell(top)
     b.place(t, row, 0.0, 0.0, ROWS, 1, 0.0, pitch_y)
@@ -1076,15 +1237,47 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
         "bbox_um": [round(v * emitted.dbu, 4) for v in (bb.left, bb.bottom, bb.right, bb.top)],
         "array": {"rows": ROWS, "cols": COLS, "pitch_x_um": round(pitch_x, 4),
                   "pitch_y_um": round(pitch_y, 4)},
-        "caveat": "placed hierarchy; efuse_ls, efuse_rowdrv, efuse_coldrv, "
-                  "efuse_comp and efuse_sense are routed (see 'routed'), every "
-                  "other cell is placement-only: no routing, no connectivity, "
-                  "no DRC/LVS claim outside those five",
-        "routed": {"cells": ["efuse_ls", "efuse_rowdrv", "efuse_coldrv",
-                             "efuse_comp", "efuse_sense"],
-                   "planes": {"m1": "device pads and guard-ring taps",
-                              "m2": "supply rails and horizontal runs",
+        "caveat": "placed hierarchy; efuse_bitcell, efuse_ls, efuse_rowdrv, "
+                  "efuse_coldrv, efuse_comp, efuse_sense and efuse_row are routed (see "
+                  "'routed'), every other cell is placement-only: no routing, no "
+                  "connectivity, no DRC/LVS claim outside those seven",
+        "routed": {"cells": ["efuse_bitcell", "efuse_ls", "efuse_rowdrv", "efuse_coldrv",
+                             "efuse_comp", "efuse_sense", "efuse_row"],
+                   "planes": {"m1": "device pads, guard-ring taps and the source-ring bridge",
+                              "m2": "supply rails, horizontal runs and stubs",
                               "m3": "vertical stubs and lanes"}},
+        "program_path": {
+            "claim": "path delivery only (spec section 3): no claim that the fuse "
+                     "changes state or that a pulse programs it",
+            "target": ">= 10 mA through the fuse at the worst corner (spec section 2, "
+                      "assumption A2: no PDK source)",
+            "simulated": "sim/corner-verification record 20261108T235928Z-f6eeac7: "
+                         "schematic-level, all 135 points pass; binding corner ss / "
+                         "125 C / vdd33 2.97 V / vprog 4.5 V / 260 ohm at 10.97 mA "
+                         "(its 20 ohm route is an assumption, not this layout)",
+            "current_limits": "none documented: the pinned PDK tree carries no metal "
+                              "or via current limit (searched the klt deck, the PDK "
+                              "DRC/LVS rule decks, libs.tech and libs.ref); the "
+                              "geometry below is recorded against the 10 mA target, "
+                              "not rated against a foundry limit",
+            "bitcell_segments": [
+                {"net": "bl", "entry": "fuse in pad (M1, 5.295 x 0.81 um, PDK)",
+                 "stack": "via1 x2 + M2 pad 0.97 x 0.42 + via2 x2 + M3 lane 0.97 wide"},
+                {"net": "fuse element", "layers": "PDK primitive, geometry unmodified "
+                 "(verify_fuse); not extractable as a device by the curated deck"},
+                {"net": "n", "entry": "fuse out pad (M1, 4.535 x 1.75 um, PDK)",
+                 "stack": "via1 x2, M2 run 6.82 x 0.42 um, via1 x3 on the 0.42 um "
+                          "select drain strap"},
+                {"net": "vss", "entry": "select source strap, 8.1 x 0.42 um M1",
+                 "stack": "M1 bridge 1.49 x 0.42 into the guard ring, via1 x2, "
+                          "M2 rail 0.42 um (row rail)"},
+            ],
+            "finding": "the narrowest points are the two 0.26 um via2 cuts at the bl "
+                       "entry and the two 0.26 um via1 cuts at the vss exit, one stack "
+                       "per bitcell; no documented GF180 current limit exists to rate "
+                       "them against 10 mA, so the metal delivery is an open item for "
+                       "the array-level program path (#307), widening or accepting them",
+        },
         "resistors": {"device": "ppolyf_u",
                       "rsh_ohm_sq": RSH_PPOLYF_U,
                       "source": "sm141064.ngspice .param rsh_ppolyf_u (350) and the "
