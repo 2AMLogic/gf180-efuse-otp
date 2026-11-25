@@ -3,14 +3,14 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 9,
-  "summary": "T1 item 9 (Testbenches shipped): 14/14 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 9 (Testbenches shipped): 16/16 attestation checks passed (klt signoff --attest)",
   "source": "signoff/attest/item9.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 14,
-    "passed_count": 14,
+    "check_count": 16,
+    "passed_count": 16,
     "checks": [
       {
         "check": "present",
@@ -25,6 +25,20 @@
         "path": "sim/lib/bench_record.py",
         "passed": true,
         "content_hash": "sha256:4a73ed5af3b49b734b91cb17dc5165f920d70a2eddacafd32467a8e1d46be70f"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/lib/sense_decision.py",
+        "passed": true,
+        "content_hash": "sha256:4b99c169e3ed7bed26a40eb5a8ff295a690bae2649e18be00b16e53a084c05ea"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "sim/lib/sense_request.sh",
+        "passed": true,
+        "content_hash": "sha256:82271adeab66f4fa67773945a119819721381a674827f9666f72c9f2bb7efae2"
       },
       {
         "check": "present",
@@ -52,7 +66,7 @@
         "role": "testbench",
         "path": "sim/sense-margin/run.sh",
         "passed": true,
-        "content_hash": "sha256:45a601e0fd0459660004d1f9166246be250f7e5df06dce60150b32eb164d4764"
+        "content_hash": "sha256:46174032cdeea8ffe6060f36140a2926af7455f7845a50792b5ebc8191b6fa5e"
       },
       {
         "check": "present",
@@ -66,7 +80,7 @@
         "role": "testbench",
         "path": "sim/sense-margin/summarize.py",
         "passed": true,
-        "content_hash": "sha256:089478a0d8ba92f1a3bf2dd7303ca92e56cd7a1f7e50e7e51e9fdbd5a6e9f6c3"
+        "content_hash": "sha256:5b87dadd6d0bcbd9240ddf9401fa61296e6dfdbfb4f2d7f60ac8d79a1d2519fb"
       },
       {
         "check": "present",
@@ -135,7 +149,7 @@
         "path": "signoff/attest/item9.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:6836e55d3ae1f9564ee6aa5066b400efc1ebd817ed4bb86f150a2ad4f358e736"
+      "content_hash": "sha256:420c8995bc0668aab795d251d103c2f4e212d7a45732b0ca6d9c29cd48903b35"
     }
   }
 }
