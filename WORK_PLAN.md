@@ -25,13 +25,16 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#306**: Route the eFuse bitcell and eight-bit row and verify their extracted connections
+_None._
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
+- **#35**: T1 item 5 (corner verification, digital): klt sta and klt functional-verification for the controller
 - **#118**: Make the CI record-format check read the committed sim records: its glob matches 0 of 15 and it passes vacuously
+- **#306**: Route the eFuse bitcell and eight-bit row and verify their extracted connections
+- **#389**: Program path and retention: check against the poly-fuse blow physics in the ADI / ESGI 2008 report
 
 ## PRs Awaiting Review
 
@@ -53,6 +56,7 @@ Issues carrying `loom:curated`.
 - **#33**: T1 item 11 (power delivery): klt erc supply spec for the 3.3 V, 5 V program and ground nets *(curated)*
 - **#118**: Make the CI record-format check read the committed sim records: its glob matches 0 of 15 and it passes vacuously *(curated)*
 - **#306**: Route the eFuse bitcell and eight-bit row and verify their extracted connections *(curated)*
+- **#389**: Program path and retention: check against the poly-fuse blow physics in the ADI / ESGI 2008 report *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -71,11 +75,11 @@ _None._
 | Operator merge-risk holds | 0 |
 | Very important | 1 |
 | Important | 1 |
-| Ready (`loom:issue`) | 1 |
-| In Progress (`loom:building`) | 1 |
+| Ready (`loom:issue`) | 0 |
+| In Progress (`loom:building`) | 4 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 1 |
-| Curated | 4 |
+| Curated | 5 |
 | Architect / Hermit proposals | 3 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->

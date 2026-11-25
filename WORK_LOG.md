@@ -2,6 +2,14 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-25
+
+- **PR #390**: docs: cross-check program path and add retention plan vs poly-fuse blow report
+- **Issue #389** (closed): Program path and retention: check against the poly-fuse blow physics in the ADI / ESGI 2008 report
+- **PR #393**: fix: load sense-mc reports through the shared partial-set check
+- **Issue #392** (closed): Reuse the shared report loader in sense-mc to reject truncated sample sets
+- **PR #387**: Restore Apache-2.0 licence ahead of going public
+
 ### 2026-11-24
 
 - **Issue #378** (closed): signoff/README.md: the T1 item 3 EF.* enumeration contradicts itself on EF.17

@@ -30,6 +30,7 @@ run "klt helper self-test" signoff/test-klt.sh
 run "bench_record load_reports self-test" python3 -I sim/lib/test_bench_record.py
 run "program-select summarize self-test" python3 -I sim/program-select/test_summarize.py
 run "sense-margin summarize self-test" python3 -I sim/sense-margin/test_summarize.py
+run "sense-breakeven summarize self-test" python3 -I sim/sense-breakeven/test_summarize.py
 
 printf -v checks '%s, ' "${ran[@]}"
 echo "check:ci OK -- hermetic checks only: ${checks%, }. This does NOT run the CI steps that need an EDA tool, the PDK or a diff base (verification/run.sh, rtl/synth.sh, the klt signoff steps, check_sim_append_only.py), so a green check:ci is not a prediction that CI will pass."
