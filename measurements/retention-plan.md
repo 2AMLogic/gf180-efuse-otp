@@ -1,6 +1,6 @@
 # Retention and re-connection plan
 
-Status: **plan only. Nothing here has been measured or simulated, and no
+Status: **plan only for retention (R1). Nothing about drift has been measured, and no
 silicon exists.** It adds an item the spec does not cover: the spec's "Cannot
 show" list names "read-disturb or post-program drift" (`spec/efuse-otp.md`
 section 3) and `grep -ri "retention\|reconnect"` over `spec/`, `measurements/`,
@@ -40,33 +40,36 @@ question is how far a programmed fuse can fall before it reads as intact.
 
 - **Covered by committed records.** The A5 lower edge is 630 ohm
   (900 ohm minus 30 %, an assumption). At 630 ohm all 45 corners read the
-  correct side; minimum signed margin is 0.0260 V at `ss`, 125 C, 2.97 V
-  (`sim/sense-margin/records/20261109T002043Z-f6eeac7/record.json`,
-  `fuses["630"]`). So a drift from the documented 900 ohm down to 630 ohm is
-  covered, by assumption A5.
-- **Break-even is bracketed by records, not recorded.** The 260 ohm intact
-  point (minimum signed margin 0.0160 V) and the 630 ohm programmed point read
-  on opposite sides of the reference at every corner of the same record. So the
-  zero-margin resistance lies between 260 and 630 ohm at every corner. No
-  committed record holds a point inside that interval, so no record gives the
-  break-even value itself.
-- **Estimate, not a record.** Linearly interpolating `margin_v`
-  (`v(sbl) - v(sref)`) between the 260 and 630 ohm points of that record puts
-  the zero crossing at 400.7 to 400.8 ohm across all 45 corners, i.e. at the
-  400 ohm reference (what a current comparison against a resistor reference
-  should give). It is a two-point interpolation of a nonlinear quantity and is
-  only an estimate. A programmed fuse that drifted below roughly 400 ohm would
-  be expected to read as intact; between about 400 and 630 ohm the bit is
-  expected to read correctly but lies outside A5 and has no record.
+  correct side. Latest sense-margin record
+  (`sim/sense-margin/records/20261123T140330Z-f6eeac7/record.json`, committed
+  physical `ppolyf_u` `XRb`/`XRref`): minimum signed margin at 630 ohm is
+  0.0253 V against the ideal 400 ohm stand-in and 0.0210 V against the
+  physical `XRref` (`ss`, 125 C, 2.97 V). So a drift from the documented 900 ohm
+  down to 630 ohm is covered, by assumption A5. A8 applies: fs/sf keep the
+  typical resistor sheet rho.
+- **Break-even is measured.** A programmed-resistance sweep (300 to 540 ohm in
+  40 ohm steps, 45 corners per point, batch) is committed at
+  `sim/sense-breakeven/records/20261125T093522Z-f6eeac7/record.json`. The
+  zero-margin resistance, interpolated between swept points:
+  - against the ideal 400 ohm reference: 400.69 to 400.72 ohm across all 45
+    corners (spread 0.03 ohm);
+  - against the committed physical `XRref`: **327.91 ohm (`ff`, 125 C, 3.63 V)
+    to 471.99 ohm (`ss`, -40 C, 2.97 V)**, a 144 ohm spread. A programmed fuse
+    that drifted below about 472 ohm can read as intact at the worst corner.
+    Between 472 and 630 ohm the bit reads correctly at every corner, so the A5
+    edge keeps about 158 ohm of headroom, outside A5 only below 630 ohm. The
+    interpolation interval is 40 ohm; it is still an interpolation of a
+    nonlinear quantity, but it now rests on a committed sweep.
 - **What it does not cover.** The bench fuse is an ideal resistor behind a
   switch. Reference tolerance and offset are covered only at the 630 ohm and
-  260 ohm edges by `sim/sense-mc/` (Monte Carlo, 0 failing of 540 each), which
-  uses an assumed reference-tolerance sigma. None of it says a real fuse drifts
-  to any of these values, or how fast; that is what R1 would measure.
-- **Not done here.** A direct break-even needs a sense-margin run over a
-  programmed-resistance sweep through `klt sim` (batch, `--wait-for-capacity
-  600`) with a new append-only record under `sim/`. That is a follow-up, not
-  part of this plan; any A5 change would need a decision record.
+  260 ohm edges by Monte Carlo
+  (`sim/sense-mc/records/20261123T140937Z-f6eeac7/record.json`: 0 of 540
+  failing for both the ideal 400 ohm and the physical `XRref` nominals;
+  physical-reference minimum analog margin 17.1 mV at 630 ohm and 3.9 mV at
+  260 ohm; A7/A8 noted), which uses an assumed reference-tolerance sigma. None
+  of it says a real fuse drifts to any of these values, or how fast; that is
+  what R1 would measure. Any A5 change would need a decision record; none is
+  proposed here.
 
 ## Related questions, recorded without design
 
