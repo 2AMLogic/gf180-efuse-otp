@@ -378,31 +378,34 @@ class Builder:
             reg = kdb.Region(cell.begin_shapes_rec(li)).sized(round(grow / DBU_UM))
             cell.shapes(li).insert(reg)
 
-    def bbox(self, cell):
-        return self.footprint(cell)
-
     def footprint(self, cell):
-        """The bbox placement and routing are floorplanned against: a leaf's
-        drawn extent before grow_mv_pmos_wells widened its Nwell/Dualgate."""
+        """A leaf's drawn extent before grow_resistor_implants /
+        grow_mv_pmos_wells widened its implants: the extent y placement (and
+        nothing that steps a cursor) is floorplanned against."""
         return self.anchor.get(cell.cell_index(), cell.bbox())
 
     def place(self, parent, child, x_um, y_um, rows=1, cols=1, pitch_x_um=0.0, pitch_y_um=0.0,
               away_x=True, away_y=True, rot=0):
-        """Instance of child with its (rotated) bbox lower-left at (x_um, y_um),
-        snapped; returns the transform.
+        """Instance of child with its (rotated) grown bbox left at x_um and its
+        (rotated) footprint bottom at y_um, snapped.
 
         rot is a klayout rotation index (0..3, no mirroring; 2 = 180 deg) --
         the bbox is rotated first and its lower-left landed on the rule grid,
-        exactly as for rot=0. The child's bbox edges are vertices (guard
-        rings; the PDK fuse stream's own origin is off the grid by one stream
-        dbu), so landing the lower-left on the rule grid puts every vertex on
-        it. The lower-left is rounded away from the placed neighbours (up, or
-        down with away_* False) so the clearance is never reduced; the pitches
-        are rounded up to the grid.
+        exactly as for rot=0. x anchors on the grown bbox().left -- the same
+        extent every row cursor steps on -- so the grown-to-grown separation is
+        GAP_UM whatever each neighbour's west overhang (#376); y stays on the
+        pre-growth footprint, which no cursor steps on. The child's bbox edges
+        are vertices (guard rings; the PDK fuse stream's own origin is off the
+        grid by one stream dbu), so landing them on the rule grid puts every
+        vertex on it. Both edges are rounded away from the placed neighbours
+        (up, or down with away_* False) so the clearance is never reduced; the
+        pitches are rounded up to the grid. Returns the applied displacement in
+        um: port tables computed from the child's own reported coordinates must
+        add it (after any rotation) to land on the drawn pads.
         """
-        bb = self.footprint(child).transformed(kdb.Trans(rot, False, 0, 0))
-        dx = snap(round(x_um / DBU_UM), away_x) - bb.left
-        dy = snap(round(y_um / DBU_UM), away_y) - bb.bottom
+        rot_t = kdb.Trans(rot, False, 0, 0)
+        dx = snap(round(x_um / DBU_UM), away_x) - child.bbox().transformed(rot_t).left
+        dy = snap(round(y_um / DBU_UM), away_y) - self.footprint(child).transformed(rot_t).bottom
         trans = kdb.Trans(rot, False, dx, dy)
         if rows == 1 and cols == 1:
             parent.insert(kdb.CellInstArray(child.cell_index(), trans))
@@ -412,9 +415,16 @@ class Builder:
                 child.cell_index(), trans,
                 kdb.Vector(snap(round(pitch_x_um / DBU_UM)), 0),
                 kdb.Vector(0, snap(round(pitch_y_um / DBU_UM))), cols, rows))
-        return trans
+        return dx * DBU_UM, dy * DBU_UM
 
     def size(self, cell):
+        """A composite cell's extent for the top-level floorplan. Refuses a
+        grown leaf (an anchor entry) outright: place() anchors x on the grown
+        bbox (#379), so a pre-growth width handed out here and stepped into
+        a cursor would re-create #376 -- every cursor steps on bbox()."""
+        assert cell.cell_index() not in self.anchor, \
+            f"{cell.name}: size() takes composite cells only; a grown leaf's " \
+            "pre-growth width must not step a cursor -- use bbox()"
         bb = self.footprint(cell)
         return bb.width() * DBU_UM, bb.height() * DBU_UM
 
@@ -426,7 +436,11 @@ class Builder:
             child = (self.cells[inst["master"]] if inst["kind"] == "x" and inst["master"] in self.netlist
                      else self.leaf(subckt, inst))
             self.place(cell, child, x, 0.0)
-            x += self.size(child)[0] + GAP_UM + GRID_DBU * DBU_UM  # snap slack
+            # Both sides on the grown extent: place() lands child.bbox().left
+            # at x (as _row_place_all's units do), and the cursor steps on
+            # child.bbox().width(), so the grown-to-grown separation keeps
+            # GAP_UM whatever each neighbour's overhang (#376).
+            x += child.bbox().width() * DBU_UM + GAP_UM + GRID_DBU * DBU_UM  # snap slack
         self.cells[subckt] = cell
         return cell
 
@@ -476,7 +490,8 @@ class Builder:
                     pads[t.text.string] = b.box
             fuse.shapes(lbl_i).erase(t)
         assert set(pads) == {"in", "out"}, "PDK fuse cell must carry in/out pad texts"
-        t0 = self.place(cell, fuse, 0.0, 0.0)
+        dx0, dy0 = self.place(cell, fuse, 0.0, 0.0)
+        t0 = kdb.Trans(round(dx0 / DBU_UM), round(dy0 / DBU_UM))
         pin, pout = pads["in"].transformed(t0), pads["out"].transformed(t0)
         yc = pin.center().y * DBU_UM
         assert abs(yc - BC_PAD_Y) < 1e-9 and abs(pout.center().y * DBU_UM - yc) < 1e-9, \
@@ -486,7 +501,8 @@ class Builder:
         # south, TAP_W is the ring's east strap.
         sel = self.leaf(subckt, s)
         rep = self.reports[f"{subckt}__Xsel"]
-        t1 = self.place(cell, sel, BC_SEL_X, 0.0, rot=2)
+        dx1, dy1 = self.place(cell, sel, BC_SEL_X, 0.0, rot=2)
+        t1 = kdb.Trans(2, False, round(dx1 / DBU_UM), round(dy1 / DBU_UM))
 
         def port(name):
             p = next(p for p in rep["ports"] if p["name"] == name)
@@ -546,13 +562,15 @@ class Builder:
         first bitcell's instances (wl, vss) and on each column's fuse in
         pad (bl[i]).
         """
+        assert hasattr(self, "bc_ports"), "bitcell_cell must run before array_row_cell"
         cell = self.layout.create_cell("efuse_row")
         bit = self.cells["efuse_bitcell"]
         # Identity placement (target = the bitcell's own bbox origin, which is
         # on the grid): the rails below are stated in bitcell coordinates, so
         # the instances must not be shifted to a different origin.
         bb = bit.bbox()
-        self.place(cell, bit, 0.0, bb.bottom * DBU_UM, 1, COLS, pitch_x)
+        assert bb.left == 0, f"efuse_bitcell bbox left {bb.left} != 0"
+        self.place(cell, bit, bb.left * DBU_UM, bb.bottom * DBU_UM, 1, COLS, pitch_x)
         w = gs((COLS - 1) * pitch_x + self.size(bit)[0])
         self._box(cell, LS_M2, 0.0, ROW_WL_RAIL_Y[0], w, ROW_WL_RAIL_Y[1])
         self._box(cell, LS_M2, 0.0, ROW_VSS_RAIL_Y[0], w, ROW_VSS_RAIL_Y[1])
@@ -591,10 +609,9 @@ class Builder:
         for iname, inst in insts.items():
             child = self.leaf(subckt, inst)
             rep = self.reports[f"{subckt}__{iname[1:]}"]
-            x0, y0 = rep["bbox_um"]["x0"], rep["bbox_um"]["y0"]
             col, row = LS_COL_X[iname], LS_ROW_Y[iname]
-            self.place(cell, child, col, row)
-            ports[iname] = {p["name"]: (gs(col + p["x_um"] - x0), gs(row + p["y_um"] - y0),
+            dx, dy = self.place(cell, child, col, row)
+            ports[iname] = {p["name"]: (gs(dx + p["x_um"]), gs(dy + p["y_um"]),
                                         p["width_um"], p["direction_deg"])
                             for p in rep["ports"]}
         # Create the routing layers before any shape is drawn, in the order
@@ -858,12 +875,11 @@ class Builder:
             rep = self.reports[f"{subckt}__{inst['name'][1:]}"]
             for k in range(int(inst["params"].get("m", "1"))):
                 units.append((inst["name"], inst, child, rep, x, k))
-                x = gs(x + (rep["bbox_um"]["x1"] - rep["bbox_um"]["x0"]) + GAP_UM + 0.01)
+                x = gs(x + child.bbox().width() * DBU_UM + GAP_UM + 0.01)
         rail_x = {n: [] for n in SUPPLY}
         for iname, inst, child, rep, col, k in units:
-            self.place(cell, child, col, 0.0)
-            x0, y0 = rep["bbox_um"]["x0"], rep["bbox_um"]["y0"]
-            pt = {p["name"]: (gs(col + p["x_um"] - x0), gs(0.0 + p["y_um"] - y0), p["width_um"])
+            dx, dy = self.place(cell, child, col, 0.0)
+            pt = {p["name"]: (gs(dx + p["x_um"]), gs(dy + p["y_um"]), p["width_um"])
                   for p in rep["ports"]}
             d, g, s, b = inst["nodes"]
             if s == b and b in SUPPLY:
@@ -937,9 +953,8 @@ class Builder:
                     "top": bb.top * DBU_UM, "dx": dx * DBU_UM, "sub": inst["master"]}
         child = self.leaf(subckt, inst)
         rep = self.reports[f"{subckt}__{inst['name'][1:]}"]
-        self.place(cell, child, x, 0.0)
-        x0, y0 = rep["bbox_um"]["x0"], rep["bbox_um"]["y0"]
-        pt = {p["name"]: (gs(x + p["x_um"] - x0), gs(0.0 + p["y_um"] - y0), p["width_um"])
+        dx, dy = self.place(cell, child, x, 0.0)
+        pt = {p["name"]: (gs(dx + p["x_um"]), gs(dy + p["y_um"]), p["width_um"])
               for p in rep["ports"]}
         bb = child.bbox()
         return {"iname": inst["name"], "inst": inst, "child": child, "rep": rep,

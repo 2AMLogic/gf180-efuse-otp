@@ -6,17 +6,17 @@ The block's verdict of record against the klayout-tools evidence tiers.
 |---|---|
 | `attest/item10.json` | `t1-attestation-inventory` for T1 item 10, repo hygiene: the hygiene files and the bare-runner harness checks (checker self-tests, evidence-format check). |
 | `attest/item10.envelope.json` | Envelope emitted by `klt signoff --attest 10`; cited for `10` in `block-manifest.json`, pinned by the inventory's sha256. |
-| `attest/item8.json` | `t1-attestation-inventory` for T1 item 8, characterization report (klayout-tools 0.9.0 schema): the report `measurements/characterization/README.md`, the records each spec row cites, a presence check per cited record, and the controller Fmax, power and area bound per `klt sta` corner. P08, P09, P10 and C2 cite the graded post-#85 sense-margin corner reports (`sim/sense-margin/records/20261109T002043Z-f6eeac7`) and, for P10 and C2, the `sim/sense-mc` yield reports. Those citations say the bench evidence exists and is graded; the ranges behind it (A4-A6, reference-tolerance sigma) stay `ASSUMPTION`s in the report. |
+| `attest/item8.json` | `t1-attestation-inventory` for T1 item 8, characterization report (klayout-tools 0.9.0 schema): the report `measurements/characterization/README.md`, the records each spec row cites, a presence check per cited record, and the controller Fmax, power and area bound per `klt sta` corner. P08, P09, P10 and C2 cite the graded post-#85 sense-margin corner reports (`sim/sense-margin/records/20261109T002043Z-f6eeac7`) and, for P10 and C2, the `sim/sense-mc` yield reports; P02 and P13 cite the committed partition DRC reports, curated and PDK-native. Those citations say the bench evidence exists and is graded; the ranges behind it (A4-A6, reference-tolerance sigma) stay `ASSUMPTION`s in the report. |
 | `attest/item8.envelope.json` | Envelope emitted by `klt signoff --attest 8`; cited for `8.analog` and `8.digital` in `block-manifest.json`, pinned by the inventory's sha256. |
 | `attest/item9.json` | `t1-attestation-inventory` for T1 item 9, testbenches shipped: the controller, program-select and sense-margin bench files, the shared record-provenance module `sim/lib/bench_record.py` both analog summarizers import, the cold-start command `sim/cold-start.sh` (`local_only`), and the PDK and tool pins. |
 | `attest/item9.envelope.json` | Envelope emitted by `klt signoff --attest 9`; cited for `9` in `block-manifest.json`, pinned by the inventory's sha256. |
-| `block-manifest.json` | Block name, kind (`mixed-signal`), the `partition_boundary` (analog and digital nets) and the `evidence` map (`1.digital`, `1.analog`, `2.digital`, `2.analog`, `4.digital`, `8.digital`, `8.analog`, `9`, `10`, `11.digital`). |
+| `block-manifest.json` | Block name, kind (`mixed-signal`), the `partition_boundary` (analog and digital nets) and the `evidence` map (`1.digital`, `1.analog`, `2.digital`, `2.analog`, `3.analog`, `3.digital`, `4.digital`, `8.digital`, `8.analog`, `9`, `10`, `11.digital`). |
 | `item2-analog.attest.json` | Envelope emitted by `klt signoff --attest 2 --input layout/efuse_otp_array.gds` (via `layout/attest.sh`): binds the stream by sha256 with a regeneration claim (`layout/regen-gds.sh`); cited for `2.analog`. |
 | `item6-digital-spec.json`, `item6-digital-statement.json` | Item 6, digital: the `not_applicable` form. The spec is a verbatim extract of the digital-bearing rows of `spec/efuse-otp.md` section 2, bound to it by sha256 (`signoff/check-item6-digital.sh`, run in CI); the statement gives each row's non-statistical class and reason. Both are hash-bound in `block-manifest.json` (`6.digital`). |
 | `check-item6-digital.sh` | Fails when `spec/efuse-otp.md` changes (sha256) or an extract row no longer matches a line of it. Run after any spec change, re-derive the extract, then re-hash the manifest. |
-| `block-manifest.signoff.json` | Committed `klt signoff --manifest` output: the verdict of record. Items 1, 2, 8, 9 and 10 are `met` for both partitions; item 5 is `met` (analog); item 6 is `met` (analog) and `not_applicable` (digital); item 4 is `met` (digital, cited `layout/lvs-ctrl.report.json`); item 11 is `met` (digital, the compound `erc`/`lvs`/`place-and-route` citation below); every other T1 row is `unmet` / `no_evidence`, and the T2, T3 and T4 rows are `unmet` / `tier_not_supported`. Item 6 analog `met` means the campaign discipline holds for the cited `margin_v` evidence (recorded seed, sufficient samples, detected negative control); it does not say the sense row is established, see `sim/sense-mc/README.md`. |
+| `block-manifest.signoff.json` | Committed `klt signoff --manifest` output: the verdict of record. Items 1, 2, 3, 8, 9 and 10 are `met` for both partitions (item 3 through the compound curated-plus-native DRC citations below); item 5 is `met` (analog); item 6 is `met` (analog) and `not_applicable` (digital); item 4 is `met` (digital, cited `layout/lvs-ctrl.report.json`); item 11 is `met` (digital, the compound `erc`/`lvs`/`place-and-route` citation below); every other T1 row is `unmet` / `no_evidence`, and the T2, T3 and T4 rows are `unmet` / `tier_not_supported`. Item 6 analog `met` means the campaign discipline holds for the cited `margin_v` evidence (recorded seed, sufficient samples, detected negative control); it does not say the sense row is established, see `sim/sense-mc/README.md`. |
 | `../sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/{intact,prog}.yield.json` | Item 6, analog: the cited `klt yield` reports (`margin_v` only, post-#85 comparator), one per fuse population, cited with `rows: [P10]` in `block-manifest.json` (`6.analog`). The `*.decision.yield.json` files in the same record are not cited. Item 5 analog cites the six `bench_*` sense-margin corner reports of `sim/sense-margin/records/20261109T002043Z-f6eeac7` for P10 (they declare `margin_v >= 0`, signed so positive is the correct side; the `control_*` reports are not cited, the 260 ohm control fails by design) and reads `met`. |
-| `../layout/drc-*.report.json` | T1 item 3 stays uncited. Both partition reports are clean under the curated deck. The full native reports have zero findings for both the array and the controller (the array's `V2.4b`/`V2.4c` findings were cleared by #308, the generated-core findings by #309). Density fill cleared eight markers per partition on the 0.001 µm streams. See [layout DRC results](../layout/README.md#drc-t1-item-3) and [#60](https://github.com/2AMLogic/gf180-efuse-otp/issues/60). |
+| `../layout/drc-*.report.json` | T1 item 3, cited for both partitions as the two-member compound `[curated, native]` evidence list (`3.analog`: `layout/drc-array.report.json` + `layout/drc-array.native.report.json`; `3.digital`: `layout/drc-ctrl.report.json` + `layout/drc-ctrl.native.report.json`), each member pinned to its report's `provenance.input.content_hash` and graded `met` (`members_covered: 2`, `input_verified: true`; #60). Both members of both partitions are `status: "clean"` with 0 violations; the native reports check all 27 foundry `EF.*` rules with 0 eFuse markers. Each graded citation copies three fields from its report's `coverage` block (`layers_in_stream_without_rules`, `rules_skipped` and `deck_scope`). The item 3 disclosure below gives their values and explains the scope of each partition's result. See also [layout DRC results](../layout/README.md#drc-t1-item-3). |
 | `../layout/lvs-ctrl.report.json` | Committed `klt lvs` report for T1 item 4, digital (`layout/lvs.sh`): `status: match` with `power_connectivity.status: match` against `layout/efuse_otp_ctrl.asbuilt.v` under the curated deck (same deck hash as the DRC reports, klt 0.9.2 — the pin), cited for `4.digital`. What the `match` reaches (and does not) is in `layout/README.md`, "LVS"; the re-run procedure is below. |
 | `../layout/erc-ctrl.spec.json` | The `klt erc` supply spec for T1 item 11, digital: `VDD`/`VSS` as `kind: "supply"` nets, a stackup through every strap layer `layout/pnr-report.json` reports (Metal1-Metal5 with Contact/Via1-Via4), and the two well/substrate ties (n-well tap `Comp∩Nplus` in `Nwell` → VDD; p-substrate tap `Comp∩Pplus` outside `Nwell` → VSS). Layer numbers are the curated gf180mcu deck's own; the file documents each choice. |
 | `../layout/erc-ctrl.report.json` | Committed `klt erc --findings-only` report for T1 item 11, digital (`layout/erc.sh`, pinned klt, `--deck gf180mcu`): `erc_status: clean`, `VDD` and `VSS` each `matched_islands: 1`, zero findings, no skipped or inapplicable work, `erc.supply_short.substrate` checked (the deck's DNWELL isolation makes the substrate pass decidable), input hash = the `efuse_otp_ctrl.gds` sha256. Cited as the leading `erc` part of the compound `11.digital` set beside `lvs-ctrl` and `pnr-report` (`klt signoff` grades the compound; the citation's `power_delivery` block records what it resolved). `layout/erc.sh --check` re-hashes input, spec and deck against it (CI runs this); `--negative-control` proves the spec can fail (CI runs this too). The antenna half is deliberately not graded (`status: not_checked`, klt exit 4): item 11 grades the `erc_findings` supply rules only. `erc_coverage.layers_in_stream_without_declaration` (quoted, claimant-enforced by item 11): `21/10`, `63/63`, `204/10`. Measured on the committed stream: all three carry text only and no polygons, so none is conductor or strap geometry and none is a declared stackup layer (Poly, Metal1-Metal5). `21/10` holds 1178 `VNW` texts and `204/10` 1178 `VPW` texts (the foundry cells' well-pin names), `63/63` holds 5684 foundry-library comment texts (`& Vendor`, `& Product`, `& Version`, `& Metric`, 1421 each). The list is a strict subset of the digital DRC `layers_in_stream_without_rules` row: the four that drop out are `34/10`, `36/10`, `81/10` (the spec's three `label_layers`) and `0/0` (1422 polygons, bounding boxes equal to cell pitch by row height, e.g. 560x3920 nm for `fill_1`, consistent with a cell outline); why klt's ERC list omits `0/0` was not investigated. The well ties are declared in the spec (`nwell_vdd`, `psub_vss`), not derived from these texts. |
@@ -28,6 +28,120 @@ The block's verdict of record against the klayout-tools evidence tiers.
 | `item1-digital.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.digital` in `block-manifest.json`, pinned by the envelope's own composite `provenance.input.content_hash` (see "Re-attest item 1 (digital)"). |
 | `item1-analog-inventory.json` | `t1-attestation-inventory` for T1 item 1, analog: the xschem schematics and cell symbols in `design/` and the netlist `design/efuse_otp_array.spice`, whose freshness `check` is `design/regen-netlist.sh --check` (`local_only`: it needs xschem). |
 | `item1-analog.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.analog`, pinned by the envelope's own composite `provenance.input.content_hash` (see "Re-attest item 1 (analog)"). |
+
+## T1 item 3 disclosure (DRC coverage quoted from the cited envelopes)
+
+`3.analog` and `3.digital` cite a two-member compound evidence list per
+partition — the curated report first, then the PDK-native report — each member
+pinned by its report's `provenance.input.content_hash`. The SHA-256 prefixes
+are `5e553ab4…` for `layout/efuse_otp_array.gds` and `b80bfb50…` for
+`layout/efuse_otp_ctrl.gds`. Both members grade `met` with `status: "clean"`
+and `input_verified: true`.
+
+In the graded record, `citations[].coverage` copies three fields verbatim
+from each report — `layers_in_stream_without_rules`, `rules_skipped` and
+`deck_scope`. All three arrays are empty for each native citation. To verify
+the 27 foundry `EF.*` rule IDs, read `coverage.rules_checked` in the cited
+native DRC report. The claimant discloses the coverage gaps and scope below.
+Reviewers assess that disclosure separately from the automated grade.
+
+### Curated envelope, analog — `layout/drc-array.report.json`
+
+- `coverage.layers_in_stream_without_rules` (8): `22/4`, `30/4`, `34/4`,
+  `34/10`, `36/4`, `42/4`, `46/4`, `81/4`. The seven `/4` entries are the
+  density-fill dummy datatypes (#310). `34/10` is the Metal1 label layer.
+- `coverage.rules_skipped` (55): `bjt.separation.comp.1`, `cap_mk.ongrid.1`,
+  `comp.separation.guard_ring_mk.1`, `diode_mk.ongrid.1`, `dnwell.ongrid.1`,
+  `drc_bjt.ongrid.1`, `esd.area.1`, `esd.holes_area.1`, `esd.overlap.comp.1`,
+  `esd.separation.nplus.1`, `esd.separation.pplus.1`, `esd.space.1`,
+  `esd.width.1`, `fusetop.ongrid.1`, `ldmos_xtor.enclosing.mvpsd.1`,
+  `metal1.separation.guard_ring_mk.1`, `metal2.separation.guard_ring_mk.1`,
+  `metal3.enclosing.via3.1`, `metal3.separation.guard_ring_mk.1`,
+  `metal4.enclosing.via3.1`, `metal4.enclosing.via4.1`, `metal4.ongrid.1`,
+  `metal4.separation.guard_ring_mk.1`, `metal4.space.1`, `metal4.width.1`,
+  `metal5.enclosing.via4.1`, `metal5.ongrid.1`,
+  `metal5.separation.guard_ring_mk.1`, `metal5.space.1`, `metal5.width.1`,
+  `metaltop.ongrid.1`, `metaltop.separation.guard_ring_mk.1`,
+  `metaltop.space.1`, `metaltop.width.1`, `mim.enclosing.fusetop.1`,
+  `mim.enclosing.via4.1`, `mim.space.1`, `mim_l_mk.ongrid.1`,
+  `mvpsd.ongrid.1`, `mvsd.ongrid.1`, `mvsd.separation.dnwell.1`,
+  `mvsd.width.1`, `nwell.separation.guard_ring_mk.1`,
+  `pad.enclosing.metal5.1`, `pad.ongrid.1`, `plfuse.separation.esd.1`,
+  `plfuse.separation.resistor.1`, `poly2.separation.guard_ring_mk.1`,
+  `resistor.ongrid.1`, `via3.ongrid.1`, `via3.space.1`, `via3.width.1`,
+  `via4.ongrid.1`, `via4.space.1`, `via4.width.1`.
+- `coverage.deck_scope` (19): 10.4.2 MIM Option B, 10.7 DRC_BJT Mark Layer,
+  7.12 Contact, 7.13 Metaln, 7.14 Vian, 7.15 MetalTop, 7.4 Nwell, 7.5 Comp,
+  7.7 Poly2, 7.8 Nplus, 7.9 Pplus, 9.1 Bond Pad, EF, ESD, GR, MDN, MDP,
+  OFFGRID, SB.
+
+### Curated envelope, digital — `layout/drc-ctrl.report.json`
+
+- `coverage.layers_in_stream_without_rules` (14): `0/0`, `21/10`, `22/4`,
+  `30/4`, `34/4`, `34/10`, `36/4`, `36/10`, `42/4`, `46/4`, `63/63`, `81/4`,
+  `81/10`, `204/10`. The seven `/4` entries are the density-fill dummy
+  datatypes (#310); the rest are text/outline layers (`0/0` cell outlines,
+  `21/10`/`204/10` well-pin texts, `63/63` foundry comment texts, the
+  `34/10`/`36/10`/`81/10` label layers — the same reading `layout/README.md`
+  gives the ERC declaration list).
+- `coverage.rules_skipped` (54): `bjt.separation.comp.1`, `cap_mk.ongrid.1`,
+  `comp.separation.guard_ring_mk.1`, `comp.tap_distance.nwell.lv.1`,
+  `comp.tap_distance.psub.lv.1`, `diode_mk.ongrid.1`, `dnwell.ongrid.1`,
+  `drc_bjt.ongrid.1`, `efuse_mk.enclosing.lvs_source.1`, `efuse_mk.ongrid.1`,
+  `efuse_mk.space.1`, `esd.area.1`, `esd.holes_area.1`, `esd.overlap.comp.1`,
+  `esd.separation.nplus.1`, `esd.separation.pplus.1`, `esd.space.1`,
+  `esd.width.1`, `fusetop.ongrid.1`, `ldmos_xtor.enclosing.mvpsd.1`,
+  `metal1.separation.guard_ring_mk.1`, `metal2.separation.guard_ring_mk.1`,
+  `metal3.separation.guard_ring_mk.1`, `metal4.separation.guard_ring_mk.1`,
+  `metal5.separation.guard_ring_mk.1`, `metaltop.ongrid.1`,
+  `metaltop.separation.guard_ring_mk.1`, `metaltop.space.1`,
+  `metaltop.width.1`, `mim.enclosing.fusetop.1`, `mim.enclosing.via4.1`,
+  `mim.space.1`, `mim_l_mk.ongrid.1`, `mvpsd.ongrid.1`, `mvsd.ongrid.1`,
+  `mvsd.separation.dnwell.1`, `mvsd.width.1`, `nwell.separation.guard_ring_mk.1`,
+  `pad.enclosing.metal5.1`, `pad.ongrid.1`, `plfuse.ongrid.1`,
+  `plfuse.separation.comp.1`, `plfuse.separation.esd.1`,
+  `plfuse.separation.nplus.1`, `plfuse.separation.resistor.1`,
+  `plfuse.separation.sab.1`, `poly2.enclosing.sab.1`,
+  `poly2.separation.guard_ring_mk.1`, `res_mk.ongrid.1`, `resistor.ongrid.1`,
+  `sab.ongrid.1`, `sab.separation.contact.1`, `sab.space.1`, `sab.width.1`.
+  All nine eFuse-layer rules are skipped here — the digital partition draws no
+  `PLFUSE`/`EFUSE_MK`.
+- `coverage.deck_scope` (19): identical to the analog list above.
+
+### Native envelopes — `layout/drc-array.native.report.json`, `layout/drc-ctrl.native.report.json`
+
+Both native envelopes record `coverage.layers_in_stream_without_rules: []`,
+`coverage.rules_skipped: []` and `coverage.deck_scope: []`. Those three arrays
+are the curated deck's introspection fields; the engine-native run (the PDK
+main script `tech/drc/gf180mcu.drc`, `decks=all`) does not populate them and
+klt leaves them empty rather than measuring a native equivalent. What the
+native envelope records instead is `coverage.rules_checked`: 763 rule
+categories with `coverage_assertion.satisfied: true`, including all 27 foundry
+`EF.*` IDs. Of those, 24 appear in the curated deck's
+`coverage.unmodeled_rules` (`EF.01`–`EF.03`, `EF.04a`–`EF.04d`,
+`EF.05`–`EF.13`, `EF.15`, `EF.16a`, `EF.16b`, `EF.18`, `EF.19`, `EF.21`,
+`EF.22a` and `EF.22b`). The other three are `EF.14`, `EF.17` and `EF.20`.
+
+The native deck emits a global-density category only on a finding. Both
+native reports have zero findings, so `DCF.1b`, `PL.8`, `M1.4`–`M5.4` and
+`MT.3` are absent from `coverage.rules_checked`. For the array, the fill
+generator records the layer ratios and passing bounds in
+[`fill-array.report.json`](../layout/fill-array.report.json). For the
+controller, the deck logger captured the ratios for all eight rules in a
+standalone run. The [density table](../layout/README.md#density-fill-310)
+lists the ratios beside each stream's SHA-256.
+
+### Scope caveats on the `EF.*` zero-marker result
+
+1. **The controller's 0 `EF.*` markers are vacuous.** `efuse_otp_ctrl` draws
+   no `PLFUSE`/`EFUSE_MK`, so the foundry fuse rules have no geometry to act
+   on in that stream; only `layout/efuse_otp_array.gds` exercises them.
+2. **The array is placement-only outside the seven routed cells**
+   (`efuse_bitcell`, `efuse_ls`, `efuse_rowdrv`, `efuse_coldrv`, `efuse_comp`,
+   `efuse_sense`, `efuse_row`; `layout/README.md`, "What is not claimed"). The
+   DRC claim covers the committed stream as placed and filled — the unrouted
+   array top and the fuse cells' own placement are inside it, but full-array
+   routing (#32) is not.
 
 ## Regenerate the record
 

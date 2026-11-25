@@ -87,10 +87,21 @@ layout/lvs.sh                 # rewrite the LVS reports (lvs-ctrl needs the PDK;
 layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-analog.attest.json)
 ```
 
-The filled array hashes to `328e95c16d5f6e3c4b6dac8b11bee6170353e81ba9485b80cd7ff6d51d9b8f86`.
-This PR's `efuse_bitcell` / `efuse_row` routing (select NFET placed rotated 180° with the bitcell's four nets drawn, plus the row's shared wl/vss rails and per-column bl lanes, see below) changed the filled stream from `fb7df824035300e7f4bf01d05a45970f911c5034eaa32b0c1c96cec07df3f25d`; the fuse geometry is unchanged (`verify_fuse` guards it).
+The filled array hashes to `5e553ab4dd5bf90555423260ff6f40e9f4bd611277fe37d775b22963559a51c9`.
+This PR's `efuse_bitcell` / `efuse_row` routing (select NFET placed rotated 180° with the bitcell's four nets drawn, plus the row's shared wl/vss rails and per-column bl lanes, see below) changed the filled stream from `0ba0e28ab9a9efd531d5c190863b96c9edda5a6770c3e8f6e3c8c356ba16d806`; the fuse geometry is unchanged (`verify_fuse` guards it).
 At open_pdks `f6eeac7`, `regen-gds.sh --check` rebuilds and byte-compares
-the filled 0.001 µm stream and its fill report. The third Metal2 fill pass (#365) changed the filled stream from `48c590fc6095311d9c286d3d2093e004952aef7585eb2ac28c18dfa5f8918d9c`: 1404
+the filled 0.001 µm stream and its fill report. Before that, the grown-left placement fix (#376) changed the filled stream from `fb7df824035300e7f4bf01d05a45970f911c5034eaa32b0c1c96cec07df3f25d`:
+`place()` now lands a grown leaf's west (grown) bbox edge at the cursor x — the same
+extent the row cursors step on — instead of its pre-growth west edge, so a grown leaf
+after an ungrown neighbour keeps the full `GAP_UM` grown separation. The drawn geometry
+that moves is every grown leaf shifting east by its west overhang: the two 6 V PMOS in
+`efuse_ls` (+0.09 µm each, the cell 0.03 µm wider east), the three `Mdrv` units in
+`efuse_coldrv` (+0.12/+0.30/+0.48 µm, the cell 0.57 µm wider, so the array column pitch
+grows 135.14 -> 135.71 µm, the top-level stream 4.56 µm wider east and the row drivers
+0.03 µm further west), and the two `ppolyf_u` resistors in `efuse_sense` (+0.30 µm each,
+interior to that cell's bbox); `efuse_comp` and `efuse_bitcell` move nothing (no grown
+leaves), the routing follows the pads (all LVS reports still match), and every DRC
+report stays clean. The third Metal2 fill pass (#365) changed the filled stream from `48c590fc6095311d9c286d3d2093e004952aef7585eb2ac28c18dfa5f8918d9c`: 1404
 2 µm Metal2 dummy squares were added where the 6 µm and 3 µm passes left free area, and
 no other layer moved. Before that, the via2 Metal3-enclosure fix (#308) changed the filled stream from `02994974b6b89ea8c17bb94a665f79eaf1f926072717c500980dad79320fc4f0`: every M3 end
 that lands a via2 cut in `efuse_ls` (the six marked `LS_W3N` strip ends) and `efuse_coldrv` (every
@@ -430,22 +441,22 @@ at the same height as the fuse's `out` pad. All 4 nets are drawn:
   `vss`, the same bridge as `ls_cell`), and the ring leaves east through
   via1 ×2 on its east strap into an M2 pad at the row's return-rail height.
 
-**`efuse_row`** (959.325 × 16.27 µm): 8 `efuse_bitcell` instances at the
-column pitch (133.64 µm, set by the wider column driver, so bit lines line
+**`efuse_row`** (973.815 × 16.27 µm): 8 `efuse_bitcell` instances at the
+column pitch (135.71 µm, set by the wider column driver, so bit lines line
 up with `efuse_coldrv`), plus two shared M2 rails drawn in the row: **wl**
 at y = −1.24..−0.82 µm under the bitcells (each gate stub drops into it)
 and **vss** at y = 7.25..7.67 µm through the select row (each bitcell's
 ring-east via1s land on it; the rail clears each fuse's bbox by 2.87 µm, so
 no M2 crosses a fuse). Both rails span the full row and exit west. The
-eight **bl lanes** are the bitcells' own M3 lanes (one per column, 133.64
+eight **bl lanes** are the bitcells' own M3 lanes (one per column, 135.71
 µm apart), crossing the wl rail on M3.
 
 **Pin access points for top-level routing (#307)** (row-cell coordinates;
-column k's bitcell origin is at x = k · 133.64 µm, k = 0 west):
+column k's bitcell origin is at x = k · 135.71 µm, k = 0 west):
 
 | Pin | Where | Shape |
 |---|---|---|
-| `bl[i]` | south edge, x = k · 133.64 + 1.205 µm, y from 2.19 down to −1.35 µm | 0.97 µm M3 lane end; label `bl[i]` on the fuse `in` M1 pad. `bl[7]` is column 0 (west-most), matching the `.subckt` pin order `bl[7] … bl[0] wl vss`. Lanes of all 32 rows align vertically at the same x (rows place bitcells identically), with a 5.44 µm vertical gap between one row's lane end and the next row's lane top for the array-level stacks. |
+| `bl[i]` | south edge, x = k · 135.71 + 1.205 µm, y from 2.40 down to −1.35 µm (pad centre y = 2.19 µm) | 0.97 µm M3 lane end; label `bl[i]` on the fuse `in` M1 pad. `bl[7]` is column 0 (west-most), matching the `.subckt` pin order `bl[7] … bl[0] wl vss`. Lanes of all 32 rows align vertically at the same x (rows place bitcells identically), with an 18.17 µm vertical gap between one row's lane top and the next row's lane south end (`pitch_y` 21.92 − lane length 3.75 µm) for the array-level stacks. |
 | `wl` | west edge, y = −1.03 µm | M2 rail end (label `wl` on bitcell 0's gate pad); the row driver sits west of the array. |
 | `vss` | west edge, y = 7.46 µm | M2 rail end (label `vss` on bitcell 0's ring-east tap); shared return. |
 
@@ -590,7 +601,15 @@ would not have shown.
 
 The controller passes the full foundry deck, and so does the array: 0 findings. Each partition clears the eight
 global-density rules and all 27 `EF.*` checks. The controller contains no
-fuse markers. T1 item 3 remains uncited for both partitions pending #60.
+fuse markers. T1 item 3 is cited for both partitions (#60): the
+`[curated, native]` compound evidence lists in `signoff/block-manifest.json`
+(`3.analog`/`3.digital`) grade `met` with both members `status: clean` and
+`input_verified`. Each graded citation copies three coverage fields from its
+report (`layers_in_stream_without_rules`, `rules_skipped` and `deck_scope`).
+The native citations have three empty arrays. The native reports below list
+the 27 foundry `EF.*` rule IDs in `coverage.rules_checked`. For the curated
+values, the controller's lack of fuse geometry and the array's placement-only
+extent, see the [item 3 disclosure](../signoff/README.md#t1-item-3-disclosure-drc-coverage-quoted-from-the-cited-envelopes).
 
 | Stream | Native report | Checked categories | `EF.*` markers | All markers |
 |---|---|---:|---:|---:|
@@ -620,7 +639,8 @@ For each variant, an empty-layout `--list-rule-categories` run independently
 declared 763 categories. The script requires the 27 foundry IDs in that
 set of expectations and adds any finding-producing categories from a first
 pass over the stream. The deck emits a density category only on a finding.
-The native ratio logs below show that all eight calculations ran. Both reports
+The density table below gives the fill generator's ratios for the array and
+the native deck's logged ratios for the controller. Both reports
 record `coverage_assertion.satisfied: true`, all 27
 IDs in `coverage.rules_checked`, and zero `EF.*` markers. The native list
 includes EF.14, EF.17 and EF.20 in addition to the 24 IDs the curated deck
@@ -777,32 +797,30 @@ margin. On the existing 165.355 µm square die, the native deck measures
 25.26876 % COMP and 26.21314 % Poly2. The filled stream uses the original
 routed controller and matches its as-built netlist.
 
-Measured inputs and counts (the eight rules each report 0 markers). The
-array column's extent and ratios are the `extent_area_um2` and per-layer
-`total_pct` of the committed `layout/fill-array.report.json`, rounded to 2
-dp (the fill generator's own accounting on the resized placement, not a
-deck-logger capture). The controller column's ratios are the deck's own
-`logger` output — `Executing rule <id>` / `<layer> ratio: <v> %` —
-captured from a standalone `klayout -b -r gf180mcu.drc` run, which is how a
-zero-count density execution is evidenced since the deck emits a category
-only on failure:
+Both native reports have zero markers. The array column uses `extent_um`,
+`extent_area_um2` and each layer's `total_pct` from the fill generator's
+[`fill-array.report.json`](fill-array.report.json). Ratios are rounded to
+two decimal places. On this five-metal stack, M5.4 and MT.3 use the same
+Metal5 ratio. The controller ratios come from the deck logger in a
+standalone `klayout -b -r gf180mcu.drc` run.
 
 | | Array | Controller |
 |---|---|---|
 | Stream / top | `layout/efuse_otp_array.gds` / `efuse_otp_array` | `layout/efuse_otp_ctrl.gds` / `efuse_otp_ctrl` |
-| sha256 | `fb7df824035300e7f4bf01d05a45970f911c5034eaa32b0c1c96cec07df3f25d` | `b80bfb50d000e21b7816da70e221111c7a7d0ef67d21d3379e60022fd70cbf5f` |
-| Extent (µm) | −20.26, −64.62 → 1079.12, 699.44 (839 992 µm²) | 0, 0 → 165.355, 165.355 (27 342 µm²) |
+| sha256 | `5e553ab4dd5bf90555423260ff6f40e9f4bd611277fe37d775b22963559a51c9` | `b80bfb50d000e21b7816da70e221111c7a7d0ef67d21d3379e60022fd70cbf5f` |
+| Extent (µm) | −20.29, −64.62 → 1083.68, 699.44 (843 499.3 µm²) | 0, 0 → 165.355, 165.355 (27 342 µm²) |
 | PDK variant / deck options | `gf180mcuC`, `decks=all`, `threads=1` | `gf180mcuD`, `decks=all`, `threads=1` |
-| DCF.1b COMP | 0 markers, ratio 43.26 % | 0 markers, ratio 25.27 % |
-| PL.8 Poly2 | 0 markers, ratio 49.62 % | 0 markers, ratio 26.21 % |
-| M1.4 | 0 markers, ratio 57.88 % | 0 markers, ratio 40.38 % |
-| M2.4 | 0 markers, ratio 61.54 % | 0 markers, ratio 35.13 % |
-| M3.4 | 0 markers, ratio 60.58 % | 0 markers, ratio 33.77 % |
-| M4.4 | 0 markers, ratio 65.87 % | 0 markers, ratio 66.94 % |
-| M5.4 | 0 markers, ratio 65.87 % | 0 markers, ratio 73.88 % |
-| MT.3 | 0 markers, ratio 65.87 % | 0 markers, ratio 73.88 % |
+| DCF.1b COMP | 0 markers, ratio 44.95 % | 0 markers, ratio 25.27 % |
+| PL.8 Poly2 | 0 markers, ratio 51.67 % | 0 markers, ratio 26.21 % |
+| M1.4 | 0 markers, ratio 58.12 % | 0 markers, ratio 40.38 % |
+| M2.4 | 0 markers, ratio 32.13 % | 0 markers, ratio 35.13 % |
+| M3.4 | 0 markers, ratio 60.21 % | 0 markers, ratio 33.77 % |
+| M4.4 | 0 markers, ratio 66.11 % | 0 markers, ratio 66.94 % |
+| M5.4 | 0 markers, ratio 66.11 % | 0 markers, ratio 73.88 % |
+| MT.3 | 0 markers, ratio 66.11 % | 0 markers, ratio 73.88 % |
 
-**The two streams after #365.** Both are the generators' output with the third
+**Third Metal2 pass (#365, before the array placement change in #376).**
+Both streams were the generators' output with the third
 Metal2 pass: `layout/regen-gds.sh` for the array and `layout/pnr.sh` for the
 controller. On each, layer 36/4 is the only layer whose geometry moved — 1404
 added squares on the array (fill 60.43 % → 61.09 %) and 72 on the controller
@@ -817,8 +835,8 @@ entry on this worker). Every DRC, LVS and ERC report was regenerated next;
 each changed only in the input stream's hash, with every verdict, count and
 `rules_checked` (763) as before, and the standalone deck runs on the new
 streams (`decks=all`, `threads=1`) both ended `DRC RESULT: SUCCESS (0
-violations)`. The deck's own Metal2 ratio equals the generator's `total_pct`
-on both partitions (61.543321 % and 35.128053 %).
+violations)`. At that revision the deck's Metal2 ratio matched the
+generator's `total_pct` on both partitions (61.543321 % and 35.128053 %).
 
 **Before and after fill.** (Historical: the measurement #326 made at
 `5d23757`, on the pre-resize L = 0.50 µm array; on the current committed
@@ -959,20 +977,26 @@ Coverage, quoted from the reports (`coverage.*`):
 
 | | analog | digital |
 |---|---|---|
-| `rules_checked` | 55 rules | 72 rules |
-| `layers_in_stream_without_rules` | `34/10` | `0/0`, `21/10`, `34/10`, `36/10`, `63/63`, `81/10`, `204/10` |
-| `rules_skipped` | 71 rules; the eFuse-layer rules `efuse_mk.enclosing.lvs_source.1`, `efuse_mk.ongrid.1`, `efuse_mk.space.1`, `plfuse.ongrid.1`, `plfuse.separation.comp.1`, `plfuse.separation.nplus.1`, `plfuse.separation.sab.1` are **checked**; `plfuse.separation.esd.1` and `plfuse.separation.resistor.1` are skipped | 54 rules, including all nine eFuse-layer rules (the digital partition draws no `PLFUSE`/`EFUSE_MK`) |
+| `rules_checked` | 71 rules | 72 rules |
+| `layers_in_stream_without_rules` | `22/4`, `30/4`, `34/4`, `34/10`, `36/4`, `42/4`, `46/4`, `81/4` (the seven `/4` entries are the #310 density-fill dummy datatypes, absent before fill) | `0/0`, `21/10`, `22/4`, `30/4`, `34/4`, `34/10`, `36/4`, `36/10`, `42/4`, `46/4`, `63/63`, `81/4`, `81/10`, `204/10` (same seven `/4` fill datatypes plus the pre-fill text/label layers) |
+| `rules_skipped` | 55 rules; the eFuse-layer rules `efuse_mk.enclosing.lvs_source.1`, `efuse_mk.ongrid.1`, `efuse_mk.space.1`, `plfuse.ongrid.1`, `plfuse.separation.comp.1`, `plfuse.separation.nplus.1`, `plfuse.separation.sab.1` are **checked**; `plfuse.separation.esd.1` and `plfuse.separation.resistor.1` are skipped | 54 rules, including all nine eFuse-layer rules (the digital partition draws no `PLFUSE`/`EFUSE_MK`) |
 | `deck_scope` | both: 10.4.2 MIM Option B, 10.7 DRC_BJT Mark Layer, 7.12 Contact, 7.13 Metaln, 7.14 Vian, 7.15 MetalTop, 7.4 Nwell, 7.5 Comp, 7.7 Poly2, 7.8 Nplus, 7.9 Pplus, 9.1 Bond Pad, EF, ESD, GR, MDN, MDP, OFFGRID, SB | |
 
-**No foundry `EF.*` rule is modelled, but the pinned deck is no longer blind to
-the eFuse layers.** Two facts, measured from the reports under the pin and worth
+**No foundry `EF.*` rule is modelled by the curated deck, but the pinned deck
+is no longer blind to the eFuse layers, and the native deck runs the full
+foundry set.** Two facts, measured from the reports under the pin and worth
 keeping apart:
 
-- Neither report's `coverage.rules_checked` carries a rule named `EF.*`, and both
-  reports list every one of `EF.01`, `EF.02`, `EF.03`, `EF.04a`–`EF.04d`, `EF.05`–
-  `EF.13`, `EF.15`, `EF.16a`/`EF.16b`, `EF.18`, `EF.19`, `EF.21`, `EF.22a`/`EF.22b`
-  (24 rules) under `coverage.unmodeled_rules`. The exact-value `EF.*` set is still
-  not run (klayout-tools#4312).
+- Neither curated report's `coverage.rules_checked` carries a rule named
+  `EF.*`, and both reports list every one of `EF.01`, `EF.02`, `EF.03`,
+  `EF.04a`–`EF.04d`, `EF.05`–`EF.13`, `EF.15`, `EF.16a`/`EF.16b`, `EF.18`,
+  `EF.19`, `EF.21`, `EF.22a`/`EF.22b` (24 rules) under
+  `coverage.unmodeled_rules`. The exact-value `EF.*` set is therefore not run
+  by the curated deck — which is why the item 3 citation pairs every curated
+  report with its PDK-native counterpart above, which checks all 27 foundry
+  IDs (the gap was tracked as klayout-tools#4312; the parks were withdrawn
+  once #313 showed the native route evaluates the full set at the repository
+  pin).
 - The pinned klt 0.9.0 deck did gain an `EF` entry in `coverage.deck_scope` and
   now checks five eFuse-layer rules on the analog partition that klt 0.8.0 did
   not: `efuse_mk.enclosing.lvs_source.1`, `efuse_mk.space.1`,
@@ -1089,10 +1113,11 @@ names declared on both sides anchored by name first).
   item 4's analog partition as a whole still needs the fuse as a device
   (#32), and ERC is #33 — no analog LVS row is claimed. DRC status is not
   restated here: the `DRC (T1 item 3)` section above is the one place it is
-  reported. Whatever it reports is clean only under the curated deck's
-  coverage — `klt drc` does not run the `EF.*` rules at all
-  (`spec/efuse-otp.md` §1.3) — so T1 item 3 stays `unmet` and no envelope is
-  cited for it.
+  reported. Its claim is the compound curated-plus-native citation — clean
+  under the curated deck's coverage, which models no `EF.*` rule
+  (`spec/efuse-otp.md` §1.3), and clean under the PDK-native foundry deck,
+  which checks all 27 `EF.*` IDs — cited for `3.analog`/`3.digital` in
+  `signoff/block-manifest.json` (#60).
 - Cell-to-cell clearance is a fixed 2 µm between bounding boxes, not a
   rule-derived spacing.
 - **The item 2 envelopes claim the stream, not the circuit.** Both are written by
