@@ -65,10 +65,14 @@
       "35/0",
       "36/0",
       "38/0",
+      "40/0",
+      "41/0",
       "42/0",
+      "46/0",
       "49/0",
       "55/0",
       "80/5",
+      "81/0",
       "100/8",
       "110/5",
       "125/5"
@@ -112,9 +116,19 @@
       "metal2.space.1",
       "metal2.width.1",
       "metal3.enclosing.via2.1",
+      "metal3.enclosing.via3.1",
       "metal3.ongrid.1",
       "metal3.space.1",
       "metal3.width.1",
+      "metal4.enclosing.via3.1",
+      "metal4.enclosing.via4.1",
+      "metal4.ongrid.1",
+      "metal4.space.1",
+      "metal4.width.1",
+      "metal5.enclosing.via4.1",
+      "metal5.ongrid.1",
+      "metal5.space.1",
+      "metal5.width.1",
       "nplus.enclosing.comp.1",
       "nplus.enclosing.poly2.1",
       "nplus.ongrid.1",
@@ -151,7 +165,13 @@
       "via1.width.1",
       "via2.ongrid.1",
       "via2.space.1",
-      "via2.width.1"
+      "via2.width.1",
+      "via3.ongrid.1",
+      "via3.space.1",
+      "via3.width.1",
+      "via4.ongrid.1",
+      "via4.space.1",
+      "via4.width.1"
     ],
     "rules_skipped": [
       "bjt.separation.comp.1",
@@ -174,19 +194,9 @@
       "ldmos_xtor.enclosing.mvpsd.1",
       "metal1.separation.guard_ring_mk.1",
       "metal2.separation.guard_ring_mk.1",
-      "metal3.enclosing.via3.1",
       "metal3.separation.guard_ring_mk.1",
-      "metal4.enclosing.via3.1",
-      "metal4.enclosing.via4.1",
-      "metal4.ongrid.1",
       "metal4.separation.guard_ring_mk.1",
-      "metal4.space.1",
-      "metal4.width.1",
-      "metal5.enclosing.via4.1",
-      "metal5.ongrid.1",
       "metal5.separation.guard_ring_mk.1",
-      "metal5.space.1",
-      "metal5.width.1",
       "metaltop.ongrid.1",
       "metaltop.separation.guard_ring_mk.1",
       "metaltop.space.1",
@@ -205,13 +215,7 @@
       "plfuse.separation.esd.1",
       "plfuse.separation.resistor.1",
       "poly2.separation.guard_ring_mk.1",
-      "resistor.ongrid.1",
-      "via3.ongrid.1",
-      "via3.space.1",
-      "via3.width.1",
-      "via4.ongrid.1",
-      "via4.space.1",
-      "via4.width.1"
+      "resistor.ongrid.1"
     ],
     "voltage_domain_warnings": [
       {
@@ -485,9 +489,19 @@
       "metal2.space.1",
       "metal2.width.1",
       "metal3.enclosing.via2.1",
+      "metal3.enclosing.via3.1",
       "metal3.ongrid.1",
       "metal3.space.1",
       "metal3.width.1",
+      "metal4.enclosing.via3.1",
+      "metal4.enclosing.via4.1",
+      "metal4.ongrid.1",
+      "metal4.space.1",
+      "metal4.width.1",
+      "metal5.enclosing.via4.1",
+      "metal5.ongrid.1",
+      "metal5.space.1",
+      "metal5.width.1",
       "nplus.enclosing.comp.1",
       "nplus.enclosing.poly2.1",
       "nplus.ongrid.1",
@@ -524,7 +538,13 @@
       "via1.width.1",
       "via2.ongrid.1",
       "via2.space.1",
-      "via2.width.1"
+      "via2.width.1",
+      "via3.ongrid.1",
+      "via3.space.1",
+      "via3.width.1",
+      "via4.ongrid.1",
+      "via4.space.1",
+      "via4.width.1"
     ],
     "skipped": [],
     "inapplicable": [
@@ -609,23 +629,7 @@
         "reason": "no_applicable_geometry"
       },
       {
-        "id": "metal3.enclosing.via3.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
         "id": "metal3.separation.guard_ring_mk.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "metal4.enclosing.via3.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "metal4.enclosing.via4.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "metal4.ongrid.1",
         "reason": "no_applicable_geometry"
       },
       {
@@ -633,31 +637,7 @@
         "reason": "no_applicable_geometry"
       },
       {
-        "id": "metal4.space.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "metal4.width.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "metal5.enclosing.via4.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "metal5.ongrid.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
         "id": "metal5.separation.guard_ring_mk.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "metal5.space.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "metal5.width.1",
         "reason": "no_applicable_geometry"
       },
       {
@@ -735,30 +715,6 @@
       {
         "id": "resistor.ongrid.1",
         "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "via3.ongrid.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "via3.space.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "via3.width.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "via4.ongrid.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "via4.space.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "via4.width.1",
-        "reason": "no_applicable_geometry"
       }
     ],
     "unknown": [],
@@ -777,7 +733,7 @@
       "released": true
     },
     "input": {
-      "content_hash": "sha256:5e553ab4dd5bf90555423260ff6f40e9f4bd611277fe37d775b22963559a51c9",
+      "content_hash": "sha256:7657f02a2e9b0c291112b6f57b0bbc1004616666ffcf52f6b1a08c0e08e22a31",
       "role": "layout"
     },
     "klayout_version_mismatch": true

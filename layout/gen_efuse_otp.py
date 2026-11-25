@@ -25,13 +25,13 @@ What it does
     M3 lane per signal pin, one M2 track per multi-pin net above the row,
     supply rails below it, and the PDK resistors drawn at the netlist's stated
     geometry. `efuse_bitcell` (the PDK fuse plus the 180-deg-rotated select
-    NFET) and `efuse_row` (8 bitcells plus the shared wl/vss rails) are routed
-    too (bitcell_cell, array_row_cell; see layout/README.md, "efuse_bitcell /
-    efuse_row routing"). Every other cell remains placement-only.
+    NFET), `efuse_row` (8 bitcells plus the shared wl/vss rails) and the array
+    top `efuse_otp_array` (32 rows, 32 row drivers, 8 column drivers and the
+    sense block, wired on M2/M3/M4/M5) are routed too (bitcell_cell,
+    array_row_cell, route_array_top; see layout/README.md).
 
-What it does not do: draw inter-device or inter-block routing outside those
-five cells, or check anything. Connectivity elsewhere is not claimed; DRC,
-EF.* coverage and LVS are separate items (see layout/README.md).
+What it does not do: verify DRC, EF.* coverage or LVS itself (those are
+separate scripts; see layout/README.md).
 """
 
 import argparse
@@ -140,6 +140,30 @@ ROW_VSS_RAIL_Y = (7.25, 7.67)  # M2 return rail through the select row
 # merge with the efuse_comp instance's where they cross it).
 CS_RAIL_Y = {"vss": -1.5, "vdd33": -2.22}  # M2 supply rails below the row
 CS_EXPORT = 0.9  # efuse_comp's pin lanes extend this far above its channel
+
+# Top-level array routing (route_array_top and layout/README.md,
+# "efuse_otp_array top-level routing"). Uses the upper planes M4 (horizontal
+# buses and local landing bars) and M5 (MetalTop on 5LM gf180mcuC: vertical
+# bit-line, supply and signal trunks), plus short M2 word-line bridges in the
+# rowdrv-to-row gap. Every subcell uses M1-M3 only, so M4/M5 are unobstructed.
+TOP_VIA3, TOP_M4 = (40, 0), (46, 0)
+TOP_VIA4, TOP_M5 = (41, 0), (81, 0)
+TOP_VIA_PITCH = 0.64  # 0.38 um space >= 0.36 um (V2/V3/V4.2b for >=4x4 arrays)
+TOP_M4_SIG_W = 0.50  # M4 signal bus width (>= 0.28 M4.1; >= 0.12 via enclosure)
+TOP_M5_SIG_W = 0.80  # M5 signal drop width (>= 0.44 9K MT.1; >= 0.5625 um^2 MT.4)
+TOP_TRUNK_W = 10.0  # per-column vertical M5 trunks (bl, vss, vprog; <= 10 um avoids MT.2b)
+TOP_BUS_W = 24.0  # south horizontal main M4 supply buses (vss, vprog; < 30 um MSLOT.1)
+TOP_VDD_BUS_W = 4.0  # south horizontal main M4 vdd33 bus
+TOP_RD_RAIL_W = 2.0  # west vertical M4/M5 supply rails over efuse_rowdrv
+TOP_BL_BAR_W = 4.0  # per-column horizontal M4 bl jumper over efuse_coldrv
+TOP_VPROG_BAR_W = 1.60  # per-column horizontal M4 vprog jumper over efuse_coldrv
+TOP_VDD_FEED_W = 1.20  # per-column vertical M5 vdd33 feeder
+TOP_VSS_COL_X = (24.0, 34.0)  # column-local M5 vss trunk x span (beside bitcell vss exit)
+TOP_VPROG_COL_X = (60.0, 70.0)  # column-local M5 vprog feeder x span
+TOP_VDD_COL_X = 110.0  # column-local M5 vdd33 feeder centre x (M3-free over coldrv & sense)
+TOP_SIG_Y = {"prog_strobe": -15.0, "sense_en": -18.0}
+TOP_SA_TAP_Y = {"sense_en": -50.0, "sbl": -44.0}
+TOP_BUS_Y = {"vss": (-90.0, -66.0), "vprog": (-116.0, -92.0), "vdd33": (-122.0, -118.0)}
 
 # Expected shape of the array top, asserted against the netlist.
 ROWS, COLS = 32, 8
@@ -904,9 +928,11 @@ class Builder:
 
         # -- tracks above, rails below
         y = gs(lst + 1.5)
+        track_y = {}
         for net, pins in net_pins.items():
             if len(pins) < 2:
                 continue
+            track_y[net] = y
             xs = [p[0] for p in pins]
             self._box(cell, LS_M2, min(xs) - LS_W2 / 2, y - LS_W2 / 2, max(xs) + LS_W2 / 2, y + LS_W2 / 2)
             for lx, y0, pad in pins:
@@ -931,6 +957,8 @@ class Builder:
             self._box(cell, LS_M2, lo - LS_W2 / 2, ry - LS_W2 / 2, max(xs) + LS_W2 / 2, ry + LS_W2 / 2)
         for net, (lx, ly) in label_at.items():
             self._label(cell, net, lx, ly)
+        self.cd_ports = {"net_pins": net_pins, "label_at": label_at,
+                         "track_y": track_y, "rail_x": rail_x}
         self.cells[subckt] = cell
         return cell
 
@@ -1118,8 +1146,302 @@ class Builder:
                                      gs(max(u["top"] for u in units) + 1.5))
         for net, (lx, ly) in label_at.items():
             self._label(cell, net, lx, ly)
+        self.sa_ports = {"net_pins": net_pins, "label_at": label_at,
+                         "track_y": track_y, "rail_x": rail_x}
         self.cells[subckt] = cell
         return cell
+
+    # -- efuse_otp_array: top-level array, driver, sense and supply routing --
+
+    def _via_grid(self, cell, layer, xs, ys):
+        for x in xs:
+            for y in ys:
+                self._cut(cell, layer, x, y)
+
+    @staticmethod
+    def _via_span(x0, n):
+        return [gs(x0 + i * TOP_VIA_PITCH) for i in range(n)]
+
+    def _via_center_span(self, xc, n):
+        return self._via_span(xc - (n - 1) * TOP_VIA_PITCH / 2, n)
+
+    def _m2_to_m5_strip(self, cell, xs, y):
+        """Horizontal row of stacked via2 + M3 pad + via3 + M4 pad + via4 on an
+        existing M2 rail at y, landing into an overlying M5 trunk."""
+        self._via_grid(cell, LS_VIA2, xs, [y])
+        self._box(cell, LS_M3, xs[0] - LS_W3 / 2, y - LS_W3 / 2,
+                  xs[-1] + LS_W3 / 2, y + LS_W3 / 2)
+        self._via_grid(cell, TOP_VIA3, xs, [y])
+        self._box(cell, TOP_M4, xs[0] - LS_W3 / 2, y - LS_W3 / 2,
+                  xs[-1] + LS_W3 / 2, y + LS_W3 / 2)
+        self._via_grid(cell, TOP_VIA4, xs, [y])
+
+    def route_array_top(self, cell, row_xy, rd_xy, cd_xy, sa_xy, step_x, step_y):
+        """Wire the 32 rows, 32 row drivers, 8 column drivers and sense block.
+
+        Planes (no constituent cell is modified; every subcell uses M1-M3):
+          * M2: 32 short L-shaped wl[r] bridges across the rowdrv-to-row gap.
+          * M3: local landing pads on subcell M2 rails/pads (all in M3-free
+            windows) transitioning via2 -> via3.
+          * M4: horizontal shared buses (prog_strobe, sense_en, sbl), per-column
+            local jumpers (bl, vprog over efuse_coldrv), vertical supply rails
+            over efuse_rowdrv (y >= -4), and the three south horizontal main
+            supply buses (vss 12 um, vprog 12 um, vdd33 4 um).
+          * M5 (MetalTop on 5LM gf180mcuC): vertical per-column trunks (6 um
+            bl[c] and vss, 6 um vprog feeder, 1.2 um vdd33 feeder), west
+            row-driver supply drops, and 0.8 um sense_en / sbl drops to
+            efuse_sense.
+        Column k (0..7 west to east) carries index c = COLS - 1 - k (7..0),
+        matching efuse_row's pin order and Xcd[c] / Xarr[r] in the netlist.
+        """
+        for pair in (TOP_VIA3, TOP_M4, TOP_VIA4, TOP_M5):
+            self.layout.layer(*pair)
+
+        dx_row, dy_row = row_xy
+        dx_rd, dy_rd = rd_xy
+        dx_cd, dy_cd = cd_xy
+        dx_sa, dy_sa = sa_xy
+        lp, bp = self.ls_ports, self.bc_ports
+        cd_pins, cd_lbl, cd_ty, cd_rx = (
+            self.cd_ports["net_pins"], self.cd_ports["label_at"],
+            self.cd_ports["track_y"], self.cd_ports["rail_x"])
+        sa_pins, sa_lbl = self.sa_ports["net_pins"], self.sa_ports["label_at"]
+
+        # 1. Word lines wl[0..31] (M2 L-bridges in the rowdrv-to-row gap) and
+        #    row_sel[0..31] top-level M1 pin labels.
+        x_jog = -1.00
+        rd_wl_x = gs(dx_rd + lp["XMn2"]["U0_D"][0])
+        for r in range(ROWS):
+            y_rd_wl = gs(dy_rd + r * step_y + lp["XMn2"]["U0_D"][1])
+            y_row_wl = gs(dy_row + r * step_y + sum(ROW_WL_RAIL_Y) / 2)
+            self._box(cell, LS_M2, rd_wl_x, y_rd_wl - LS_W2 / 2,
+                      x_jog + LS_W2 / 2, y_rd_wl + LS_W2 / 2)
+            self._box(cell, LS_M2, x_jog - LS_W2 / 2,
+                      min(y_row_wl, y_rd_wl) - LS_W2 / 2,
+                      x_jog + LS_W2 / 2, max(y_row_wl, y_rd_wl) + LS_W2 / 2)
+            self._box(cell, LS_M2, x_jog - LS_W2 / 2, y_row_wl - LS_W2 / 2,
+                      dx_row + 0.50, y_row_wl + LS_W2 / 2)
+            self._label(cell, f"wl[{r}]", gs(dx_row + bp["wl"][0]),
+                        gs(dy_row + r * step_y + bp["wl"][1]))
+            self._label(cell, f"row_sel[{r}]", gs(dx_rd + lp["XMni"]["U0_G"][0]),
+                        gs(dy_rd + r * step_y + lp["XMni"]["U0_G"][1]))
+
+        # 2. Row-driver vertical supply rails (M4 over the 32 row drivers,
+        #    transitioning to M5 at y=-4..-2 down to the south M4 supply buses).
+        rd_rails = (
+            ("vdd33", -0.80, lp["XMpi"]["TAP_W"][1]),
+            ("vss", 4.00, LS_VSS_RAIL_Y),
+            ("vprog", 9.50, lp["XMp1"]["TAP_S"][1]),
+        )
+        rd_rail_x = {}
+        for net, x_loc, y_loc in rd_rails:
+            xc = gs(dx_rd + x_loc)
+            rd_rail_x[net] = xc
+            for r in range(ROWS):
+                yc = gs(dy_rd + r * step_y + y_loc)
+                self._cut(cell, LS_VIA2, xc, yc)
+                self._box(cell, LS_M3, xc - LS_W3 / 2, yc - LS_W3 / 2,
+                          xc + LS_W3 / 2, yc + LS_W3 / 2)
+                self._cut(cell, TOP_VIA3, xc, yc)
+            y_top = gs(dy_rd + (ROWS - 1) * step_y + y_loc + LS_W3 / 2)
+            self._box(cell, TOP_M4, xc - TOP_RD_RAIL_W / 2, -4.00,
+                      xc + TOP_RD_RAIL_W / 2, y_top)
+            vxs = self._via_center_span(xc, 2)
+            self._via_grid(cell, TOP_VIA4, vxs, self._via_center_span(-3.00, 3))
+            by0, by1 = TOP_BUS_Y[net]
+            self._box(cell, TOP_M5, xc - TOP_RD_RAIL_W / 2, by0,
+                      xc + TOP_RD_RAIL_W / 2, -2.00)
+            self._via_grid(cell, TOP_VIA4, vxs,
+                           self._via_center_span((by0 + by1) / 2, 3))
+
+        # 3. Per-column bit lines bl[7..0] (6 um M5 vertical trunks + 4 um M4
+        #    jumpers over efuse_coldrv) and col_sel[7..0] labels.
+        y_bl_track = gs(dy_cd + cd_ty["bl"])
+        y_bl_bar0 = gs(y_bl_track - TOP_BL_BAR_W / 2)
+        y_bl_bar1 = gs(y_bl_track + TOP_BL_BAR_W / 2)
+        y_bl_top = gs(dy_row + (ROWS - 1) * step_y + BC_PAD_Y + 0.21)
+        mdrv_dx = [p[0] for p in cd_pins["bl"][:3]]
+        assert len(mdrv_dx) == 3, f"expected 3 Mdrv drain lanes, got {mdrv_dx}"
+        bl_cut_x = [gs(x) for x in BC_BL_CUT_X]  # 0.93, 1.48 in bitcell coords
+        for k in range(COLS):
+            c = COLS - 1 - k
+            x_col = gs(dx_row + k * step_x)
+            x_cd = gs(dx_cd + k * step_x)
+            # 6 um vertical M5 trunk covering all 32 rows' bl M3 lanes
+            self._box(cell, TOP_M5, x_col, y_bl_bar0,
+                      x_col + TOP_TRUNK_W, y_bl_top)
+            for r in range(ROWS):
+                ys = [gs(dy_row + r * step_y + BC_BL_LANE_Y0 + 0.60 + j * TOP_VIA_PITCH)
+                      for j in range(4)]
+                xs = [gs(x_col + x) for x in bl_cut_x]
+                self._via_grid(cell, TOP_VIA3, xs, ys)
+                self._box(cell, TOP_M4, xs[0] - 0.21, ys[0] - 0.21,
+                          xs[-1] + 0.21, ys[-1] + 0.21)
+                self._via_grid(cell, TOP_VIA4, xs, ys)
+            # Tap efuse_coldrv[k]'s bl M2 track beside all three Mdrv drains
+            for mx in mdrv_dx:
+                cxs = self._via_span(x_cd + mx + 1.20, 4)
+                self._via_grid(cell, LS_VIA2, cxs, [y_bl_track])
+                self._box(cell, LS_M3, cxs[0] - LS_W3 / 2, y_bl_track - LS_W3 / 2,
+                          cxs[-1] + LS_W3 / 2, y_bl_track + LS_W3 / 2)
+                self._via_grid(cell, TOP_VIA3, cxs, [y_bl_track])
+            x_bar1 = gs(x_cd + mdrv_dx[-1] + 1.20 + 3 * TOP_VIA_PITCH + LS_W3 / 2 + 0.20)
+            self._box(cell, TOP_M4, x_col, y_bl_bar0, x_bar1, y_bl_bar1)
+            self._via_grid(cell, TOP_VIA4, self._via_span(x_col + 1.50, 5),
+                           self._via_center_span(y_bl_track, 3))
+            self._label(cell, f"bl[{c}]", gs(x_cd + cd_lbl["bl"][0]),
+                        gs(dy_cd + cd_lbl["bl"][1]))
+            self._label(cell, f"col_sel[{c}]", gs(x_cd + cd_lbl["col_sel"][0]),
+                        gs(dy_cd + cd_lbl["col_sel"][1]))
+
+        # 4. Shared control & sense buses: prog_strobe, sense_en, sbl (M4
+        #    horizontal across all 8 column drivers; M5 drops to efuse_sense).
+        ps_x = cd_pins["prog_strobe"][0][0]
+        y_ps = TOP_SIG_Y["prog_strobe"]
+        self._box(cell, TOP_M4, gs(dx_cd + ps_x - TOP_M4_SIG_W / 2),
+                  y_ps - TOP_M4_SIG_W / 2,
+                  gs(dx_cd + (COLS - 1) * step_x + ps_x + TOP_M4_SIG_W / 2),
+                  y_ps + TOP_M4_SIG_W / 2)
+        for k in range(COLS):
+            self._cut(cell, TOP_VIA3, gs(dx_cd + k * step_x + ps_x), y_ps)
+
+        se_cd_x = cd_pins["sense_en"][0][0]
+        sa_se_x = gs(dx_sa + sa_pins["sense_en"][0][0])
+        y_se = TOP_SIG_Y["sense_en"]
+        self._box(cell, TOP_M4, sa_se_x - TOP_M4_SIG_W / 2, y_se - TOP_M4_SIG_W / 2,
+                  gs(dx_cd + (COLS - 1) * step_x + se_cd_x + TOP_M4_SIG_W / 2),
+                  y_se + TOP_M4_SIG_W / 2)
+        for k in range(COLS):
+            self._cut(cell, TOP_VIA3, gs(dx_cd + k * step_x + se_cd_x), y_se)
+        y_sa_se = TOP_SA_TAP_Y["sense_en"]
+        self._cut(cell, TOP_VIA3, sa_se_x, y_sa_se)
+        self._box(cell, TOP_M4, sa_se_x - TOP_M4_SIG_W / 2, y_sa_se - TOP_M4_SIG_W / 2,
+                  sa_se_x + TOP_M4_SIG_W / 2, y_sa_se + TOP_M4_SIG_W / 2)
+        self._cut(cell, TOP_VIA4, sa_se_x, y_sa_se)
+        self._cut(cell, TOP_VIA4, sa_se_x, y_se)
+        self._box(cell, TOP_M5, sa_se_x - TOP_M5_SIG_W / 2, y_sa_se - TOP_M5_SIG_W / 2,
+                  sa_se_x + TOP_M5_SIG_W / 2, y_se + TOP_M5_SIG_W / 2)
+
+        sbl_cd_x = gs(cd_pins["sbl"][0][0] + 0.08)  # centre of Mrs.S M2 pad
+        y_sbl = gs(dy_cd + cd_pins["sbl"][0][1])
+        sa_sbl_x = gs(dx_sa + sa_pins["sbl"][-1][0])  # comparator-side M3 lane
+        self._box(cell, TOP_M4, sa_sbl_x - TOP_M4_SIG_W / 2, y_sbl - TOP_M4_SIG_W / 2,
+                  gs(dx_cd + (COLS - 1) * step_x + sbl_cd_x + TOP_M4_SIG_W / 2),
+                  y_sbl + TOP_M4_SIG_W / 2)
+        for k in range(COLS):
+            xc = gs(dx_cd + k * step_x + sbl_cd_x)
+            self._cut(cell, LS_VIA2, xc, y_sbl)
+            self._box(cell, LS_M3, xc - LS_W3 / 2, y_sbl - LS_W3 / 2,
+                      xc + LS_W3 / 2, y_sbl + LS_W3 / 2)
+            self._cut(cell, TOP_VIA3, xc, y_sbl)
+        y_sa_sbl = TOP_SA_TAP_Y["sbl"]
+        self._cut(cell, TOP_VIA3, sa_sbl_x, y_sa_sbl)
+        self._box(cell, TOP_M4, sa_sbl_x - TOP_M4_SIG_W / 2, y_sa_sbl - TOP_M4_SIG_W / 2,
+                  sa_sbl_x + TOP_M4_SIG_W / 2, y_sa_sbl + TOP_M4_SIG_W / 2)
+        self._cut(cell, TOP_VIA4, sa_sbl_x, y_sa_sbl)
+        self._cut(cell, TOP_VIA4, sa_sbl_x, y_sbl)
+        self._box(cell, TOP_M5, sa_sbl_x - TOP_M5_SIG_W / 2, y_sa_sbl - TOP_M5_SIG_W / 2,
+                  sa_sbl_x + TOP_M5_SIG_W / 2, y_sbl + TOP_M5_SIG_W / 2)
+
+        # 5. Per-column supply trunks (M5) and south horizontal main buses (M4):
+        #    vss (6 um M5 per column beside every bitcell's vss exit, 12 um M4 bus),
+        #    vprog (6 um M5 per column into all 3 Mdrv taps, 12 um M4 bus),
+        #    vdd33 (1.2 um M5 per column, 4 um M4 bus).
+        y_vss_top = gs(dy_row + (ROWS - 1) * step_y + ROW_VSS_RAIL_Y[1] + 0.30)
+        y_cd_vss = gs(dy_cd + CD_RAIL_Y["vss"])
+        y_cd_vdd = gs(dy_cd + CD_RAIL_Y["vdd33"])
+        y_cd_vp = gs(dy_cd + CD_RAIL_Y["vprog"])
+        mdrv_vp_x = cd_rx["vprog"][1:]
+        assert len(mdrv_vp_x) == 3, f"expected 3 Mdrv vprog taps, got {mdrv_vp_x}"
+        vss_by0, vss_by1 = TOP_BUS_Y["vss"]
+        vp_by0, vp_by1 = TOP_BUS_Y["vprog"]
+        vdd_by0, vdd_by1 = TOP_BUS_Y["vdd33"]
+        for k in range(COLS):
+            x_col = gs(dx_row + k * step_x)
+            x_cd = gs(dx_cd + k * step_x)
+
+            # vss trunk
+            vx0, vx1 = gs(x_col + TOP_VSS_COL_X[0]), gs(x_col + TOP_VSS_COL_X[1])
+            self._box(cell, TOP_M5, vx0, vss_by0, vx1, y_vss_top)
+            row_vss_xs = self._via_span(x_col + 24.50, 8)
+            row_east = gs(dx_row + self.size(self.cells["efuse_row"])[0])
+            for r in range(ROWS):
+                y_r_vss = gs(dy_row + r * step_y + sum(ROW_VSS_RAIL_Y) / 2)
+                if k == COLS - 1:
+                    # efuse_row's vss rail ends at bitcell 7's east edge (973.815);
+                    # extend it east on M2 under column 7's vss trunk so all 8 via2s land.
+                    self._box(cell, LS_M2, row_east - 0.50,
+                              gs(dy_row + r * step_y + ROW_VSS_RAIL_Y[0]),
+                              vx1, gs(dy_row + r * step_y + ROW_VSS_RAIL_Y[1]))
+                self._m2_to_m5_strip(cell, row_vss_xs, y_r_vss)
+            self._m2_to_m5_strip(cell, self._via_span(x_cd + 24.00, 6), y_cd_vss)
+            self._via_grid(cell, TOP_VIA4,
+                           self._via_center_span((vx0 + vx1) / 2, 6),
+                           self._via_center_span((vss_by0 + vss_by1) / 2, 6))
+
+            # vprog feeder
+            px0, px1 = gs(x_col + TOP_VPROG_COL_X[0]), gs(x_col + TOP_VPROG_COL_X[1])
+            self._box(cell, TOP_M5, px0, vp_by0, px1, y_cd_vp + TOP_VPROG_BAR_W / 2)
+            for start_x in (mdrv_vp_x[0] + 1.20, mdrv_vp_x[1] - 5.00,
+                            mdrv_vp_x[1] + 1.20, mdrv_vp_x[2] - 4.40):
+                cxs = self._via_span(x_cd + start_x, 6)
+                self._via_grid(cell, LS_VIA2, cxs, [y_cd_vp])
+                self._box(cell, LS_M3, cxs[0] - LS_W3 / 2, y_cd_vp - LS_W3 / 2,
+                          cxs[-1] + LS_W3 / 2, y_cd_vp + LS_W3 / 2)
+                self._via_grid(cell, TOP_VIA3, cxs, [y_cd_vp])
+            self._box(cell, TOP_M4, gs(x_cd + mdrv_vp_x[0] + 0.99),
+                      y_cd_vp - TOP_VPROG_BAR_W / 2,
+                      gs(x_cd + mdrv_vp_x[2] - 0.99),
+                      y_cd_vp + TOP_VPROG_BAR_W / 2)
+            self._via_grid(cell, TOP_VIA4,
+                           self._via_center_span((px0 + px1) / 2, 10),
+                           self._via_center_span(y_cd_vp, 2))
+            self._via_grid(cell, TOP_VIA4,
+                           self._via_center_span((px0 + px1) / 2, 6),
+                           self._via_center_span((vp_by0 + vp_by1) / 2, 6))
+
+            # vdd33 feeder
+            dx_c = gs(x_col + TOP_VDD_COL_X)
+            self._box(cell, TOP_M5, dx_c - TOP_VDD_FEED_W / 2, vdd_by0,
+                      dx_c + TOP_VDD_FEED_W / 2, y_cd_vdd + 0.42)
+            vdd_xs = self._via_center_span(dx_c, 2)
+            self._m2_to_m5_strip(cell, vdd_xs, y_cd_vdd)
+            self._via_grid(cell, TOP_VIA4, vdd_xs,
+                           self._via_center_span((vdd_by0 + vdd_by1) / 2, 2))
+
+            # efuse_sense supply taps (column 0 passes directly over efuse_sense)
+            if k == 0:
+                y_sa_vss = gs(dy_sa + CS_RAIL_Y["vss"])
+                self._m2_to_m5_strip(cell, self._via_span(dx_sa + 25.00, 4), y_sa_vss)
+                y_sa_vdd = gs(dy_sa + CS_RAIL_Y["vdd33"])
+                self._m2_to_m5_strip(cell, vdd_xs, y_sa_vdd)
+                sa_vp_x = gs(dx_sa + sa_pins["vprog"][0][0])
+                sa_vp_y = gs(dy_sa + sa_pins["vprog"][0][1])
+                self._cut(cell, LS_VIA2, sa_vp_x, sa_vp_y)
+                self._box(cell, LS_M3, sa_vp_x - LS_W3 / 2, sa_vp_y - LS_W3 / 2,
+                          sa_vp_x + LS_W3 / 2, sa_vp_y + LS_W3 / 2)
+                self._cut(cell, TOP_VIA3, sa_vp_x, sa_vp_y)
+                self._box(cell, TOP_M4, sa_vp_x - TOP_M4_SIG_W / 2,
+                          sa_vp_y - TOP_M4_SIG_W / 2,
+                          px1, sa_vp_y + TOP_M4_SIG_W / 2)
+                self._via_grid(cell, TOP_VIA4,
+                               self._via_center_span((px0 + px1) / 2, 2), [sa_vp_y])
+
+        # Three south horizontal main M4 supply buses tying all columns & west rails
+        self._box(cell, TOP_M4, rd_rail_x["vss"] - TOP_RD_RAIL_W / 2, vss_by0,
+                  gs(dx_row + (COLS - 1) * step_x + TOP_VSS_COL_X[1]), vss_by1)
+        self._box(cell, TOP_M4, rd_rail_x["vprog"] - TOP_RD_RAIL_W / 2, vp_by0,
+                  gs(dx_row + (COLS - 1) * step_x + TOP_VPROG_COL_X[1]), vp_by1)
+        self._box(cell, TOP_M4, rd_rail_x["vdd33"] - TOP_RD_RAIL_W / 2, vdd_by0,
+                  gs(dx_row + (COLS - 1) * step_x + TOP_VDD_COL_X + TOP_VDD_FEED_W / 2),
+                  vdd_by1)
+
+        # 6. Top-level port labels on M1 label layer (34/10).
+        self._label(cell, "prog_strobe", gs(dx_cd + cd_lbl["prog_strobe"][0]),
+                    gs(dy_cd + cd_lbl["prog_strobe"][1]))
+        for net in ("sense_en", "clk", "sense_out", "sbl", "vdd33", "vprog", "vss"):
+            self._label(cell, net, gs(dx_sa + sa_lbl[net][0]),
+                        gs(dy_sa + sa_lbl[net][1]))
 
 
 def masters(netlist, subckt):
@@ -1203,12 +1525,16 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
     pitch_y = max(row_h, rd_h) + GAP_UM  # word lines line up with the row drivers
 
     t = b.layout.create_cell(top)
-    b.place(t, row, 0.0, 0.0, ROWS, 1, 0.0, pitch_y)
-    b.place(t, b.cells["efuse_rowdrv"], -(rd_w + GAP_UM), 0.0, ROWS, 1, 0.0, pitch_y,
-            away_x=False)
-    b.place(t, b.cells["efuse_coldrv"], 0.0, -(cd_h + GAP_UM), 1, COLS, pitch_x,
-            away_y=False)
-    b.place(t, b.cells["efuse_sense"], 0.0, -(cd_h + GAP_UM + sa_h + GAP_UM), away_y=False)
+    row_xy = b.place(t, row, 0.0, 0.0, ROWS, 1, 0.0, pitch_y)
+    rd_xy = b.place(t, b.cells["efuse_rowdrv"], -(rd_w + GAP_UM), 0.0, ROWS, 1, 0.0, pitch_y,
+                    away_x=False)
+    cd_xy = b.place(t, b.cells["efuse_coldrv"], 0.0, -(cd_h + GAP_UM), 1, COLS, pitch_x,
+                    away_y=False)
+    sa_xy = b.place(t, b.cells["efuse_sense"], 0.0, -(cd_h + GAP_UM + sa_h + GAP_UM),
+                    away_y=False)
+    step_x = snap(round(pitch_x / DBU_UM)) * DBU_UM
+    step_y = snap(round(pitch_y / DBU_UM)) * DBU_UM
+    b.route_array_top(t, row_xy, rd_xy, cd_xy, sa_xy, step_x, step_y)
 
     verify_fuse(b.layout, "efuse_bitcell__Xf", fuse_gds)
 
@@ -1237,20 +1563,25 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
         "bbox_um": [round(v * emitted.dbu, 4) for v in (bb.left, bb.bottom, bb.right, bb.top)],
         "array": {"rows": ROWS, "cols": COLS, "pitch_x_um": round(pitch_x, 4),
                   "pitch_y_um": round(pitch_y, 4)},
-        "caveat": "placed hierarchy; efuse_bitcell, efuse_ls, efuse_rowdrv, "
-                  "efuse_coldrv, efuse_comp, efuse_sense and efuse_row are routed (see "
-                  "'routed'), every other cell is placement-only: no routing, no "
-                  "connectivity, no DRC/LVS claim outside those seven",
+        "caveat": "fully routed hierarchy: all eight analog cells (efuse_bitcell, "
+                  "efuse_ls, efuse_rowdrv, efuse_coldrv, efuse_comp, efuse_sense, "
+                  "efuse_row and efuse_otp_array) are routed (see 'routed'); "
+                  "the five fuse-free cells LVS-match their subckts under pinned "
+                  "klt 0.9.2 while the three fuse-bearing cells (efuse_bitcell, "
+                  "efuse_row, efuse_otp_array) carry LVS probes only -- analog "
+                  "item 4 LVS signoff with recognized fuses remains with #32",
         "routed": {"cells": ["efuse_bitcell", "efuse_ls", "efuse_rowdrv", "efuse_coldrv",
-                             "efuse_comp", "efuse_sense", "efuse_row"],
+                             "efuse_comp", "efuse_sense", "efuse_row", "efuse_otp_array"],
                    "planes": {"m1": "device pads, guard-ring taps and the source-ring bridge",
-                              "m2": "supply rails, horizontal runs and stubs",
-                              "m3": "vertical stubs and lanes"}},
+                              "m2": "supply rails, horizontal runs, stubs and rowdrv-to-row wl bridges",
+                              "m3": "vertical stubs, lanes and local via2-to-via3 landing pads",
+                              "m4": "top-level horizontal signal/supply buses, local coldrv jumpers and rowdrv vertical supply rails",
+                              "m5": "top-level vertical bit-line trunks (10 um), supply trunks/feeders (10 um vss/vprog, 1.2 um vdd33) and sense drops"}},
         "program_path": {
             "claim": "path delivery only (spec section 3): no claim that the fuse "
                      "changes state or that a pulse programs it",
             "target": ">= 10 mA through the fuse at the worst corner (spec section 2, "
-                      "assumption A2: no PDK source)",
+                      "assumption A2 and decision 0002: no PDK source)",
             "simulated": "sim/corner-verification record 20261108T235928Z-f6eeac7: "
                          "schematic-level, all 135 points pass; binding corner ss / "
                          "125 C / vdd33 2.97 V / vprog 4.5 V / 260 ohm at 10.97 mA "
@@ -1258,8 +1589,27 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
             "current_limits": "none documented: the pinned PDK tree carries no metal "
                               "or via current limit (searched the klt deck, the PDK "
                               "DRC/LVS rule decks, libs.tech and libs.ref); the "
-                              "geometry below is recorded against the 10 mA target, "
-                              "not rated against a foundry limit",
+                              "geometry below is recorded against the 10 mA target "
+                              "and PDK Magic-tech sheet/via resistances (M1-M4 0.09/0.104 "
+                              "ohm/sq, M5 9K 0.04/0.049 ohm/sq, via1-via4 4.5/15.0 ohm "
+                              "nom/high), not rated against a foundry current limit",
+            "top_segments": [
+                {"net": "vprog", "segment": "south horizontal main bus",
+                 "layer_width": "M4 24.0 um wide (length <= 1029 um to col 7)",
+                 "vias": "via4 x36 (6x6 at 0.64 um pitch) into column feeder"},
+                {"net": "vprog", "segment": "column feeder + local coldrv jumper",
+                 "layer_width": "M5 10.0 um wide (61 um) -> M4 1.60 um wide jumper",
+                 "vias": "via4 x20 into jumper; via3 x24 + via2 x24 onto coldrv M2 rail"},
+                {"net": "vprog -> bl", "segment": "efuse_coldrv (Mdrv m=3 parallel units, constituent cell)",
+                 "layer_width": "M2 0.42 um rails/tracks, 3x parallel M3 0.30 um lanes, M1 rings/straps",
+                 "vias": "3 parallel units x (via2 + via2 + via1) on vprog and (via1 + via2 + via2) on bl"},
+                {"net": "bl[c]", "segment": "local coldrv jumper -> vertical column trunk (to row 31)",
+                 "layer_width": "M4 4.0 um wide (93 um) -> M5 10.0 um wide trunk (690 um)",
+                 "vias": "via2 x12 + via3 x12 (coldrv) -> via4 x15 (trunk) -> via4 x8 + via3 x8 (per bitcell M3 lane)"},
+                {"net": "vss", "segment": "row M2 tap -> vertical column return trunk (from row 31) -> south main bus",
+                 "layer_width": "M2 0.42 um (~1 um from bitcell) -> M5 10.0 um trunk (779 um) -> M4 24.0 um bus (<= 999 um)",
+                 "vias": "via2 x8 + via3 x8 + via4 x8 per row/col beside bitcell vss exit; via4 x36 into south bus"},
+            ],
             "bitcell_segments": [
                 {"net": "bl", "entry": "fuse in pad (M1, 5.295 x 0.81 um, PDK)",
                  "stack": "via1 x2 + M2 pad 0.97 x 0.42 + via2 x2 + M3 lane 0.97 wide"},
@@ -1270,13 +1620,19 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
                           "select drain strap"},
                 {"net": "vss", "entry": "select source strap, 8.1 x 0.42 um M1",
                  "stack": "M1 bridge 1.49 x 0.42 into the guard ring, via1 x2, "
-                          "M2 rail 0.42 um (row rail)"},
+                          "M2 rail 0.42 um (row rail, tapped ~1 um east by top-level vss trunk)"},
             ],
-            "finding": "the narrowest points are the two 0.26 um via2 cuts at the bl "
-                       "entry and the two 0.26 um via1 cuts at the vss exit, one stack "
-                       "per bitcell; no documented GF180 current limit exists to rate "
-                       "them against 10 mA, so the metal delivery is an open item for "
-                       "the array-level program path (#307), widening or accepting them",
+            "finding": "limiting segments are the constituent cells' via stacks "
+                       "(efuse_bitcell: via1 x2 + via2 x2 at bl entry, via1 x2 at fuse "
+                       "out, via1 x2 at vss exit = ~10.5 ohm nom / 35.0 ohm high; "
+                       "efuse_coldrv: 3 parallel single-cut stacks on vprog and bl = "
+                       "~9.0 ohm nom / 30.0 ohm high) and narrow M2/M3 straps, totaling "
+                       "~23.6 ohm nom / ~69.6 ohm high inside the constituent cells alone "
+                       "plus ~14.7 ohm nom / ~18.4 ohm high in worst-case top-level M4/M5 "
+                       "trunks (Row 31, Col 7) -- exceeding the 20 ohm schematic assumption "
+                       "(10.97 mA at worst corner). No foundry current rule exists to rate "
+                       "the cuts; tracked as design issue #407 (ratified >= 10 mA target "
+                       "kept unchanged).",
         },
         "resistors": {"device": "ppolyf_u",
                       "rsh_ohm_sq": RSH_PPOLYF_U,
