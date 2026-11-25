@@ -25,13 +25,15 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#306**: Route the eFuse bitcell and eight-bit row and verify their extracted connections
+_None._
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
+- **#35**: T1 item 5 (corner verification, digital): klt sta and klt functional-verification for the controller
 - **#118**: Make the CI record-format check read the committed sim records: its glob matches 0 of 15 and it passes vacuously
+- **#306**: Route the eFuse bitcell and eight-bit row and verify their extracted connections
 
 ## PRs Awaiting Review
 
@@ -71,8 +73,8 @@ _None._
 | Operator merge-risk holds | 0 |
 | Very important | 1 |
 | Important | 1 |
-| Ready (`loom:issue`) | 1 |
-| In Progress (`loom:building`) | 1 |
+| Ready (`loom:issue`) | 0 |
+| In Progress (`loom:building`) | 3 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 1 |
 | Curated | 4 |
