@@ -7,9 +7,6 @@ path and a sense path — designed and verified by AI agents driving
 [klayout-tools](https://github.com/2AMLogic/klayout-tools), xschem + ngspice
 for the analog paths and Yosys/OpenROAD for the controller.
 
-**Private repo.** Visibility is an operator decision; nothing here is
-published.
-
 **Status: sense path simulated across PVT** (on assumed ranges — the current
 position under [Target specification](#target-specification) carries the
 caveats). Committed on `main`:
@@ -152,4 +149,4 @@ measurements/  silicon characterization (empty until tape-out)
 
 ## License
 
-Proprietary. Copyright Two AM Logic Inc. No licence is granted; see [LICENSE](LICENSE). This repository is private and stays private.
+Apache License 2.0 — see [LICENSE](LICENSE).
