@@ -126,18 +126,16 @@ loom_resolve_config() {
     local defaults_path
     defaults_path=$(_loom_config_private_defaults_path)
 
-    local tier_defaults tier_legacy tier_project tier_local
+    local tier_defaults tier_legacy tier_project tier_fleet tier_local
     tier_defaults=$(_loom_config_soft_read "$defaults_path")
     tier_legacy=$(_loom_config_tracked_read "$repo_root" "$LOOM_CONFIG_LEGACY_REL")
     tier_project=$(_loom_config_tracked_read "$repo_root" "$LOOM_CONFIG_PROJECT_REL")
+    tier_fleet=$(_loom_config_soft_read "$repo_root/.loom-local/fleet-repo.json")
     tier_local=$(_loom_config_soft_read "$repo_root/$LOOM_CONFIG_LOCAL_REL")
 
-    jq -c -n \
-        --argjson a "$tier_defaults" \
-        --argjson b "$tier_legacy" \
-        --argjson c "$tier_project" \
-        --argjson d "$(_loom_config_soft_read "$repo_root/.loom-local/fleet-repo.json")" --argjson e "$tier_local" \
-        '$a * $b * $c * $d * $e'
+    # A single tier can exceed the OS limit for one argument to jq.
+    printf '%s\n' "$tier_defaults" "$tier_legacy" "$tier_project" "$tier_fleet" "$tier_local" |
+        jq -cs 'reduce .[] as $tier ({}; . * $tier)'
 }
 
 # loom_config_get <repo_root> <dotted.path> [default]
