@@ -2,7 +2,7 @@
   "schema_version": 1,
   "kind": "t1-attestation-inventory",
   "t1_item": 9,
-  "description": "Testbenches shipped: the controller bench, the program-select width sweep and the sense-margin bench (both analog summarizers importing the shared record-provenance module sim/lib/bench_record.py, and the sense summarizer also the decision helper sim/lib/sense_decision.py), with one cold-start command (sim/cold-start.sh) and the pinned PDK and tool versions. The cold start runs the controller bench and validates each analog bench's klt sim request set with --dry-run; the full corner campaigns are batch submissions (sim/README.md, Testbench inventory), so this attestation shows the benches exist, are pinned and launch, not that any margin or current passes.",
+  "description": "Testbenches shipped: the controller bench, the program-select width sweep and the sense-margin bench (both analog summarizers importing the shared record-provenance module sim/lib/bench_record.py, and the sense summarizer also the decision helper sim/lib/sense_decision.py), with one cold-start command (sim/cold-start.sh) and the pinned PDK and tool versions. The sense-margin runner builds decks and requests with sim/lib/sense_request.sh. The cold start runs the controller bench and validates each analog bench's klt sim request set with --dry-run; the full corner campaigns are batch submissions (sim/README.md, Testbench inventory), so this attestation shows the benches exist, are pinned and launch, not that any margin or current passes.",
   "testbenches": [
     "verification/run.sh",
     "verification/runner.py",
@@ -15,6 +15,7 @@
     "sim/sense-margin/summarize.py",
     "sim/lib/bench_record.py",
     "sim/lib/sense_decision.py",
+    "sim/lib/sense_request.sh",
     "sim/cold-start.sh"
   ],
   "cold_start": {"argv": ["sim/cold-start.sh"], "local_only": true},
