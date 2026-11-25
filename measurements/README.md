@@ -27,8 +27,9 @@ check only:
 | Peak current | about 90 mA, rise in <= 1 ns | Select-device sweep, ideal gate drive: 11.99 mA minimum (ss, 125 C, 4.5 V, 260 ohm), 13.66 mA at 200 ohm, 28.25 mA maximum (ff, -40 C, 5.5 V, 140 ohm), 60 um select device (`sim/program-select/records/20261023T174839Z-f6eeac7/record.json`). Full program path (`efuse_coldrv`, `efuse_rowdrv`, `efuse_ls`, `efuse_bitcell`): 10.87 mA minimum (ss, 125 C, 4.5 V / 2.97 V, 260 ohm), 12.39 mA at 200 ohm, 26.22 mA maximum (ff, -40 C, 5.5 V / 3.63 V, 140 ohm) (`sim/corner-verification/records/20261123T205019Z-f6eeac7/record.json`). One current per point, no waveform |
 | Pulse | upper half about 40 ns wide, whole blow about 500 ns | 10 us nominal, 1-100 us (A3), RTL only (`sim/controller-fv/`); no analog result depends on it |
 
-The committed current is roughly 8 times below the report's peak (26.22 mA maximum of the full path against about 90 mA) and the
-committed pulse is orders of magnitude longer, so the shapes differ. The report's
+The committed current is roughly 3 to 8 times below the report's peak (26.22 mA maximum and 10.87 mA minimum of the full path
+against about 90 mA) and the committed pulse is about 20 times longer than the report's whole blow (10 us against about 500 ns;
+250 times the upper half width of about 40 ns), so the shapes differ. The report's
 fuse is a different material, geometry and process, so neither difference says
 the gf180 path is short or long on margin. A2 is neither tightened nor relaxed
 here. What would settle it is the documented programming condition of the PDK
