@@ -4,6 +4,11 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-24
 
+- **Issue #378** (closed): signoff/README.md: the T1 item 3 EF.* enumeration contradicts itself on EF.17
+- **Issue #60** (closed): T1 item 3 (DRC clean): own the EF.* deck gap after #31 closed — cite both clean klt drc reports once EF.* is evaluated upstream
+- **PR #372**: docs(signoff): cite curated+native DRC reports for T1 item 3, grade 3.analog/3.digital met
+- **PR #382**: test(layout): guard coldrv_cell cursor and refuse grown leaves in Builder.size()
+- **Issue #380** (closed): layout/gen_efuse_otp.py: the two remaining footprint-vs-grown-extent trap sites (coldrv_cell's untested leaf cursor, Builder.size())
 - **PR #379**: fix(layout): land placed leaves on the grown bbox west edge
 - **Issue #376** (closed): layout/gen_efuse_otp.py: place() lands the footprint but both row builders step on the grown bbox, so a grown leaf after an ungrown one keeps only 1.885 um
 - **PR #375**: Replace Apache-2.0 licence with canonical Two AM Logic proprietary text
