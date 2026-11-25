@@ -2,7 +2,7 @@
 # Run `klt lvs` with the pinned klt (never a host-installed one) on the digital
 # partition (layout/efuse_otp_ctrl.gds against the as-built gate-level netlist)
 # and on the routed analog cells efuse_ls, efuse_rowdrv, efuse_coldrv,
-# efuse_comp and efuse_sense (each the top of layout/efuse_otp_array.gds,
+# efuse_comp, efuse_sense, efuse_bitcell and efuse_row (each the top of layout/efuse_otp_array.gds,
 # against its .subckt in design/efuse_otp_array.spice), keeping the JSON
 # reports as committed evidence.
 #   layout/lvs.sh           rewrite layout/lvs-ctrl.report.json,
@@ -10,7 +10,9 @@
 #                           layout/lvs-rowdrv.report.json,
 #                           layout/lvs-coldrv.report.json,
 #                           layout/lvs-comp.report.json and
-#                           layout/lvs-sense.report.json
+#                           layout/lvs-sense.report.json,
+#                           layout/lvs-bitcell.report.json and
+#                           layout/lvs-row.report.json
 #   layout/lvs.sh --check   klt lvs --check on the committed report (input and
 #                           deck hashes still match; add --rerun to re-run the
 #                           compare)
@@ -29,7 +31,11 @@
 # environment.engine_version all stay compared. The committed reports are
 # never touched by a check.
 # klt exits 3 when a compare does not match; that is a finding, not a script
-# failure, so the verdict is printed and the report is kept as found.
+# failure, so the verdict is printed and the report is kept as found. The
+# ls/rowdrv/coldrv/comp/sense parts end in status: match; the bitcell/row parts
+# end in status: mismatch whose every discrepancy is the missing fuse model (no
+# fuse device in the curated deck, no efuse subckt in the design netlist) -- see
+# layout/README.md, "efuse_bitcell / efuse_row LVS probes".
 # The ctrl part needs the PDK, unlike the ls part: the gate-level
 # reference resolves each standard cell's pin order from the library's own
 # spice/cdl under <PDK_ROOT>/gf180mcuD/libs.ref, so CI (which installs no PDK)
@@ -44,7 +50,7 @@ export PDK="${PDK:-gf180mcuD}" PDK_ROOT="${PDK_ROOT:-$HOME/.ciel}"
 # shellcheck source=../signoff/klt.sh
 . signoff/klt.sh
 parts=(ctrl:efuse_otp_ctrl ls:efuse_ls rowdrv:efuse_rowdrv coldrv:efuse_coldrv
-       comp:efuse_comp sense:efuse_sense)
+       comp:efuse_comp sense:efuse_sense bitcell:efuse_bitcell row:efuse_row)
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
@@ -171,7 +177,7 @@ REQ
   else
     opts='{ "anchor_top_level_pins": true }'
     case "$part" in
-      rowdrv|coldrv) opts="{ \"anchor_top_level_pins\": true, \"flatten_reference\": [\"$top\"], \"combine_devices\": true }" ;;
+      rowdrv|coldrv|bitcell|row) opts="{ \"anchor_top_level_pins\": true, \"flatten_reference\": [\"$top\"], \"combine_devices\": true }" ;;
     esac
     req=$(cat <<REQ
 {

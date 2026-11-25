@@ -34,7 +34,7 @@ The block's verdict of record against the klayout-tools evidence tiers.
 `3.analog` and `3.digital` cite a two-member compound evidence list per
 partition — the curated report first, then the PDK-native report — each member
 pinned by its report's `provenance.input.content_hash`. The SHA-256 prefixes
-are `0ba0e28a…` for `layout/efuse_otp_array.gds` and `b80bfb50…` for
+are `5e553ab4…` for `layout/efuse_otp_array.gds` and `b80bfb50…` for
 `layout/efuse_otp_ctrl.gds`. Both members grade `met` with `status: "clean"`
 and `input_verified: true`.
 
@@ -136,12 +136,12 @@ lists the ratios beside each stream's SHA-256.
 1. **The controller's 0 `EF.*` markers are vacuous.** `efuse_otp_ctrl` draws
    no `PLFUSE`/`EFUSE_MK`, so the foundry fuse rules have no geometry to act
    on in that stream; only `layout/efuse_otp_array.gds` exercises them.
-2. **The array is placement-only outside the five routed peripheral cells**
-   (`efuse_ls`, `efuse_rowdrv`, `efuse_coldrv`, `efuse_comp`, `efuse_sense`;
-   `layout/README.md`, "What is not claimed"). The DRC claim covers the
-   committed stream as placed and filled — the unrouted array top and the
-   fuse cells' own placement are inside it, but full-array routing (#32) is
-   not.
+2. **The array is placement-only outside the seven routed cells**
+   (`efuse_bitcell`, `efuse_ls`, `efuse_rowdrv`, `efuse_coldrv`, `efuse_comp`,
+   `efuse_sense`, `efuse_row`; `layout/README.md`, "What is not claimed"). The
+   DRC claim covers the committed stream as placed and filled — the unrouted
+   array top and the fuse cells' own placement are inside it, but full-array
+   routing (#32) is not.
 
 ## Regenerate the record
 

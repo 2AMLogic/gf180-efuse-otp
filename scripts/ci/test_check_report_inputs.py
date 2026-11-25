@@ -105,15 +105,15 @@ class Test(unittest.TestCase):
         # An empty tree gates nothing, so main() takes its vacuous-pass
         # branch and check:ci is green with nothing seeded. No gated pair
         # is exercised here -- the real-tree pin lives in
-        # test_real_tree_gates_seventeen_reports.
+        # test_real_tree_gates_twentyone_reports.
         rc, out = self.run_main({})
         self.assertEqual(rc, 0, out)
         self.assertIn("passes vacuously", out)
 
-    def test_real_tree_gates_seventeen_reports(self):
+    def test_real_tree_gates_twentyone_reports(self):
         problems, gated, skipped = cri.check(REPO_ROOT)
         self.assertEqual(problems, [])
-        self.assertEqual(gated, 17)
+        self.assertEqual(gated, 21)
         # Skipped (no provenance.input.content_hash): efuse_otp_array.report.json
         # (generator report) plus the two fill-*.report.json files, whose input
         # is the generators' unwritten intermediate -- the filled streams are
