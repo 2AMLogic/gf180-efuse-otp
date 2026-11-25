@@ -28,6 +28,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
 import bench_record  # noqa: E402  (needs the path insert above under python3 -I)
+from sense_decision import decide  # noqa: E402
 
 
 def finite(x):
@@ -53,18 +54,15 @@ def points(rep, rfuse, programmed):
         ok = all(finite(v) for v in (sbl, sref, so, cp, cn))
         margin = (sbl - sref) if ok else None
         signed = (margin if programmed else -margin) if ok else None
-        resolved = bool(ok and abs(cp - cn) >= 0.5 * vdd)
-        bit = None
-        if ok:
-            bit = 1 if so >= 0.7 * vdd else (0 if so <= 0.3 * vdd else None)
         exp = 1 if programmed else 0
+        resolved, bit, dec_ok = decide(cp, cn, so, vdd, exp) if ok else (False, None, False)
         pts.append({
             "process": c["process"], "temp_c": c["temperature_c"], "vdd33_v": vdd,
             "rfuse_ohm": rfuse, "status": c.get("status"),
             "margin_v": margin, "signed_margin_v": signed,
             "v_sense_out": so, "v_cp": cp, "v_cn": cn,
             "resolved": resolved, "decision_bit": bit, "expected_bit": exp,
-            "decision_ok": bool(ok and resolved and bit == exp),
+            "decision_ok": dec_ok,
         })
     return pts
 

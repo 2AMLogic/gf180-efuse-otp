@@ -7,6 +7,15 @@ v(sbl) - v(sref) is read for each swept fuse resistance. The programmed side
 the margin crosses zero, found by linear interpolation between the two swept
 points that bracket the sign change. A corner whose sweep shows no sign change,
 or more than one, has break_even_ohm null and says why: nothing is extrapolated.
+
+The comparator decision measured at --t-out is folded in as well, with the same
+decide() as sim/sense-margin. Every swept resistance is read against the
+programmed expectation (bit 1), including points below the reference, so
+`digital.correct_corners_by_rfuse_ohm` counts the corners that resolved and read
+programmed at each resistance, and `lowest_all_corner_rfuse_ohm` is the lowest
+swept resistance correct at every corner (null if none). A corner missing from a
+sweep point, or with an unusable measurement, is not counted as correct; a valid
+wrong-bit reading counts zero and leaves the analog crossing alone.
 """
 import argparse
 import math
@@ -15,6 +24,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
 import bench_record  # noqa: E402
+from sense_decision import decide  # noqa: E402
 
 
 def finite(x):
@@ -32,38 +42,59 @@ def crossing(series):
     return r0 + (r1 - r0) * (0 - m0) / (m1 - m0), "interpolated between %g and %g ohm" % (r0, r1)
 
 
+PROGRAMMED_BIT = 1  # every swept point is read against "programmed", below the reference too
+
+
 def corner_key(c):
     return (c["process"], c["temperature_c"], c["supply_v"]["vdd33"])
 
 
 def fold(reports, stems_by_ohm):
-    """stems_by_ohm: {ohm: stem}. Returns per-corner list with margins and break-even."""
-    table = {}
+    """stems_by_ohm: {ohm: stem}. Returns per-corner list with margins, decisions and break-even."""
+    table, decisions = {}, {}
     for ohm, stem in stems_by_ohm.items():
         for c in reports[stem]["corners"]:
             m = {x["name"]: x.get("value") for x in c.get("measurements", [])}
             sbl, sref = m.get("v_sbl"), m.get("v_sref")
             table.setdefault(corner_key(c), {})[ohm] = (sbl - sref) if finite(sbl) and finite(sref) else None
+            res, bit, ok = decide(m.get("v_cp"), m.get("v_cn"), m.get("v_sense_out"),
+                                  c["supply_v"]["vdd33"], PROGRAMMED_BIT)
+            decisions.setdefault(corner_key(c), {})[ohm] = {
+                "resolved": res, "decision_bit": bit, "decision_ok": ok}
     out = []
     for (proc, temp, vdd), pts in sorted(table.items()):
         series = sorted(pts.items())
         be, how = crossing(series)
         out.append({"process": proc, "temp_c": temp, "vdd33_v": vdd,
                     "margin_v_by_rfuse_ohm": {("%g" % o): v for o, v in series},
+                    "decision_by_rfuse_ohm": {("%g" % o): d for o, d in sorted(decisions[(proc, temp, vdd)].items())},
                     "break_even_ohm": be, "break_even_basis": how})
     return out
 
 
-def summary(rows):
+def digital(rows, swept_ohm):
+    """Per swept resistance, the distinct corners with a resolved programmed-correct decision."""
+    counts = {}
+    for o in sorted(swept_ohm):
+        counts["%g" % o] = sum(1 for r in rows
+                               if r["decision_by_rfuse_ohm"].get("%g" % o, {}).get("decision_ok") is True)
+    passing = [o for o in sorted(swept_ohm) if rows and counts["%g" % o] == len(rows)]
+    return {"expected_bit": PROGRAMMED_BIT, "corners": len(rows),
+            "correct_corners_by_rfuse_ohm": counts,
+            "lowest_all_corner_rfuse_ohm": passing[0] if passing else None}
+
+
+def summary(rows, swept_ohm):
+    dig = digital(rows, swept_ohm)
     vals = [r for r in rows if r["break_even_ohm"] is not None]
     if not vals:
-        return {"corners": len(rows), "with_break_even": 0}
+        return {"corners": len(rows), "with_break_even": 0, "digital": dig}
     lo = min(vals, key=lambda r: r["break_even_ohm"])
     hi = max(vals, key=lambda r: r["break_even_ohm"])
     pick = lambda r: {k: r[k] for k in ("process", "temp_c", "vdd33_v", "break_even_ohm")}
     return {"corners": len(rows), "with_break_even": len(vals),
             "min_break_even": pick(lo), "max_break_even": pick(hi),
-            "spread_ohm": hi["break_even_ohm"] - lo["break_even_ohm"]}
+            "spread_ohm": hi["break_even_ohm"] - lo["break_even_ohm"], "digital": dig}
 
 
 def main():
@@ -102,8 +133,8 @@ def main():
         },
         "measurement_times": {"margin_read": a.t_pre, "decision_read": a.t_out},
         "complete": complete,
-        "ideal_reference": {"rref_ohm": a.rref, "summary": summary(ri), "corners": ri},
-        "physical_reference": {"summary": summary(rp), "corners": rp},
+        "ideal_reference": {"rref_ohm": a.rref, "summary": summary(ri, ideal), "corners": ri},
+        "physical_reference": {"summary": summary(rp, phys), "corners": rp},
     }
     bench_record.write_record(a.rec, rec)
     if not complete:
