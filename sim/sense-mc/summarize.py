@@ -171,6 +171,14 @@ def main():
     grid = one_submitted({k: v["corners"] for k, v in reqs.items()}, "corner grid")
     dmin = one_submitted({k: limit_min(v, "decision_margin") for k, v in reqs.items()},
                          "decision_margin lower limit")
+    # Every request's report is loaded once, through the same refuse-a-partial-set step the
+    # corner benches use: an absent report, or one whose corners disagree with its declared
+    # corner_count, exits 4 here, before anything is computed or written.
+    stems = list(dict.fromkeys(d[role] for d in pops.values() for role in roles))
+    reports = bench_record.load_reports(a.rec, stems)
+    jobs, engines = set(), set()
+    for s in stems:
+        bench_record.collect_env(reports[s], None, jobs, engines)
     process = [p["name"] for p in grid["process"]]
     temps, vdd = grid["temperature_c"], grid["supply_v"]["vdd33"]
     n_corners = len(process) * len(temps) * len(vdd)
@@ -182,8 +190,7 @@ def main():
         """One nominal/control pair: per-set stats from the two reports, graded yields."""
         sets = {}
         for role, s in (("nominal", nominal), ("control", d["control"])):
-            rep = bench_record.collect_env(
-                jl(os.path.join(a.rec, "sets", s, "report.json")), None, jobs, engines)
+            rep = reports[s]
             sets[role] = {"stem": s, "corner_count": rep["corner_count"], "errored": rep["errored"],
                           "stats": set_stats(rep)}
         y = os.path.join(a.rec, "yield", yield_name)
@@ -202,7 +209,7 @@ def main():
     physical_reference = ("committed XRref (ppolyf_u, 0.8 um x 1.05 um, 400.386 ohm at 25 C "
                           "typical) with the injected tolerance on its series multiplier s "
                           "(mc_inj_xrref_s), scaling terminal and body resistance together")
-    jobs, engines, out_pops, out_phys = set(), set(), {}, {}
+    out_pops, out_phys = {}, {}
     for pop, d in pops.items():
         out_pops[pop] = population(d, d["nominal"], ypop[pop], ideal_reference)
         if a.physical_reference:
