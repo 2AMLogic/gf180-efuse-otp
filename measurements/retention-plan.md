@@ -54,12 +54,24 @@ question is how far a programmed fuse can fall before it reads as intact.
   - against the ideal 400 ohm reference: 400.69 to 400.72 ohm across all 45
     corners (spread 0.03 ohm);
   - against the committed physical `XRref`: **327.91 ohm (`ff`, 125 C, 3.63 V)
-    to 471.99 ohm (`ss`, -40 C, 2.97 V)**, a 144 ohm spread. A programmed fuse
-    that drifted below about 472 ohm can read as intact at the worst corner.
-    Between 472 and 630 ohm the bit reads correctly at every corner, so the A5
-    edge keeps about 158 ohm of headroom, outside A5 only below 630 ohm. The
-    interpolation interval is 40 ohm; it is still an interpolation of a
-    nonlinear quantity, but it now rests on a committed sweep.
+    to 472.00 ohm (`ss`, -40 C, 2.97 V)** (recorded maximum 471.9952475 ohm), a
+    144 ohm spread. This is the **analog** zero-margin crossing (the
+    pre-clock differential voltage interpolated to zero at 14.9 ns): a
+    programmed fuse that drifted below about 472 ohm can have a negative
+    analog margin at the worst corner. The A5 edge at 630 ohm is about 158 ohm
+    above that estimate. The interpolation interval is 40 ohm; it is still an
+    interpolation of a nonlinear quantity, but it now rests on a committed
+    sweep.
+  - **Digital readback** (comparator decision sampled at 38 ns, physical
+    `XRref`) is a separate measurement and does not follow the analog sign
+    everywhere. At 460 ohm the programmed bit resolved correctly at 39 of 45
+    corners: all three `ss`, 25 C supplies show positive input margin
+    (+0.363, +0.458, +0.558 mV) yet resolve to logic 0 (intact). The only
+    other sign/bit disagreement is at 380 ohm (`sf`, 125 C, 2.97 V). At 500
+    and 540 ohm it resolved correctly at 45 of 45 corners. **500 ohm is the
+    lowest swept physical-reference point that read programmed at every
+    corner**; the sweep has no 472 ohm point. The separately cited
+    sense-margin record gives 45 of 45 at the A5 edge of 630 ohm.
 - **What it does not cover.** The bench fuse is an ideal resistor behind a
   switch. Reference tolerance and offset are covered only at the 630 ohm and
   260 ohm edges by Monte Carlo
@@ -79,4 +91,6 @@ question is how far a programmed fuse can fall before it reads as intact.
   simulation or controller change is proposed; it is not designed for unless
   measured.
 - **Margin for a partly programmed fuse** (a pulse that does not fully blow):
-  the same 400 to 630 ohm region applies, with the same estimate-only status.
+  the same region applies, from the analog crossing (about 472 ohm at the
+  worst corner) up to 630 ohm, with digital readback measured as correct at
+  every corner only from 500 ohm up (see above); estimate-only status.
