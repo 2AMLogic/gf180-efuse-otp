@@ -212,6 +212,13 @@ def sense_cell(b, subckt):
                             gs(max(u["top"] for u in units) + 1.5))
     for net, (lx, ly) in label_at.items():
         b._label(cell, net, lx, ly)
+    # Balance the latch outputs. The default PEX predicts 16.30 fF at CP
+    # versus 13.52 fF at CN without this extension, enough to reverse the
+    # programmed bit after the evaluation edge (#427, #428).
+    cn_left = min(x for x, _, _ in net_pins["cn"]) - LS_W2 / 2
+    cn_y = track_y["cn"]
+    b._box(cell, LS_M2, cn_left - 36.0, cn_y - LS_W2 / 2,
+           cn_left + 0.10, cn_y + LS_W2 / 2)
     b.sa_ports = {"net_pins": net_pins, "label_at": label_at,
                   "track_y": track_y, "rail_x": rail_x}
     b.cells[subckt] = cell
