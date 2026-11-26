@@ -4,6 +4,16 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-25
 
+- **PR #312**: feat(layout): route efuse_bitcell and efuse_row, probe their extracted connections
+- **PR #403**: fix: stream config tiers to jq during resolution
+- **PR #402**: refactor: share SPICE deck and request generation for sense sweeps
+- **PR #396**: sim: fold the comparator decision into the sense-breakeven record
+- **Issue #306** (closed): Route the eFuse bitcell and eight-bit row and verify their extracted connections
+- **Issue #399** (closed): create-issue.sh is dead on this host: config-resolver passes 208 KB of config through jq argv (E2BIG)
+- **Issue #404** (closed): check_evidence_format.py record-format leg passes vacuously: glob misses every committed record
+- **Issue #401** (closed): Share the deck and request builder used by the two deterministic sense sweeps
+- **Issue #400** (closed): efuse_row LVS probe does not detect an open in the bl via1 access stack
+- **Issue #394** (closed): sense-breakeven: fold the digital decision into record.json so the readback counts are machine-derived
 - **PR #390**: docs: cross-check program path and add retention plan vs poly-fuse blow report
 - **Issue #389** (closed): Program path and retention: check against the poly-fuse blow physics in the ADI / ESGI 2008 report
 - **PR #393**: fix: load sense-mc reports through the shared partial-set check
