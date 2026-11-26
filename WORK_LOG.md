@@ -4,6 +4,11 @@ Chronological record of merged PRs and closed issues. Maintained by the Guide ro
 
 ### 2026-11-26
 
+- **PR #420**: docs: clarify when to regenerate and re-attest the analog GDS
+- **PR #418**: Measure ERC supply connectivity on the routed analog array
+- **PR #416**: refactor(layout): split gen_efuse_otp.py into core builder and per-cell routers
+- **Issue #419** (closed): signoff/README.md item-2 re-attest trigger list names only gen_efuse_otp.py after the generator split
+- **Issue #340** (closed): Split layout/gen_efuse_otp.py into core builder and per-cell router modules
 - **PR #415**: fix: share strict finite voltage check across sense summarizers
 - **PR #414**: ci: discover layout unit tests via test_*.py wildcard
 - **PR #412**: refactor: share the sense decision record strings between the two benches
