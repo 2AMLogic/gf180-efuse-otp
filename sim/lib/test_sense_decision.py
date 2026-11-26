@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-"""Cross-bench pin for the two decision record strings: what sim/sense-margin
-and sim/sense-breakeven emit as definitions["resolved"] and
-definitions["decision_bit"] must be the RESOLVED_DEF / DECISION_BIT_DEF
-constants from sim/lib/sense_decision.py, so the two benches cannot describe
-decide() differently. A reword in one summarizer -- or a literal reintroduced
-in place of the constants -- fails here even though each bench's own
-self-test may still pass.
+"""Check that both sense benches emit the shared decision definitions.
+
+Each test gives RESOLVED_DEF and DECISION_BIT_DEF distinct sentinel strings
+before importing the summarizer, then checks its emitted record. A bench
+that copies either definition or swaps the two fields fails the check.
 
 Each summarizer's main() is driven over one synthetic corner with bench_record
 mocked out, so this is hermetic: no report set, no committed record, no
@@ -25,7 +23,7 @@ from unittest import mock
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import bench_record  # noqa: E402  (needs the path insert above under python3 -I)
-from sense_decision import DECISION_BIT_DEF, RESOLVED_DEF  # noqa: E402
+import sense_decision  # noqa: E402
 
 VDD = 3.3
 
@@ -76,6 +74,8 @@ def run_main(mod, argv, reports):
     return out
 
 
+@mock.patch.multiple(sense_decision, RESOLVED_DEF="sentinel resolved",
+                     DECISION_BIT_DEF="sentinel decision bit")
 class Definitions(unittest.TestCase):
     def test_sense_margin_emits_the_shared_definitions(self):
         mod = load_summarize("sense-margin")
@@ -87,8 +87,8 @@ class Definitions(unittest.TestCase):
                    "bench_rf900_rr400": {"corners": [good()]},
                    "control_rf600_rr500": {"corners": [good()]}}
         d = run_main(mod, argv, reports)["definitions"]
-        self.assertEqual(d["resolved"], RESOLVED_DEF)
-        self.assertEqual(d["decision_bit"], DECISION_BIT_DEF)
+        self.assertEqual(d["resolved"], sense_decision.RESOLVED_DEF)
+        self.assertEqual(d["decision_bit"], sense_decision.DECISION_BIT_DEF)
 
     def test_sense_breakeven_emits_the_shared_definitions(self):
         mod = load_summarize("sense-breakeven")
@@ -99,8 +99,8 @@ class Definitions(unittest.TestCase):
             for stem in ("ideal_rf%s_rr400" % o, "phys_rf%s_rrphys" % o):
                 reports[stem] = {"corners": [good()]}
         d = run_main(mod, argv, reports)["definitions"]
-        self.assertEqual(d["resolved"], RESOLVED_DEF)
-        self.assertEqual(d["decision_bit"], DECISION_BIT_DEF)
+        self.assertEqual(d["resolved"], sense_decision.RESOLVED_DEF)
+        self.assertEqual(d["decision_bit"], sense_decision.DECISION_BIT_DEF)
 
 
 if __name__ == "__main__":
