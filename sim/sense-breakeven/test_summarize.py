@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import summarize  # noqa: E402
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
-from sense_decision import decide  # noqa: E402
+from sense_decision import DECISION_BIT_DEF, RESOLVED_DEF, decide  # noqa: E402
 
 VDD = 3.3
 
@@ -135,8 +135,8 @@ class Definitions(unittest.TestCase):
         rec = self.run_main()
         d = rec["definitions"]
         self.assertEqual(set(d), self.KEYS)
-        self.assertEqual(d["resolved"], "|v(cp) - v(cn)| >= 0.5 * vdd33 after the edge")
-        self.assertEqual(d["decision_bit"], "1 if v(sense_out) >= 0.7 vdd33, 0 if <= 0.3 vdd33, else null")
+        self.assertEqual(d["resolved"], RESOLVED_DEF)
+        self.assertEqual(d["decision_bit"], DECISION_BIT_DEF)
         self.assertIn("programmed bit (1)", d["decision_ok"])
         self.assertIn("below the reference", d["decision_ok"])
         self.assertIn("swept", d["lowest_all_corner_rfuse_ohm"])

@@ -28,6 +28,7 @@ run "PVT grid binding" signoff/check-pvt-grid.sh
 run "pdk_env self-test" sim/lib/test_pdk_env.sh
 run "klt helper self-test" signoff/test-klt.sh
 run "bench_record load_reports self-test" python3 -I sim/lib/test_bench_record.py
+run "shared sense decision definitions" python3 -I sim/lib/test_sense_decision.py
 run "program-select summarize self-test" python3 -I sim/program-select/test_summarize.py
 run "sense-margin summarize self-test" python3 -I sim/sense-margin/test_summarize.py
 run "sense-breakeven summarize self-test" python3 -I sim/sense-breakeven/test_summarize.py
