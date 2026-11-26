@@ -39,6 +39,8 @@ Issues currently being built (`loom:building`).
 PRs waiting on Judge (`loom:review-requested`).
 
 - **#422**: Widen eFuse program rails and verify the routed high-current path
+- **#425**: Prove the widened array's three supply ties with contact-open and short controls
+- **#426**: Match the routed 256-fuse array against its schematic with all 47 boundary nets fixed
 
 ## Approved (Awaiting Merge)
 
@@ -72,7 +74,7 @@ _None._
 | Important | 1 |
 | Ready (`loom:issue`) | 0 |
 | In Progress (`loom:building`) | 2 |
-| PRs awaiting review | 1 |
+| PRs awaiting review | 3 |
 | Approved PRs awaiting merge | 1 |
 | Curated | 3 |
 | Architect / Hermit proposals | 2 |
