@@ -3,7 +3,8 @@
 #   layout/erc.sh                      refresh the two committed reports
 #   layout/erc.sh --check [--rerun]    check report hashes, optionally rerun ERC
 #   layout/erc.sh --negative-control   remove the Metal4 routing plane and
-#                                      require every supply to fragment
+#                                      require every supply to fragment, then
+#                                      open each controller tap contact class
 # Each stream has one top cell, so --check --rerun can infer its top.
 # ERC exits 3 for findings and 4 for ungraded antenna checks. Preserve each
 # measured result, including partial connectivity coverage, in its report.
@@ -76,7 +77,10 @@ for part in ctrl array; do
     --check) klt erc --check "$report" "$@" ;;
     --negative-control)
       if [ "$part" = ctrl ]; then supplies=(VDD VSS); else supplies=(vdd33 vprog vss); fi
-      negative_control ;;
+      negative_control
+      if [ "$part" = ctrl ]; then
+        klt_python -I layout/check_supply_ties.py --controller-contacts
+      fi ;;
     refresh) refresh ;;
     *) echo "Usage: $0 [--check [--rerun] | --negative-control]" >&2; exit 2 ;;
   esac

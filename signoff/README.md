@@ -379,11 +379,13 @@ Icarus 13.0 and Yosys 0.67 (`scripts/ci/install_eda.sh`, cached), installs `uv`
   regeneration claims need OpenROAD and the PDK and are not re-run;
 - both committed ERC reports match their stream, supply spec and deck hashes
   (`layout/erc.sh --check`). Removing Metal4 fragments both controller rails
-  and all three array rails (`layout/erc.sh --negative-control`);
+  and all three array rails (`layout/erc.sh --negative-control`). Opening only the
+  controller's n-well or substrate contact cuts produces 18 VDD or one VSS
+  missing-tie finding respectively;
 - the analog array tie report replays. Removing its actual substrate tap
   footprints, removing only the cuts under each of the three tap classes, and
   shorting VPROG to VSS produce their distinct expected findings
-  (`uv run --script layout/check_array_ties.py`);
+  (`uv run --script layout/check_supply_ties.py`);
 - the item 8 envelope's recorded hash of `block-manifest.signoff.json` is current
   (`--attest 8 --check`), so regenerating the record without
   re-attesting item 8 fails;

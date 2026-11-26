@@ -5,7 +5,7 @@
 #   "klayout==0.30.14",
 # ]
 # ///
-"""Replay the analog array supply checks and physical failure controls with uv run."""
+"""Replay the supply tie checks and their physical failure controls."""
 import argparse
 from collections import Counter
 import json
@@ -14,6 +14,7 @@ from pathlib import Path
 import subprocess
 import sys
 from tempfile import TemporaryDirectory
+from typing import NamedTuple
 
 import klayout.db as kdb
 
@@ -22,12 +23,23 @@ ARRAY = Path("layout/efuse_otp_array.gds")
 SPEC = Path("layout/erc-array.spec.json")
 REPORT = Path("layout/erc-array-ties.report.json")
 KLT = Path(sys.executable).with_name("klt")
-RAILS = {"vdd33", "vprog", "vss"}
-TIES = {"nwell_vdd33", "nwell_vprog", "psub_vss"}
 
 
-def check(stream, expected=None, count=1, boxes=None):
-    command = [KLT, "erc", stream, SPEC, "--top", "efuse_otp_array", "--deck",
+class Partition(NamedTuple):
+    top: str
+    spec: Path
+    rails: set
+    ties: set
+
+
+ANALOG = Partition("efuse_otp_array", SPEC, {"vdd33", "vprog", "vss"},
+                   {"nwell_vdd33", "nwell_vprog", "psub_vss"})
+DIGITAL = Partition("efuse_otp_ctrl", Path("layout/erc-ctrl.spec.json"), {"VDD", "VSS"},
+                    {"nwell_vdd", "psub_vss"})
+
+
+def check(stream, expected=None, count=1, boxes=None, partition=ANALOG):
+    command = [KLT, "erc", stream, partition.spec, "--top", partition.top, "--deck",
                "gf180mcu", "--findings-only", "--omit-antenna-tables", "--format", "json"]
     run = subprocess.run(command, capture_output=True, text=True)
     # The findings-only connectivity run omits antenna grading (exit 4).
@@ -35,13 +47,13 @@ def check(stream, expected=None, count=1, boxes=None):
         raise ValueError(f"{stream}: ERC exit {run.returncode}: {run.stderr or run.stdout}")
     report = json.loads(run.stdout)
     coverage = report["erc_coverage"]
-    checked = {name for name in TIES
+    checked = {name for name in partition.ties
                if f'erc.missing_tie:["{name}"]' in coverage["checked"]}
     if (coverage["scope"] != "connectivity" or not coverage["known"] or
-            checked != TIES or coverage["skipped"] or coverage["inapplicable"] or coverage["unknown"]):
+            checked != partition.ties or coverage["skipped"] or coverage["inapplicable"] or coverage["unknown"]):
         raise ValueError(f"{stream}: incomplete coverage of supply ties: {coverage}")
     islands = {entry["name"]: entry["matched_islands"] for entry in report["nets"]}
-    if islands != dict.fromkeys(RAILS, 1):
+    if islands != dict.fromkeys(partition.rails, 1):
         raise ValueError(f"{stream}: unexpected supply connectivity {islands}")
     findings = [(f["rule"], f["net"], f["other_net"], f["layer"], f.get("via"))
                 for f in report["erc_findings"]]
@@ -55,13 +67,55 @@ def check(stream, expected=None, count=1, boxes=None):
                   for f in report["erc_findings"]}
         if actual != boxes:
             raise ValueError(f"{stream}: missing-tie findings do not locate the disconnected wells")
-    print(f"{stream.name}: one island per rail, three checked ties, findings {dict(counts)}")
+    print(f"{stream.name}: one island per rail, {len(checked)} checked ties, findings {dict(counts)}")
     return run.stdout
 
 
 def region(cell, layer):
     index = cell.layout().layer(layer, 0)
     return kdb.Region(cell.begin_shapes_rec(index)).merged()
+
+
+def contact_controls(directory, top, domains, write, partition):
+    layout = top.layout()
+    all_cuts = region(top, 33)
+    cut_shapes = top.shapes(layout.layer(33, 0))
+    for rail, tie, taps, bodies in domains:
+        cuts = (all_cuts & taps).merged()
+        if taps.is_empty() or cuts.is_empty():
+            raise ValueError(f"no drawn taps or contact cuts for {rail}")
+        print(f"{rail}: opening {cuts.count()} cuts in {taps.count()} tap footprints")
+        cut_shapes.clear()
+        cut_shapes.insert(all_cuts - cuts)
+        boxes = None
+        if bodies is not None:
+            boxes = {(b.left, b.bottom, b.right, b.top) for b in
+                     (polygon.bbox() for polygon in bodies.each())}
+        expected = ("erc.missing_tie", rail, None, tie, None)
+        path = directory / f"open-{rail}-contacts.gds"
+        layout.write(str(path), write)
+        check(path, expected, len(boxes) if boxes else 1, boxes, partition)
+
+
+def controller_controls(directory):
+    layout = kdb.Layout()
+    stream = Path("layout/efuse_otp_ctrl.gds")
+    check(stream, partition=DIGITAL)
+    layout.read(str(stream))
+    top = layout.top_cell()
+    layout.flatten(top.cell_index(), -1, True)
+    write = kdb.SaveLayoutOptions()
+    write.gds2_write_timestamps = False
+    flat = directory / "ctrl-flat.gds"
+    layout.write(str(flat), write)
+    check(flat, partition=DIGITAL)
+    wells = region(top, 21)
+    active = region(top, 22)
+    domains = [
+        ("VDD", "nwell_vdd", active & region(top, 32) & wells, wells),
+        ("VSS", "psub_vss", (active & region(top, 31)) - wells, None),
+    ]
+    contact_controls(directory, top, domains, write, DIGITAL)
 
 
 def physical_controls(directory):
@@ -76,7 +130,6 @@ def physical_controls(directory):
     active = region(top, 22)
     wells = region(top, 21)
     substrate_taps = (active & region(top, 31)) - wells
-    all_cuts = region(top, 33)
     write = kdb.SaveLayoutOptions()
     write.gds2_write_timestamps = False
 
@@ -105,20 +158,7 @@ def physical_controls(directory):
         ("vprog", "nwell_vprog", well_taps & high_voltage, high_voltage),
         ("vss", "psub_vss", substrate_taps, None),
     ]
-    cut_shapes = top.shapes(layout.layer(33, 0))
-    for rail, tie, taps, bodies in domains:
-        cuts = (all_cuts & taps).merged()
-        if taps.is_empty() or cuts.is_empty():
-            raise ValueError(f"no drawn taps or contact cuts for {rail}")
-        print(f"{rail}: opening {cuts.count()} cuts in {taps.count()} tap footprints")
-        cut_shapes.clear()
-        cut_shapes.insert(all_cuts - cuts)
-        boxes = None
-        if bodies is not None:
-            boxes = {(b.left, b.bottom, b.right, b.top) for b in
-                     (polygon.bbox() for polygon in bodies.each())}
-        expected = ("erc.missing_tie", rail, None, tie, None)
-        check(save(f"open-{rail}-contacts.gds"), expected, len(boxes) if boxes else 1, boxes)
+    contact_controls(directory, top, domains, write, ANALOG)
 
     # A single M4 rectangle spans the 2 µm gap between the south supply buses.
     layout = kdb.Layout()
@@ -135,11 +175,17 @@ def physical_controls(directory):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--write", action="store_true", help="refresh the committed intact report")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--controller-contacts", action="store_true",
+                      help="replay controller cuts using the released klt from layout/erc.sh")
+    mode.add_argument("--write", action="store_true", help="refresh the committed intact report")
     args = parser.parse_args()
     os.chdir(ROOT)
-    intact = check(ARRAY)
     with TemporaryDirectory() as scratch:
+        if args.controller_contacts:
+            controller_controls(Path(scratch))
+            return
+        intact = check(ARRAY)
         physical_controls(Path(scratch))
     if args.write:
         REPORT.write_text(intact)

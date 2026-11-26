@@ -649,7 +649,7 @@ cite the previous result as historical with its measured GDS digest.
 
 ## Array supply ties and physical fault controls
 
-Run `uv run --script layout/check_array_ties.py` from the repo root. The
+Run `uv run --script layout/check_supply_ties.py` from the repo root. The
 script replays the committed ERC report with the sparse-n-well fix from
 [klayout-tools #7944](https://github.com/2AMLogic/klayout-tools/pull/7944)
 at merge commit `25da22a118053b44429be544e0ff0573250f8170` and KLayout
@@ -680,6 +680,13 @@ The findings-only command omits antenna analysis. The pinned 0.9.2 grader
 pairs this ERC evidence with `lvs-array-probe.report.json` and returns
 `11.analog: unmet` with reason `lvs_did_not_pass`. The routed supply
 ties pass ERC. Full-array LVS correspondence is tracked in #32.
+
+The controller uses the released 0.9.2 producer and a 33/0 contact
+requirement on both ties. `layout/erc.sh --negative-control` also replays
+the pristine and flattened controller. Opening only its 729 n-well contacts
+yields 18 VDD missing ties at the disconnected wells' bounding boxes.
+Opening only its 486 substrate contacts yields one VSS missing tie. Both
+rails have 243 tap footprints. Each faulty run retains one island per rail.
 
 ## efuse_otp_array LVS probe & PDK runset probe
 

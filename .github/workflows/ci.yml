@@ -187,7 +187,7 @@ jobs:
         run: layout/erc.sh --negative-control
 
       - name: Reproduce analog supply ties and physical fault controls
-        run: uv run --script layout/check_array_ties.py
+        run: uv run --script layout/check_supply_ties.py
 
       - name: Committed streams have no unlanded via2
         # The deck does not model V2.3c/V2.3d/V2.4b/V2.4c, so this per-cell count

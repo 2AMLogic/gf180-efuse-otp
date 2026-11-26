@@ -17,10 +17,10 @@
     "(power.tapcell_master gf180mcu_fd_sc_mcu7t5v0__filltie, distance 15 um) strap:",
     "nwell_vdd -- each merged Nwell 21/0 shape must hold an n-well tap (Comp AND Nplus, the",
     "gf180mcu tap boolean; inside Nwell that selects taps only, PMOS source/drain are Comp AND",
-    "Pplus) that reaches VDD.",
+    "Pplus) with a drawn Contact 33/0 reaching Metal1 on VDD.",
     "psub_vss -- gf180mcu bulk is a p-type substrate with no drawn p-well, so the substrate",
     "region is the top-cell extent minus Nwell (well_complement_of); its p-taps (Comp AND Pplus",
-    "outside Nwell; NMOS source/drain in the substrate are Comp AND Nplus) must reach VSS."
+    "outside Nwell; NMOS source/drain in the substrate are Comp AND Nplus) require Contact 33/0 to Metal1 on VSS."
   ],
   "stackup": [
     { "name": "Poly", "layer": "30/0", "role": "gate", "active_layer": "22/0" },
@@ -46,7 +46,7 @@
       "name": "nwell_vdd",
       "well_layer": "21/0",
       "tap_layer": "22/0",
-      "tap_requires": ["32/0"],
+      "tap_requires": ["32/0", "33/0"],
       "connect_to": "Metal1",
       "net": "VDD"
     },
@@ -55,7 +55,7 @@
       "well_layer": null,
       "well_complement_of": ["21/0"],
       "tap_layer": "22/0",
-      "tap_requires": ["31/0"],
+      "tap_requires": ["31/0", "33/0"],
       "connect_to": "Metal1",
       "net": "VSS"
     }
