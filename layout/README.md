@@ -468,13 +468,12 @@ column k's bitcell origin is at x = k · 135.71 µm, k = 0 west):
 
 ### Program-current path record (A2)
 
-The ≥ 10 mA worst-corner target is spec §2 assumption A2 (no PDK source);
-per spec §3 the claim is **path delivery only**. The simulated evidence is
-`sim/corner-verification` record `20261108T235928Z-f6eeac7`: schematic-level,
-all 135 points pass, binding corner ss / 125 °C / vdd33 2.97 V / vprog 4.5 V
-/ 260 Ω at 10.97 mA. The layout record below is the metal the same current
-crosses inside one bitcell (the row rails carry 8 bitcells' worth; the
-array-level wiring is #307 and not yet drawn):
+Spec §2 assumption A2 requires ≥ 10 mA through the selected fuse during the
+program pulse at the worst corner. The schematic sweep with 20 Ω of assumed
+route resistance passed all 135 points. Its minimum was 10.8722 mA at SS,
+125 °C, VDD33 = 2.97 V, VPROG = 4.5 V and 260 Ω, leaving 0.8722 mA above
+A2. The table traces the path inside one selected bitcell.
+[November 23 corner record](../sim/corner-verification/records/20261123T205019Z-f6eeac7/record.json)
 
 | Segment | Layer / width | Via counts |
 |---|---|---|
@@ -484,17 +483,17 @@ array-level wiring is #307 and not yet drawn):
 | select device | nfet_06v0 W = 60 µm (6 × 10 µm fingers) | — |
 | `vss` exit (source strap → ring → row rail) | M1 bridge 1.49 × 0.42 µm + ring; M2 rail 0.42 µm | via1 ×2 |
 
-**Applicable GF180 current limits: none are documented.** The pinned PDK
-tree (klt 0.9.2 deck, the PDK's own DRC/LVS rule decks, `libs.tech` and
-`libs.ref`) carries no metal or via current-density or maximum-current
-value, and the DRC deck's rule set is purely geometric — so no foundry
-rating exists to compare the widths and cuts above against. **Design
-finding:** the narrowest points of the path are the 0.26 µm via2 pair at
-the `bl` entry and the 0.26 µm via1 pair at the `vss` exit (one stack per
-bitcell); whether they carry 10 mA is an open item — flagged in
-`efuse_otp_array.report.json`'s `program_path.finding` for #307 to widen or
-accept at array integration. No width here is claimed against a limit it
-cannot cite (spec §1's sourcing rule).
+At 125 °C the GF180 unidirectional electromigration limits for this stack
+are **0.67 mA/µm** of drawn width on M1–M4, **1.21 mA/µm** on 9 kÅ
+MetalTop (M5), and **0.18 mA per 0.26 µm via**. The manual averages
+same-direction pulses over time. For rectangular pulses with zero idle
+current, the average on each segment is its pulse current times its duty
+cycle. A2 specifies the current during the pulse. A3 gives its width, so
+applying the limits also requires the pulse repetition rate on each segment.
+For example, two vias sharing a 10 mA pulse equally carry 5 mA each during
+the pulse. Their 0.18 mA limit corresponds to a duty cycle of at most 3.6%
+under those assumptions.
+[GF180 design manual §14.2, tables 14.3–14.4](https://gf180mcu-pdk.readthedocs.io/en/latest/physical_verification/design_manual/drm_14_2.html)
 
 ## efuse_bitcell / efuse_row LVS probes
 
@@ -608,19 +607,21 @@ Because every constituent cell uses M1–M3 only, M4 and M5 (MetalTop on 5LM
 
 ### Complete selected program-current path (supply `vprog` to return `vss`, A2)
 
-Target: ≥ 10 mA through the fuse at the worst corner (spec §2 assumption A2 and
-decision 0002; claim is **path delivery only** per spec §3). Schematic baseline:
-`sim/corner-verification` record `20261108T235928Z-f6eeac7` assumed a lumped
-20 Ω route and delivered 10.97 mA at the binding corner (`ss / 125 °C / vdd33
-2.97 V / vprog 4.5 V / 260 Ω`).
+The hand estimate assumes direct external contacts at the west ends of the
+south M4 buses. From `vprog` at (−10.59, −104) µm, the path goes through the
+column driver and the farthest cell, row 31, physical column 7
+(`Xarr[31].Xb[0]`, `bl[0]`), and returns to `vss` at (−16.09, −78) µm.
+The M1 port labels are on the sense block at (55.54, −48.71) µm for `vprog`
+and (17.07, −61.82) µm for `vss`. Supplying current at those pins adds
+access metal and vias outside the estimate, including one via2 and one via3
+in series at the sense-block `vprog` tap.
 
-**Applicable current rule:** none is documented in the pinned PDK tree (searched
-the klt 0.9.2 deck, PDK DRC/LVS rule decks, `libs.tech` and `libs.ref`); the
-widths and via counts below are therefore audited against the ≥ 10 mA target and
-the PDK Magic-tech sheet/via resistances (M1–M4 0.09 / 0.104 Ω/sq, M5 9K 0.04 /
-0.049 Ω/sq, via1–via4 4.5 / 15.0 Ω per cut, nominal / high corner), not rated
-against a foundry current-density limit. Worst-case end-to-end path is Row 31,
-Col 7 (`Xarr[31].Xb[0]`):
+The table uses nominal/high resistances from the PDK Magic tech file.
+Sheet resistances are 0.09/0.104 Ω/sq on M1–M4 and 0.04/0.049 Ω/sq on
+9 kÅ M5. Each via1–via4 cut contributes 4.5/15.0 Ω before accounting for
+parallel cuts. The interconnect sum excludes the fuse and transistor channels.
+The current-density limits and pulse assumptions are in the
+[program-current path record](#program-current-path-record-a2).
 
 | Segment (supply → return) | Layer / width | Via counts (0.26 µm cuts) | Est. R nom / high (Ω) |
 |---|---|---|---|
@@ -634,22 +635,19 @@ Col 7 (`Xarr[31].Xb[0]`):
 | 8. `efuse_bitcell` `n` (fuse `out` → `XXsel.D`) | M2 0.42 µm (6.82 µm) | **via1 ×2 (limiting)** + via1 ×3 | 5.21 / 14.19 |
 | 9. `efuse_bitcell` `vss` exit → row rail | M1 0.42 → ring → M2 0.42 (~1 µm) | **via1 ×2 (limiting)** | 2.79 / 8.12 |
 | 10. Top `vss` col trunk + south main bus | M5 10.0 µm (779 µm) → M4 24.0 µm (≤ 999 µm) | via2 ×8, via3 ×8, via4 ×8, via4 ×36 | 8.67 / 13.78 |
-| **Total interconnect (worst-case Row 31, Col 7)** | | | **~44.9 / ~103.6 Ω** |
+| **Total interconnect (M4 bus to M4 bus)** | | | **44.91 / 103.55** |
 
-- **Limiting segments & design finding ([#407](https://github.com/2AMLogic/gf180-efuse-otp/issues/407)):**
-  The top-level M4/M5 trunks stay below the 30 µm `MSLOT.1` ceiling and use
-  multi-via arrays (8–36 cuts) so top-level transitions are not the bottleneck.
-  The limiting segments are the **constituent cells' via stacks** — `efuse_bitcell`'s
-  2-cut stacks (`via2 ×2 + via1 ×2` on `bl`, `via1 ×2` on fuse `out`, `via1 ×2`
-  on `vss` = ~10.5 Ω nominal / ~35.0 Ω high) and `efuse_coldrv`'s 3 parallel
-  single-cut stacks on `vprog` and `bl` (~9.0 Ω nominal / ~30.0 Ω high), which
-  together with local M1/M2/M3 add ~23.6 Ω nominal / ~69.6 Ω high before
-  top-level metal (~21.3 Ω nominal / ~33.9 Ω high worst-case to Row 31, Col 7).
-  Because total extracted route resistance exceeds the 20 Ω schematic assumption
-  (which left 0.97 mA headroom above 10 mA at the binding corner), this
-  shortfall is recorded as design issue **#407** (constituent-cell routing is
-  out of scope for #307; ratified spec §2 / decision 0002 targets remain
-  unchanged).
+Rows 1, 2, 5 and 10 sum to **21.36 / 33.88 Ω** in top-level routes.
+Rows 3, 4, 6, 8 and 9 contribute the other **23.55 / 69.67 Ω** inside the
+cells. The limiting local transitions are the bitcell via stacks on `bl`,
+fuse `out` and `vss` (about 10.5 / 35.0 Ω in vias) and the three parallel
+single-cut branches on each side of `Mdrv` (about 9.0 / 30.0 Ω in vias).
+
+Even the nominal hand estimate exceeds the 20 Ω assumed in the November 23
+schematic sweep, which left 0.8722 mA of margin above the 10 mA pulse target.
+Issue #407 tracks extraction of the worst selected path and simulation of its
+fuse current against A2.
+[#407](https://github.com/2AMLogic/gf180-efuse-otp/issues/407)
 
 ## efuse_otp_array LVS probe & PDK runset probe
 

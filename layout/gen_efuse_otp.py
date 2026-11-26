@@ -1186,9 +1186,9 @@ class Builder:
           * M4: horizontal shared buses (prog_strobe, sense_en, sbl), per-column
             local jumpers (bl, vprog over efuse_coldrv), vertical supply rails
             over efuse_rowdrv (y >= -4), and the three south horizontal main
-            supply buses (vss 12 um, vprog 12 um, vdd33 4 um).
-          * M5 (MetalTop on 5LM gf180mcuC): vertical per-column trunks (6 um
-            bl[c] and vss, 6 um vprog feeder, 1.2 um vdd33 feeder), west
+            supply buses (vss 24 um, vprog 24 um, vdd33 4 um).
+          * M5 (MetalTop on 5LM gf180mcuC): vertical per-column trunks (10 um
+            bl[c] and vss, 10 um vprog feeder, 1.2 um vdd33 feeder), west
             row-driver supply drops, and 0.8 um sense_en / sbl drops to
             efuse_sense.
         Column k (0..7 west to east) carries index c = COLS - 1 - k (7..0),
@@ -1254,7 +1254,7 @@ class Builder:
             self._via_grid(cell, TOP_VIA4, vxs,
                            self._via_center_span((by0 + by1) / 2, 3))
 
-        # 3. Per-column bit lines bl[7..0] (6 um M5 vertical trunks + 4 um M4
+        # 3. Per-column bit lines bl[7..0] (10 um M5 vertical trunks + 4 um M4
         #    jumpers over efuse_coldrv) and col_sel[7..0] labels.
         y_bl_track = gs(dy_cd + cd_ty["bl"])
         y_bl_bar0 = gs(y_bl_track - TOP_BL_BAR_W / 2)
@@ -1267,7 +1267,7 @@ class Builder:
             c = COLS - 1 - k
             x_col = gs(dx_row + k * step_x)
             x_cd = gs(dx_cd + k * step_x)
-            # 6 um vertical M5 trunk covering all 32 rows' bl M3 lanes
+            # M5 trunk covering all 32 rows' bl M3 lanes
             self._box(cell, TOP_M5, x_col, y_bl_bar0,
                       x_col + TOP_TRUNK_W, y_bl_top)
             for r in range(ROWS):
@@ -1344,8 +1344,8 @@ class Builder:
                   sa_sbl_x + TOP_M5_SIG_W / 2, y_sbl + TOP_M5_SIG_W / 2)
 
         # 5. Per-column supply trunks (M5) and south horizontal main buses (M4):
-        #    vss (6 um M5 per column beside every bitcell's vss exit, 12 um M4 bus),
-        #    vprog (6 um M5 per column into all 3 Mdrv taps, 12 um M4 bus),
+        #    vss (10 um M5 per column beside every bitcell's vss exit, 24 um M4 bus),
+        #    vprog (10 um M5 per column into all 3 Mdrv taps, 24 um M4 bus),
         #    vdd33 (1.2 um M5 per column, 4 um M4 bus).
         y_vss_top = gs(dy_row + (ROWS - 1) * step_y + ROW_VSS_RAIL_Y[1] + 0.30)
         y_cd_vss = gs(dy_cd + CD_RAIL_Y["vss"])
@@ -1582,17 +1582,26 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
                      "changes state or that a pulse programs it",
             "target": ">= 10 mA through the fuse at the worst corner (spec section 2, "
                       "assumption A2 and decision 0002: no PDK source)",
-            "simulated": "sim/corner-verification record 20261108T235928Z-f6eeac7: "
-                         "schematic-level, all 135 points pass; binding corner ss / "
-                         "125 C / vdd33 2.97 V / vprog 4.5 V / 260 ohm at 10.97 mA "
-                         "(its 20 ohm route is an assumption, not this layout)",
-            "current_limits": "none documented: the pinned PDK tree carries no metal "
-                              "or via current limit (searched the klt deck, the PDK "
-                              "DRC/LVS rule decks, libs.tech and libs.ref); the "
-                              "geometry below is recorded against the 10 mA target "
-                              "and PDK Magic-tech sheet/via resistances (M1-M4 0.09/0.104 "
-                              "ohm/sq, M5 9K 0.04/0.049 ohm/sq, via1-via4 4.5/15.0 ohm "
-                              "nom/high), not rated against a foundry current limit",
+            "simulated": "sim/corner-verification record 20261123T205019Z-f6eeac7. "
+                         "All 135 schematic points pass with 20 ohm assumed route resistance. "
+                         "The minimum is 10.8722 mA at ss / 125 C / vdd33 2.97 V / "
+                         "vprog 4.5 V / 260 ohm, a 0.8722 mA margin over A2.",
+            "current_limits": "GF180 design manual section 14.2, tables 14.3-14.4 "
+                              "(https://gf180mcu-pdk.readthedocs.io/en/latest/physical_verification/design_manual/drm_14_2.html). "
+                              "At 125 C the unidirectional limits are 0.67 mA/um for M1-M4, "
+                              "1.21 mA/um for M5 (9000 angstrom MetalTop) and 0.18 mA per 0.26 um via. "
+                              "For same-direction rectangular pulses with zero idle current, "
+                              "average current equals pulse current times the duty cycle on that segment. "
+                              "A2 requires 10 mA during the pulse. A3 gives pulse width only. "
+                              "Applying the EM limits requires a repetition rate and current sharing.",
+            "resistance_estimate": "Hand estimate from the west ends of the south M4 buses, "
+                                   "vprog (-10.59, -104 um) through Xarr[31].Xb[0] "
+                                   "(physical column 7, bl[0]) to vss (-16.09, -78 um). "
+                                   "Direct M4 contacts exclude access metal and vias from the "
+                                   "labeled M1 pins, including the single via2 and via3 at the "
+                                   "sense-block vprog tap. Nominal/high PDK Magic values are "
+                                   "0.09/0.104 ohm/sq on M1-M4, 0.04/0.049 ohm/sq on M5 "
+                                   "and 4.5/15.0 ohm per via cut.",
             "top_segments": [
                 {"net": "vprog", "segment": "south horizontal main bus",
                  "layer_width": "M4 24.0 um wide (length <= 1029 um to col 7)",
@@ -1622,17 +1631,14 @@ def build(netlist_path, klt, fuse_gds, out_gds, report_json):
                  "stack": "M1 bridge 1.49 x 0.42 into the guard ring, via1 x2, "
                           "M2 rail 0.42 um (row rail, tapped ~1 um east by top-level vss trunk)"},
             ],
-            "finding": "limiting segments are the constituent cells' via stacks "
-                       "(efuse_bitcell: via1 x2 + via2 x2 at bl entry, via1 x2 at fuse "
-                       "out, via1 x2 at vss exit = ~10.5 ohm nom / 35.0 ohm high; "
-                       "efuse_coldrv: 3 parallel single-cut stacks on vprog and bl = "
-                       "~9.0 ohm nom / 30.0 ohm high) and narrow M2/M3 straps, totaling "
-                       "~23.6 ohm nom / ~69.6 ohm high inside the constituent cells alone "
-                       "plus ~14.7 ohm nom / ~18.4 ohm high in worst-case top-level M4/M5 "
-                       "trunks (Row 31, Col 7) -- exceeding the 20 ohm schematic assumption "
-                       "(10.97 mA at worst corner). No foundry current rule exists to rate "
-                       "the cuts; tracked as design issue #407 (ratified >= 10 mA target "
-                       "kept unchanged).",
+            "finding": "The bitcell via stacks on bl, fuse out and vss contribute about "
+                       "10.5/35.0 ohm nominal/high. The three parallel coldrv branches "
+                       "contribute about 9.0/30.0 ohm in vias on vprog and bl. Including "
+                       "local metal gives 23.55/69.67 ohm inside the cells. Top-level routes "
+                       "add 21.36/33.88 ohm (rows 1, 2, 5 and 10 in layout/README.md). "
+                       "The 44.91/103.55 ohm bus-to-bus interconnect estimate exceeds the "
+                       "assumed 20 ohm that yielded 0.8722 mA schematic margin. Issue #407 "
+                       "tracks extraction and verification of worst-corner fuse current against A2.",
         },
         "resistors": {"device": "ppolyf_u",
                       "rsh_ohm_sq": RSH_PPOLYF_U,
