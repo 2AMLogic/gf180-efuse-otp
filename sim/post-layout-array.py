@@ -2,6 +2,7 @@
 """Measure selected row 31, column 0 in the real 47-port array (fuse-aware tool trial)."""
 import argparse
 from concurrent.futures import ThreadPoolExecutor
+from itertools import product
 import json
 import math
 import os
@@ -57,16 +58,52 @@ def selected_fuse(netlist, out, schematic):
     return path, "r.xdut.rprogram_target", (target[3], target[4])
 
 
+def corner_id(config):
+    mode, process, temp, logic, resistance = config
+    return f"{mode}/{process}/{temp}C/{logic}V/{resistance}ohm"
+
+
+def configurations(full):
+    if full:
+        configs = []
+        corners = product(("typical", "ss", "ff", "fs", "sf"),
+                          (-40, 25, 125), (2.97, 3.3, 3.63))
+        for corner in corners:
+            configs.extend(("read", *corner, value) for value in (140, 200, 260, 630, 900, 1_000_000_000))
+            configs.extend(("program", *corner, value) for value in (140, 200, 260))
+    else:
+        configs = [("read", process, temp, logic, value)
+                   for process, temp, logic in (("ss", -40, 2.97), ("typical", 25, 3.3))
+                   for value in (260, 630)]
+        configs.extend(("program", "ss", 125, 2.97, value) for value in (140, 200, 260))
+    configs.extend((mode, "ss", 125, 2.97, 260) for mode in ("other-row", "other-column"))
+    return configs
+
+
+def check_matrix(report, full):
+    metrics = {
+        "read": ("preedge_margin_v", "cp_minus_cn_v", "sense_out_v"),
+        "program": ("program_current_ma",),
+        "other-row": ("deselected_current_ua",),
+        "other-column": ("deselected_current_ua",),
+    }
+    expected = {(corner_id(config), metric) for config in configurations(full) for metric in metrics[config[0]]}
+    measured = [(row["corner_id"], row["spec_row"]) for row in report["delta"]]
+    if set(measured) != expected or len(measured) != len(expected):
+        raise ValueError("incomplete, repeated or unexpected full-array measurement rows")
+
+
 def bench(config, out, path, target, ends, pins, schematic):
     mode, process, temp, logic, r = config
-    name = f"{mode}/{process}/{temp}C/{logic}V/{r}ohm"
+    name = corner_id(config)
     work = out / name
     work.mkdir(parents=True, exist_ok=True)
     read = mode == "read"
-    rail = 5.0 if read else 4.5
+    rail = 5.0 if read else {2.97: 4.5, 3.3: 5.0, 3.63: 5.5}[logic]
+    resistor = {"ff": "res_ff", "ss": "res_ss"}.get(process, "res_typical")
     lib = MODEL_DIR / "sm141064.ngspice"
     deck = ["* Row 31, column 0 of the routed 32 x 8 array", f'.include "{MODEL_DIR}/design.ngspice"',
-            f'.lib "{lib}" {process}', f'.lib "{lib}" {"res_ss" if process == "ss" else "res_typical"}']
+            f'.lib "{lib}" {process}', f'.lib "{lib}" {resistor}']
     if not schematic:
         # The extractor supplies the intact resistance of each drawn link.
         # ngspice accepts the physical L/W card with a neutral resistor model.
@@ -120,7 +157,7 @@ def bench(config, out, path, target, ends, pins, schematic):
         {"name": name, "value": value, "status": "pass" if valid else "fail"} for name, value, valid in values]}
 
 
-def measure(netlist):
+def measure(netlist, full):
     side = os.environ["KLT_PEX_SIDE"]
     if side not in {"schematic", "extracted"}:
         raise ValueError(f"unexpected measurement side {side}")
@@ -128,34 +165,35 @@ def measure(netlist):
     pins, _ = reference()
     schematic = side == "schematic"
     path, target, ends = selected_fuse(netlist.resolve(), out, schematic)
-    configs = [("read", process, temp, logic, value)
-               for process, temp, logic in (("ss", -40, 2.97), ("typical", 25, 3.3))
-               for value in (260, 630)]
-    configs.extend(("program", "ss", 125, 2.97, value) for value in (140, 200, 260))
-    configs.extend((mode, "ss", 125, 2.97, 260) for mode in ("other-row", "other-column"))
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        rows = list(pool.map(lambda config: bench(config, out, path, target, ends, pins, schematic), configs))
+    jobs = int(os.environ.get("PEX_JOBS", "6" if full else "2"))
+    with ThreadPoolExecutor(max_workers=jobs) as pool:
+        rows = list(pool.map(lambda config: bench(config, out, path, target, ends, pins, schematic),
+                             configurations(full)))
     print(json.dumps({"corners": rows}, allow_nan=False))
 
 
-def replay(control):
-    work = WORK / ("metal-control" if control else "baseline")
+def replay(control, full):
+    work = WORK / (("metal-control" if control else "baseline") + ("-full" if full else ""))
     work.mkdir(parents=True, exist_ok=True)
     pins, source = reference()
     ref = work / "reference.spice"
     ref.write_text(source)
     version = json.loads(Path("sim/pdk.json").read_text())
     pin_check()
+    command = "python3 sim/post-layout-array.py --measure"
+    if full:
+        command = "python3 sim/post-layout-array.py --full-grid --measure"
     args = ["uvx", "--from", KLT_SOURCE, "--with", PINNED_ENGINE, "klt", "pex", str(CONTROL if control else GDS),
             "--deck", "gf180mcu", "--top", "efuse_otp_array", "--pins", ",".join(pins), "--rename-declared-pins",
             "--pdk", "gf180mcuD", "--pdk-root", str(MODEL_DIR.parents[2]), "--reference-netlist", str(ref),
-            "--measure-command", "python3 sim/post-layout-array.py --measure", "--measure-timeout-s", "2100",
+            "--measure-command", command, "--measure-timeout-s", "14400" if full else "2100",
             "-o", str(work / "array.spice"), "--outdir", str(work / "run"), "--format", "json"]
     run = subprocess.run(args, text=True, stdout=subprocess.PIPE)
     if run.returncode not in {0, 3}:
         raise RuntimeError(f"klt pex exited {run.returncode}")
     report = json.loads(run.stdout)
-    if (len(report["delta"]) != 17 or report["errored"] or report["unfinished"] or
+    check_matrix(report, full)
+    if (report["errored"] or report["unfinished"] or
             report["body_bias"]["status"] != "biased" or report["extraction"]["device_count"] != 2393 or
             report["extraction"]["net_count"] != 485 or
             report["provenance"]["pdk"]["version"] != "open_pdks " + version["open_pdks_revision"]):
@@ -169,10 +207,11 @@ def replay(control):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--measure", type=Path, metavar="NETLIST", help=argparse.SUPPRESS)
-    parser.add_argument("--geometry-control", action="store_true", help="use the refilled scratch GDS from post-layout-sense.py")
+    parser.add_argument("--geometry-control", action="store_true", help="use the refilled scratch GDS with the CN extension removed")
+    parser.add_argument("--full-grid", action="store_true", help="run all 45 PVT corners with six read and three program resistances")
     args = parser.parse_args()
     os.chdir(ROOT)
     if args.measure:
-        measure(args.measure)
+        measure(args.measure, args.full_grid)
     else:
-        raise SystemExit(replay(args.geometry_control))
+        raise SystemExit(replay(args.geometry_control, args.full_grid))

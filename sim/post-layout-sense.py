@@ -84,9 +84,9 @@ def controls():
     template = TEMPLATE.read_text()
     for name, original, alternate in (
         ("strong-substrate", "Rvsubs_dctie vsubs 0 1e+12", "Rvsubs_dctie vsubs 0 1"),
-        ("matched-cp-load", "Ccp_outp cp|outp vsubs 1.6297548e-14", "Ccp_outp cp|outp vsubs 1.3515993e-14"),
+        ("previous-cn-load", "Ccn_outn cn|outn vsubs 1.6138599e-14", "Ccn_outn cn|outn vsubs 1.3515993e-14"),
     ):
-        if baseline.splitlines().count(original) != 1 or "Ccn_outn cn|outn vsubs 1.3515993e-14" not in baseline.splitlines():
+        if baseline.splitlines().count(original) != 1 or "Ccp_outp cp|outp vsubs 1.6296276e-14" not in baseline.splitlines():
             raise ValueError("Selected layout or extracted load changed; inspect the control before repeating it")
         scratch = WORK / "controls" / name
         scratch.mkdir(parents=True, exist_ok=True)
@@ -104,7 +104,7 @@ def controls():
 
 
 def geometry_control():
-    """Add a 36 µm extension to the existing CN Metal2 track in a scratch GDS."""
+    """Remove the adopted 36 µm CN Metal2 extension in a scratch GDS."""
     import klayout.db as db
 
     work = WORK / "metal-control"
@@ -119,15 +119,17 @@ def geometry_control():
         raise ValueError("CN Metal2 track moved; inspect the sense layout before repeating this control")
     before = db.Region(tracks).merged()
     extension = db.DBox(67.50, 25.34, 103.60, 25.76).to_itype(layout.dbu)
-    tracks.insert(extension)
+    pieces = [shape for shape in tracks.each() if shape.is_box() and shape.box == extension]
+    if len(pieces) != 1:
+        raise ValueError("expected one removable CN extension on the delivered Metal2")
+    pieces[0].delete()
     change = (before ^ db.Region(tracks)).merged()
     expected = db.DBox(67.50, 25.34, 103.50, 25.76).to_itype(layout.dbu)
     if not (change ^ db.Region(expected)).is_empty():
-        raise ValueError("physical control must add exactly 36 × 0.42 µm of Metal2")
+        raise ValueError("physical control must remove exactly 36 × 0.42 µm of Metal2")
     options = db.SaveLayoutOptions()
     options.gds2_write_timestamps = False
-    # The original metal fill was placed before the new wire. Re-run the
-    # array's normal fill flow so its 2 µm keepout follows the changed route.
+    # Re-run the normal fill flow so dummy metal follows the changed route.
     top = layout.cell("efuse_otp_array")
     fill = layout.cell("density_fill")
     instances = [inst for inst in top.each_inst() if inst.cell_index == fill.cell_index()]
@@ -178,8 +180,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--measure", metavar="NETLIST", type=Path, help=argparse.SUPPRESS)
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--controls", action="store_true", help="run substrate and matched-load sensitivity controls after replay")
-    mode.add_argument("--geometry-control", action="store_true", help="extend the drawn CN route in scratch and replay the unmodified bench")
+    mode.add_argument("--controls", action="store_true", help="run substrate and previous-CN-load sensitivity controls after replay")
+    mode.add_argument("--geometry-control", action="store_true", help="remove the CN extension in scratch and replay the unmodified bench")
     args = parser.parse_args()
     os.chdir(ROOT)
     if args.measure:
