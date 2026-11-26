@@ -66,7 +66,7 @@ export FAKE_UVX_LOG="$tmp/uvx.log"; : > "$FAKE_UVX_LOG"
 PATH="$fb:$PATH" bash -c '. "$1"; klt drc --check x.json' _ "$here/klt.sh" 2>&1; check "klt passthrough exits 0" 0 "$?"
 PATH="$fb:$PATH" bash -c '. "$1"; klt_python -I -c "import sys" y.gds' _ "$here/klt.sh" 2>&1; check "klt_python passthrough exits 0" 0 "$?"
 lit "klt argv" "--from $pin klt drc --check x.json" "$(cat "$FAKE_UVX_LOG")"
-lit "klt_python argv" "--from $pin python -I -c import sys" "$(cat "$FAKE_UVX_LOG")"
+lit "klt_python argv" "--from $pin python -I -c import sys y.gds" "$(cat "$FAKE_UVX_LOG")"
 
 # the pin file is read exactly once, at source (cat runs once, not per call).
 cc="$tmp/countcat"; mkdir -p "$cc"
