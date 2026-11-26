@@ -189,6 +189,9 @@ jobs:
       - name: Reproduce analog supply ties and physical fault controls
         run: uv run --script layout/check_supply_ties.py
 
+      - name: Replay fuse-aware array LVS and its physical and boundary controls
+        run: uv run --script layout/check_fuse_lvs.py
+
       - name: Committed streams have no unlanded via2
         # The deck does not model V2.3c/V2.3d/V2.4b/V2.4c, so this per-cell count
         # of via2 shapes with no M3 above or no M2 below is the only gate for

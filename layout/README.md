@@ -690,6 +690,66 @@ rails have 243 tap footprints. Each faulty run retains one island per rail.
 
 ## efuse_otp_array LVS probe & PDK runset probe
 
+### Fuse-aware source candidate
+
+`uv run --script layout/check_fuse_lvs.py` compares the actual array stream
+against the unmodified xschem SPICE file, then runs two independent failure
+controls. Use `--write` to regenerate the candidate report. The script pins
+klayout-tools commit `25da22a118053b44429be544e0ff0573250f8170` and KLayout
+0.30.14. The released 0.9.2 probe below remains the signoff input of record.
+
+The checker restricts device combination to `nfet` and `pfet`, preserving
+the separate two-terminal fuse devices. With unrestricted combination the
+real eight-bit row and full array both stop at `device.combine_incomplete`.
+The xschem top header is commented, so the SPICE reader's `.TOP` has zero
+formal pins. The checker reads all 47 published names from that header and
+requires their exact electrical correspondences with `hints.same_nets`.
+The hard-pair checks include the 32 row selects, eight column selects,
+CLK, SENSE_EN, PROG_STROBE, SENSE_OUT, VDD33, VPROG and VSS. The
+checker verifies each pair occurs in the final `net_correspondence`.
+On macOS and Linux the 485 correspondence rows have identical names,
+reference IDs and pin flags. Twelve rows use different process-local layout
+net numbers. The replay renumbers those IDs bijectively, preserving which
+rows share an ID, then compares the producer's canonical verdict fields.
+
+| Input | Result |
+|---|---|
+| Intact layout and boundary | All 485 nets and 876 devices match, including 256 eFuses. All 47 boundary pairs match. Zero errors. |
+| One Metal1 bridge over BL and N at (5.0, 3.45)–(7.0, 3.65) µm, placed on the array top | Mismatch. 484 layout / 485 reference nets, 874 of 876 devices paired. The compare identifies the merged `ARR[0]_B[7]_N` and the unmatched eFuse and select transistor in that cell. |
+| Original layout with the SENSE_EN / PROG_STROBE pairings interchanged | Mismatch. Both incorrect hard pairs are rejected. |
+
+The fuse class is compared by topology. Its R is a placeholder, and the
+A/L/P/W geometry parameters are ungraded. The 256-fuse result concerns
+device recognition and terminal wiring. The `subckt-call` reference reports
+`power_connectivity.status: unchecked`. Each of the three actual supplies
+has an explicit name-to-name match in the ordinary comparison.
+
+A scratch manifest citing `lvs-array-fuse-candidate.report.json` for both
+`4.analog` and the LVS member of `11.analog` grades both rows met with
+released 0.9.2. That gives 19/22 met and one N/A on the #425 stack.
+The ordinary manifest continues to grade 17/22 with one N/A. #32 requires
+adoption of a published release carrying the fuse extractor before changing
+the record. The released `klt lvs --check` confirms the layout and
+schematic hashes but reports a different deck hash from this source
+candidate. The exact candidate producer confirms all three hashes.
+
+To reproduce the provisional grade from the repository root, place a
+temporary manifest under `signoff` so its relative evidence paths resolve:
+
+```sh
+probe=$(mktemp -d signoff/.fuse-grade.XXXXXX)
+jq '.evidence["4.analog"] = (.evidence["11.analog"][1] |
+    .file = "layout/lvs-array-fuse-candidate.report.json") |
+    .evidence["11.analog"][1] = .evidence["4.analog"]' \
+    signoff/block-manifest.json > "$probe/manifest.json"
+uvx --from "$(cat signoff/klt-pin.txt)" klt signoff \
+    --manifest "$probe/manifest.json" --format json > "$probe/grade.json"
+# Exit 3 indicates the two item 7 rows are still unmet.
+jq '{t1_met_count, t1_item_count, t1_not_applicable_count}' "$probe/grade.json"
+rm "$probe/grade.json" "$probe/manifest.json"
+rmdir "$probe"
+```
+
 ### Pinned-klt top-level probe (`layout/lvs-array-probe.report.json`)
 
 `layout/lvs.sh`'s `array-probe` part extracts `efuse_otp_array` from
