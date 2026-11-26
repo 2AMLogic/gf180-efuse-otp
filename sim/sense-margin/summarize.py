@@ -22,17 +22,12 @@ Pass/fail is data here, not an exit status. The negative control flips sign when
 intact control point reads the wrong side while the same bench corner read the right one.
 """
 import argparse
-import math
 import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
 import bench_record  # noqa: E402  (needs the path insert above under python3 -I)
-from sense_decision import decide  # noqa: E402
-
-
-def finite(x):
-    return x is not None and isinstance(x, (int, float)) and math.isfinite(x)
+from sense_decision import DECISION_BIT_DEF, RESOLVED_DEF, decide, finite  # noqa: E402
 
 
 def ohms(x):
@@ -186,8 +181,8 @@ def main():
         "definitions": {
             "margin_v": "v(sbl) - v(sref) just before the clock edge",
             "signed_margin_v": "margin_v for programmed, -margin_v for intact; positive = correct side of the reference",
-            "resolved": "|v(cp) - v(cn)| >= 0.5 * vdd33 after the edge",
-            "decision_bit": "1 if v(sense_out) >= 0.7 vdd33, 0 if <= 0.3 vdd33, else null",
+            "resolved": RESOLVED_DEF,
+            "decision_bit": DECISION_BIT_DEF,
         },
         "complete": complete,
         "fuses": fuses,

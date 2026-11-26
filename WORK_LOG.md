@@ -2,8 +2,34 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-26
+
+- **PR #415**: fix: share strict finite voltage check across sense summarizers
+- **PR #414**: ci: discover layout unit tests via test_*.py wildcard
+- **PR #412**: refactor: share the sense decision record strings between the two benches
+- **PR #410**: refactor(signoff): define klt()/klt_python() unconditionally, drop the --no-function opt-out
+- **PR #408**: feat(layout): route efuse_otp_array top and add top-level LVS probe
+- **PR #405**: feat: record decision definitions in the sense-breakeven record
+- **Issue #413** (closed): Use one finite-number check for voltages in the sense benches
+- **Issue #411** (closed): Discover layout unit tests via test_*.py in CI instead of per-file invocations
+- **Issue #406** (closed): Pin the shared resolved/decision_bit prose to one source across the two sense benches
+- **Issue #398** (closed): sense-breakeven: record the decision thresholds in record.json, as sense-margin already does
+- **Issue #331** (closed): Remove the --no-function opt-out from signoff/klt.sh and its caller-scanner tests
+- **Issue #307** (closed): Connect the 32 × 8 eFuse array to its drivers, sense path and supplies
+- **Issue #304** (closed): Track fuse-bearing bitcell, row and array-top routing for analog LVS
+
 ### 2026-11-25
 
+- **PR #312**: feat(layout): route efuse_bitcell and efuse_row, probe their extracted connections
+- **PR #403**: fix: stream config tiers to jq during resolution
+- **PR #402**: refactor: share SPICE deck and request generation for sense sweeps
+- **PR #396**: sim: fold the comparator decision into the sense-breakeven record
+- **Issue #306** (closed): Route the eFuse bitcell and eight-bit row and verify their extracted connections
+- **Issue #399** (closed): create-issue.sh is dead on this host: config-resolver passes 208 KB of config through jq argv (E2BIG)
+- **Issue #404** (closed): check_evidence_format.py record-format leg passes vacuously: glob misses every committed record
+- **Issue #401** (closed): Share the deck and request builder used by the two deterministic sense sweeps
+- **Issue #400** (closed): efuse_row LVS probe does not detect an open in the bl via1 access stack
+- **Issue #394** (closed): sense-breakeven: fold the digital decision into record.json so the readback counts are machine-derived
 - **PR #390**: docs: cross-check program path and add retention plan vs poly-fuse blow report
 - **Issue #389** (closed): Program path and retention: check against the poly-fuse blow physics in the ADI / ESGI 2008 report
 - **PR #393**: fix: load sense-mc reports through the shared partial-set check

@@ -105,21 +105,38 @@ class Test(unittest.TestCase):
         # An empty tree gates nothing, so main() takes its vacuous-pass
         # branch and check:ci is green with nothing seeded. No gated pair
         # is exercised here -- the real-tree pin lives in
-        # test_real_tree_gates_twentytwo_reports.
+        # test_real_tree_gates_twentyfour_reports.
         rc, out = self.run_main({})
         self.assertEqual(rc, 0, out)
         self.assertIn("passes vacuously", out)
 
-    def test_real_tree_gates_twentytwo_reports(self):
+    def test_real_tree_gates_twentyfour_reports(self):
         problems, gated, skipped = cri.check(REPO_ROOT)
         self.assertEqual(problems, [])
-        self.assertEqual(gated, 22)
+        self.assertEqual(gated, 24)
         # Skipped (no provenance.input.content_hash): efuse_otp_array.report.json
         # (generator report) plus the two fill-*.report.json files, whose input
         # is the generators' unwritten intermediate -- the filled streams are
         # gated by regen-gds.sh/pnr.sh byte compares and the drc.sh input
         # hashes instead (#310).
         self.assertEqual(skipped, 3)
+
+    def test_program_current_is_bound_to_delivered_array(self):
+        stream = "layout/efuse_otp_array.gds"
+        report_path = "layout/program-current.json"
+        record = {"gds": stream, "sha256": sha(ARRAY)}
+        files = {stream: ARRAY, report_path: record}
+        rc, out = self.run_main(files)
+        self.assertEqual(rc, 0, out)
+        self.assertIn("1 report input hash(es) match", out)
+
+        for change, error in (({"sha256": "0" * 64}, "does not match stream"),
+                              ({"gds": "layout/efuse_otp_ctrl.gds"}, "gds must name")):
+            with self.subTest(change=change):
+                rc, out = self.run_main({**files, report_path: {**record, **change}})
+                self.assertEqual(rc, 1, out)
+                self.assertIn(report_path, out)
+                self.assertIn(error, out)
 
     def test_recorded_hash_mismatch_fails(self):
         files = clean_tree()

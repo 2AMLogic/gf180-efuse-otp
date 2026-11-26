@@ -27,7 +27,7 @@ klt_python -I "$root/layout/gen_efuse_otp.py" \
 klt_python -I "$root/layout/fill_partitions.py" \
   --input "$tmp/efuse_otp_array.gds" --output "$tmp/filled.gds" \
   --report "$tmp/fill.json" --top efuse_otp_array >/dev/null
-mv "$tmp/filled.gds" "$tmp/efuse_otp_array.gds"
+python3 -I "$root/layout/order_gds.py" "$tmp/filled.gds" "$tmp/efuse_otp_array.gds"
 sha="$(sha256sum "$tmp/efuse_otp_array.gds" | cut -d' ' -f1)"
 
 if [ "${1:-}" = "--check" ]; then

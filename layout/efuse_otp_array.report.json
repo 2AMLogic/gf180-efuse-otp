@@ -38,61 +38,51 @@
     "target": ">= 10 mA through the fuse at the worst corner (spec section 2, assumption A2 and decision 0002: no PDK source)",
     "simulated": "sim/corner-verification record 20261123T205019Z-f6eeac7. All 135 schematic points pass with 20 ohm assumed route resistance. The minimum is 10.8722 mA at ss / 125 C / vdd33 2.97 V / vprog 4.5 V / 260 ohm, a 0.8722 mA margin over A2.",
     "current_limits": "GF180 design manual section 14.2, tables 14.3-14.4 (https://gf180mcu-pdk.readthedocs.io/en/latest/physical_verification/design_manual/drm_14_2.html). At 125 C the unidirectional limits are 0.67 mA/um for M1-M4, 1.21 mA/um for M5 (9000 angstrom MetalTop) and 0.18 mA per 0.26 um via. For same-direction rectangular pulses with zero idle current, average current equals pulse current times the duty cycle on that segment. A2 requires 10 mA during the pulse. A3 gives pulse width only. Applying the EM limits requires a repetition rate and current sharing.",
-    "resistance_estimate": "Hand estimate from the west ends of the south M4 buses, vprog (-10.59, -104 um) through Xarr[31].Xb[0] (physical column 7, bl[0]) to vss (-16.09, -78 um). Direct M4 contacts exclude access metal and vias from the labeled M1 pins, including the single via2 and via3 at the sense-block vprog tap. Nominal/high PDK Magic values are 0.09/0.104 ohm/sq on M1-M4, 0.04/0.049 ohm/sq on M5 and 4.5/15.0 ohm per via cut.",
+    "resistance_estimate": "See layout/README.md for the selected-cell routed DC model, terminal definitions, PDK coefficients and controls.",
     "top_segments": [
       {
         "net": "vprog",
-        "segment": "south horizontal main bus",
-        "layer_width": "M4 24.0 um wide (length <= 1029 um to col 7)",
-        "vias": "via4 x36 (6x6 at 0.64 um pitch) into column feeder"
-      },
-      {
-        "net": "vprog",
-        "segment": "column feeder + local coldrv jumper",
-        "layer_width": "M5 10.0 um wide (61 um) -> M4 1.60 um wide jumper",
-        "vias": "via4 x20 into jumper; via3 x24 + via2 x24 onto coldrv M2 rail"
+        "segment": "external M1 to M4 feeder and south bus",
+        "vias": "11 via1/via2/via3 in parallel per layer at M1 access; 20 via4 at sense feeder; 36 via4 at each M5-to-M4 main bus tap"
       },
       {
         "net": "vprog -> bl",
-        "segment": "efuse_coldrv (Mdrv m=3 parallel units, constituent cell)",
-        "layer_width": "M2 0.42 um rails/tracks, 3x parallel M3 0.30 um lanes, M1 rings/straps",
-        "vias": "3 parallel units x (via2 + via2 + via1) on vprog and (via1 + via2 + via2) on bl"
+        "segment": "three physical column-driver devices",
+        "vias": "12 via1/via2/via3 cuts on each Mdrv source and drain, in addition to the constituent cell's original paths"
       },
       {
-        "net": "bl[c]",
-        "segment": "local coldrv jumper -> vertical column trunk (to row 31)",
-        "layer_width": "M4 4.0 um wide (93 um) -> M5 10.0 um wide trunk (690 um)",
-        "vias": "via2 x12 + via3 x12 (coldrv) -> via4 x15 (trunk) -> via4 x8 + via3 x8 (per bitcell M3 lane)"
+        "net": "bl",
+        "segment": "M4 jumper through 10 um M5 column trunk",
+        "vias": "15 via4 at jumper; 12 via3 and 12 via4 per bitcell"
       },
       {
         "net": "vss",
-        "segment": "row M2 tap -> vertical column return trunk (from row 31) -> south main bus",
-        "layer_width": "M2 0.42 um (~1 um from bitcell) -> M5 10.0 um trunk (779 um) -> M4 24.0 um bus (<= 999 um)",
-        "vias": "via2 x8 + via3 x8 + via4 x8 per row/col beside bitcell vss exit; via4 x36 into south bus"
+        "segment": "select source to adjacent M5 return and M4 bus",
+        "vias": "9 via1 on the source strap; 8 via2/via3/via4 at its M5 tap; 14 via1/via2/via3 per layer at the external M1 access"
       }
     ],
     "bitcell_segments": [
       {
         "net": "bl",
-        "entry": "fuse in pad (M1, 5.295 x 0.81 um, PDK)",
-        "stack": "via1 x2 + M2 pad 0.97 x 0.42 + via2 x2 + M3 lane 0.97 wide"
+        "entry": "PDK fuse input pad",
+        "stack": "3-by-3 via1/via2 bank into a 1.70 um M3 bit line"
       },
       {
         "net": "fuse element",
-        "layers": "PDK primitive, geometry unmodified (verify_fuse); not extractable as a device by the curated deck"
+        "layers": "PDK efuse primitive checked by verify_fuse"
       },
       {
         "net": "n",
-        "entry": "fuse out pad (M1, 4.535 x 1.75 um, PDK)",
-        "stack": "via1 x2, M2 run 6.82 x 0.42 um, via1 x3 on the 0.42 um select drain strap"
+        "entry": "PDK fuse output pad",
+        "stack": "9 via1 at the fuse pad, M2 to 12 via1 along the select drain"
       },
       {
         "net": "vss",
-        "entry": "select source strap, 8.1 x 0.42 um M1",
-        "stack": "M1 bridge 1.49 x 0.42 into the guard ring, via1 x2, M2 rail 0.42 um (row rail, tapped ~1 um east by top-level vss trunk)"
+        "entry": "select source strap",
+        "stack": "direct source-to-trunk access in parallel with an M1 guard-ring bridge and 10 via1 into the M2 row return"
       }
     ],
-    "finding": "The bitcell via stacks on bl, fuse out and vss contribute about 10.5/35.0 ohm nominal/high. The three parallel coldrv branches contribute about 9.0/30.0 ohm in vias on vprog and bl. Including local metal gives 23.55/69.67 ohm inside the cells. Top-level routes add 21.36/33.88 ohm (rows 1, 2, 5 and 10 in layout/README.md). The 44.91/103.55 ohm bus-to-bus interconnect estimate exceeds the assumed 20 ohm that yielded 0.8722 mA schematic margin. Issue #407 tracks extraction and verification of worst-corner fuse current against A2."
+    "finding": "Issue #407 records the full-array address survey and routed selected-cell current diagnosis. Program MOS fingers have 15 drawn diffusion contacts each. Final fuse-aware LVS and PEX are tracked in #32 and #61."
   },
   "resistors": {
     "device": "ppolyf_u",

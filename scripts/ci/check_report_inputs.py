@@ -12,6 +12,10 @@ provenance.input.content_hash:
   3. compare the stream's sha256 against the recorded content_hash (the
      "sha256:" prefix is optional).
 
+The selected program-current diagnostic has a separate schema. When
+layout/program-current.json is present, its gds must name the delivered
+analog array and its sha256 must match the bytes of that GDS.
+
 Fail closed: a gated report whose stream path cannot be resolved (unknown
 role, none of the role's fields carrying a string path, non-"repo" scope,
 named file absent) is a defect, not a skip -- that is what keeps a future
@@ -71,6 +75,8 @@ ROLE_FIELDS = {
 }
 
 REPORT_GLOB = "layout/*report*.json"
+PROGRAM_CURRENT = "layout/program-current.json"
+ARRAY_GDS = "layout/efuse_otp_array.gds"
 HASH_PREFIX = "sha256:"
 
 
@@ -105,7 +111,11 @@ def check(root):
     problems = []
     gated = 0
     skipped = 0
-    for path in sorted(root.glob(REPORT_GLOB)):
+    reports = sorted(root.glob(REPORT_GLOB))
+    current = root / PROGRAM_CURRENT
+    if current.exists():
+        reports.append(current)
+    for path in reports:
         try:
             data = json.loads(path.read_text())
         except (OSError, ValueError) as e:
@@ -114,27 +124,38 @@ def check(root):
         if not isinstance(data, dict):
             problems.append(f"{path}: top level must be a JSON object")
             continue
-        provenance = data.get("provenance")
-        content_hash = None
-        if isinstance(provenance, dict) and isinstance(provenance.get("input"), dict):
-            content_hash = provenance["input"].get("content_hash")
-        if content_hash is None:
-            skipped += 1
-            continue
-        gated += 1
-        if not isinstance(content_hash, str):
-            problems.append(f"{path}: provenance.input.content_hash must be a "
-                            f"string, got {type(content_hash).__name__}")
-            continue
-        role = provenance["input"].get("role")
-        if not isinstance(role, str) or role not in ROLE_FIELDS:
-            problems.append(f"{path}: unknown provenance.input.role {role!r}, "
-                            f"expected one of {sorted(ROLE_FIELDS)}")
-            continue
-        stream, problem = resolve_stream(data, role)
-        if problem is not None:
-            problems.append(f"{path}: {problem}")
-            continue
+        if path == current:
+            gated += 1
+            stream = ARRAY_GDS
+            if data.get("gds") != stream:
+                problems.append(f"{path}: gds must name {stream}")
+                continue
+            content_hash = data.get("sha256")
+            if not isinstance(content_hash, str):
+                problems.append(f"{path}: sha256 must be a string")
+                continue
+        else:
+            provenance = data.get("provenance")
+            content_hash = None
+            if isinstance(provenance, dict) and isinstance(provenance.get("input"), dict):
+                content_hash = provenance["input"].get("content_hash")
+            if content_hash is None:
+                skipped += 1
+                continue
+            gated += 1
+            if not isinstance(content_hash, str):
+                problems.append(f"{path}: provenance.input.content_hash must be a "
+                                f"string, got {type(content_hash).__name__}")
+                continue
+            role = provenance["input"].get("role")
+            if not isinstance(role, str) or role not in ROLE_FIELDS:
+                problems.append(f"{path}: unknown provenance.input.role {role!r}, "
+                                f"expected one of {sorted(ROLE_FIELDS)}")
+                continue
+            stream, problem = resolve_stream(data, role)
+            if problem is not None:
+                problems.append(f"{path}: {problem}")
+                continue
         stream_file = root / stream
         if not stream_file.is_file():
             problems.append(f"{path}: names input stream {stream}, which is "

@@ -1,47 +1,23 @@
 #!/usr/bin/env bash
-# Run `klt erc` with the pinned klt (never a host-installed one) on the
-# digital partition's supply spec (T1 item 11, digital), keeping the JSON
-# report as committed evidence.
-#   layout/erc.sh                   rewrite layout/erc-ctrl.report.json
-#   layout/erc.sh --check           klt erc --check on the committed report
-#                                    (input, spec and deck hashes still match;
-#                                    add --rerun to re-run the finding pass --
-#                                    note --rerun cannot replay --top, which
-#                                    the report does not echo, so it only
-#                                    works because efuse_otp_ctrl.gds has a
-#                                    single top cell)
-#   layout/erc.sh --negative-control
-#                                   prove the spec can fail: a scratch copy
-#                                   with the Metal4 strap layer (and the vias
-#                                   naming it) removed from the stackup must
-#                                   report erc.unconnected_net on VDD and VSS
-# The committed run is --findings-only --omit-antenna-tables: T1 item 11
-# grades the erc_findings supply rules (erc.unconnected_net,
-# erc.supply_short, erc.missing_tie), not the antenna half, and with no
-# --pdk no antenna level is graded, so klt exits 4 (status "not_checked")
-# on a clean run by design -- gate on erc_status, not the exit code. klt
-# exits 3 when a finding exists; that is a finding, not a script failure,
-# so the verdict is printed and the report is kept as found.
-# Needs no PDK install and no OpenROAD: --deck gf180mcu is the curated
-# registry (same deck hash as the DRC/LVS reports) and the layout is the
-# committed stream. Requests use repo-root-relative paths, run from the
-# repo root, so the committed report's echoed paths stay portable, like
-# layout/lvs.sh's stdin requests.
+# Run the pinned klt on the supply specs for the controller and analog array.
+#   layout/erc.sh                      refresh the two committed reports
+#   layout/erc.sh --check [--rerun]    check report hashes, optionally rerun ERC
+#   layout/erc.sh --negative-control   remove the Metal4 routing plane and
+#                                      require every supply to fragment
+# Each stream has one top cell, so --check --rerun can infer its top.
+# ERC exits 3 for findings and 4 for ungraded antenna checks. Preserve each
+# measured result, including partial connectivity coverage, in its report.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 # shellcheck source=../signoff/klt.sh
 . signoff/klt.sh
 
-if [ "${1:-}" = "--check" ]; then
-  shift
-  klt erc --check "layout/erc-ctrl.report.json" "$@"
-  exit 0
-fi
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
 
-if [ "${1:-}" = "--negative-control" ]; then
-  neg=$(mktemp) out=$(mktemp)
-  trap 'rm -f "$neg" "$out"' EXIT
-  python3 -I - layout/erc-ctrl.spec.json "$neg" <<'PY'
+negative_control() {
+  local rc=0
+  python3 -I - "$spec" "$work/negative.json" <<'PYTHON'
 import json, sys
 spec = json.load(open(sys.argv[1]))
 removed = "Metal4"
@@ -51,50 +27,57 @@ assert len(stackup) < len(spec["stackup"]) and len(vias) < len(spec["vias"]), \
     "negative control edit removed nothing"
 spec["stackup"], spec["vias"] = stackup, vias
 json.dump(spec, open(sys.argv[2], "w"), indent=2)
-PY
-  rc=0
-  klt erc layout/efuse_otp_ctrl.gds "$neg" --top efuse_otp_ctrl --deck gf180mcu \
-    --findings-only --omit-antenna-tables --format json > "$out" || rc=$?
-  verdict=$(python3 -I - "$out" <<'PY'
-import json, sys
-try:
-    d = json.load(open(sys.argv[1]))
-except Exception:
-    print("unparseable"); raise SystemExit
-rules = {(f.get("rule"), f.get("net")) for f in d.get("erc_findings") or []}
-need = {("erc.unconnected_net", n) for n in ("VDD", "VSS")}
-print("fail" if need <= rules else "no-supply-finding")
-PY
-)
-  if [ "$rc" != 3 ] || [ "$verdict" != "fail" ]; then
-    echo "negative control: expected exit 3 with erc.unconnected_net on VDD and VSS" \
-         "when the Metal4 strap layer is missing from the stackup, got exit $rc / $verdict" >&2
-    exit 1
+PYTHON
+  klt erc "$stream" "$work/negative.json" --top "$top" --deck gf180mcu \
+    --findings-only --omit-antenna-tables --format json > "$work/result.json" || rc=$?
+  if [ "$rc" != 3 ]; then
+    echo "$top: removing Metal4 returned $rc, expected 3" >&2
+    return 1
   fi
-  echo "negative control OK: without the Metal4 strap layer in the stackup both" \
-       "supplies fragment (exit 3, erc.unconnected_net on VDD and VSS)"
-  exit 0
-fi
+  python3 -I - "$work/result.json" "${supplies[@]}" <<'PYTHON'
+import json, sys
+report = json.load(open(sys.argv[1]))
+broken = {f["net"] for f in report["erc_findings"] if f["rule"] == "erc.unconnected_net"}
+expected = set(sys.argv[2:])
+if not expected <= broken:
+    sys.exit(f"Negative control did not fragment {sorted(expected - broken)}")
+print(f"Negative control fragmented {', '.join(sorted(expected))}")
+PYTHON
+}
 
-out=$(mktemp)
-trap 'rm -f "$out"' EXIT
-rc=0
-klt erc layout/efuse_otp_ctrl.gds layout/erc-ctrl.spec.json \
-  --top efuse_otp_ctrl --deck gf180mcu \
-  --findings-only --omit-antenna-tables --format json > "$out" || rc=$?
-# 0/3/4 are verdicts (clean / findings / antenna not checked); anything else
-# is a script failure and must not touch the committed report.
-[ "$rc" = 0 ] || [ "$rc" = 3 ] || [ "$rc" = 4 ] || { cat "$out" >&2; exit "$rc"; }
-cp "$out" layout/erc-ctrl.report.json
-python3 -I - layout/erc-ctrl.report.json <<'PY'
+refresh() {
+  local rc=0
+  klt erc "$stream" "$spec" --top "$top" --deck gf180mcu \
+    --findings-only --omit-antenna-tables --format json > "$work/result.json" || rc=$?
+  case "$rc" in
+    0|3|4) ;;
+    *) cat "$work/result.json" >&2; return "$rc" ;;
+  esac
+  cp "$work/result.json" "$report"
+  python3 -I - "$report" <<'PYTHON'
 import json, sys
 d = json.load(open(sys.argv[1]))
-nets = {n["name"]: n.get("matched_islands") for n in d.get("nets") or []}
-cov = d.get("erc_coverage") or {}
-print(f'{sys.argv[1]}: erc_status={d.get("erc_status")} '
-      f'status={d.get("status")} findings={d.get("erc_finding_count")} '
-      f'VDD_islands={nets.get("VDD")} VSS_islands={nets.get("VSS")} '
-      f'skipped={len(cov.get("skipped") or [])} '
-      f'inapplicable={len(cov.get("inapplicable") or [])} '
-      f'input={d["provenance"]["input"]["content_hash"]}')
-PY
+islands = " ".join(f'{n["name"]}_islands={n["matched_islands"]}' for n in d["nets"])
+cov = d["erc_coverage"]
+print(f'{sys.argv[1]}: erc_status={d["erc_status"]} status={d["status"]} '
+      f'findings={d["erc_finding_count"]} {islands} skipped={len(cov["skipped"])} '
+      f'inapplicable={len(cov["inapplicable"])} input={d["provenance"]["input"]["content_hash"]}')
+PYTHON
+}
+
+mode=${1:-refresh}
+if [ "$#" -gt 0 ]; then shift; fi
+for part in ctrl array; do
+  top="efuse_otp_$part"
+  stream="layout/$top.gds"
+  spec="layout/erc-$part.spec.json"
+  report="layout/erc-$part.report.json"
+  case "$mode" in
+    --check) klt erc --check "$report" "$@" ;;
+    --negative-control)
+      if [ "$part" = ctrl ]; then supplies=(VDD VSS); else supplies=(vdd33 vprog vss); fi
+      negative_control ;;
+    refresh) refresh ;;
+    *) echo "Usage: $0 [--check [--rerun] | --negative-control]" >&2; exit 2 ;;
+  esac
+done

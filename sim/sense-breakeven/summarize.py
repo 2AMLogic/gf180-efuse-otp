@@ -18,17 +18,12 @@ sweep point, or with an unusable measurement, is not counted as correct; a valid
 wrong-bit reading counts zero and leaves the analog crossing alone.
 """
 import argparse
-import math
 import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
 import bench_record  # noqa: E402
-from sense_decision import decide  # noqa: E402
-
-
-def finite(x):
-    return isinstance(x, (int, float)) and math.isfinite(x)
+from sense_decision import DECISION_BIT_DEF, RESOLVED_DEF, decide, finite  # noqa: E402
 
 
 def crossing(series):
@@ -132,6 +127,13 @@ def main():
             "estimate": "break-even is a linear interpolation between the two swept points that bracket the sign change of v(sbl)-v(sref); the sweep step is the interpolation interval",
         },
         "measurement_times": {"margin_read": a.t_pre, "decision_read": a.t_out},
+        "definitions": {
+            "resolved": RESOLVED_DEF,
+            "decision_bit": DECISION_BIT_DEF,
+            "decision_ok": "true when the comparator resolved and read the programmed bit (1) at the decision sample, including at resistances below the reference",
+            "correct_corners_by_rfuse_ohm": "for each swept resistance, the number of distinct corners with decision_ok true for that reference",
+            "lowest_all_corner_rfuse_ohm": "the lowest swept resistance at which every corner is correct (decision_ok true), or null if none qualifies",
+        },
         "complete": complete,
         "ideal_reference": {"rref_ohm": a.rref, "summary": summary(ri, ideal), "corners": ri},
         "physical_reference": {"summary": summary(rp, phys), "corners": rp},

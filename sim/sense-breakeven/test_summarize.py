@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import summarize  # noqa: E402
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
-from sense_decision import decide  # noqa: E402
+from sense_decision import DECISION_BIT_DEF, RESOLVED_DEF, decide  # noqa: E402
 
 VDD = 3.3
 
@@ -100,6 +100,50 @@ class Crossing(unittest.TestCase):
 
     def test_missing_value(self):
         self.assertIsNone(summarize.crossing([(300, None), (340, 1)])[0])
+
+
+class Definitions(unittest.TestCase):
+    """main() emits one top-level definitions block and changes nothing else."""
+    KEYS = {"resolved", "decision_bit", "decision_ok",
+            "correct_corners_by_rfuse_ohm", "lowest_all_corner_rfuse_ohm"}
+
+    def run_main(self):
+        from unittest import mock
+        import bench_record
+        ohms = ["300", "400"]
+        reports = {}
+        for o in ohms:
+            for stem in ("ideal_rf%s_rr400" % o, "phys_rf%s_rrphys" % o):
+                reports[stem] = {"corners": [good("tt")]}
+        out = {}
+        argv = ["summarize.py", "rec", "--rref", "400", "--rfuse", " ".join(ohms),
+                "--t-pre", "1n", "--t-out", "2n", "--t-edge", "1n"]
+        with mock.patch.object(sys, "argv", argv), \
+                mock.patch.object(bench_record, "add_common_args", lambda ap: None), \
+                mock.patch.object(bench_record, "load_reports", lambda d, stems: reports), \
+                mock.patch.object(bench_record, "pvt_axes", lambda r: (["tt"], [25], [{"vdd33": VDD}])), \
+                mock.patch.object(bench_record, "collect_env", lambda *a: None), \
+                mock.patch.object(bench_record, "header", lambda *a: {}), \
+                mock.patch.object(bench_record, "write_record", lambda d, rec: out.update(rec)):
+            try:
+                summarize.main()
+            except SystemExit:
+                pass
+        return out
+
+    def test_definitions_present_and_inert(self):
+        rec = self.run_main()
+        d = rec["definitions"]
+        self.assertEqual(set(d), self.KEYS)
+        self.assertEqual(d["resolved"], RESOLVED_DEF)
+        self.assertEqual(d["decision_bit"], DECISION_BIT_DEF)
+        self.assertIn("programmed bit (1)", d["decision_ok"])
+        self.assertIn("below the reference", d["decision_ok"])
+        self.assertIn("swept", d["lowest_all_corner_rfuse_ohm"])
+        self.assertIn("null", d["lowest_all_corner_rfuse_ohm"])
+        self.assertNotIn("definitions", rec["ideal_reference"])
+        self.assertNotIn("definitions", rec["physical_reference"])
+        self.assertEqual(rec["ideal_reference"]["summary"]["digital"]["lowest_all_corner_rfuse_ohm"], 300)
 
 
 if __name__ == "__main__":
