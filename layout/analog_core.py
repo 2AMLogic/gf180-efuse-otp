@@ -363,6 +363,26 @@ class Builder:
         cell.shapes(li).insert(kdb.Box(round(gs(x0) / DBU_UM), round(gs(y0) / DBU_UM),
                                        round(gs(x1) / DBU_UM), round(gs(y1) / DBU_UM)))
 
+    def add_program_diffusion_contacts(self, leaf, ports):
+        """Distribute contacts along the 10 µm fingers of a selected program MOS."""
+        m1 = kdb.Region(leaf.begin_shapes_rec(self.layout.layer(*LS_M1))).merged()
+        contact_layer = self.layout.layer(33, 0)
+        contacts = kdb.Region(leaf.begin_shapes_rec(contact_layer)).merged()
+        for port in ports:
+            if port["name"] not in ("U0_S", "U0_D"):
+                continue
+            point = kdb.Point(round(port["x_um"] / DBU_UM), round(port["y_um"] / DBU_UM))
+            strap, = [polygon for polygon in m1.each() if polygon.inside(point)]
+            fingers = contacts.inside(kdb.Region(strap))
+            assert fingers.count(), f"{leaf.name}: no contacts on {port['name']} strap"
+            for finger in fingers.each():
+                assert finger.is_box(), f"{leaf.name}: nonrectangular diffusion contact"
+                for step in (*range(-7, 0), *range(1, 8)):
+                    cut = finger.bbox().moved(0, round(step * 0.60 / DBU_UM))
+                    assert (kdb.Region(cut) - kdb.Region(strap)).is_empty(), \
+                        f"{leaf.name}: additional contact falls outside the M1 finger"
+                    leaf.shapes(contact_layer).insert(cut)
+
     def _cut(self, cell, pair, cx, cy):
         h = LS_VIA_SIZE / 2
         self._box(cell, pair, cx - h, cy - h, cx + h, cy + h)

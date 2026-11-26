@@ -95,15 +95,20 @@ def coldrv_cell(b, subckt):
             continue
         child = b.leaf(subckt, inst)
         rep = b.reports[f"{subckt}__{inst['name'][1:]}"]
+        if inst["name"] == "XMdrv":
+            b.add_program_diffusion_contacts(child, rep["ports"])
         for k in range(int(inst["params"].get("m", "1"))):
             units.append((inst["name"], inst, child, rep, x, k))
             x = gs(x + child.bbox().width() * DBU_UM + GAP_UM + 0.01)
     rail_x = {n: [] for n in SUPPLY}
+    mdrv_straps = []
     for iname, inst, child, rep, col, k in units:
         dx, dy = b.place(cell, child, col, 0.0)
         pt = {p["name"]: (gs(dx + p["x_um"]), gs(dy + p["y_um"]), p["width_um"])
               for p in rep["ports"]}
         d, g, s, bb = inst["nodes"]
+        if iname == "XMdrv":
+            mdrv_straps.append((pt["TAP_S"][0], pt["U0_S"][1], pt["U0_D"][1]))
         if s == bb and bb in SUPPLY:
             b._m1_ring_bridge(cell, pt["U0_S"], pt["TAP_W"])
         else:
@@ -154,6 +159,6 @@ def coldrv_cell(b, subckt):
     for net, (lx, ly) in label_at.items():
         b._label(cell, net, lx, ly)
     b.cd_ports = {"net_pins": net_pins, "label_at": label_at,
-                  "track_y": track_y, "rail_x": rail_x}
+                  "track_y": track_y, "rail_x": rail_x, "mdrv_straps": mdrv_straps}
     b.cells[subckt] = cell
     return cell

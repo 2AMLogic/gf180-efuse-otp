@@ -35,7 +35,7 @@ The block's verdict of record against the klayout-tools evidence tiers.
 `3.analog` and `3.digital` cite a two-member compound evidence list per
 partition — the curated report first, then the PDK-native report — each member
 pinned by its report's `provenance.input.content_hash`. The SHA-256 prefixes
-are `7657f02a…` for `layout/efuse_otp_array.gds` and `b80bfb50…` for
+are `ec599bcc…` for `layout/efuse_otp_array.gds` and `b80bfb50…` for
 `layout/efuse_otp_ctrl.gds`. Both members grade `met` with `status: "clean"`
 and `input_verified: true`.
 

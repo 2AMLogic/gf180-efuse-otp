@@ -21,13 +21,12 @@ from route_sense import CS_RAIL_Y
 # layout/README.md, "efuse_bitcell / efuse_row routing"). All values um.
 BC_SEL_X = 13.285  # select (rotated 180 deg) bbox west edge: fuse east edge + 2.005
 BC_PAD_Y = 2.19  # centre y of both fuse M1 pads (asserted against the PDK cell)
-BC_BL_CUT_X = (0.93, 1.48)  # two via1+via2 stacks, from the in pad's west edge
+BC_BL_CUT_X = (0.60, 1.24, 1.88)  # three columns clear of the fuse marker
 BC_BL_LANE_Y0 = -1.35  # bl M3 lane south end (crosses the wl rail below the cell)
-BC_N_FUSE_CUT_DX = (-1.38, -0.38)  # via1s on the fuse out pad, from its east edge
-BC_N_SEL_CUT_DX = (0.175, 0.875, 1.575)  # via1s on the drain strap, from its exit pad
+BC_N_FUSE_CUT_DX = (-1.99, -1.35, -0.71)  # via1s on the fuse out pad, from its east edge
+BC_N_SEL_CUT_DX = tuple(0.175 + 0.64 * i for i in range(12))  # via1s on the drain strap, from its exit pad
 BC_WL_STUB_Y0 = -1.24  # wl M2 stub down to the row rail (rail top edge)
-BC_VSS_CUT_DY = (0.0, -0.55)  # two via1s on the ring east strap (0.55 >= 0.26+0.26)
-BC_VSS_PAD_DY = -0.71  # M2 pad from below the lower cut to the rail top edge
+BC_VSS_CUT_DY = tuple(0.64 * i for i in range(10))  # distributed along the east M1 guard-ring strap
 ROW_WL_RAIL_Y = (-1.24, -0.82)  # M2 word-line rail under the bitcells
 ROW_VSS_RAIL_Y = (7.25, 7.67)  # M2 return rail through the select row
 
@@ -66,16 +65,13 @@ def bitcell_cell(b, subckt):
     (bbox 11.28 x 4.38, PDK geometry untouched, `verify_fuse` guards it);
     the select NFET east of it rotated 180 deg, so its 0.42 um drain
     strap exit faces west at the same height as the fuse out pad --
-    `n` is then one M2 run over the gap: via1 x2 on the out pad, via1 x3
-    along the strap (the program current crosses the pad/strap metal, the
-    cuts sit between them east of the EFUSE_MK box, which M2 must not
-    cross). `bl` leaves the fuse in pad on a 0.97 um M3 lane running
-    south out of the cell (over the fuse only M3 may run: EF.18/19),
-    stacked via1+via2 twice under it. `wl` drops from the gate pad to
-    the row's M2 rail below the cell. The source strap is merged into
-    its own guard ring with an M1 bridge (source and body are both vss,
-    as in ls_cell) and the ring leaves east through two via1s into the
-    row's M2 return rail. The fuse cell's own 'in'/'out' 34/10 texts
+    The fuse output reaches the select drain over M2. Nine via1 cuts
+    on the output-pad landing and twelve on the drain strap distribute
+    program current. A three-by-three via1/via2 bank west of the marker
+    feeds the M3 bit line. The gate stub drops to the M2 word-line rail.
+    The source connects to the guard ring and M2 return rail. The array
+    router also connects the source strap to its neighboring M5 trunk.
+    The fuse cell's own 'in'/'out' 34/10 texts
     are dropped: they would rename the bl/n pad nets at extraction
     (verify_fuse compares geometry; its Region sides ignore texts).
     """
@@ -114,6 +110,7 @@ def bitcell_cell(b, subckt):
     # south, TAP_W is the ring's east strap.
     sel = b.leaf(subckt, s)
     rep = b.reports[f"{subckt}__Xsel"]
+    b.add_program_diffusion_contacts(sel, rep["ports"])
     dx1, dy1 = b.place(cell, sel, BC_SEL_X, 0.0, rot=2)
     t1 = kdb.Trans(2, False, round(dx1 / DBU_UM), round(dy1 / DBU_UM))
 
@@ -126,32 +123,39 @@ def bitcell_cell(b, subckt):
     assert abs(d[1] - 2.26) < 1e-9 and abs(d[1] - yc) <= 0.075, \
         "select drain strap no longer faces the fuse out pad"
 
-    # n: five via1s under one M2 run from the out pad to the drain strap.
-    nx = [gs(pout.right * DBU_UM + dx) for dx in BC_N_FUSE_CUT_DX] \
-        + [gs(d[0] + dx) for dx in BC_N_SEL_CUT_DX]
-    for x in nx:
-        b._cut(cell, LS_VIA1, x, BC_PAD_Y)
-    b._box(cell, LS_M2, min(nx) - 0.21, BC_PAD_Y - 0.21, max(nx) + 0.21, BC_PAD_Y + 0.21)
-    # bl: two via1+via2 stacks on the in pad's west end (west of the
-    # EFUSE_MK box, which M1/M2 must not cross), one 0.97 um M3 lane
-    # south out of the cell under them.
+    # Use the metal to the east of the marker for the fuse output tap.
+    fx = [gs(pout.right * DBU_UM + dx) for dx in BC_N_FUSE_CUT_DX]
+    dxs = [gs(d[0] + dx) for dx in BC_N_SEL_CUT_DX]
+    fys = _via_center_span(BC_PAD_Y, 3)
+    for x in fx:
+        for y in fys:
+            b._cut(cell, LS_VIA1, x, y)
+    b._box(cell, LS_M2, fx[0] - 0.21, fys[0] - 0.21,
+              fx[-1] + 0.21, fys[-1] + 0.21)
+    _via_grid(b, cell, LS_VIA1, dxs, [d[1]])
+    b._box(cell, LS_M2, fx[0] - 0.21, BC_PAD_Y - 0.21,
+              dxs[-1] + 0.21, d[1] + 0.21)
+    # The input bank stays west of the marker. M3 carries the bit line.
     bcx = [gs(pin.left * DBU_UM + x) for x in BC_BL_CUT_X]
-    for x in bcx:
-        b._cut(cell, LS_VIA1, x, BC_PAD_Y)
-        b._cut(cell, LS_VIA2, x, BC_PAD_Y)
-    b._box(cell, LS_M2, bcx[0] - 0.21, BC_PAD_Y - 0.21, bcx[-1] + 0.21, BC_PAD_Y + 0.21)
-    b._box(cell, LS_M3, bcx[0] - 0.21, BC_BL_LANE_Y0, bcx[-1] + 0.21, BC_PAD_Y + 0.21)
+    bys = _via_center_span(BC_PAD_Y, 3)
+    for metal in (LS_M1, LS_M2):
+        b._box(cell, metal, bcx[0] - 0.21, bys[0] - 0.21,
+                  bcx[-1] + 0.21, bys[-1] + 0.21)
+    for via in (LS_VIA1, LS_VIA2):
+        _via_grid(b, cell, via, bcx, bys)
+    b._box(cell, LS_M3, bcx[0] - 0.21, BC_BL_LANE_Y0,
+              bcx[-1] + 0.21, bys[-1] + 0.21)
     # wl: via1 on the gate pad, M2 stub down to the row rail.
     b._cut(cell, LS_VIA1, g[0], g[1])
     b._box(cell, LS_M2, g[0] - 0.21, BC_WL_STUB_Y0, g[0] + 0.21, g[1] + 0.21)
-    # vss: M1 bridge source strap -> ring, then two via1s on the ring's
-    # east strap into an M2 pad at the row rail height.
+    # Connect the source to the guard ring and distribute its row-return taps
+    # along the east M1 strap. The array router adds a direct trunk return.
     b._box(cell, LS_M1, se[0] - 0.21, se[1] - 0.21, tw[0] + 0.21, se[1] + 0.21)
     ry = sum(ROW_VSS_RAIL_Y) / 2
     for dy in BC_VSS_CUT_DY:
         b._cut(cell, LS_VIA1, tw[0], gs(ry + dy))
-    b._box(cell, LS_M2, tw[0] - 0.21, gs(ry + BC_VSS_PAD_DY),
-           tw[0] + 0.21, ROW_VSS_RAIL_Y[1])
+    b._box(cell, LS_M2, tw[0] - 0.21, gs(ry - 0.21),
+              tw[0] + 0.21, gs(ry + max(BC_VSS_CUT_DY) + 0.21))
 
     for net, x, y in (("bl", (bcx[0] + bcx[-1]) / 2, BC_PAD_Y),
                       ("n", pout.center().x * DBU_UM, BC_PAD_Y),
@@ -159,7 +163,7 @@ def bitcell_cell(b, subckt):
         b._label(cell, net, gs(x), gs(y))
     # pin access points for the row and top-level routing (array_row_cell,
     # #307): the bl lane, the wl stub and the vss pad, all in-cell coords.
-    b.bc_ports = {"bl": ((bcx[0] + bcx[-1]) / 2, BC_PAD_Y), "wl": g, "vss": (tw[0], ry)}
+    b.bc_ports = {"bl": ((bcx[0] + bcx[-1]) / 2, BC_PAD_Y), "wl": g, "vss": (tw[0], ry), "source": se}
     b.cells[subckt] = cell
     return cell
 
@@ -309,7 +313,7 @@ def route_array_top(b, cell, row_xy, rd_xy, cd_xy, sa_xy, step_x, step_y):
     y_bl_top = gs(dy_row + (ROWS - 1) * step_y + BC_PAD_Y + 0.21)
     mdrv_dx = [p[0] for p in cd_pins["bl"][:3]]
     assert len(mdrv_dx) == 3, f"expected 3 Mdrv drain lanes, got {mdrv_dx}"
-    bl_cut_x = [gs(x) for x in BC_BL_CUT_X]  # 0.93, 1.48 in bitcell coords
+    bl_cut_x = [gs(x) for x in BC_BL_CUT_X]
     for k in range(COLS):
         c = COLS - 1 - k
         x_col = gs(dx_row + k * step_x)
@@ -394,7 +398,7 @@ def route_array_top(b, cell, row_xy, rd_xy, cd_xy, sa_xy, step_x, step_y):
     #    vss (10 um M5 per column beside every bitcell's vss exit, 24 um M4 bus),
     #    vprog (10 um M5 per column into all 3 Mdrv taps, 24 um M4 bus),
     #    vdd33 (1.2 um M5 per column, 4 um M4 bus).
-    y_vss_top = gs(dy_row + (ROWS - 1) * step_y + ROW_VSS_RAIL_Y[1] + 0.30)
+    y_vss_top = gs(dy_row + (ROWS - 1) * step_y + b.bc_ports["source"][1] + 0.40)
     y_cd_vss = gs(dy_cd + CD_RAIL_Y["vss"])
     y_cd_vdd = gs(dy_cd + CD_RAIL_Y["vdd33"])
     y_cd_vp = gs(dy_cd + CD_RAIL_Y["vprog"])
@@ -419,8 +423,17 @@ def route_array_top(b, cell, row_xy, rd_xy, cd_xy, sa_xy, step_x, step_y):
                 # extend it east on M2 under column 7's vss trunk so all 8 via2s land.
                 b._box(cell, LS_M2, row_east - 0.50,
                        gs(dy_row + r * step_y + ROW_VSS_RAIL_Y[0]),
-                       vx1, gs(dy_row + r * step_y + ROW_VSS_RAIL_Y[1]))
+                          vx1, gs(dy_row + r * step_y + ROW_VSS_RAIL_Y[1]))
             _m2_to_m5_strip(b, cell, row_vss_xs, y_r_vss)
+            # The select source can return directly into its adjacent
+            # power trunk as well as through the guard ring and row rail.
+            src_x, src_y = b.bc_ports["source"]
+            src_y = gs(dy_row + r * step_y + src_y)
+            src_xs = _via_span(gs(x_col + src_x - 6.40), 9)
+            _via_grid(b, cell, LS_VIA1, src_xs, [src_y])
+            b._box(cell, LS_M2, src_xs[0] - 0.21, src_y - 0.21,
+                      row_vss_xs[-1] + 0.21, src_y + 0.21)
+            _m2_to_m5_strip(b, cell, row_vss_xs, src_y)
         _m2_to_m5_strip(b, cell, _via_span(x_cd + 24.00, 6), y_cd_vss)
         _via_grid(b, cell, TOP_VIA4,
                   _via_center_span((vx0 + vx1) / 2, 6),
@@ -445,7 +458,29 @@ def route_array_top(b, cell, row_xy, rd_xy, cd_xy, sa_xy, step_x, step_y):
                   _via_center_span(y_cd_vp, 2))
         _via_grid(b, cell, TOP_VIA4,
                   _via_center_span((px0 + px1) / 2, 6),
-                  _via_center_span((vp_by0 + vp_by1) / 2, 6))
+                       _via_center_span((vp_by0 + vp_by1) / 2, 6))
+
+        # Contact the three individual driver straps. The source drops
+        # to the supply bar on M4. Drain metal rises on M3 so it can
+        # cross the horizontal control buses before landing on M4.
+        for xc, sy, drain_y in b.cd_ports["mdrv_straps"]:
+            for side in (-1, 1):
+                xs = _via_center_span(gs(x_cd + xc + side * 3.10), 6)
+                x0, x1 = xs[0] - 0.21, xs[-1] + 0.21
+                for which, y in (("src", gs(dy_cd + sy)), ("drain", gs(dy_cd + drain_y))):
+                    for via in (LS_VIA1, LS_VIA2):
+                        _via_grid(b, cell, via, xs, [y])
+                    b._box(cell, LS_M2, x0, y - 0.21, x1, y + 0.21)
+                    if which == "src":
+                        b._box(cell, LS_M3, x0, y - 0.21, x1, y + 0.21)
+                        _via_grid(b, cell, TOP_VIA3, xs, [y])
+                        b._box(cell, TOP_M4, x0 - 0.04, y_cd_vp - 0.25, x1 + 0.04, y + 0.25)
+                    else:
+                        b._box(cell, LS_M3, x0, y - 0.21, x1, y_bl_track + 0.21)
+                        _via_grid(b, cell, TOP_VIA3, xs, [y_bl_track])
+            # Join both source branches to the column feeder bar.
+            b._box(cell, TOP_M4, x_cd + xc - 4.95, y_cd_vp - 0.60,
+                      x_cd + xc + 4.95, y_cd_vp + 0.60)
 
         # vdd33 feeder
         dx_c = gs(x_col + TOP_VDD_COL_X)
@@ -464,15 +499,33 @@ def route_array_top(b, cell, row_xy, rd_xy, cd_xy, sa_xy, step_x, step_y):
             _m2_to_m5_strip(b, cell, vdd_xs, y_sa_vdd)
             sa_vp_x = gs(dx_sa + sa_pins["vprog"][0][0])
             sa_vp_y = gs(dy_sa + sa_pins["vprog"][0][1])
-            b._cut(cell, LS_VIA2, sa_vp_x, sa_vp_y)
-            b._box(cell, LS_M3, sa_vp_x - LS_W3 / 2, sa_vp_y - LS_W3 / 2,
-                   sa_vp_x + LS_W3 / 2, sa_vp_y + LS_W3 / 2)
-            b._cut(cell, TOP_VIA3, sa_vp_x, sa_vp_y)
-            b._box(cell, TOP_M4, sa_vp_x - TOP_M4_SIG_W / 2,
-                   sa_vp_y - TOP_M4_SIG_W / 2,
-                   px1, sa_vp_y + TOP_M4_SIG_W / 2)
-            _via_grid(b, cell, TOP_VIA4,
-                      _via_center_span((px0 + px1) / 2, 2), [sa_vp_y])
+            # The M1 labels are external power landings. Carry program
+            # current from each landing directly to a wide supply route.
+            sa_gnd_x = gs(dx_sa + sa_lbl["vss"][0])
+            sa_gnd_y = gs(dy_sa + sa_lbl["vss"][1])
+            for net, x, y, count in (("vprog", sa_vp_x, sa_vp_y, 11),
+                                     ("vss", sa_gnd_x, sa_gnd_y, 7)):
+                xs = _via_center_span(x, count)
+                ys = [y] if net == "vprog" else [gs(y - TOP_VIA_PITCH), y]
+                for layer in (LS_M1, LS_M2, LS_M3):
+                    b._box(cell, layer, xs[0] - 0.21, min(ys) - 0.21,
+                              xs[-1] + 0.21, max(ys) + 0.21)
+                for vy in ys:
+                    extra = [cx for cx in xs if (cx, vy) != (x, y)]
+                    # Each sense port already has a center via1 and the
+                    # ground port also has a center via2.
+                    _via_grid(b, cell, LS_VIA1, extra, [vy])
+                    _via_grid(b, cell, LS_VIA2, xs if net == "vprog" else extra, [vy])
+                _via_grid(b, cell, TOP_VIA3, xs, ys)
+                if net == "vss":
+                    b._box(cell, TOP_M4, xs[0] - 0.25, vss_by1 - 0.25,
+                              xs[-1] + 0.25, y + 0.25)
+                else:
+                    b._box(cell, TOP_M4, xs[0] - 0.25, y - TOP_VPROG_BAR_W / 2,
+                              px1, y + TOP_VPROG_BAR_W / 2)
+                    _via_grid(b, cell, TOP_VIA4,
+                                   _via_center_span((px0 + px1) / 2, 10),
+                                   _via_center_span(y, 2))
 
     # Three south horizontal main M4 supply buses tying all columns & west rails
     b._box(cell, TOP_M4, rd_rail_x["vss"] - TOP_RD_RAIL_W / 2, vss_by0,
