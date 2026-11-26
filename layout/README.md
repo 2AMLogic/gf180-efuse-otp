@@ -64,7 +64,12 @@ whose every discrepancy under pinned klt 0.9.2 is the missing fuse model; see
 
 | File | Role |
 |---|---|
-| `gen_efuse_otp.py` | Generator. Reads the netlist; one cell per subcircuit, named as the subcircuit. MOS devices come from `klt gen mos_array` at the netlist W and L; the fuse is the PDK primitive; the two resistors are `klt gen res_array` strips at the netlist's stated `r_length`/`r_width` (see "Resistors" below). All eight cells are generator-routed: `efuse_ls`, `efuse_rowdrv`, `efuse_coldrv`, `efuse_comp`, `efuse_sense`, `efuse_bitcell`, `efuse_row` (M1–M3) and the array top `efuse_otp_array` (M2–M5, connecting the 32 rows, 32 row drivers, 8 column drivers and sense block). The working grid stays klt's 0.0005 µm (the 0.005 µm rule grid and the import rescale are stated in source dbu); at the final write `dbu_export.coarsen` exports at the foundry 0.001 µm (#311), the emitted stream is read back, the fuse comparison re-run on it and its actual dbu reported. |
+| `gen_efuse_otp.py` | Generator entry point: the CLI, `build`, hierarchy assembly, fuse verification, export and reporting (#340 split it out of the former single file). Reads the netlist; one cell per subcircuit, named as the subcircuit. The routing itself is drawn by the per-cell router modules below, which `build` calls in dependency order with one shared `Builder`. The working grid stays klt's 0.0005 µm (the 0.005 µm rule grid and the import rescale are stated in source dbu); at the final write `dbu_export.coarsen` exports at the foundry 0.001 µm (#311), the emitted stream is read back, the fuse comparison re-run on it and its actual dbu reported. |
+| `analog_core.py` | The shared core: the SPICE parser, `masters` and `Klt`; the grid and shared routing-layer constants; and `Builder` — leaf generation (MOS from `klt gen mos_array` at the netlist W and L; the fuse as the PDK primitive; the resistors as `klt gen res_array` strips at the netlist's stated `r_length`/`r_width`, see "Resistors" below), implant growth, the placement contract (`footprint`, `place`, `size`) and the shared box/cut/label/stack drawing primitives. |
+| `route_ls.py` | Router module: draws `efuse_ls` (`ls_cell`) — the level-shifter floorplan and its signal, supply and label helpers. |
+| `route_drivers.py` | Router module: draws `efuse_rowdrv` and `efuse_coldrv` (`rowdrv_cell`, `coldrv_cell`) from the routed `efuse_ls` and leaf devices, with the driver-specific tracks, taps and lanes. |
+| `route_sense.py` | Router module: draws `efuse_comp` and `efuse_sense` (`comp_cell`, `sense_cell`) — one row, lanes up, tracks above, rails below, on the coldrv planes and pitches. |
+| `route_array.py` | Router module: draws `efuse_bitcell` and `efuse_row` (`bitcell_cell`, `array_row_cell`, M1–M3) and wires the array top `efuse_otp_array` (`route_array_top`, M2–M5, connecting the 32 rows, 32 row drivers, 8 column drivers and sense block). |
 | `regen-gds.sh` | Reproduce the files below with the pinned klt (`signoff/klt-pin.txt`) and PDK (`sim/pdk.json`); `--check` exits 3 on drift. Two runs produce byte-identical streams (the routing is drawn from netlist-derived constants and the generators' own reported port positions — no randomness). |
 | `fill_partitions.py` | The density-fill generator (#310): adds COMP/Poly2/Metal1–Metal5 dummy shapes (datatype 4, the layers the PDK density rules count) inside the design extent, respecting every dummy keep-out the native deck checks. Refuses (exit 5) when any of the eight density rules would still fail; writes `fill-array.report.json` / `fill-ctrl.report.json`. See "Density fill (#310)" under DRC. |
 | `fill-array.report.json` | The analog fill report: extent, per-layer drawn/fill/total percentages against each rule's bound, shape counts and the keep-out values used. |
@@ -144,7 +149,7 @@ V2.4b/V2.4c count in the native array report, replayed locally with
 ## efuse_ls routing
 
 `efuse_ls` (the program-path level shifter, 6 MOS, no fuse) is routed by
-`gen_efuse_otp.py` (`ls_cell`) — the one cell in the analog stream that is a
+`route_ls.py` (`ls_cell`) — the one cell in the analog stream that is a
 circuit rather than a placement.
 
 - **Floorplan (stated).** Two device rows: NMOS at y = 0 (`XMni` x = 0,
@@ -197,7 +202,7 @@ not rail continuity or current capability.
 
 ## efuse_rowdrv / efuse_coldrv routing
 
-Both cells are drawn by `gen_efuse_otp.py` (`rowdrv_cell`, `coldrv_cell`), not
+Both cells are drawn by `route_drivers.py` (`rowdrv_cell`, `coldrv_cell`), not
 by `gen-compose` (the `efuse_ls` section above records why).
 
 **`efuse_rowdrv`** is one `efuse_ls` instance (18.26 × 19.92 µm) at the cell
@@ -258,7 +263,7 @@ boxes. All 13 nets are drawn:
 
 ## efuse_comp / efuse_sense routing
 
-Both cells are drawn by `gen_efuse_otp.py` (`comp_cell`, `sense_cell`) on one
+Both cells are drawn by `route_sense.py` (`comp_cell`, `sense_cell`) on one
 floorplan pattern, the same planes and pitches `coldrv_cell` established —
 `gen-compose` is not used (the `efuse_ls` section above records why).
 
@@ -414,7 +419,7 @@ claim, not a layout one).
 
 ## efuse_bitcell / efuse_row routing
 
-Both cells are drawn by `gen_efuse_otp.py` (`bitcell_cell`,
+Both cells are drawn by `route_array.py` (`bitcell_cell`,
 `array_row_cell`), not by `gen-compose` (the `efuse_ls` section above records
 why). The reference is the `.subckt efuse_bitcell bl wl vss` block of
 `design/efuse_otp_array.spice`: `XXf bl n efuse` and `XXsel n wl vss vss
@@ -551,7 +556,7 @@ would not have shown.
 
 ## efuse_otp_array top-level routing (#307)
 
-`gen_efuse_otp.py` (`route_array_top`) wires the placed 32 × 8 array top
+`route_array.py` (`route_array_top`) wires the placed 32 × 8 array top
 (`efuse_otp_array`, bbox −20.89, −122.00 → 1083.68, 699.44 µm) — connecting all
 32 `efuse_row` instances (`Xarr[0..31]`, 256 bitcells), 32 `efuse_rowdrv`
 instances (`Xrd[0..31]`), 8 `efuse_coldrv` instances (`Xcd[7..0]`, column `k`

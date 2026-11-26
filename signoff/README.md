@@ -20,9 +20,10 @@ The block's verdict of record against the klayout-tools evidence tiers.
 | `../layout/lvs-ctrl.report.json` | Committed `klt lvs` report for T1 item 4, digital (`layout/lvs.sh`): `status: match` with `power_connectivity.status: match` against `layout/efuse_otp_ctrl.asbuilt.v` under the curated deck (same deck hash as the DRC reports, klt 0.9.2 — the pin), cited for `4.digital`. What the `match` reaches (and does not) is in `layout/README.md`, "LVS"; the re-run procedure is below. |
 | `../layout/erc-ctrl.spec.json` | The `klt erc` supply spec for T1 item 11, digital: `VDD`/`VSS` as `kind: "supply"` nets, a stackup through every strap layer `layout/pnr-report.json` reports (Metal1-Metal5 with Contact/Via1-Via4), and the two well/substrate ties (n-well tap `Comp∩Nplus` in `Nwell` → VDD; p-substrate tap `Comp∩Pplus` outside `Nwell` → VSS). Layer numbers are the curated gf180mcu deck's own; the file documents each choice. |
 | `../layout/erc-ctrl.report.json` | Committed `klt erc --findings-only` report for T1 item 11, digital (`layout/erc.sh`, pinned klt, `--deck gf180mcu`): `erc_status: clean`, `VDD` and `VSS` each `matched_islands: 1`, zero findings, no skipped or inapplicable work, `erc.supply_short.substrate` checked (the deck's DNWELL isolation makes the substrate pass decidable), input hash = the `efuse_otp_ctrl.gds` sha256. Cited as the leading `erc` part of the compound `11.digital` set beside `lvs-ctrl` and `pnr-report` (`klt signoff` grades the compound; the citation's `power_delivery` block records what it resolved). `layout/erc.sh --check` re-hashes input, spec and deck against it (CI runs this); `--negative-control` proves the spec can fail (CI runs this too). The antenna half is deliberately not graded (`status: not_checked`, klt exit 4): item 11 grades the `erc_findings` supply rules only. `erc_coverage.layers_in_stream_without_declaration` (quoted, claimant-enforced by item 11): `21/10`, `63/63`, `204/10`. Measured on the committed stream: all three carry text only and no polygons, so none is conductor or strap geometry and none is a declared stackup layer (Poly, Metal1-Metal5). `21/10` holds 1178 `VNW` texts and `204/10` 1178 `VPW` texts (the foundry cells' well-pin names), `63/63` holds 5684 foundry-library comment texts (`& Vendor`, `& Product`, `& Version`, `& Metric`, 1421 each). The list is a strict subset of the digital DRC `layers_in_stream_without_rules` row: the four that drop out are `34/10`, `36/10`, `81/10` (the spec's three `label_layers`) and `0/0` (1422 polygons, bounding boxes equal to cell pitch by row height, e.g. 560x3920 nm for `fill_1`, consistent with a cell outline); why klt's ERC list omits `0/0` was not investigated. The well ties are declared in the spec (`nwell_vdd`, `psub_vss`), not derived from these texts. |
+| `../layout/erc-array.spec.json`, `../layout/erc-array.report.json` | Analog supply probe on the routed array. Each of `vdd33`, `vprog` and `vss` resolves to one island. The two n-well bias classes pass the tie check. KLT 0.9.2 reports `clean_partial` with zero findings and one skipped substrate tie. Drawn n-wells cover 0.9753% of the top extent, triggering the 1% threshold for the geometry-derived substrate. Removing Metal4 splits the three rails into 41, 41 and 73 islands respectively. `layout/erc.sh`, `--check` and `--negative-control` run both partitions. Item 11 analog remains open for substrate coverage and LVS supply pairing. [Upstream reproducer](https://github.com/2AMLogic/klayout-tools/issues/7942) |
 | `klt-pin.txt` | The single place the grader version is pinned. CI installs `$(cat signoff/klt-pin.txt)`. |
-| `klt.sh` | The single sourced definition of how the scripts reach the pinned klt: reads `klt-pin.txt` once (resolved from its own location, not cwd), preflights `uvx` (exit 2), and defines `klt`, `klt_python`, `KLT_PIN`, `KLT_ARGV` and the `[yield]`-extras `KLT_YIELD` array. The `--no-function` source argument (`. signoff/klt.sh --no-function`; skip the functions, keep `KLT_PIN`/`KLT_YIELD` -- the shape `sim/sense-mc/run.sh` uses) is the opt-out: an argument is passed to the sourced file alone and cannot be inherited, so no environment variable can take a signoff script off the pinned klt. `verification/run.sh` keeps its own inline preflight by design: it is the exemplar and a content-hashed attestation input. |
-| `test-klt.sh` | Self-test for `klt.sh` (run in `check:ci`): the `uvx`-absent exit 2 and message, the `[yield]` splice, `klt`/`klt_python` argv through a fake `uvx`, the pin read exactly once and actually exported (the `declare -x` attribute, not mere set-ness), the `--no-function` source argument versus a non-opt-out argument and no argument, and the issue-#225 env-var shapes (an export, an export reassigned sourcing-locally, a `declare -ix` export, empty and `0`) proved unable to remove the function facets, the invariant that no caller handles `--no-function` as its own first parameter (every file sourcing `klt.sh` is scanned, with a fixture negative control), and pin resolution from a foreign cwd. |
+| `klt.sh` | The single sourced definition of how the scripts reach the pinned klt: reads `klt-pin.txt` once (resolved from its own location, not cwd), preflights `uvx` (exit 2), and defines `klt`, `klt_python`, `KLT_PIN`, `KLT_ARGV` and the `[yield]`-extras `KLT_YIELD` array. The functions are unconditional -- the file reads neither the environment nor its positional parameters, so no inherited variable or caller argument can take a signoff script off the pinned klt; the one caller that wants a bare klt (`sim/sense-mc/run.sh`) unsets the functions itself right after sourcing. `verification/run.sh` keeps its own inline preflight by design: it is the exemplar and a content-hashed attestation input. |
+| `test-klt.sh` | Self-test for `klt.sh` (run in `check:ci`): the `uvx`-absent exit 2 and message, the `[yield]` splice, `klt`/`klt_python` argv through a fake `uvx`, the pin read exactly once and actually exported (the `declare -x` attribute, not mere set-ness), the regression that neither an inherited `KLT_NO_FUNCTION` export nor a caller whose own first parameter is `--no-function` removes the function facets (they are unconditional, and still forward their argv), and pin resolution from a foreign cwd. |
 | `check-pvt-grid.sh` | decision-0005 PVT grid binding check (run in `check:ci`): fails when the `pvt-corners` row of `item6-digital-spec.json` no longer appears verbatim as a line of `spec/efuse-otp.md`, or when the four `PVT_*` constants `sim/lib/pdk_env.sh` exports no longer equal the four axes parsed from that row (processes, temperatures, both supply triplets). Exit 1 = stale; after a spec amendment (which needs a decision record) update `sim/lib/pdk_env.sh` and the golden literals in `sim/lib/test_pdk_env.sh` together with the spec and its extract. |
 | `item1-digital-inventory.json` | `t1-attestation-inventory` for T1 item 1, digital: the RTL source and the committed gate-level netlist `rtl/efuse_otp_ctrl.gl.v`, whose freshness `check` is `rtl/regen-gl.sh --check` (`local_only`: it needs Yosys and the PDK). |
 | `item1-digital.attest.json` | Envelope emitted by `klt signoff --attest 1` from that inventory; cited for `1.digital` in `block-manifest.json`, pinned by the envelope's own composite `provenance.input.content_hash` (see "Re-attest item 1 (digital)"). |
@@ -263,11 +264,16 @@ the sources and the netlist with `--check`; it does not re-run xschem.
 `layout/attest.sh` writes both item 2 envelopes with the pinned klt's own
 producer, `klt signoff --attest 2 --input <stream>`: `layout/pnr.attest.json`
 from `layout/efuse_otp_ctrl.gds` and `signoff/item2-analog.attest.json` from
-`layout/efuse_otp_array.gds`. Re-attest after regenerating either stream —
-digital, after a change to `rtl/efuse_otp_ctrl.gl.v`, `layout/pnr-request.json`,
-`layout/dbu_export.py` (the final export both producers share) or the pin;
-analog, after a change to `layout/gen_efuse_otp.py`,
-`design/efuse_otp_array.spice` or the pin:
+`layout/efuse_otp_array.gds`. Re-attest after regenerating either stream.
+
+- Regenerate the digital stream after a change to `rtl/efuse_otp_ctrl.gl.v`,
+  `layout/pnr-request.json`, `layout/dbu_export.py` (the final export both
+  producers share) or the pin.
+- Run `layout/regen-gds.sh` when a change to code or inputs can affect the
+  analog GDS. This includes `layout/gen_efuse_otp.py` and its imported drawing
+  and routing modules, final export (`layout/dbu_export.py`), density fill
+  (`layout/fill_partitions.py`), the source netlist (`design/efuse_otp_array.spice`)
+  and the tool pin (`signoff/klt-pin.txt`).
 
 ```sh
 layout/pnr.sh        # digital: refuses to write unless the P&R response passes
@@ -370,11 +376,9 @@ Icarus 13.0 and Yosys 0.67 (`scripts/ci/install_eda.sh`, cached), installs `uv`
 - both item 2 attestations still reproduce (`layout/attest.sh --check`, i.e.
   `--attest 2 --check` on each stream); the generators named in their
   regeneration claims need OpenROAD and the PDK and are not re-run;
-- the committed ERC supply report still hashes to its recorded input, spec and
-  deck (`layout/erc.sh --check`, i.e. `klt erc --check` with the pinned klt),
-  and the supply spec can still fail: a scratch copy with the Metal4 strap
-  layer removed from the stackup reports `erc.unconnected_net` on VDD and VSS
-  (`layout/erc.sh --negative-control`);
+- both committed ERC reports match their stream, supply spec and deck hashes
+  (`layout/erc.sh --check`). Removing Metal4 fragments both controller rails
+  and all three array rails (`layout/erc.sh --negative-control`);
 - the item 8 envelope's recorded hash of `block-manifest.signoff.json` is current
   (`--attest 8 --check`), so regenerating the record without
   re-attesting item 8 fails;

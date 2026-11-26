@@ -18,9 +18,7 @@ caveats). Committed on `main`:
   path ([`efuse_sense.sch`](design/efuse_sense.sch),
   [`efuse_comp.sch`](design/efuse_comp.sch)) and its margin campaign in
   [`sim/sense-margin/`](sim/sense-margin/) (#28);
-- a placed analog layout stream whose fuse-free cells are routed and
-  LVS-matched (level shifters, row/column drivers, comparator and sense path),
-  and the routed controller layout
+- the [routed 32 × 8 analog array](layout/efuse_otp_array.gds) and routed controller layout
   ([`layout/efuse_otp_ctrl.gds`](layout/efuse_otp_ctrl.gds),
   [`layout/pnr-report.json`](layout/pnr-report.json));
 - curated ([array](layout/drc-array.report.json),
@@ -34,9 +32,12 @@ caveats). Committed on `main`:
 - the signoff record.
 
 The controller, level shifters, row and column drivers, comparator and sense
-path have matching [LVS reports](layout/README.md). Full-array routing and LVS (#32) and
-power-delivery verification (#33) are still open. The
-[signoff record](signoff/block-manifest.signoff.json) grades each partition.
+path have matching [LVS reports](layout/README.md). Fuse-aware array LVS
+remains open (#32). The [analog supply check](layout/erc-array.report.json)
+finds one connected island each for `vdd33`, `vprog` and `vss`. It skips the
+substrate tie check, and analog power-delivery signoff still requires LVS
+supply pairing (#33). The [signoff record](signoff/block-manifest.signoff.json)
+grades each partition.
 
 ## What the block is
 
