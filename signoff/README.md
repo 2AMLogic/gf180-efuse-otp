@@ -35,7 +35,7 @@ The block's verdict of record against the klayout-tools evidence tiers.
 `3.analog` and `3.digital` cite a two-member compound evidence list per
 partition — the curated report first, then the PDK-native report — each member
 pinned by its report's `provenance.input.content_hash`. The SHA-256 prefixes
-are `ec599bcc…` for `layout/efuse_otp_array.gds` and `b80bfb50…` for
+are `40f7f4cd…` for `layout/efuse_otp_array.gds` and `b80bfb50…` for
 `layout/efuse_otp_ctrl.gds`. Both members grade `met` with `status: "clean"`
 and `input_verified: true`.
 
@@ -272,7 +272,7 @@ from `layout/efuse_otp_ctrl.gds` and `signoff/item2-analog.attest.json` from
 - Run `layout/regen-gds.sh` when a change to code or inputs can affect the
   analog GDS. This includes `layout/gen_efuse_otp.py` and its imported drawing
   and routing modules, final export (`layout/dbu_export.py`), density fill
-  (`layout/fill_partitions.py`), the source netlist (`design/efuse_otp_array.spice`)
+  (`layout/fill_partitions.py`), boundary ordering (`layout/order_gds.py`), the source netlist (`design/efuse_otp_array.spice`)
   and the tool pin (`signoff/klt-pin.txt`).
 
 ```sh

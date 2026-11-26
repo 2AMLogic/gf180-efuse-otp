@@ -70,7 +70,7 @@ whose every discrepancy under pinned klt 0.9.2 is the missing fuse model; see
 | `route_drivers.py` | Router module: draws `efuse_rowdrv` and `efuse_coldrv` (`rowdrv_cell`, `coldrv_cell`) from the routed `efuse_ls` and leaf devices, with the driver-specific tracks, taps and lanes. |
 | `route_sense.py` | Router module: draws `efuse_comp` and `efuse_sense` (`comp_cell`, `sense_cell`) — one row, lanes up, tracks above, rails below, on the coldrv planes and pitches. |
 | `route_array.py` | Router module: draws `efuse_bitcell` and `efuse_row` (`bitcell_cell`, `array_row_cell`, M1–M3) and wires the array top `efuse_otp_array` (`route_array_top`, M2–M5, connecting the 32 rows, 32 row drivers, 8 column drivers and sense block). |
-| `regen-gds.sh` | Reproduce the files below with the pinned klt (`signoff/klt-pin.txt`) and PDK (`sim/pdk.json`); `--check` exits 3 on drift. Two runs produce byte-identical streams (the routing is drawn from netlist-derived constants and the generators' own reported port positions — no randomness). |
+| `regen-gds.sh` | Reproduce the files below with the pinned klt (`signoff/klt-pin.txt`) and PDK (`sim/pdk.json`); `--check` exits 3 on drift. After density fill, `order_gds.py` sorts complete GDSII boundary elements within each consecutive run. This makes contact and fill polygon order reproducible across KLayout builds. |
 | `fill_partitions.py` | The density-fill generator (#310): adds COMP/Poly2/Metal1–Metal5 dummy shapes (datatype 4, the layers the PDK density rules count) inside the design extent, respecting every dummy keep-out the native deck checks. Refuses (exit 5) when any of the eight density rules would still fail; writes `fill-array.report.json` / `fill-ctrl.report.json`. See "Density fill (#310)" under DRC. |
 | `fill-array.report.json` | The analog fill report: extent, per-layer drawn/fill/total percentages against each rule's bound, shape counts and the keep-out values used. |
 | `efuse_otp_array.gds` | The committed stream, at 0.001 µm per database unit. Top cell `efuse_otp_array`. Every coordinate of the working layout is even (checked), so the 2:1 coarsening preserves the micron geometry exactly; the fuse cell lands back on the PDK stream's own 0.001 µm grid. |
@@ -94,7 +94,7 @@ layout/lvs.sh                 # rewrite the LVS reports (lvs-ctrl needs the PDK;
 layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-analog.attest.json)
 ```
 
-The filled array hashes to `ec599bccc32aa3a99979d646072fe93398c0879e4d98d0b02bfec353b36fea43`.
+The filled array hashes to `40f7f4cd0fd6f97c9a767584c14fed588ea781d6087a6a27e367e9dddcbf9841`.
 Top-level array integration (#307: wiring the 32 rows, 32 row drivers, 8 column
 drivers and `efuse_sense` on M2–M5 without modifying any constituent cell, see
 below) changed the filled stream from

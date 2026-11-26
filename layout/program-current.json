@@ -1,6 +1,6 @@
 {
   "gds": "layout/efuse_otp_array.gds",
-  "sha256": "ec599bccc32aa3a99979d646072fe93398c0879e4d98d0b02bfec353b36fea43",
+  "sha256": "40f7f4cd0fd6f97c9a767584c14fed588ea781d6087a6a27e367e9dddcbf9841",
   "method": "Linear triangular 2-D sheet conductance, finite via and diffusion/poly contact resistances, reduced multiport networks inserted into the archived selected-state transistor bench. Independent DC diagnostic.",
   "reproduction": "https://github.com/2AMLogic/gf180-efuse-otp/issues/407#issuecomment-7185378755",
   "pdk_revision": "f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
@@ -9,7 +9,7 @@
   "high_corner_body_sensitivity_ma": {
     "source_tied_pmos_and_nmos": 10.0955,
     "vprog_pmos_source_tied_nmos": 10.0749,
-    "source_tied_pmos_ground_nmos": 10.0496,
+    "source_tied_pmos_ground_nmos": 10.0497,
     "vprog_pmos_ground_nmos": 10.0296
   },
   "worst_case": {
@@ -67,26 +67,26 @@
         }
       },
       "effective_branch_ohm": {
-        "vprog+mds0+mds1+mds2": 6.933864668039229,
-        "fi+mdd0+mdd1+mdd2": 8.807914730488154,
-        "fo+sd": 4.266585269702605,
-        "vss+ss": 6.6005253650294575
+        "vprog+mds0+mds1+mds2": 6.933864685135167,
+        "fi+mdd0+mdd1+mdd2": 8.807902938568265,
+        "fo+sd": 4.26658527882115,
+        "vss+ss": 6.600458935606898
       },
       "reduced_edge_ohm": {
-        "vprog mds0": 20.187903552916573,
-        "vprog mds1": 17.592829237102347,
-        "vprog mds2": 26.42443367861283,
-        "mds0 mds1": 4.426059924888097,
-        "mds0 mds2": 6.586148196772871,
-        "mds1 mds2": 4.510359695941364,
-        "fi mdd0": 19.925444963169628,
-        "fi mdd1": 28.56751803829964,
-        "fi mdd2": 35.28285860587076,
-        "mdd0 mdd1": 4.562627825046063,
-        "mdd0 mdd2": 5.604990783668143,
-        "mdd1 mdd2": 4.421363372925253,
-        "fo sd": 4.2665852697044535,
-        "vss ss": 6.600525366959681
+        "vprog mds0": 20.18790360390735,
+        "vprog mds1": 17.59282928153816,
+        "vprog mds2": 26.424433745361043,
+        "mds0 mds1": 4.426059923952092,
+        "mds0 mds2": 6.586148195394436,
+        "mds1 mds2": 4.5103596951997975,
+        "fi mdd0": 19.925390903448232,
+        "fi mdd1": 28.567623481921782,
+        "fi mdd2": 35.28267805097629,
+        "mdd0 mdd1": 4.562626026793867,
+        "mdd0 mdd2": 5.604946526828886,
+        "mdd1 mdd2": 4.421343859481415,
+        "fo sd": 4.266585278823845,
+        "vss ss": 6.600458942273267
       }
     },
     "high": {
@@ -115,26 +115,26 @@
         }
       },
       "effective_branch_ohm": {
-        "vprog+mds0+mds1+mds2": 13.062828603925835,
-        "fi+mdd0+mdd1+mdd2": 17.103959150527814,
-        "fo+sd": 8.471273411581992,
-        "vss+ss": 12.04672482599413
+        "vprog+mds0+mds1+mds2": 13.062828623785803,
+        "fi+mdd0+mdd1+mdd2": 17.103944828931837,
+        "fo+sd": 8.471273414972107,
+        "vss+ss": 12.04664722100425
       },
       "reduced_edge_ohm": {
-        "vprog mds0": 38.35554949660535,
-        "vprog mds1": 36.42489915963552,
-        "vprog mds2": 43.42633115232146,
-        "mds0 mds1": 13.282318270307188,
-        "mds0 mds2": 15.752999226651347,
-        "mds1 mds2": 13.336567971187334,
-        "fi mdd0": 44.892333937864684,
-        "fi mdd1": 52.91208265474483,
-        "fi mdd2": 57.83287798098522,
-        "mdd0 mdd1": 13.252217525336343,
-        "mdd0 mdd2": 14.438712399133996,
-        "mdd1 mdd2": 12.971766436745453,
-        "fo sd": 8.471273411575659,
-        "vss ss": 12.046724815803973
+        "vprog mds0": 38.35554955633612,
+        "vprog mds1": 36.42489921635815,
+        "vprog mds2": 43.4263312199495,
+        "mds0 mds1": 13.282318267848611,
+        "mds0 mds2": 15.75299922375137,
+        "mds1 mds2": 13.336567968997874,
+        "fi mdd0": 44.89228813819635,
+        "fi mdd1": 52.912148342763366,
+        "fi mdd2": 57.83271177831467,
+        "mdd0 mdd1": 13.252215808860928,
+        "mdd0 mdd2": 14.438662091368558,
+        "mdd1 mdd2": 12.971741508672658,
+        "fo sd": 8.471273414969248,
+        "vss ss": 12.046647222255613
       }
     }
   },

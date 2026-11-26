@@ -3,7 +3,8 @@
 
 Run with the pinned klt's interpreter (``klt_python``, see signoff/klt.sh):
 only ``klayout.db`` is used, and the output stream is written with GDS
-timestamps off, so two runs over the same input are byte-identical.
+timestamps off. The analog regeneration script orders the emitted boundary
+elements before computing the array stream digest.
 
 What it adds, inside the design extent (the top cell's bounding box) only:
 
