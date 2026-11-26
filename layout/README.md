@@ -631,12 +631,19 @@ The repaired stream includes fifteen contacts along each 10 µm program-MOS
 finger. Counting finite contact resistance on both the MOS and fuse, all
 256 addresses clear 10 mA at the binding stimulus under both interconnect
 corners. At row 31, bit 0, all 135 PVT/fuse points per interconnect corner
-pass. The refined minimum is **10.6532 mA nominal and 10.0955 mA high**.
+pass. With each selected program PMOS and the select NMOS body tied to
+its own source, the refined minimum is **10.6532 mA nominal and 10.0955 mA
+high**, a high-resistance margin of 0.0955 mA. At the same high-resistance
+point, tying the PMOS bodies to VPROG and the NMOS body to VSS gives
+**10.0296 mA**, a 0.0296 mA margin.
 The original geometry measured 9.27576 and 7.11335 mA respectively with
 the same contact model. The 4 µm select negative control gives 1.04492 mA.
 The model adds contacts on both sides of the 260 Ω fuse and uses the
-archived static transistor bench. The 0.0955 mA high-corner margin still
-needs confirmation through fuse-aware LVS (#32) and qualified PEX (#61).
+archived static transistor bench. Fuse-aware LVS (#32) and qualified PEX
+(#61) remain necessary to resolve the physical well and substrate paths.
+CI binds the current diagnostic to the delivered array GDS by its raw
+SHA-256. If the array changes before a new sweep is available, retain and
+cite the previous result as historical with its measured GDS digest.
 [Stream-bound result and multiport resistances](program-current.json) ·
 [Extraction source and replay](https://github.com/2AMLogic/gf180-efuse-otp/issues/407#issuecomment-7185378755)
 

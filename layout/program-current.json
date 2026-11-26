@@ -5,6 +5,13 @@
   "reproduction": "https://github.com/2AMLogic/gf180-efuse-otp/issues/407#issuecomment-7185378755",
   "pdk_revision": "f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
   "ngspice_version": "47",
+  "selected_mos_body_connections": "The three program PMOS devices and the select NMOS have their bodies tied to their individual source terminals in the reported sweeps.",
+  "high_corner_body_sensitivity_ma": {
+    "source_tied_pmos_and_nmos": 10.0955,
+    "vprog_pmos_source_tied_nmos": 10.0749,
+    "source_tied_pmos_ground_nmos": 10.0496,
+    "vprog_pmos_ground_nmos": 10.0296
+  },
   "worst_case": {
     "row": 31,
     "logical_bit": 0,
