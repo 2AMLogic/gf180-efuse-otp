@@ -159,6 +159,53 @@ introduced eight violations of the native DM2.3 spacing rule.
 Item 7 analog remains open pending adoption of the physical route and full
 array-level evidence.
 
+## Full-array read and program path trial (#61)
+
+`sim/post-layout-array.py` uses the fuse-aware source revision of KLT from
+`layout/check_fuse_lvs.py` and KLayout 0.30.14. Released 0.9.2 extracts zero
+fuses from the array. This source trial extracts all 256 in a 2,393-device,
+485-net array. The schematic leg restores xschem's commented top header to
+instantiate all 47 pins in their original order. In both legs it changes
+only the selected fuse resistance. Row 31 and column 0 select the far cell.
+The extracted fuse sits at (955.99, 683.06) µm. Measurements use its own
+terminal voltages and the applied resistance. Two address controls select
+row 30 or column 1 while measuring the same physical fuse. These controls
+leave only 83 pA and 183 pA through the 260 Ω link, respectively.
+
+At SS, 125 °C, 2.97 V logic and 4.5 V program, the delivered geometry
+predicts 14.1534, 12.5720 and 11.0436 mA through a 140, 200 and 260 Ω
+link, respectively. The corresponding schematic currents are 14.4922,
+12.9374 and 11.3487 mA. KLT models route resistance as a lumped terminal
+star here. The geometric resistance and body-model screens in
+`layout/program-current.json` remain relevant to P06.
+
+Unlike the sense-cell proxy, these transients include the column mux,
+distributed device loading on the bitline and the row/column drivers. With the
+15 ns clock edge, the sampled baseline output misreads a programmed 630 Ω fuse both
+at SS/−40 °C/2.97 V and at TT/25 °C/3.30 V. All four pre-edge margin signs
+are correct. The Metal2 control recovers both programmed decisions and
+preserves the two correct 260 Ω intact reads. The comparison covers one
+selected address, two read conditions, one program condition and a 5 V read
+program supply. It uses the same assumed resistive fuse states as item 5.
+
+From the repo root with the pinned PDK and ngspice 42, run:
+
+```sh
+python3 sim/post-layout-array.py
+# The baseline native verdict exits 3 on its two wrong reads.
+uv run --no-project --with klayout==0.30.14 python3 sim/post-layout-sense.py --geometry-control
+python3 sim/post-layout-array.py --geometry-control
+```
+
+The two native reports are committed at
+`layout/pex-array-fuse-candidate.report.json` (the delivered GDS) and
+`sim/array-pex/metal-control.report.json` (the reproducible refilled scratch
+GDS). The commands regenerate both under `layout/.klt/array-pex/` together
+with the extraction, per-side decks and simulator logs. Both report biased
+bodies with zero unbiased devices. The source revision is a trial dependency
+under #32. Item 7 needs published tooling, an adopted physical fix and the
+complete post-layout spec suite before citation.
+
 ## Controller post-route SDF status
 
 T1 item 7 (digital) wants the controller functional suite re-run on the routed
