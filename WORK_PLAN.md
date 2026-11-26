@@ -13,7 +13,7 @@ _None._
 
 `loom:very-important` (one counts per workspace); every stage takes these first.
 
-- **#306**: Route the eFuse bitcell and eight-bit row and verify their extracted connections
+_None._
 
 ## Important
 
@@ -33,14 +33,13 @@ Issues currently being built (`loom:building`).
 
 - **#35**: T1 item 5 (corner verification, digital): klt sta and klt functional-verification for the controller
 - **#118**: Make the CI record-format check read the committed sim records: its glob matches 0 of 15 and it passes vacuously
-- **#306**: Route the eFuse bitcell and eight-bit row and verify their extracted connections
-- **#394**: sense-breakeven: fold the digital decision into record.json so the readback counts are machine-derived
+- **#340**: Split layout/gen_efuse_otp.py into core builder and per-cell router modules
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#312**: feat(layout): route efuse_bitcell and efuse_row, probe their extracted connections
+_None._
 
 ## Approved (Awaiting Merge)
 
@@ -55,14 +54,11 @@ Issues carrying `loom:curated`.
 - **#3**: Track the gap to T1 (klayout-tools design-evidence-tiers.md) *(curated)*
 - **#33**: T1 item 11 (power delivery): klt erc supply spec for the 3.3 V, 5 V program and ground nets *(curated)*
 - **#118**: Make the CI record-format check read the committed sim records: its glob matches 0 of 15 and it passes vacuously *(curated)*
-- **#306**: Route the eFuse bitcell and eight-bit row and verify their extracted connections *(curated)*
-- **#394**: sense-breakeven: fold the digital decision into record.json so the readback counts are machine-derived *(curated)*
+- **#340**: Split layout/gen_efuse_otp.py into core builder and per-cell router modules *(curated)*
 
 ## Proposed (Architect / Hermit)
 
 - **#145**: Stop sta/run.sh gating on the 10 ns headroom case: exit 0 is unreachable on the committed design *(hermit)*
-- **#331**: Remove the --no-function opt-out from signoff/klt.sh and its caller-scanner tests *(hermit)*
-- **#340**: Split layout/gen_efuse_otp.py into core builder and per-cell router modules *(hermit)*
 
 ## Epics
 
@@ -73,13 +69,13 @@ _None._
 | Bucket | Count |
 |------|-------|
 | Operator merge-risk holds | 0 |
-| Very important | 1 |
+| Very important | 0 |
 | Important | 1 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 4 |
-| PRs awaiting review | 1 |
+| In Progress (`loom:building`) | 3 |
+| PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 1 |
-| Curated | 5 |
-| Architect / Hermit proposals | 3 |
+| Curated | 4 |
+| Architect / Hermit proposals | 1 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->

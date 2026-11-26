@@ -2,6 +2,22 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-26
+
+- **PR #415**: fix: share strict finite voltage check across sense summarizers
+- **PR #414**: ci: discover layout unit tests via test_*.py wildcard
+- **PR #412**: refactor: share the sense decision record strings between the two benches
+- **PR #410**: refactor(signoff): define klt()/klt_python() unconditionally, drop the --no-function opt-out
+- **PR #408**: feat(layout): route efuse_otp_array top and add top-level LVS probe
+- **PR #405**: feat: record decision definitions in the sense-breakeven record
+- **Issue #413** (closed): Use one finite-number check for voltages in the sense benches
+- **Issue #411** (closed): Discover layout unit tests via test_*.py in CI instead of per-file invocations
+- **Issue #406** (closed): Pin the shared resolved/decision_bit prose to one source across the two sense benches
+- **Issue #398** (closed): sense-breakeven: record the decision thresholds in record.json, as sense-margin already does
+- **Issue #331** (closed): Remove the --no-function opt-out from signoff/klt.sh and its caller-scanner tests
+- **Issue #307** (closed): Connect the 32 × 8 eFuse array to its drivers, sense path and supplies
+- **Issue #304** (closed): Track fuse-bearing bitcell, row and array-top routing for analog LVS
+
 ### 2026-11-25
 
 - **PR #312**: feat(layout): route efuse_bitcell and efuse_row, probe their extracted connections
