@@ -97,6 +97,68 @@ reference moved inside the intact range. It submits 14 requests with `klt sim --
 `XRref`) and writes `sim/sense-margin/records/<stamp>-<rev>/record.json`. Assumptions
 and the record layout: `sim/sense-margin/README.md`.
 
+## Routed sense-cell PEX (#61)
+
+The native report in `layout/pex-sense.report.json` runs the physical-reference
+P10 sense bench on the routed `efuse_sense` cell in `layout/efuse_otp_array.gds`.
+The schematic leg uses the two source subcircuits verbatim, including the PDK
+bias and reference resistors. The device-only and RC legs come from the GDS.
+The sense cell has 33 extracted devices, 20 nets and seven ports. KLT reports
+`body_bias.status=biased` and zero unbiased devices. The external fuse and
+series switches, fixed 5 V program rail and sense-margin assumptions above apply.
+The array bitline, column mux and program path are outside the cell.
+
+With ngspice 42, all 270 schematic decisions and all 270 extracted device-only
+decisions are correct. The RC leg makes 261 correct decisions. All nine
+failures occur at SS with a programmed 630 Ω fuse, at every temperature
+(−40, 25, 125 °C) and logic supply (2.97, 3.30, 3.63 V). Every pre-edge
+margin is positive and every latch resolves. At −40 °C and 2.97 V, the
+signed pre-edge margins are 22.5705 mV schematic and 13.7037 mV extracted.
+At 38 ns CP minus CN is +2.8611 V schematic and −2.8557 V extracted.
+The programmed output consequently reads low. The native report grades the
+output, the pre-edge margin and the latch resolution individually.
+
+Replay at the repo root with `uvx`, ngspice 42, and the revision in
+`sim/pdk.json`. `PDK_ROOT` defaults to `~/.ciel` and must contain both
+`gf180mcuD` and `gf180mcuC`. The runner verifies the revision and the
+three model files used by the fleet. Both commands leave raw decks, logs and
+measurements under `layout/.klt/sense-pex/`.
+
+```sh
+python3 sim/post-layout-sense.py
+# The native klt pex verdict exits 3 on the nine observed wrong decisions.
+python3 sim/post-layout-sense.py --controls
+```
+
+The extracted lumped capacitance to substrate is 16.297548 fF at CP and
+13.515993 fF at CN. A one-element sensitivity test sets the CP value equal to
+CN and resolves every one of the 270 decisions correctly. Changing only the
+substrate-to-ground resistance from 1 TΩ to 1 Ω leaves all nine original
+failures. The load experiment gives the routing owner a target for a
+geometry-backed re-extraction. It makes no change to the physical stream.
+The report records KLT's lumped-star resistance and crossover-coupling model.
+To test the loading in drawn geometry, use KLayout 0.30.14 with the same
+runner and simulator:
+
+```sh
+uv run --no-project --with klayout==0.30.14 python3 sim/post-layout-sense.py --geometry-control
+```
+
+The control adds a 36 × 0.42 µm Metal2 extension to the existing CN track,
+regenerates density fill and writes the candidate GDS and native report under
+`layout/.klt/sense-pex/metal-control/`. It leaves the delivered stream intact.
+CN rises from 13.515993 to 16.138599 fF. With the same 270 cases all three
+simulation legs read correctly. The previously wrong SS / −40 °C / 2.97 V
+case keeps +13.7037 mV pre-edge margin and now resolves CP−CN to +2.8582 V.
+The full candidate array passed both curated and native DRC (763 native rules)
+and fuse-aware topology comparison against the original schematic (485 nets,
+876 compared devices, 256 recognized fuses, 47 named boundary constraints).
+Metal-to-dummy fill had to be recomputed: retaining the original fill
+introduced eight violations of the native DM2.3 spacing rule.
+
+Item 7 analog remains open pending adoption of the physical route and full
+array-level evidence.
+
 ## Controller post-route SDF status
 
 T1 item 7 (digital) wants the controller functional suite re-run on the routed
