@@ -34,13 +34,13 @@ Issues currently being built (`loom:building`).
 - **#35**: T1 item 5 (corner verification, digital): klt sta and klt functional-verification for the controller
 - **#118**: Make the CI record-format check read the committed sim records: its glob matches 0 of 15 and it passes vacuously
 - **#306**: Route the eFuse bitcell and eight-bit row and verify their extracted connections
-- **#389**: Program path and retention: check against the poly-fuse blow physics in the ADI / ESGI 2008 report
+- **#394**: sense-breakeven: fold the digital decision into record.json so the readback counts are machine-derived
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-_None._
+- **#312**: feat(layout): route efuse_bitcell and efuse_row, probe their extracted connections
 
 ## Approved (Awaiting Merge)
 
@@ -56,7 +56,7 @@ Issues carrying `loom:curated`.
 - **#33**: T1 item 11 (power delivery): klt erc supply spec for the 3.3 V, 5 V program and ground nets *(curated)*
 - **#118**: Make the CI record-format check read the committed sim records: its glob matches 0 of 15 and it passes vacuously *(curated)*
 - **#306**: Route the eFuse bitcell and eight-bit row and verify their extracted connections *(curated)*
-- **#389**: Program path and retention: check against the poly-fuse blow physics in the ADI / ESGI 2008 report *(curated)*
+- **#394**: sense-breakeven: fold the digital decision into record.json so the readback counts are machine-derived *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -77,7 +77,7 @@ _None._
 | Important | 1 |
 | Ready (`loom:issue`) | 0 |
 | In Progress (`loom:building`) | 4 |
-| PRs awaiting review | 0 |
+| PRs awaiting review | 1 |
 | Approved PRs awaiting merge | 1 |
 | Curated | 5 |
 | Architect / Hermit proposals | 3 |

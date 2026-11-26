@@ -17,7 +17,7 @@ unmet**. Block kind is mixed-signal, so every item is graded once per partition.
 | T1 item | analog | digital | Evidence or owner |
 |---|---|---|---|
 | 1 Design sources | met | met | `design/`, `rtl/`, `signoff/item1-*.attest.json` |
-| 2 Layout | met (placed, not routed) | met (routed) | `layout/efuse_otp_array.gds`, `layout/efuse_otp_ctrl.gds`, `layout/pnr-report.json` |
+| 2 Layout | met (routed) | met (routed) | `layout/efuse_otp_array.gds`, `layout/efuse_otp_ctrl.gds`, `layout/pnr-report.json` |
 | 3 DRC clean | unmet | unmet | #60; both reports are clean but uncited |
 | 4 LVS clean | unmet | unmet | #32 |
 | 5 Corner verification | met | unmet | analog: `sim/corner-verification/`; digital: #35, PR #94 |
@@ -40,7 +40,12 @@ Done and merged since the spec was ratified (decisions 0001 to 0005):
 - Analog routing slices: `efuse_ls` (#172), `efuse_rowdrv` and `efuse_coldrv`
   (#268), `efuse_comp` and `efuse_sense` with the bias and reference
   resistors drawn as PDK `ppolyf_u` devices (#303) — each LVS-matched against
-  its `.subckt`.
+  its `.subckt`; `efuse_bitcell` and `efuse_row` (#306, PR #312) and the
+  connected 32 × 8 array top `efuse_otp_array` (#307, completing #304's routing
+  delivery) — DRC-clean across curated and PDK-native decks (all 27 `EF.*`
+  rules), with committed pinned-klt LVS probes (`lvs-bitcell`, `lvs-row`,
+  `lvs-array-probe`) and the program-path via-stack / interconnect resistance
+  finding tracked in #407. Analog item 4 LVS signoff remains with #32.
 - Digital ERC supply spec (#302, digital half of #33's item 11): the compound
   `erc`/`lvs`/`place-and-route` citation grades 11.digital `met`; 11.analog
   stays with #33.
@@ -89,9 +94,11 @@ curated #155 and #160. Issue and label state in this section is as read on
 
 ## Later
 
-- **Full-array routing and assembly** (`efuse_bitcell`, `efuse_row`, top).
-  Question first: are fuse-bearing cells routed before `klt lvs` can recognise
-  the fuse (klayout-tools#4312), or only after?
+- **Full-array routing and assembly** (`efuse_bitcell`, `efuse_row`, top) —
+  **done** (#306, #307, under #304): all eight analog cells are routed before
+  the `klayout-tools#4312` release lands, with DRC clean (curated + native
+  `EF.*`) and LVS probes handed off to #32; constituent-cell program-path
+  via-stack resistance is tracked in #407.
 - **7.analog, `klt pex` re-run of the analog benches** (#61). Question first:
   what does extraction report for the fuse element? 11.analog (#33) follows 4.analog.
 - **Comparison against the PDK's `gf180mcu_re_efuse` macros.** The spec records

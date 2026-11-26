@@ -2,17 +2,18 @@
 # Run `klt lvs` with the pinned klt (never a host-installed one) on the digital
 # partition (layout/efuse_otp_ctrl.gds against the as-built gate-level netlist)
 # and on the routed analog cells efuse_ls, efuse_rowdrv, efuse_coldrv,
-# efuse_comp, efuse_sense, efuse_bitcell and efuse_row (each the top of layout/efuse_otp_array.gds,
-# against its .subckt in design/efuse_otp_array.spice), keeping the JSON
-# reports as committed evidence.
+# efuse_comp, efuse_sense, efuse_bitcell, efuse_row and the array top
+# efuse_otp_array (each a top of layout/efuse_otp_array.gds, against
+# design/efuse_otp_array.spice), keeping the JSON reports as committed evidence.
 #   layout/lvs.sh           rewrite layout/lvs-ctrl.report.json,
 #                           layout/lvs-ls.report.json,
 #                           layout/lvs-rowdrv.report.json,
 #                           layout/lvs-coldrv.report.json,
-#                           layout/lvs-comp.report.json and
+#                           layout/lvs-comp.report.json,
 #                           layout/lvs-sense.report.json,
-#                           layout/lvs-bitcell.report.json and
-#                           layout/lvs-row.report.json
+#                           layout/lvs-bitcell.report.json,
+#                           layout/lvs-row.report.json and
+#                           layout/lvs-array-probe.report.json
 #   layout/lvs.sh --check   klt lvs --check on the committed report (input and
 #                           deck hashes still match; add --rerun to re-run the
 #                           compare)
@@ -50,7 +51,8 @@ export PDK="${PDK:-gf180mcuD}" PDK_ROOT="${PDK_ROOT:-$HOME/.ciel}"
 # shellcheck source=../signoff/klt.sh
 . signoff/klt.sh
 parts=(ctrl:efuse_otp_ctrl ls:efuse_ls rowdrv:efuse_rowdrv coldrv:efuse_coldrv
-       comp:efuse_comp sense:efuse_sense bitcell:efuse_bitcell row:efuse_row)
+       comp:efuse_comp sense:efuse_sense bitcell:efuse_bitcell row:efuse_row
+       array-probe:efuse_otp_array)
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
@@ -158,6 +160,29 @@ PY
   # geometry-derived R.
   if [ "$part" = ctrl ]; then
     req="$(ctrl_request)"
+  elif [ "$part" = array-probe ]; then
+    # Top-level probe: xschem writes the top header as commented
+    # `**.subckt efuse_otp_array` / `**.ends`, so KLayout's SPICE reader places
+    # the 73 top-level instances (32 rows, 32 row drivers, 8 column drivers,
+    # 1 sense block) into its implicit `.TOP` circuit with 0 declared pins
+    # (klayout-tools#7918). Compare with reference.top=".TOP", flattened and
+    # combined, plus ppolyf_u R comparison (same as sense). Separately named
+    # from any future item-4 analog match report (#32).
+    req=$(cat <<REQ
+{
+  "layout": { "file": "layout/efuse_otp_array.gds", "top": "$top", "deck": "gf180mcu" },
+  "reference": { "netlist": "design/efuse_otp_array.spice",
+                 "form": "subckt-call",
+                 "deck": "gf180mcu",
+                 "top": ".TOP" },
+  "options": { "anchor_top_level_pins": true,
+               "flatten_reference": [".TOP"],
+               "combine_devices": true,
+               "compare_parameters": { "ppolyf_u": ["R"] } },
+  "portable_paths": true
+}
+REQ
+)
   elif [ "$part" = sense ]; then
     req=$(cat <<REQ
 {
