@@ -264,11 +264,16 @@ the sources and the netlist with `--check`; it does not re-run xschem.
 `layout/attest.sh` writes both item 2 envelopes with the pinned klt's own
 producer, `klt signoff --attest 2 --input <stream>`: `layout/pnr.attest.json`
 from `layout/efuse_otp_ctrl.gds` and `signoff/item2-analog.attest.json` from
-`layout/efuse_otp_array.gds`. Re-attest after regenerating either stream —
-digital, after a change to `rtl/efuse_otp_ctrl.gl.v`, `layout/pnr-request.json`,
-`layout/dbu_export.py` (the final export both producers share) or the pin;
-analog, after a change to `layout/gen_efuse_otp.py`,
-`design/efuse_otp_array.spice` or the pin:
+`layout/efuse_otp_array.gds`. Re-attest after regenerating either stream.
+
+- Regenerate the digital stream after a change to `rtl/efuse_otp_ctrl.gl.v`,
+  `layout/pnr-request.json`, `layout/dbu_export.py` (the final export both
+  producers share) or the pin.
+- Run `layout/regen-gds.sh` when a change to code or inputs can affect the
+  analog GDS. This includes `layout/gen_efuse_otp.py` and its imported drawing
+  and routing modules, final export (`layout/dbu_export.py`), density fill
+  (`layout/fill_partitions.py`), the source netlist (`design/efuse_otp_array.spice`)
+  and the tool pin (`signoff/klt-pin.txt`).
 
 ```sh
 layout/pnr.sh        # digital: refuses to write unless the P&R response passes
