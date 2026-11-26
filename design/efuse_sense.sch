@@ -133,3 +133,9 @@ C {devices/lab_pin.sym} 450 880 0 0 {name=l106 lab=sense_out}
 C {devices/lab_pin.sym} 490 910 0 0 {name=l107 lab=vss}
 C {devices/lab_pin.sym} 490 880 0 0 {name=l108 lab=vss}
 T {Sense path: equal bias currents (pfet_03v3 mirror) into the selected-fuse bus sbl and a 400 ohm reference (A6, decision 0003) behind a dummy switch+select; clocked comparator; NOR SR latch holds sense_out (1 = programmed). Rb and Rref are PDK ppolyf_u resistors (drawn r_width x r_length: Rb 1 um x 5.08 um, its length solved for the model's nominal 2k; Rref 1.05 um x 0.8 um, its length pinned at the native PRES.1 0.8 um floor and its width solved for the 400 ohm nominal; drawn geometry is what LVS compares). Sizes are placeholders, not simulated.} 0 -60 0 0 0.3 0.3 {}
+C {symbols/cap_mim_2f0fF.sym} 710 880 0 0 {name=Cref W=10.2u L=10.2u m=1 model=cap_mim_2f0_m4m5_noshield spiceprefix=X}
+C {devices/lab_pin.sym} 710 850 0 0 {name=cap_ref_sig lab=sref}
+C {devices/lab_pin.sym} 710 910 0 0 {name=cap_ref_ret lab=vss}
+C {symbols/cap_mim_2f0fF.sym} 930 880 0 0 {name=Cbl W=8.6u L=8.6u m=1 model=cap_mim_2f0_m4m5_noshield spiceprefix=X}
+C {devices/lab_pin.sym} 930 850 0 0 {name=cap_bl_sig lab=sbl}
+C {devices/lab_pin.sym} 930 910 0 0 {name=cap_bl_ret lab=vss}

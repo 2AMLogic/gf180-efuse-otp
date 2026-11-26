@@ -94,15 +94,16 @@ layout/lvs.sh                 # rewrite the LVS reports (lvs-ctrl needs the PDK;
 layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-analog.attest.json)
 ```
 
-The filled array hashes to `5ba2f5088a0fb03ce37ff293a8b146210abb2f9e050375f1f61a9213ef0cf2ab`.
-The sense router extends the CN Metal2 track west by 36 µm at its existing
-0.42 µm width. Its load rises from 13.515993 to 16.138599 fF, bringing it
-closer to CP at 16.296276 fF. Regenerating density fill around the new metal
-restores the native DM2.3 keepout. Removing the extension and regenerating
-fill reconstructs the previous widened array byte-for-byte. Its SHA-256 is
+The filled array with the two routed MIM capacitors hashes to
+`e467e5b242766e7bffcb394a0ce60128803f33e4eb3922202b879afd9d016687`.
+The sense router connects the 10.2 µm square on SREF and the 8.6 µm square
+on SBL to VSS over the existing layout. The array before these capacitors
+hashed to `5ba2f5088a0fb03ce37ff293a8b146210abb2f9e050375f1f61a9213ef0cf2ab`.
+It added the 36 × 0.42 µm CN Metal2 extension to the widened array
 `40f7f4cd0fd6f97c9a767584c14fed588ea781d6087a6a27e367e9dddcbf9841`.
-The released sense-cell sweep and full coupled array trial differ in scope
-and results. [Post-layout read and program measurements](../sim/README.md#full-array-read-and-program-path-trial-61).
+The extension increases the CN load from 13.515993 to 16.138599 fF, close
+to CP at 16.296276 fF. Both the extension and the input capacitors are present
+in the current whole-array PEX. [Read and program measurements](../sim/README.md#full-array-read-and-program-path-trial-61)
 
 Top-level array integration (#307: wiring the 32 rows, 32 row drivers, 8 column
 drivers and `efuse_sense` on M2–M5 without modifying any constituent cell, see

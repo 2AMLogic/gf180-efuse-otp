@@ -71,10 +71,13 @@
       "46/0",
       "49/0",
       "55/0",
+      "75/0",
       "80/5",
       "81/0",
       "100/8",
       "110/5",
+      "117/5",
+      "117/10",
       "125/5"
     ],
     "layers_in_stream_without_rules": [
@@ -88,6 +91,7 @@
       "81/4"
     ],
     "rules_checked": [
+      "cap_mk.ongrid.1",
       "comp.coverage.1",
       "comp.enclosing.contact.1",
       "comp.ongrid.1",
@@ -106,6 +110,7 @@
       "efuse_mk.enclosing.lvs_source.1",
       "efuse_mk.ongrid.1",
       "efuse_mk.space.1",
+      "fusetop.ongrid.1",
       "metal1.enclosing.contact.1",
       "metal1.enclosing.via1.1",
       "metal1.ongrid.1",
@@ -130,6 +135,10 @@
       "metal5.ongrid.1",
       "metal5.space.1",
       "metal5.width.1",
+      "mim.enclosing.fusetop.1",
+      "mim.enclosing.via4.1",
+      "mim.space.1",
+      "mim_l_mk.ongrid.1",
       "nplus.enclosing.comp.1",
       "nplus.enclosing.poly2.1",
       "nplus.ongrid.1",
@@ -176,7 +185,6 @@
     ],
     "rules_skipped": [
       "bjt.separation.comp.1",
-      "cap_mk.ongrid.1",
       "comp.separation.guard_ring_mk.1",
       "comp.tap_distance.nwell.mv.1",
       "comp.tap_distance.psub.mv.1",
@@ -190,7 +198,6 @@
       "esd.separation.pplus.1",
       "esd.space.1",
       "esd.width.1",
-      "fusetop.ongrid.1",
       "ldmos_xtor.enclosing.mvpsd.1",
       "metal1.separation.guard_ring_mk.1",
       "metal2.separation.guard_ring_mk.1",
@@ -201,10 +208,6 @@
       "metaltop.separation.guard_ring_mk.1",
       "metaltop.space.1",
       "metaltop.width.1",
-      "mim.enclosing.fusetop.1",
-      "mim.enclosing.via4.1",
-      "mim.space.1",
-      "mim_l_mk.ongrid.1",
       "mvpsd.ongrid.1",
       "mvsd.ongrid.1",
       "mvsd.separation.dnwell.1",
@@ -456,6 +459,7 @@
     "schema_version": 1,
     "known": true,
     "checked": [
+      "cap_mk.ongrid.1",
       "comp.coverage.1",
       "comp.enclosing.contact.1",
       "comp.ongrid.1",
@@ -474,6 +478,7 @@
       "efuse_mk.enclosing.lvs_source.1",
       "efuse_mk.ongrid.1",
       "efuse_mk.space.1",
+      "fusetop.ongrid.1",
       "metal1.enclosing.contact.1",
       "metal1.enclosing.via1.1",
       "metal1.ongrid.1",
@@ -498,6 +503,10 @@
       "metal5.ongrid.1",
       "metal5.space.1",
       "metal5.width.1",
+      "mim.enclosing.fusetop.1",
+      "mim.enclosing.via4.1",
+      "mim.space.1",
+      "mim_l_mk.ongrid.1",
       "nplus.enclosing.comp.1",
       "nplus.enclosing.poly2.1",
       "nplus.ongrid.1",
@@ -546,10 +555,6 @@
     "inapplicable": [
       {
         "id": "bjt.separation.comp.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "cap_mk.ongrid.1",
         "reason": "no_applicable_geometry"
       },
       {
@@ -605,10 +610,6 @@
         "reason": "no_applicable_geometry"
       },
       {
-        "id": "fusetop.ongrid.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
         "id": "ldmos_xtor.enclosing.mvpsd.1",
         "reason": "no_applicable_geometry"
       },
@@ -646,22 +647,6 @@
       },
       {
         "id": "metaltop.width.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "mim.enclosing.fusetop.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "mim.enclosing.via4.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "mim.space.1",
-        "reason": "no_applicable_geometry"
-      },
-      {
-        "id": "mim_l_mk.ongrid.1",
         "reason": "no_applicable_geometry"
       },
       {
@@ -725,7 +710,7 @@
       "released": true
     },
     "input": {
-      "content_hash": "sha256:5ba2f5088a0fb03ce37ff293a8b146210abb2f9e050375f1f61a9213ef0cf2ab",
+      "content_hash": "sha256:e467e5b242766e7bffcb394a0ce60128803f33e4eb3922202b879afd9d016687",
       "role": "layout"
     },
     "klayout_version_mismatch": true

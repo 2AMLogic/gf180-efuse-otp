@@ -18,7 +18,10 @@
   },
   "parameter_tolerance": null,
   "options": {
-    "combine_devices": true,
+    "combine_devices": [
+      "nfet",
+      "pfet"
+    ],
     "combine_devices_per_circuit": null,
     "combine_devices_max_attempts": 5,
     "flatten_layout": false,
@@ -30,6 +33,10 @@
     "compare_parameters": {
       "ppolyf_u": [
         "R"
+      ],
+      "cap_mim_2f0_m4m5_noshield": [
+        "A",
+        "P"
       ]
     },
     "power_connectivity": null,
@@ -72,6 +79,22 @@
   },
   "device_parameter_coverage": [
     {
+      "class": "cap_mim_2f0_m4m5_noshield",
+      "device_kind": "capacitor",
+      "layout_devices": 2,
+      "reference_devices": 2,
+      "compared": [
+        "A",
+        "P"
+      ],
+      "not_compared": [
+        {
+          "parameter": "C",
+          "reason": "placeholder_value"
+        }
+      ]
+    },
+    {
       "class": "ppolyf_u",
       "device_kind": "resistor",
       "layout_devices": 2,
@@ -99,10 +122,12 @@
       ]
     }
   ],
-  "mismatch_count": 4,
+  "mismatch_count": 6,
   "error_count": 0,
   "category_counts": {
     "device.geometry_not_compared": 1,
+    "device.parameter_excluded": 1,
+    "device.placeholder_value": 1,
     "topology": 1,
     "topology.flattened": 1,
     "topology.top_level_pins_anchored": 1
@@ -115,14 +140,14 @@
       "matched": 20
     },
     "devices": {
-      "layout": 28,
-      "reference": 28,
-      "matched": 28
+      "layout": 30,
+      "reference": 30,
+      "matched": 30
     },
     "pins": {
-      "layout": 20,
+      "layout": 7,
       "reference": 7,
-      "matched": 20
+      "matched": 7
     }
   },
   "device_classes": [
@@ -150,8 +175,8 @@
     "engine": "klayout",
     "engine_version": "0.30.14",
     "netgen_binary": null,
-    "layout_sha256": "5ba2f5088a0fb03ce37ff293a8b146210abb2f9e050375f1f61a9213ef0cf2ab",
-    "reference_sha256": "48eb3a59f93d6fecd7b1bc5b5c0d471244785b8cbdd0e5ba3dd0f219bea82d52",
+    "layout_sha256": "e467e5b242766e7bffcb394a0ce60128803f33e4eb3922202b879afd9d016687",
+    "reference_sha256": "f9221da4276085b8cd3f78773423b3653ea1517675161d81fdfdd2bd7d90219f",
     "extracted_netlist": null
   },
   "provenance": {
@@ -177,7 +202,7 @@
       "options_hash": "sha256:6a7dc7660a470994263c5ca8ace6d8ac8c605d77e6876a9c5490949de6e7cb05"
     },
     "input": {
-      "content_hash": "sha256:5ba2f5088a0fb03ce37ff293a8b146210abb2f9e050375f1f61a9213ef0cf2ab",
+      "content_hash": "sha256:e467e5b242766e7bffcb394a0ce60128803f33e4eb3922202b879afd9d016687",
       "role": "layout"
     },
     "klayout_version_mismatch": true
@@ -208,6 +233,55 @@
         ],
         "layout_devices": 2,
         "reference_devices": 2
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "device.parameter_excluded",
+      "severity": "warning",
+      "description": "options.compare_parameters scoped device class 'cap_mim_2f0_m4m5_noshield' to compare only ['A', 'P'] -- 'C' was excluded from this compare and is NOT verified; a 'match' does not confirm the two sides agree on it (see docs/cli/lvs.md, 'device.parameter_excluded')",
+      "side": "both",
+      "net": null,
+      "device": {
+        "layout": null,
+        "reference": null,
+        "class": "cap_mim_2f0_m4m5_noshield"
+      },
+      "property": null,
+      "details": {
+        "parameter": "C",
+        "compared_parameters": [
+          "A",
+          "P"
+        ]
+      },
+      "circuit": null,
+      "instance": null,
+      "subcircuit": null
+    },
+    {
+      "category": "device.placeholder_value",
+      "severity": "warning",
+      "description": "reference device class 'CAP_MIM_2F0_M4M5_NOSHIELD' was converted from a subcircuit call (request.reference.form: \"subckt-call\"), so its 'C' value is the literal 0 placeholder on all 2 reference instance(s) -- klt lvs has no PDK sheet-resistance/capacitance-per-area data to compute a real one. 'C' was therefore excluded from this compare on both sides (layout: 2 instance(s), C 1.5537792e-13..2.1676224000000003e-13) and the two sides were paired on topology alone -- that dimension of the compare is not independently verified. Supply a reference in the plain-element form carrying real 'C' values to compare it (see docs/cli/lvs.md, 'device.placeholder_value')",
+      "side": "reference",
+      "net": null,
+      "device": {
+        "layout": null,
+        "reference": null,
+        "class": "CAP_MIM_2F0_M4M5_NOSHIELD"
+      },
+      "property": null,
+      "details": {
+        "parameter": "C",
+        "device_kind": "capacitor",
+        "reference_devices": 2,
+        "layout_devices": 2,
+        "layout_values": [
+          1.5537792e-13,
+          2.1676224000000003e-13
+        ]
       },
       "circuit": null,
       "instance": null,
@@ -263,22 +337,9 @@
         "pin_count": 6,
         "pins_truncated": false,
         "layout_only_pins": [
-          "CLKN",
-          "CN,OUTN",
-          "CP,OUTP",
-          "INN,SBL",
-          "INP,SREF",
-          "MB",
-          "MC",
-          "MQ",
-          "NB",
-          "QB",
-          "RN1",
-          "RN2",
-          "TAIL",
-          "VBP"
+          "INN,SBL"
         ],
-        "layout_only_pin_count": 14,
+        "layout_only_pin_count": 1,
         "layout_only_pins_truncated": false
       },
       "circuit": null,
@@ -295,57 +356,57 @@
     {
       "layout": "clkn",
       "reference": "CLKN",
-      "pin": true
+      "pin": false
     },
     {
       "layout": "tail",
       "reference": "CMP_TAIL",
-      "pin": true
+      "pin": false
     },
     {
       "layout": "cn|outn",
       "reference": "CN",
-      "pin": true
+      "pin": false
     },
     {
       "layout": "cp|outp",
       "reference": "CP",
-      "pin": true
+      "pin": false
     },
     {
       "layout": "mb",
       "reference": "MB",
-      "pin": true
+      "pin": false
     },
     {
       "layout": "mc",
       "reference": "MC",
-      "pin": true
+      "pin": false
     },
     {
       "layout": "mq",
       "reference": "MQ",
-      "pin": true
+      "pin": false
     },
     {
       "layout": "nb",
       "reference": "NB",
-      "pin": true
+      "pin": false
     },
     {
       "layout": "qb",
       "reference": "QB",
-      "pin": true
+      "pin": false
     },
     {
       "layout": "rn1",
       "reference": "RN1",
-      "pin": true
+      "pin": false
     },
     {
       "layout": "rn2",
       "reference": "RN2",
-      "pin": true
+      "pin": false
     },
     {
       "layout": "inn|sbl",
@@ -365,12 +426,12 @@
     {
       "layout": "inp|sref",
       "reference": "SREF",
-      "pin": true
+      "pin": false
     },
     {
       "layout": "vbp",
       "reference": "VBP",
-      "pin": true
+      "pin": false
     },
     {
       "layout": "vdd33",

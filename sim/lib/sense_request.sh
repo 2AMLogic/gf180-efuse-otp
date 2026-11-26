@@ -39,7 +39,7 @@ sense_request() {
     {netlist:$net, engine:"ngspice",
      models:{lib:$lib, pdk:"gf180mcuD"},
      corners:{process:($pvt_proc|map({name:.,
-              sections:[., ({"typical":"res_typical","ss":"res_ss","ff":"res_ff"}[.] // "res_typical")]})),
+              sections:[., ({"typical":"res_typical","ss":"res_ss","ff":"res_ff"}[.] // "res_typical"), "mimcap_typical"]})),
               supply_v:{vdd33:$pvt_3v3}, temperature_c:$pvt_temp},
      analysis:{kind:"tran", args:"20p 40n"},  # 100p under-resolves the 200p edge: decisions flipped with the step (issue 77)
      measurements:[
