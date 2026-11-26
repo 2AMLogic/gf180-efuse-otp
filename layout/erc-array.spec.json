@@ -4,7 +4,7 @@
     "The schematic ties all pfet_03v3 bodies to vdd33 and all pfet_06v0 bodies to vprog.",
     "Classify whole Nwell 21/0 shapes by intersection with the Dualgate marker 55/0 used by 6 V devices.",
     "Comp AND Nplus selects n-well taps. The native p-substrate is the top extent minus Nwell,",
-    "with Comp AND Pplus selecting the taps to vss. Reach each metal rail through its tap at Metal1."
+    "with Comp AND Pplus selecting taps to vss. Each tap requires an actual 33/0 contact cut under Metal1."
   ],
   "stackup": [
     {
@@ -97,7 +97,8 @@
       "well_layer": "21/0",
       "tap_layer": "22/0",
       "tap_requires": [
-        "32/0"
+        "32/0",
+        "33/0"
       ],
       "connect_to": "Metal1",
       "net": "vdd33",
@@ -110,7 +111,8 @@
       "well_layer": "21/0",
       "tap_layer": "22/0",
       "tap_requires": [
-        "32/0"
+        "32/0",
+        "33/0"
       ],
       "connect_to": "Metal1",
       "net": "vprog",
@@ -126,7 +128,8 @@
       ],
       "tap_layer": "22/0",
       "tap_requires": [
-        "31/0"
+        "31/0",
+        "33/0"
       ],
       "connect_to": "Metal1",
       "net": "vss"

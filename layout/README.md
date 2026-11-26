@@ -647,6 +647,47 @@ cite the previous result as historical with its measured GDS digest.
 [Stream-bound result and multiport resistances](program-current.json) ·
 [Extraction source and replay](https://github.com/2AMLogic/gf180-efuse-otp/issues/407#issuecomment-7185378755)
 
+## Array supply ties and physical fault controls
+
+Run `uv run --script layout/check_supply_ties.py` from the repo root. The
+script replays the committed ERC report with the sparse-n-well fix from
+[klayout-tools #7944](https://github.com/2AMLogic/klayout-tools/pull/7944)
+at merge commit `25da22a118053b44429be544e0ff0573250f8170` and KLayout
+0.30.14. The signoff grader still uses `signoff/klt-pin.txt`. Pass
+`--write` to regenerate the intact array report after checking the controls.
+
+| Stream | Physical change | Findings |
+|---|---|---|
+| Committed array | None | Zero. VDD33, VPROG and VSS each form one island. Both n-well ties and the VSS substrate tie are checked. |
+| Flattened copy | Flatten hierarchy | Same result as the committed array. |
+| Substrate tap removal | Remove the 437 `Comp ∩ Pplus` tap footprints outside `Nwell` in the flattened copy. The 3,496 contact cuts and their metal remain. | One `erc.missing_tie` on VSS in `psub_vss`. |
+| VDD33 well contacts | Remove only the 744 contact cuts under the VDD33 taps. | 93 VDD33 missing ties, one at each affected n-well. |
+| VPROG well contacts | Remove only the 832 contact cuts under the VPROG taps. | 104 VPROG missing ties, one at each affected n-well. |
+| VSS substrate contacts | Remove only the 3,496 cuts under the substrate taps. | One VSS missing tie on the substrate body. |
+| Supply short | Add a 1 × 3 µm Metal4 bridge across the 2 µm gap between VPROG and VSS in the original hierarchy. | One `erc.supply_short` between VPROG and VSS through metal. |
+
+All seven runs check the same supply spec and all three tie classes.
+Each tap must include active, the matching implant and a drawn 33/0 cut
+under Metal1. With the original active-and-implant spec, all three
+cut-only faults passed ERC. The
+substrate body is the spec's top extent minus drawn n-wells, which the
+producer discloses under `checked_by_well_assertion` for `psub_vss`.
+The tap footprints come from the drawn active and implant layers.
+Each faulty stream still shows one island per rail. The committed
+`erc-array-ties.report.json` contains 204 checked rules, zero skipped or
+inapplicable entries and an empty `layers_in_stream_without_declaration`.
+The findings-only command omits antenna analysis. The pinned 0.9.2 grader
+pairs this ERC evidence with `lvs-array-probe.report.json` and returns
+`11.analog: unmet` with reason `lvs_did_not_pass`. The routed supply
+ties pass ERC. Full-array LVS correspondence is tracked in #32.
+
+The controller uses the released 0.9.2 producer and a 33/0 contact
+requirement on both ties. `layout/erc.sh --negative-control` also replays
+the pristine and flattened controller. Opening only its 729 n-well contacts
+yields 18 VDD missing ties at the disconnected wells' bounding boxes.
+Opening only its 486 substrate contacts yields one VSS missing tie. Both
+rails have 243 tap footprints. Each faulty run retains one island per rail.
+
 ## efuse_otp_array LVS probe & PDK runset probe
 
 ### Pinned-klt top-level probe (`layout/lvs-array-probe.report.json`)
