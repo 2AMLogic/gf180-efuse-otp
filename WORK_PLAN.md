@@ -38,7 +38,7 @@ Issues currently being built (`loom:building`).
 
 PRs waiting on Judge (`loom:review-requested`).
 
-_None._
+- **#422**: Widen eFuse program rails and verify the routed high-current path
 
 ## Approved (Awaiting Merge)
 
@@ -57,6 +57,7 @@ Issues carrying `loom:curated`.
 ## Proposed (Architect / Hermit)
 
 - **#145**: Stop sta/run.sh gating on the 10 ns headroom case: exit 0 is unreachable on the committed design *(hermit)*
+- **#423**: Remove the broken worktree:return npm script *(hermit)*
 
 ## Epics
 
@@ -71,9 +72,9 @@ _None._
 | Important | 1 |
 | Ready (`loom:issue`) | 0 |
 | In Progress (`loom:building`) | 2 |
-| PRs awaiting review | 0 |
+| PRs awaiting review | 1 |
 | Approved PRs awaiting merge | 1 |
 | Curated | 3 |
-| Architect / Hermit proposals | 1 |
+| Architect / Hermit proposals | 2 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
