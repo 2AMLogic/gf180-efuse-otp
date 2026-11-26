@@ -26,10 +26,12 @@ bench_parse_args "$@"
 pdk_fleet_check || exit 1
 lib="$PDK_FLEET_LIB_DIR"
 
-# Pinned-klt facets for the yield grading below (no function facets: this
-# bench's own klt invocations -- klt sim, klt --version -- stay on the host
-# klt; the --no-function source argument skips them).
-. "$repo/signoff/klt.sh" --no-function
+# Pinned-klt facets for the yield grading below. The helper defines klt()/
+# klt_python() unconditionally, but this bench's own klt invocations --
+# klt sim, klt --version -- stay on the host klt: drop the functions right
+# after sourcing and keep KLT_PIN/KLT_YIELD.
+. "$repo/signoff/klt.sh"
+unset -f klt klt_python
 
 # ASSUMPTIONS, recorded verbatim in record.json from this one definition: each is either
 # passed to summarize.py below or written into the requests built here and read back
