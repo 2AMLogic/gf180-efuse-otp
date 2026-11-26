@@ -33,7 +33,6 @@ Issues currently being built (`loom:building`).
 
 - **#35**: T1 item 5 (corner verification, digital): klt sta and klt functional-verification for the controller
 - **#118**: Make the CI record-format check read the committed sim records: its glob matches 0 of 15 and it passes vacuously
-- **#419**: signoff/README.md item-2 re-attest trigger list names only gen_efuse_otp.py after the generator split
 
 ## PRs Awaiting Review
 
@@ -71,7 +70,7 @@ _None._
 | Very important | 0 |
 | Important | 1 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 3 |
+| In Progress (`loom:building`) | 2 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 1 |
 | Curated | 3 |
