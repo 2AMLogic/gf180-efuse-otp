@@ -23,6 +23,7 @@ run "checker self-tests" bash -c "cd scripts/ci && python3 -I -m unittest discov
 run "evidence format" python3 scripts/ci/check_evidence_format.py
 run "attestation pin" python3 scripts/ci/check_attest_pins.py
 run "report input hashes" python3 scripts/ci/check_report_inputs.py
+run "routed STA input" python3 -I sta/check_route.py
 run "item 6 spec binding" signoff/check-item6-digital.sh
 run "PVT grid binding" signoff/check-pvt-grid.sh
 run "pdk_env self-test" sim/lib/test_pdk_env.sh

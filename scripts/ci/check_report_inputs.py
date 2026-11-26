@@ -27,10 +27,9 @@ regenerated -- is specific to reports that live beside their streams in a
 regenerated tree. sim/**/records/**/report.json bundle their own netlist
 inside their own append-only record directory, so a record's
 report<->stream pair cannot drift once written (all such pairs match as of
-8dc72be). sim/controller-sta/*.report.json record an input that is an
-uncommitted layout/.klt/ artifact no committed file hashes to; they are
-role "layout" with no .file and no .layout, so fail-closed would reject
-them, and the glob keeps them out explicitly.
+8dc72be). sim/controller-sta/*.report.json may refer to historical routes. The current
+100 ns report cited by the manifest is bound to the retained DEF by
+sta/check_route.py.
 
 The deck hash is deliberately NOT checked: it is engine-dependent while
 signoff/klt-pin.txt does not constrain the engine

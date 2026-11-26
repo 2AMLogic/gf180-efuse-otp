@@ -5,3 +5,6 @@
 # fully re-derived by the next resync regardless of which side "wins".
 .loom/install-metadata.json merge=ours
 # END LOOM-MANAGED (merge drivers, #4528)
+
+# STA provenance hashes the exact OpenROAD output, including its line endings.
+layout/efuse_otp_ctrl.def -text whitespace=-blank-at-eol

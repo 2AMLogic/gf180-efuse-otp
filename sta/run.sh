@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 # Standalone multi-corner STA of the routed controller with the pinned klt.
 #   sta/run.sh [outdir]   reports go to outdir (default sim/controller-sta)
-# Regenerates nothing: needs the routed DEF from `layout/pnr.sh`
-# (layout/.klt/place-and-route/efuse_otp_ctrl.def, gitignored) and openroad on
-# PATH. The 100 ns target requires nonnegative setup and hold at every
+# Uses the retained controller DEF and OpenROAD on PATH. The 100 ns target requires nonnegative setup and hold at every
 # available library corner. The 10 ns headroom run reports slack of either
 # sign. The 1 ns negative control must violate setup at every corner.
 set -euo pipefail
@@ -13,8 +11,7 @@ cd "$(dirname "$0")/.."
 export PDK="${PDK:-gf180mcuD}" PDK_ROOT="${PDK_ROOT:-$HOME/.ciel}"
 out="${1:-sim/controller-sta}"
 mkdir -p "$out"
-def=layout/.klt/place-and-route/efuse_otp_ctrl.def
-[ -f "$def" ] || { echo "$def missing: run layout/pnr.sh first" >&2; exit 2; }
+python3 -I sta/check_route.py
 rc=0
 for n in sta-100ns sta-10ns sta-negative-control-1ns; do
   klt sta "sta/$n.json" --format json > "$out/$n.report.json"
