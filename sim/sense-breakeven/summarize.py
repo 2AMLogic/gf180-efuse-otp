@@ -18,17 +18,12 @@ sweep point, or with an unusable measurement, is not counted as correct; a valid
 wrong-bit reading counts zero and leaves the analog crossing alone.
 """
 import argparse
-import math
 import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
 import bench_record  # noqa: E402
-from sense_decision import DECISION_BIT_DEF, RESOLVED_DEF, decide  # noqa: E402
-
-
-def finite(x):
-    return isinstance(x, (int, float)) and math.isfinite(x)
+from sense_decision import DECISION_BIT_DEF, RESOLVED_DEF, decide, finite  # noqa: E402
 
 
 def crossing(series):
