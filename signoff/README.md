@@ -34,7 +34,7 @@ The block's verdict of record against the klayout-tools evidence tiers.
 `3.analog` and `3.digital` cite a two-member compound evidence list per
 partition — the curated report first, then the PDK-native report — each member
 pinned by its report's `provenance.input.content_hash`. The SHA-256 prefixes
-are `5e553ab4…` for `layout/efuse_otp_array.gds` and `b80bfb50…` for
+are `7657f02a…` for `layout/efuse_otp_array.gds` and `b80bfb50…` for
 `layout/efuse_otp_ctrl.gds`. Both members grade `met` with `status: "clean"`
 and `input_verified: true`.
 
@@ -50,26 +50,23 @@ Reviewers assess that disclosure separately from the automated grade.
 - `coverage.layers_in_stream_without_rules` (8): `22/4`, `30/4`, `34/4`,
   `34/10`, `36/4`, `42/4`, `46/4`, `81/4`. The seven `/4` entries are the
   density-fill dummy datatypes (#310). `34/10` is the Metal1 label layer.
-- `coverage.rules_skipped` (55): `bjt.separation.comp.1`, `cap_mk.ongrid.1`,
+- `coverage.rules_skipped` (39): `bjt.separation.comp.1`, `cap_mk.ongrid.1`,
   `comp.separation.guard_ring_mk.1`, `diode_mk.ongrid.1`, `dnwell.ongrid.1`,
   `drc_bjt.ongrid.1`, `esd.area.1`, `esd.holes_area.1`, `esd.overlap.comp.1`,
   `esd.separation.nplus.1`, `esd.separation.pplus.1`, `esd.space.1`,
   `esd.width.1`, `fusetop.ongrid.1`, `ldmos_xtor.enclosing.mvpsd.1`,
   `metal1.separation.guard_ring_mk.1`, `metal2.separation.guard_ring_mk.1`,
-  `metal3.enclosing.via3.1`, `metal3.separation.guard_ring_mk.1`,
-  `metal4.enclosing.via3.1`, `metal4.enclosing.via4.1`, `metal4.ongrid.1`,
-  `metal4.separation.guard_ring_mk.1`, `metal4.space.1`, `metal4.width.1`,
-  `metal5.enclosing.via4.1`, `metal5.ongrid.1`,
-  `metal5.separation.guard_ring_mk.1`, `metal5.space.1`, `metal5.width.1`,
-  `metaltop.ongrid.1`, `metaltop.separation.guard_ring_mk.1`,
-  `metaltop.space.1`, `metaltop.width.1`, `mim.enclosing.fusetop.1`,
-  `mim.enclosing.via4.1`, `mim.space.1`, `mim_l_mk.ongrid.1`,
-  `mvpsd.ongrid.1`, `mvsd.ongrid.1`, `mvsd.separation.dnwell.1`,
-  `mvsd.width.1`, `nwell.separation.guard_ring_mk.1`,
+  `metal3.separation.guard_ring_mk.1`, `metal4.separation.guard_ring_mk.1`,
+  `metal5.separation.guard_ring_mk.1`, `metaltop.ongrid.1`,
+  `metaltop.separation.guard_ring_mk.1`, `metaltop.space.1`,
+  `metaltop.width.1`, `mim.enclosing.fusetop.1`, `mim.enclosing.via4.1`,
+  `mim.space.1`, `mim_l_mk.ongrid.1`, `mvpsd.ongrid.1`, `mvsd.ongrid.1`,
+  `mvsd.separation.dnwell.1`, `mvsd.width.1`, `nwell.separation.guard_ring_mk.1`,
   `pad.enclosing.metal5.1`, `pad.ongrid.1`, `plfuse.separation.esd.1`,
   `plfuse.separation.resistor.1`, `poly2.separation.guard_ring_mk.1`,
-  `resistor.ongrid.1`, `via3.ongrid.1`, `via3.space.1`, `via3.width.1`,
-  `via4.ongrid.1`, `via4.space.1`, `via4.width.1`.
+  `resistor.ongrid.1`. (With top-level M4/Via3/M5/Via4 routing in #307, the
+  16 Metal4/Metal5/Via3/Via4 rules moved from `rules_skipped` into
+  `rules_checked` — 87 checked, 0 violations.)
 - `coverage.deck_scope` (19): 10.4.2 MIM Option B, 10.7 DRC_BJT Mark Layer,
   7.12 Contact, 7.13 Metaln, 7.14 Vian, 7.15 MetalTop, 7.4 Nwell, 7.5 Comp,
   7.7 Poly2, 7.8 Nplus, 7.9 Pplus, 9.1 Bond Pad, EF, ESD, GR, MDN, MDP,
@@ -136,12 +133,12 @@ lists the ratios beside each stream's SHA-256.
 1. **The controller's 0 `EF.*` markers are vacuous.** `efuse_otp_ctrl` draws
    no `PLFUSE`/`EFUSE_MK`, so the foundry fuse rules have no geometry to act
    on in that stream; only `layout/efuse_otp_array.gds` exercises them.
-2. **The array is placement-only outside the seven routed cells**
-   (`efuse_bitcell`, `efuse_ls`, `efuse_rowdrv`, `efuse_coldrv`, `efuse_comp`,
-   `efuse_sense`, `efuse_row`; `layout/README.md`, "What is not claimed"). The
-   DRC claim covers the committed stream as placed and filled — the unrouted
-   array top and the fuse cells' own placement are inside it, but full-array
-   routing (#32) is not.
+2. **Analog LVS signoff remains separate.** All eight cells of the analog
+   hierarchy — `efuse_bitcell`, `efuse_ls`, `efuse_rowdrv`, `efuse_coldrv`,
+   `efuse_comp`, `efuse_sense`, `efuse_row` and the array top `efuse_otp_array`
+   — are routed, filled and DRC-clean (0 markers across all 763 native rules
+   including all 27 `EF.*` IDs). Recognized-fuse top-level LVS (`4.analog`)
+   remains with #32.
 
 ## Regenerate the record
 
