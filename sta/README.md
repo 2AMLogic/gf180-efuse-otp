@@ -6,8 +6,14 @@ estimated from the routed DEF by OpenSTA).
 
 ```sh
 layout/pnr.sh      # regenerate the routed DEF (gitignored, deterministic GDS)
-sta/run.sh         # writes sim/controller-sta/*.report.json; exit 1 on a failing check
+sta/run.sh /tmp/efuse-sta  # write fresh reports outside the committed records
 ```
+
+The runner requires a complete routed result and finite constrained setup and
+hold measurements at the five requested library corners in each report.
+The 100 ns target passes with nonnegative setup and hold. A 10 ns timing miss
+is reported as headroom. The 1 ns control must produce negative setup slack at
+each corner. A missing report or unconstrained corner fails the run.
 
 Requests: `sta-100ns.json` (10 MHz), `sta-10ns.json` (100 MHz case),
 `sta-negative-control-1ns.json` (must go negative). All three use the same

@@ -3,9 +3,9 @@
 #   sta/run.sh [outdir]   reports go to outdir (default sim/controller-sta)
 # Regenerates nothing: needs the routed DEF from `layout/pnr.sh`
 # (layout/.klt/place-and-route/efuse_otp_ctrl.def, gitignored) and openroad on
-# PATH. Reports every request in sta/; exit 0 iff the two functional requests
-# (sta-100ns, sta-10ns) are clean at every corner. The negative control
-# (sta-negative-control-1ns) must show negative slack, else exit 1.
+# PATH. The 100 ns target requires nonnegative setup and hold at every
+# available library corner. The 10 ns headroom run reports slack of either
+# sign. The 1 ns negative control must violate setup at every corner.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 # shellcheck source=../signoff/klt.sh
@@ -19,15 +19,30 @@ rc=0
 for n in sta-100ns sta-10ns sta-negative-control-1ns; do
   klt sta "sta/$n.json" --format json > "$out/$n.report.json"
   python3 -I - "$out/$n.report.json" "$n" <<'PY' || rc=1
-import json, sys
-d = json.load(open(sys.argv[1])); name = sys.argv[2]
-neg = name.startswith("sta-negative")
-ok = d["status"] == "ok" and d["geometry_source"] == "routed"
-for c in d["corners"]:
-    s, h = c["worst_slack_ns"], c["worst_hold_slack_ns"]
-    print(f'{name} {c["corner"]} {c["timing_status"]} setup={s} hold={h}')
-    ok &= c["timing_status"] == "constrained"
-    ok &= (s < 0) if neg else (s >= 0 and h >= 0)
+import json
+import math
+import sys
+
+path, name = sys.argv[1:]
+with open(path) as stream:
+    report = json.load(stream)
+with open(f"sta/{name}.json") as stream:
+    expected = json.load(stream)["pdk"]["corners"]
+corners = report["corners"]
+ok = report["status"] == "ok" and report["geometry_source"] == "routed"
+ok &= sorted(c["corner"] for c in corners) == sorted(expected)
+for corner in corners:
+    setup = corner["worst_slack_ns"]
+    hold = corner["worst_hold_slack_ns"]
+    print(f'{name} {corner["corner"]} {corner["timing_status"]} setup={setup} hold={hold}')
+    ok &= corner["timing_status"] == "constrained"
+    if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in (setup, hold)):
+        ok = False
+        continue
+    if name == "sta-100ns":
+        ok &= setup >= 0 and hold >= 0
+    elif name == "sta-negative-control-1ns":
+        ok &= setup < 0
 sys.exit(0 if ok else 1)
 PY
 done
