@@ -97,6 +97,7 @@ not a fact, replaced only by a decision record that cites a source.
 | Sense margin | Positive at every corner over the A4/A5 ranges, including reference tolerance and comparator offset | — | — | |
 | Controller interface | Synchronous: clock, address, program-enable, read-enable, data out, busy | Asynchronous parallel read | Serial interface | (0004) |
 | Controller behavior | Program only after an explicit registered arm state set after reset release; program drive held inactive in reset and power-up; fixed sense-settle count for read; address stable before enable | — | — | Protection against unintended programming at power-up. (0004) |
+| Controller clock | 10 MHz (100 ns period); 100 MHz (10 ns) is not a requirement | — | — | Routed-DEF `klt sta` at 100 ns is constrained with non-negative setup and hold slack at all five library corners; the 10 ns result is out-of-spec headroom, not a failing row. Ratified by operator ruling, issue #35. (0006) |
 | PVT corners | Process `typical`, `ff`, `ss`, `fs`, `sf`; T = −40, 25, 125 °C; logic/sense supply 3.3 V ±10% (2.97/3.30/3.63 V); program supply 5.0 V ±10% (4.5/5.0/5.5 V) | — | — | Names confirmed against `sm141064.ngspice`. (0005) |
 | Signoff | DRC clean including every `EF.*` rule; LVS clean with the fuse as a recognized device; controller verified (cocotb + Icarus, Yosys, OpenROAD) | — | — | |
 
@@ -133,4 +134,4 @@ replacing an assumption through a decision record.
 ## 4. Decision records
 
 `spec/decisions/`: 0001 array, 0002 program path, 0003 sense topology,
-0004 interface and protection, 0005 PVT set.
+0004 interface and protection, 0005 PVT set, 0006 controller clock rate.
