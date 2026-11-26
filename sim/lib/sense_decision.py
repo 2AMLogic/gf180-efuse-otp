@@ -12,6 +12,9 @@ decision: resolved is False, the bit is None and decision_ok is False.
 """
 import math
 
+RESOLVED_DEF = "|v(cp) - v(cn)| >= 0.5 * vdd33 after the edge"
+DECISION_BIT_DEF = "1 if v(sense_out) >= 0.7 vdd33, 0 if <= 0.3 vdd33, else null"
+
 RESOLVE_FRAC = 0.5
 HIGH_FRAC = 0.7
 LOW_FRAC = 0.3

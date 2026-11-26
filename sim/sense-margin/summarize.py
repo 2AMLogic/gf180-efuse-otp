@@ -28,7 +28,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
 import bench_record  # noqa: E402  (needs the path insert above under python3 -I)
-from sense_decision import decide  # noqa: E402
+from sense_decision import DECISION_BIT_DEF, RESOLVED_DEF, decide  # noqa: E402
 
 
 def finite(x):
@@ -186,8 +186,8 @@ def main():
         "definitions": {
             "margin_v": "v(sbl) - v(sref) just before the clock edge",
             "signed_margin_v": "margin_v for programmed, -margin_v for intact; positive = correct side of the reference",
-            "resolved": "|v(cp) - v(cn)| >= 0.5 * vdd33 after the edge",
-            "decision_bit": "1 if v(sense_out) >= 0.7 vdd33, 0 if <= 0.3 vdd33, else null",
+            "resolved": RESOLVED_DEF,
+            "decision_bit": DECISION_BIT_DEF,
         },
         "complete": complete,
         "fuses": fuses,

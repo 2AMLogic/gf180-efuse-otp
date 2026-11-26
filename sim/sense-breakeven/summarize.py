@@ -24,7 +24,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
 import bench_record  # noqa: E402
-from sense_decision import decide  # noqa: E402
+from sense_decision import DECISION_BIT_DEF, RESOLVED_DEF, decide  # noqa: E402
 
 
 def finite(x):
@@ -133,8 +133,8 @@ def main():
         },
         "measurement_times": {"margin_read": a.t_pre, "decision_read": a.t_out},
         "definitions": {
-            "resolved": "|v(cp) - v(cn)| >= 0.5 * vdd33 after the edge",
-            "decision_bit": "1 if v(sense_out) >= 0.7 vdd33, 0 if <= 0.3 vdd33, else null",
+            "resolved": RESOLVED_DEF,
+            "decision_bit": DECISION_BIT_DEF,
             "decision_ok": "true when the comparator resolved and read the programmed bit (1) at the decision sample, including at resistances below the reference",
             "correct_corners_by_rfuse_ohm": "for each swept resistance, the number of distinct corners with decision_ok true for that reference",
             "lowest_all_corner_rfuse_ohm": "the lowest swept resistance at which every corner is correct (decision_ok true), or null if none qualifies",
