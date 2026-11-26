@@ -18,6 +18,7 @@ def pin_check():
     if (version_root / "gf180mcuD/SOURCES").read_text().strip() != "open_pdks " + pin["open_pdks_revision"]:
         raise ValueError("PDK_ROOT must name the open_pdks revision pinned in sim/pdk.json")
     canonical = version_root / pin["variant"] / "libs.tech/ngspice"
-    for model_file in pin["fleet_checked_model_files"]:
+    # All three MIM corners include this subcircuit library from sm141064.ngspice.
+    for model_file in (*pin["fleet_checked_model_files"], "sm141064_mim.spice"):
         if (canonical / model_file).read_bytes() != (MODEL_DIR / model_file).read_bytes():
             raise ValueError(f"gf180mcuD differs from the pinned {pin['variant']} model: {model_file}")
