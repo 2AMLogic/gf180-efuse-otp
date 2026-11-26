@@ -7,8 +7,9 @@ sim/sense-breakeven cannot drift apart:
   decision_bit  1 if v(sense_out) >= 0.7 * vdd33, 0 if <= 0.3 * vdd33, else None
   decision_ok   resolved AND decision_bit == expected_bit
 
-Both thresholds are inclusive. A missing or non-finite measurement is never a
-decision: resolved is False, the bit is None and decision_ok is False.
+Both thresholds are inclusive. finite(x) accepts finite int/float readings and
+excludes bool; a missing or non-finite measurement is never a decision:
+resolved is False, the bit is None and decision_ok is False.
 """
 import math
 
@@ -20,13 +21,13 @@ HIGH_FRAC = 0.7
 LOW_FRAC = 0.3
 
 
-def _finite(x):
+def finite(x):
     return isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x)
 
 
 def decide(cp, cn, so, vdd, expected_bit):
     """Return (resolved, decision_bit, decision_ok) for one corner reading."""
-    if not all(_finite(v) for v in (cp, cn, so, vdd)):
+    if not all(finite(v) for v in (cp, cn, so, vdd)):
         return False, None, False
     resolved = abs(cp - cn) >= RESOLVE_FRAC * vdd
     bit = 1 if so >= HIGH_FRAC * vdd else (0 if so <= LOW_FRAC * vdd else None)
