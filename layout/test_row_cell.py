@@ -191,7 +191,11 @@ class ColdrvGrownExtent(unittest.TestCase):
         the grown leaf followed by an ungrown device 2: the cursor's
         grown-extent arithmetic applies between repeated units too."""
         b = self._coldrv((True, False), m=("3", "1"))
-        self._assert_gap(coldrv_cell(b, "coldrv"))
+        row = coldrv_cell(b, "coldrv")
+        leaves = [inst.cell.name for inst in row.each_inst()
+                  if inst.cell.name.startswith("leaf")]
+        self.assertCountEqual(leaves, ["leaf0", "leaf0", "leaf0", "leaf1"])
+        self._assert_gap(row)
 
 
 class SizeGuard(unittest.TestCase):
@@ -213,6 +217,9 @@ class SizeGuard(unittest.TestCase):
         b = _row_builder((True, True))
         cell = b.layout.create_cell("placed")
         _row_place_all(b, cell, "row")
-        w, h = b.size(cell)
-        self.assertGreaterEqual(w, 2 * (10.0 + 2 * GROW_UM) + GAP_UM - 1e-9)
-        self.assertGreaterEqual(h, 5.0 + 2 * GROW_UM - 1e-9)
+        bbox = cell.bbox()
+        self.assertEqual(b.size(cell), (bbox.width() * DBU_UM, bbox.height() * DBU_UM))
+
+
+if __name__ == "__main__":
+    unittest.main()
