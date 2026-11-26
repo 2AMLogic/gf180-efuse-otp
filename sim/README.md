@@ -137,8 +137,27 @@ substrate-to-ground resistance from 1 TΩ to 1 Ω leaves all nine original
 failures. The load experiment gives the routing owner a target for a
 geometry-backed re-extraction. It makes no change to the physical stream.
 The report records KLT's lumped-star resistance and crossover-coupling model.
-Item 7 analog remains open pending full-array evidence and a passing sense
-decision.
+To test the loading in drawn geometry, use KLayout 0.30.14 with the same
+runner and simulator:
+
+```sh
+uv run --no-project --with klayout==0.30.14 python3 sim/post-layout-sense.py --geometry-control
+```
+
+The control adds a 36 × 0.42 µm Metal2 extension to the existing CN track,
+regenerates density fill and writes the candidate GDS and native report under
+`layout/.klt/sense-pex/metal-control/`. It leaves the delivered stream intact.
+CN rises from 13.515993 to 16.138599 fF. With the same 270 cases all three
+simulation legs read correctly. The previously wrong SS / −40 °C / 2.97 V
+case keeps +13.7037 mV pre-edge margin and now resolves CP−CN to +2.8582 V.
+The full candidate array passed both curated and native DRC (763 native rules)
+and fuse-aware topology comparison against the original schematic (485 nets,
+876 compared devices, 256 recognized fuses, 47 named boundary constraints).
+Metal-to-dummy fill had to be recomputed: retaining the original fill
+introduced eight violations of the native DM2.3 spacing rule.
+
+Item 7 analog remains open pending adoption of the physical route and full
+array-level evidence.
 
 ## Controller post-route SDF status
 

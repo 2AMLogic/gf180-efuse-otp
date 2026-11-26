@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import sys
 
 from lib.sense_decision import decide
 
@@ -17,7 +18,6 @@ MODEL_DIR = Path(os.environ.get("PDK_ROOT", Path.home() / ".ciel")).resolve() / 
 WORK = Path("layout/.klt/sense-pex")
 REPORT = Path("layout/pex-sense.report.json")
 GDS = "layout/efuse_otp_array.gds"
-REF = WORK / "sense-reference.spice"
 ORDER = "sbl,sense_en,clk,sense_out,vdd33,vprog,vss"
 TEMPLATE = ROOT / "sim/sense-margin/sense.cir.in"
 SOURCE = ROOT / "design/efuse_otp_array.spice"
@@ -117,21 +117,64 @@ def controls():
         (scratch / "measurements.json").write_text(json.dumps(rows, indent=2) + "\n")
 
 
-def replay():
-    WORK.mkdir(parents=True, exist_ok=True)
+def geometry_control():
+    """Add a 36 µm extension to the existing CN Metal2 track in a scratch GDS."""
+    import klayout.db as db
+
+    work = WORK / "metal-control"
+    work.mkdir(parents=True, exist_ok=True)
+    layout = db.Layout()
+    layout.read(GDS)
+    sense = layout.cell("efuse_sense")
+    tracks = sense.shapes(layout.layer(36, 0))
+    # The CN gate via attaches at x=131.87 µm to this horizontal Metal2 track.
+    track = db.DBox(103.50, 25.34, 143.58, 25.76).to_itype(layout.dbu)
+    if len([s for s in tracks.each() if s.is_box() and s.box == track]) != 1:
+        raise ValueError("CN Metal2 track moved; inspect the sense layout before repeating this control")
+    before = db.Region(tracks).merged()
+    extension = db.DBox(67.50, 25.34, 103.60, 25.76).to_itype(layout.dbu)
+    tracks.insert(extension)
+    change = (before ^ db.Region(tracks)).merged()
+    expected = db.DBox(67.50, 25.34, 103.50, 25.76).to_itype(layout.dbu)
+    if not (change ^ db.Region(expected)).is_empty():
+        raise ValueError("physical control must add exactly 36 × 0.42 µm of Metal2")
+    options = db.SaveLayoutOptions()
+    options.gds2_write_timestamps = False
+    # The original metal fill was placed before the new wire. Re-run the
+    # array's normal fill flow so its 2 µm keepout follows the changed route.
+    top = layout.cell("efuse_otp_array")
+    fill = layout.cell("density_fill")
+    instances = [inst for inst in top.each_inst() if inst.cell_index == fill.cell_index()]
+    if len(instances) != 1:
+        raise ValueError("expected one density_fill instance at the array top")
+    instances[0].delete()
+    layout.delete_cell(fill.cell_index())
+    raw = work / "unfilled.gds"
+    layout.write(str(raw), options)
+    filled = work / "filled.gds"
+    subprocess.run([sys.executable, "layout/fill_partitions.py", "--input", raw, "--output", filled,
+                    "--report", work / "fill.json", "--top", "efuse_otp_array"], check=True, stdout=subprocess.DEVNULL)
+    stream = work / "array.gds"
+    subprocess.run([sys.executable, "layout/order_gds.py", filled, stream], check=True)
+    return replay(str(stream), work, work / "pex.report.json")
+
+
+def replay(gds, work, report_path):
+    work.mkdir(parents=True, exist_ok=True)
+    reference = work / "sense-reference.spice"
     source = SOURCE.read_text()
     blocks = [re.search(r"^\.subckt " + name + r"\b.*?^\.ends[^\n]*", source, re.M | re.S)
               for name in ("efuse_sense", "efuse_comp")]
     if not all(blocks):
         raise ValueError(f"Missing sense or comparator subcircuit in {SOURCE}")
-    REF.write_text("* Physical-reference sense subcircuits from design/efuse_otp_array.spice\n" +
+    reference.write_text("* Physical-reference sense subcircuits from design/efuse_otp_array.spice\n" +
                    "\n".join(block.group() for block in blocks) + "\n")
     pin = Path("signoff/klt-pin.txt").read_text().strip()
-    args = ["uvx", "--from", pin, "klt", "pex", GDS, "--reference-netlist", str(REF),
+    args = ["uvx", "--from", pin, "klt", "pex", gds, "--reference-netlist", str(reference),
             "--measure-command", "python3 sim/post-layout-sense.py --measure", "--measure-timeout-s", "900",
             "--device-only-leg", "--deck", "gf180mcu", "--top", "efuse_sense", "--pins", ORDER,
             "--rename-declared-pins", "--pdk", "gf180mcuD", "--pdk-root", str(MODEL_DIR.parents[2]),
-            "-o", str(WORK / "sense.spice"), "--outdir", str(WORK / "run"), "--format", "json"]
+            "-o", str(work / "sense.spice"), "--outdir", str(work / "run"), "--format", "json"]
     run = subprocess.run(args, stdout=subprocess.PIPE, text=True)
     if run.returncode not in {0, 3}:
         raise RuntimeError(f"klt pex exited {run.returncode}")
@@ -140,15 +183,17 @@ def replay():
             report["body_bias"]["status"] != "biased" or report["extraction"]["device_count"] != 33 or
             any(row.get("device_only_status") not in {"pass", "fail"} for row in report["delta"])):
         raise ValueError("Incomplete sense PEX report or unexpected cell scope")
-    REPORT.write_text(run.stdout)
-    print(f"{REPORT}: {report['status']}, {report['failed']} failing measurement rows")
+    report_path.write_text(run.stdout)
+    print(f"{report_path}: {report['status']}, {report['failed']} failing measurement rows")
     return run.returncode
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--measure", metavar="NETLIST", type=Path, help=argparse.SUPPRESS)
-    parser.add_argument("--controls", action="store_true", help="run the substrate and matched-load sensitivity controls after replay")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--controls", action="store_true", help="run substrate and matched-load sensitivity controls after replay")
+    mode.add_argument("--geometry-control", action="store_true", help="extend the drawn CN route in scratch and replay the unmodified bench")
     args = parser.parse_args()
     os.chdir(ROOT)
     if args.measure:
@@ -157,5 +202,7 @@ if __name__ == "__main__":
         pin_check()
         if args.controls:
             controls()
+        elif args.geometry_control:
+            raise SystemExit(geometry_control())
         else:
-            raise SystemExit(replay())
+            raise SystemExit(replay(GDS, WORK, REPORT))
