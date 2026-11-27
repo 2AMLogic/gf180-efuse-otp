@@ -27,9 +27,13 @@ SUMMARIZE = os.path.join(HERE, "summarize.py")
 RECORDS = os.path.join(HERE, "records")
 
 
+def reject_constant(token):
+    raise ValueError(f"invalid JSON number: {token}")
+
+
 def load_json(path):
     with open(path) as f:
-        return json.load(f)
+        return json.load(f, parse_constant=reject_constant)
 
 
 def empty_corners(rep):
@@ -262,11 +266,23 @@ class Test(unittest.TestCase):
         self.assertIsNotNone(rec)
         self.assertEqual(rec["engine_versions"], [])
 
-    def test_l_invalid_voltage_disqualifies_the_selected_width(self):
+    def test_l_one_invalid_or_excessive_voltage_disqualifies_the_selected_width(self):
         chosen = self.committed["chosen_w_um"]
         stem = f"cell_r{self.fuse_ohms[0]}_w{chosen:g}"
+        original = next(w for w in self.committed["widths"] if w["w_um"] == chosen)
+        report = load_json(os.path.join(self.src, "sets", stem, "report.json"))
+        corner = report["corners"][0]
+        coordinates = (self.fuse_ohms[0], corner["process"],
+                       corner["temperature_c"], corner["supply_v"]["vdd"])
+        point = next(p for p in original["point_list"]
+                     if (p["fuse_ohm"], p["process"], p["temp_c"], p["vprog_v"]) == coordinates)
+        oversized = 10**309
+        # Input reading, recorded reading, width maximum.
+        cases = ((None, None, None), (False, False, None),
+                 (float("-inf"), None, None), (float("inf"), None, None),
+                 (float("nan"), None, None), (oversized, oversized, oversized))
         for name in ("vgs", "vds"):
-            for value in (None, float("-inf"), False):
+            for value, recorded, maximum in cases:
                 with self.subTest(name=name, value=value):
 
                     def invalidate_voltage(rep, name=name, value=value):
@@ -281,10 +297,9 @@ class Test(unittest.TestCase):
                     self.assertFalse(width["within_voltage_limit"])
                     self.assertFalse(width["candidate"])
                     self.assertNotEqual(rec["chosen_w_um"], chosen)
-                    self.assertIsNone(width["max_vgs_vds_v"])
-                    self.assertIn(
-                        value, [pt[name + "_v"] for pt in width["point_list"]]
-                    )
+                    self.assertEqual(width["max_vgs_vds_v"], maximum)
+                    self.assertEqual(len(width["point_list"]), original["points"])
+                    self.assertIn({**point, name + "_v": recorded}, width["point_list"])
 
 
 if __name__ == "__main__":

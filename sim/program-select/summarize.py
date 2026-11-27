@@ -20,7 +20,13 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
 import bench_record  # noqa: E402  (needs the path insert above under python3 -I)
-from sense_decision import finite
+
+
+def recorded_voltage(value):
+    """Use JSON null for a float that cannot be written as a JSON number."""
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    return value
 
 
 def main():
@@ -64,8 +70,8 @@ def main():
                 "vprog_v": c["supply_v"]["vdd"],
                 "fuse_ohm": fuse,
                 "i_fuse_a": i,
-                "vgs_v": vgs,
-                "vds_v": vds,
+                "vgs_v": recorded_voltage(vgs),
+                "vds_v": recorded_voltage(vds),
                 "status": c.get("status"),
                 "pass": bool(ok and i >= a.ireq),
             }
@@ -80,7 +86,9 @@ def main():
         all_pass = bool(pts) and all(p["pass"] for p in pts)
         voltages = [p[key] for p in pts for key in ("vgs_v", "vds_v")]
         vmax = None
-        if voltages and all(finite(v) for v in voltages):
+        # Non-finite floats are already null. Compare JSON numbers directly
+        # so even integers outside the float range retain their exact value.
+        if voltages and all(type(v) in (int, float) for v in voltages):
             vmax = max(voltages)
         within_voltage_limit = vmax is not None and vmax <= a.vmax
         out_w.append({
