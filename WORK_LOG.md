@@ -2,6 +2,11 @@
 
 Chronological record of merged PRs and closed issues. Maintained by the Guide role.
 
+### 2026-11-27
+
+- **PR #435**: fix(sim): require finite voltages at every program-select corner
+- **Issue #434** (closed): Remove the skip-missing-voltage shortcut from program-select width selection
+
 ### 2026-11-26
 
 - **PR #420**: docs: clarify when to regenerate and re-attest the analog GDS
