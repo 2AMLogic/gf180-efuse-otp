@@ -2,14 +2,14 @@
   "gds": "layout/efuse_otp_array.gds",
   "sha256": "e467e5b242766e7bffcb394a0ce60128803f33e4eb3922202b879afd9d016687",
   "method": "Linear triangular 2-D sheet conductance, finite via and diffusion/poly contact resistances, reduced multiport networks inserted into the archived selected-state transistor bench. Independent DC diagnostic.",
-  "reproduction": "https://github.com/2AMLogic/gf180-efuse-otp/issues/407#issuecomment-7185378755",
+  "reproduction": "layout/program-current/replay.sh",
   "pdk_revision": "f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
   "ngspice_version": "47",
   "selected_mos_body_connections": "The three program PMOS devices and the select NMOS have their bodies tied to their individual source terminals in the reported sweeps.",
   "high_corner_body_sensitivity_ma": {
     "source_tied_pmos_and_nmos": 10.0955,
     "vprog_pmos_source_tied_nmos": 10.0749,
-    "source_tied_pmos_ground_nmos": 10.0496,
+    "source_tied_pmos_ground_nmos": 10.0497,
     "vprog_pmos_ground_nmos": 10.0296
   },
   "worst_case": {
@@ -67,26 +67,26 @@
         }
       },
       "effective_branch_ohm": {
-        "vprog+mds0+mds1+mds2": 6.9338646680269305,
-        "fi+mdd0+mdd1+mdd2": 8.80791473048929,
-        "fo+sd": 4.266585269702605,
-        "vss+ss": 6.600525340997565
+        "vprog+mds0+mds1+mds2": 6.933864685150199,
+        "fi+mdd0+mdd1+mdd2": 8.807899364934492,
+        "fo+sd": 4.266585278821118,
+        "vss+ss": 6.600458911725934
       },
       "reduced_edge_ohm": {
-        "vprog mds0": 20.187903552912758,
-        "vprog mds1": 17.592829237098943,
-        "vprog mds2": 26.42443367860783,
-        "mds0 mds1": 4.426059924886846,
-        "mds0 mds2": 6.586148196771056,
-        "mds1 mds2": 4.510359695940368,
-        "fi mdd0": 19.92544496315412,
-        "fi mdd1": 28.567518038277296,
-        "fi mdd2": 35.28285860584327,
-        "mdd0 mdd1": 4.562627825045213,
-        "mdd0 mdd2": 5.604990783667101,
-        "mdd1 mdd2": 4.421363372924802,
-        "fo sd": 4.2665852697044535,
-        "vss ss": 6.600525342460528
+        "vprog mds0": 20.187903603868612,
+        "vprog mds1": 17.59282928150448,
+        "vprog mds2": 26.424433745309482,
+        "mds0 mds1": 4.426059923949937,
+        "mds0 mds2": 6.586148195391018,
+        "mds1 mds2": 4.5103596951979,
+        "fi mdd0": 19.925488814730066,
+        "fi mdd1": 28.56818186206621,
+        "fi mdd2": 35.28146202813272,
+        "mdd0 mdd1": 4.562710367341573,
+        "mdd0 mdd2": 5.604767594072181,
+        "mdd1 mdd2": 4.421219753400547,
+        "fo sd": 4.2665852788237535,
+        "vss ss": 6.600458918737123
       }
     },
     "high": {
@@ -115,28 +115,42 @@
         }
       },
       "effective_branch_ohm": {
-        "vprog+mds0+mds1+mds2": 13.062828604022831,
-        "fi+mdd0+mdd1+mdd2": 17.103959150530322,
-        "fo+sd": 8.471273411581992,
-        "vss+ss": 12.046724813112816
+        "vprog+mds0+mds1+mds2": 13.062828623688807,
+        "fi+mdd0+mdd1+mdd2": 17.10393798903572,
+        "fo+sd": 8.471273414972202,
+        "vss+ss": 12.046647208762417
       },
       "reduced_edge_ohm": {
-        "vprog mds0": 38.355549496305464,
-        "vprog mds1": 36.424899159349174,
-        "vprog mds2": 43.426331151980285,
-        "mds0 mds1": 13.282318270294798,
-        "mds0 mds2": 15.75299922663679,
-        "mds1 mds2": 13.336567971175866,
-        "fi mdd0": 44.89233393785065,
-        "fi mdd1": 52.91208265472832,
-        "fi mdd2": 57.832877980966984,
-        "mdd0 mdd1": 13.25221752533528,
-        "mdd0 mdd2": 14.438712399132832,
-        "mdd1 mdd2": 12.97176643674464,
-        "fo sd": 8.471273411575659,
-        "vss ss": 12.04672480158286
+        "vprog mds0": 38.355549556845105,
+        "vprog mds1": 36.42489921684373,
+        "vprog mds2": 43.426331220528844,
+        "mds0 mds1": 13.282318267885936,
+        "mds0 mds2": 15.75299922379558,
+        "mds1 mds2": 13.336567969032082,
+        "fi mdd0": 44.892445366945715,
+        "fi mdd1": 52.91262214816381,
+        "fi mdd2": 57.83180663917906,
+        "mdd0 mdd1": 13.252324516027373,
+        "mdd0 mdd2": 14.438460530794053,
+        "mdd1 mdd2": 12.971577003475964,
+        "fo sd": 8.471273414968934,
+        "vss ss": 12.046647210036234
       }
     }
   },
-  "undersized_4um_select_high_ma": 1.04492
+  "undersized_4um_select_high_ma": 1.04492,
+  "conductive_graph": {
+    "ordinary_via4_rule": "Via4 (41/0) minus FuseTop (75/0), GF180 general_derivations.lvs",
+    "via4_cuts_in_fusetop": 269,
+    "ordinary_via4_cuts": 8188,
+    "component_ids": {
+      "vss": 0,
+      "sref": 334,
+      "sbl": 337
+    }
+  },
+  "mesh_nodes": {
+    "all_address": 747485,
+    "refined_worst_address": 735111
+  }
 }

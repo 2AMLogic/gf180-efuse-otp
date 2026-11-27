@@ -1,0 +1,43 @@
+--- ef407_vias.py
++++ ef407_vias.py
+@@ -91,7 +91,13 @@
+ cutpoints = {}
+ nl = []
+ for layer, via in enumerate([35, 38, 40, 41]):
+-    boxes = [p.bbox() for p in region(via).each()]
++    cuts = region(via)
++    if via == 41:
++        # GF180 MIM-B, general_derivations.lvs: via4_n_cap = via4.not(fusetop).
++        fusetop = region(75)
++        mim_cuts = (cuts & fusetop).count()
++        cuts = cuts - fusetop
++    boxes = [p.bbox() for p in cuts.each()]
+     shape = [shapely.box(b.left, b.bottom, b.right, b.top) for b in boxes]
+     a, b = covers(layer, shape), covers(layer + 1, shape)
+     counts.update(zip(a, b))
+@@ -132,6 +138,16 @@
+     sd=geom * ts * sd,
+ )
+ nodes = dict(zip(coords, covers(0, [shapely.Point(xy(p)) for p in coords.values()])))
++
++# Probe the M2 signal-side landing of each MIM in array coordinates.
++[sense] = placements(top, "efuse_sense")
++sense_components = {"vss": int(components[nodes["vss"]])}
++for signal, x, y in (("sref", 44.0, 20.51), ("sbl", 80.0, 19.79)):
++    point = sense * k.DPoint(x, y).to_itype(ly.dbu)
++    [metal] = covers(1, [shapely.Point(xy(point))])
++    sense_components[signal] = int(components[metal])
++assert len(set(sense_components.values())) == 3, f"MIM sense net short: {sense_components}"
++
+ nets = [
+     ["vprog", "mds0", "mds1", "mds2"],
+     ["fi", "mdd0", "mdd1", "mdd2"],
+@@ -142,6 +158,8 @@
+ out = {
+     "gds_sha256": hashlib.sha256(filename.read_bytes()).hexdigest(),
+     "via_cuts": nl,
++    "via4_in_fusetop": mim_cuts,
++    "sense_components": sense_components,
+     "m1_probe_um": {
+         n: [round(v * ly.dbu, 6) for v in xy(pt)] for n, pt in coords.items()
+     },

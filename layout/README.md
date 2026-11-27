@@ -637,13 +637,20 @@ are 0.20 µm square. Fuse and transistor fingers use the actual contact
 footprints with ideal contact-to-device resistance. [Original address and
 corner sweep](https://github.com/2AMLogic/gf180-efuse-otp/issues/407#issuecomment-7185144585) · [Executable extraction and bench](https://github.com/2AMLogic/gf180-efuse-otp/issues/407#issuecomment-7185048631)
 
-The repaired stream includes fifteen contacts along each 10 µm program-MOS
-finger. Counting finite contact resistance on both the MOS and fuse, all
-256 addresses clear 10 mA at the binding stimulus under both interconnect
-corners. At row 31, bit 0, all 135 PVT/fuse points per interconnect corner
-pass. With each selected program PMOS and the select NMOS body tied to
-its own source, the refined minimum is **10.6532 mA nominal and 10.0955 mA
-high**, a high-resistance margin of 0.0955 mA. At the same high-resistance
+On the MIM array (`e467e5b2`), the DC mesh uses the foundry’s
+`via4.not(fusetop)` rule for M4–M5 connections. It excludes 269 capacitor
+cuts and retains 8,188 ordinary Via4 cuts. M2 probes at the SREF and SBL
+capacitor landings and the top-level M1 VSS pin occupy three distinct
+conductive components.
+
+The stream includes fifteen contacts along each 10 µm program-MOS finger.
+Counting finite contact resistance on both the MOS and fuse, all 256
+addresses clear 10 mA at the binding stimulus. The 1 µm² mesh gives
+10.6535–10.9214 mA nominal and 10.0958–10.3887 mA high. Row 31, bit 0
+is the minimum in both sweeps. On its 0.25 µm² mesh, all 135 PVT/fuse
+points per interconnect corner pass. With each selected program PMOS and
+the select NMOS body tied to its own source, the refined minimum is
+**10.6532 mA nominal and 10.0955 mA high**, a high-resistance margin of 0.0955 mA. At the same high-resistance
 point, tying the PMOS bodies to VPROG and the NMOS body to VSS gives
 **10.0296 mA**, a 0.0296 mA margin.
 The original geometry measured 9.27576 and 7.11335 mA respectively with
@@ -654,8 +661,16 @@ archived static transistor bench. Fuse-aware LVS (#32) and qualified PEX
 CI binds the current diagnostic to the delivered array GDS by its raw
 SHA-256. If the array changes before a new sweep is available, retain and
 cite the previous result as historical with its measured GDS digest.
-[Stream-bound result and multiport resistances](program-current.json) ·
-[Extraction source and replay](https://github.com/2AMLogic/gf180-efuse-otp/issues/407#issuecomment-7185378755)
+
+Run `layout/program-current/replay.sh` with `gh`, `uv`, ngspice 47 and the
+pinned GF180MCU-D models at `~/.ciel/gf180mcuD`. The script retrieves the
+original #407 mesh and bench sources, verifies their hashes, and applies
+the MIM connectivity correction before either solve. Its output directory
+contains the component IDs in `graph.json`, per-address currents in
+`addresses/results.csv`, refined sweeps in `pvt/pvt.csv`, and the high-R
+body ties and 4 µm select control in `controls.json`.
+[Stream-bound results and multiport resistances](program-current.json) ·
+[Executable replay](program-current/replay.sh)
 
 ## Array supply ties and physical fault controls
 
