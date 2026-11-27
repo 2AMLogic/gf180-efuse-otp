@@ -186,15 +186,16 @@ REQ
   elif [ "$part" = sense ]; then
     req=$(cat <<REQ
 {
-  "layout": { "file": "layout/efuse_otp_array.gds", "top": "$top", "deck": "gf180mcu" },
+  "layout": { "file": "layout/efuse_otp_array.gds", "top": "$top", "deck": "gf180mcu",
+              "declared_pins": ["sbl", "sense_en", "clk", "sense_out", "vdd33", "vprog", "vss"] },
   "reference": { "netlist": "design/efuse_otp_array.spice",
                  "form": "subckt-call",
                  "deck": "gf180mcu",
                  "top": "$top" },
   "options": { "anchor_top_level_pins": true,
                "flatten_reference": ["$top"],
-               "combine_devices": true,
-               "compare_parameters": { "ppolyf_u": ["R"] } },
+               "combine_devices": ["nfet", "pfet"],
+               "compare_parameters": { "ppolyf_u": ["R"], "cap_mim_2f0_m4m5_noshield": ["A", "P"] } },
   "portable_paths": true
 }
 REQ

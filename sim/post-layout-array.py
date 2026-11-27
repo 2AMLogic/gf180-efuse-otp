@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Measure selected row 31, column 0 in the real 47-port array (fuse-aware tool trial)."""
 import argparse
+import csv
 from concurrent.futures import ThreadPoolExecutor
 from itertools import product
 import json
@@ -93,7 +94,7 @@ def check_matrix(report, full):
         raise ValueError("incomplete, repeated or unexpected full-array measurement rows")
 
 
-def bench(config, out, path, target, ends, pins, schematic):
+def bench(config, out, path, target, ends, pins, schematic, mim_corner="mimcap_typical"):
     mode, process, temp, logic, r = config
     name = corner_id(config)
     work = out / name
@@ -103,7 +104,7 @@ def bench(config, out, path, target, ends, pins, schematic):
     resistor = {"ff": "res_ff", "ss": "res_ss"}.get(process, "res_typical")
     lib = MODEL_DIR / "sm141064.ngspice"
     deck = ["* Row 31, column 0 of the routed 32 x 8 array", f'.include "{MODEL_DIR}/design.ngspice"',
-            f'.lib "{lib}" {process}', f'.lib "{lib}" {resistor}']
+            f'.lib "{lib}" {process}', f'.lib "{lib}" {resistor}', f'.lib "{lib}" {mim_corner}']
     if not schematic:
         # The extractor supplies the intact resistance of each drawn link.
         # ngspice accepts the physical L/W card with a neutral resistor model.
@@ -194,7 +195,7 @@ def replay(control, full):
     report = json.loads(run.stdout)
     check_matrix(report, full)
     if (report["errored"] or report["unfinished"] or
-            report["body_bias"]["status"] != "biased" or report["extraction"]["device_count"] != 2393 or
+            report["body_bias"]["status"] != "biased" or report["extraction"]["device_count"] != 2395 or
             report["extraction"]["net_count"] != 485 or
             report["provenance"]["pdk"]["version"] != "open_pdks " + version["open_pdks_revision"]):
         raise ValueError("incomplete or incorrectly scoped full-array PEX report")
@@ -203,15 +204,62 @@ def replay(control, full):
     print(f"{output}: {report['status']}, {report['failed']} failed measurement rows")
     return run.returncode
 
+def mim_edges(output):
+    """Measure both decision boundaries at the fast and slow MIM model corners."""
+    import tempfile
+
+    if replay(False, False) != 0:
+        raise ValueError("Nominal array smoke test failed before the MIM corner sweep")
+    pins, _ = reference()
+    baseline = WORK / "baseline"
+    edge_cases = [case for case in configurations(True)
+                  if case[0] == "read" and case[-1] in (260, 630)]
+    with tempfile.TemporaryDirectory() as scratch:
+        sources = {}
+        for corner in ("mimcap_ff", "mimcap_ss"):
+            for side in ("schematic", "extracted"):
+                work = Path(scratch) / corner / side
+                work.mkdir(parents=True)
+                schematic = side == "schematic"
+                netlist = baseline / ("reference.spice" if schematic else "array.spice")
+                netlist, target, endpoints = selected_fuse(netlist.resolve(), work, schematic)
+                sources[corner, side] = (work, netlist, target, endpoints)
+
+        def point(entry):
+            corner, side, case = entry
+            work, netlist, target, endpoints = sources[corner, side]
+            measured = bench(case, work, netlist, target, endpoints, pins, side == "schematic",
+                             mim_corner=corner)["measurements"]
+            values = [metric["value"] for metric in measured]
+            return [corner, side, *case, *values,
+                    "pass" if all(metric["status"] == "pass" for metric in measured) else "fail"]
+
+        jobs = [(corner, side, case) for case in edge_cases for corner, side in sources]
+        with ThreadPoolExecutor(max_workers=int(os.environ.get("PEX_JOBS", "6"))) as pool:
+            rows = list(pool.map(point, jobs))
+    if len(rows) != 360:
+        raise ValueError("Incomplete MIM process-edge sweep")
+    with output.open("w", newline="") as stream:
+        writer = csv.writer(stream, lineterminator="\n")
+        writer.writerow(["mim", "side", "mode", "process", "temp", "logic", "ohm",
+                         "margin_v", "cp_minus_cn_v", "out_v", "status"])
+        writer.writerows(rows)
+    failures = sum(row[-1] != "pass" for row in rows)
+    print(f"{output}: {len(rows)} MIM process-edge reads, {failures} failures")
+    return 3 if failures else 0
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--measure", type=Path, metavar="NETLIST", help=argparse.SUPPRESS)
     parser.add_argument("--geometry-control", action="store_true", help="use the refilled scratch GDS with the CN extension removed")
+    parser.add_argument("--mim-edges", type=Path, help="write the two capacitor-corner read sweeps to this CSV")
     parser.add_argument("--full-grid", action="store_true", help="run all 45 PVT corners with six read and three program resistances")
     args = parser.parse_args()
     os.chdir(ROOT)
     if args.measure:
         measure(args.measure, args.full_grid)
+    elif args.mim_edges:
+        raise SystemExit(mim_edges(args.mim_edges))
     else:
         raise SystemExit(replay(args.geometry_control, args.full_grid))

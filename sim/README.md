@@ -99,14 +99,13 @@ and the record layout: `sim/sense-margin/README.md`.
 
 ## Routed sense-cell PEX (#61)
 
-The published KLT 0.9.2 report in `layout/pex-sense.report.json` extracts
-the physical `efuse_sense` cell from the delivered array. Its 33 devices
-include the PDK bias and reference resistors. The seven-port fixture models
-the selected fuse and series switches outside the cell. It holds VPROG at
-5 V, samples the signed margin at 14.9 ns and checks the latched bit at 38 ns
-after the 15 ns clock edge. All 270 schematic, 270 device-only and 270
-RC-extracted decisions pass. KLT reports biased bodies and zero unbiased
-devices. Use ngspice 42 and the PDK revision in `sim/pdk.json`.
+KLT 0.9.2 extracts 35 devices from the delivered `efuse_sense` cell, including
+the bias and reference resistors and the two sense-input MIM capacitors. The
+seven-port fixture places the selected fuse and series switches outside the cell.
+It holds VPROG at 5 V, samples signed margin at 14.9 ns, clocks at 15 ns and
+checks the latched bit at 38 ns. All 270 schematic, 270 device-only and 270
+RC-extracted reads pass. The extraction reports biased bodies and zero unbiased
+devices. Use ngspice 42 and the PDK revision in `sim/pdk.json`. [Sense-cell report](../layout/pex-sense.report.json)
 
 ```sh
 python3 sim/post-layout-sense.py
@@ -114,89 +113,71 @@ python3 sim/post-layout-sense.py --controls
 uv run --no-project --with klayout==0.30.14 python3 sim/post-layout-sense.py --geometry-control
 ```
 
-The generator extends the existing CN Metal2 track 36 µm west at a width
-of 0.42 µm. The load to substrate changes from 13.515993 to 16.138599 fF
-at CN and from 16.297548 to 16.296276 fF at CP. A 1 Ω substrate tie
-preserves the corrected outcomes at all nine SS/630 Ω conditions. Restoring
-only CN capacitance to its previous value in scratch reproduces all nine
-wrong bits across the 270-point sweep. The geometry control removes the
-actual extension and regenerates fill. It reproduces the pre-repair GDS
-byte-for-byte and exits 3 on nine wrong programmed reads. At −40 °C and
-2.97 V the margin is +13.7037 mV in both layouts, while the post-edge
-CP−CN changes from −2.8557 V before the repair to +2.8582 V after it.
-The three commands leave the physical streams, decks, simulator logs and
-native control report in `layout/.klt/sense-pex/`.
+The Metal2 extension adopted on the parent branch adds 36 × 0.42 µm to the CN
+track. The second command tests a 1 Ω substrate tie and the prior CN capacitance
+separately. The third removes exactly that metal in a scratch layout, regenerates
+fill, and retests the cell. All nine slow-process substrate-tie controls pass.
+Restoring the earlier CN capacitance or physically removing the extension each
+leaves one wrong 630 Ω read at SS, −40 °C and 2.97 V. Generated streams, decks and logs are under
+`layout/.klt/sense-pex/`. The results recorded for the earlier layout without
+the input capacitors are on [PR #431](https://github.com/2AMLogic/gf180-efuse-otp/pull/431).
 
 ## Full-array read and program path trial (#61)
 
-`layout/pex-array-fuse-candidate.report.json` measures row 31, column 0 of
-the actual 47-port array. Source-pinned KLT revision `25da22a11805` and
-KLayout 0.30.14 recognize 256 fuse links, 2,393 raw extracted devices and
-485 nets. Released KLT 0.9.2 recognizes zero fuse devices at this top.
-The schematic leg restores the original xschem top header. The extracted
-leg uses the fuse at (955.99, 683.06) µm and changes only that element's test
-resistance. The other 255 links retain their nominal resistance.
+The 47-port array now uses two foundry MIM-B M4/M5 capacitors to ground,
+10.2 × 10.2 µm on the reference sense input and 8.6 × 8.6 µm on the
+bitline sense input. Standalone LVS compares their plate area and perimeter
+and matches all 7 pins, 20 nets and 30 combined devices. Removing either
+capacitor's signal Via3 splits a net and causes full-array LVS to fail. Source-pinned KLT
+`25da22a11805` with KLayout 0.30.14 identifies all 256 fuse links, 2,395
+raw devices and 485 nets. Released KLT 0.9.2 recognizes zero array fuses.
+[Sense LVS](../layout/lvs-sense.report.json) · [Full-array PEX](../layout/pex-array-fuse-candidate.report.json)
 
-Each leg runs 270 transient reads (five process corners, three temperatures,
-three logic voltages, six fuse resistances), 135 program operating points
-(the same corner grid with three intact resistances), and two address
-controls. VPROG is 5 V for reads. Program supplies step together at
-2.97/4.5 V, 3.30/5.0 V and 3.63/5.5 V per decision 0005. The original
-physical reference and column mux, all bitline loading, row driver and
-column driver participate. The spec assumptions for the resistive fuse
-states and mixed-corner resistor models still apply.
+The bench measures row 31, column 0. The schematic leg restores the original
+xschem top header. The extracted leg varies the resistance of the fuse at
+(955.99, 683.06) µm and keeps the other 255 at nominal resistance. Each leg
+runs five process corners, three temperatures, three logic voltages and six
+read resistances. Reads use VPROG = 5 V. The 135 program conditions use three
+intact resistances and paired logic/program rails of 2.97/4.5 V, 3.30/5.0 V
+and 3.63/5.5 V per decision 0005. Both legs include the column mux, bitline
+loading, physical reference and row/column drivers.
 
-| Full coupled bench | Schematic | Extracted |
-| --- | --- | --- |
-| Correct read at 38 ns | 250/270 | 251/270 |
+| Coupled array measurement | Schematic | Extracted |
+| --- | ---: | ---: |
 | Correct pre-edge margin sign | 270/270 | 270/270 |
-| Resolved latch at 38 ns | 270/270 | 270/270 |
+| Resolved latch and correct read at 38 ns | 270/270 | 270/270 |
 | Program current ≥10 mA | 135/135 | 135/135 |
 | Minimum selected program current | 11.3487 mA | 11.0436 mA |
+| Address-isolation controls | 2/2 | 2/2 |
 
-On the adopted stream, every incorrect read is a 630 Ω programmed fuse.
+The parent layout failed 19 extracted and 20 schematic reads at 630 Ω. With
+both capacitors routed, all 947 measurement comparisons pass. Across the fast
+and slow capacitor models, 360 additional schematic and extracted reads at
+the 260 Ω and 630 Ω boundaries pass. The smallest signed pre-edge margin
+in that sweep is 4.067 mV. [Boundary sweep](array-pex/mim-edge-reads.csv)
 
-| Process | Schematic wrong | Extracted wrong |
-| --- | ---: | ---: |
-| typical | 4 | 4 |
-| ss | 6 | 6 |
-| ff | 1 | 2 |
-| fs | 7 | 3 |
-| sf | 2 | 4 |
-
-The two previously demonstrated full-array errors (SS/−40 °C/2.97 V and
-TT/25 °C/3.30 V at 630 Ω) now read correctly; the separate full-grid report
-exposes the remaining combinations. At the binding SS/125 °C, 2.97/4.5 V
-and 260 Ω program point, selecting row 30 or column 1 leaves only 83 pA or
-183 pA in the original measured fuse, respectively. KLT uses lumped-star
-interconnect resistance here. `layout/program-current.json` independently
-replays finite contacts, sheet resistance and all 256 sites at the binding
-corner. Its refined far-cell minimum is 10.6532 mA nominal, 10.0955 mA
-high, or 10.0296 mA with the selected PMOS bodies on VPROG and the NMOS
-body on ground at the high corner.
+At SS, 125 °C, 2.97/4.5 V and 260 Ω, selecting row 30 or column 1 leaves
+83 pA or 183 pA in the original measured fuse, respectively. The full-array
+extractor uses lumped-star interconnect resistance. A separate finite-contact,
+sheet-resistance mesh checks all 256 addresses and refines the farthest cell.
+Its minimum is 10.6532 mA with nominal parasitics, 10.0955 mA at high
+resistance and 10.0296 mA at high resistance with PMOS bodies on VPROG and
+the NMOS body on ground. These are simulated static delivery measurements.
+[Current report](../layout/program-current.json)
 
 ```sh
 python3 sim/post-layout-array.py
 python3 sim/post-layout-array.py --full-grid
-# After post-layout-sense.py --geometry-control recreates the pre-repair stream:
-python3 sim/post-layout-array.py --geometry-control
-python3 sim/post-layout-array.py --geometry-control --full-grid
+python3 sim/post-layout-array.py --mim-edges /tmp/efuse-mim-edges.csv
 ```
 
-The short test passes 17 measurement rows on the delivered layout. The
-full grid exits 3 and writes the native 947-row report to
-`layout/.klt/array-pex/baseline-full/pex.report.json`. On the reconstructed
-previous GDS, every one of the 45 extracted 630 Ω reads fails. The adopted
-route recovers 26 of those 45. The other 225 intact, nominal programmed and
-open cases still read correctly. Both programming grids and address controls
-pass. All 947 schematic values and decisions agree between the two runs.
-The native 947-row pre-repair report is archived in
-`sim/array-pex/metal-control.report.json`. Both full-array layouts have
-biased bodies and zero unbiased devices.
-The circuit correction is tracked in [#430](https://github.com/2AMLogic/gf180-efuse-otp/issues/430).
-Item 7 analog remains uncited pending a passing coupled read suite and a
-published fuse-capable extractor. The P06 current results concern static
-delivery; they do not estimate the programming pulse heating or fuse yield.
+The full run writes its native report to
+`layout/.klt/array-pex/baseline-full/pex.report.json`. To repeat the metal
+control on the current design, run the sense-cell geometry control first,
+then use `python3 sim/post-layout-array.py --geometry-control --full-grid`.
+The archived metal-only comparison predates these capacitors and identifies
+its own layout by hash. Item 7 analog awaits a released fuse-capable extractor
+and review of the coupled suite. [Archived comparison](array-pex/metal-control.report.json) · [Read-window issue](https://github.com/2AMLogic/gf180-efuse-otp/issues/430)
 
 ## Controller post-route SDF status
 

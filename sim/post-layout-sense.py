@@ -42,7 +42,7 @@ def point(config, side, netlist, outdir, template):
     # The drawn nets carry both their parent and comparator-pin labels.
     sref, cp, cn = ("sref", "cp", "cn") if side == "schematic" else ("inp|sref", "cp|outp", "cn|outn")
     nodes = ("sbl", "xsa." + sref, "sense_out", "xsa." + cp, "xsa." + cn)
-    deck += f'\n.lib "{models}" {process}\n.lib "{models}" {resistor}\n.include "{netlist}"\n.temp {temp}\n'
+    deck += f'\n.lib "{models}" {process}\n.lib "{models}" {resistor}\n.lib "{models}" mimcap_typical\n.include "{netlist}"\n.temp {temp}\n'
     deck += ".tran 20p 40n\n"
     for signal, node, at in zip(SIGNALS, nodes, ("14.9n", "14.9n", "38n", "38n", "38n")):
         deck += f".meas tran {signal} find v({node}) at={at}\n"
@@ -168,7 +168,7 @@ def replay(gds, work, report_path):
         raise RuntimeError(f"klt pex exited {run.returncode}")
     report = json.loads(run.stdout)
     if (len(report["delta"]) != 270 * 3 or report["errored"] or report["unfinished"] or
-            report["body_bias"]["status"] != "biased" or report["extraction"]["device_count"] != 33 or
+            report["body_bias"]["status"] != "biased" or report["extraction"]["device_count"] != 35 or
             any(row.get("device_only_status") not in {"pass", "fail"} for row in report["delta"])):
         raise ValueError("Incomplete sense PEX report or unexpected cell scope")
     report_path.write_text(run.stdout)

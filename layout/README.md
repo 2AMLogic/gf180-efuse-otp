@@ -94,15 +94,16 @@ layout/lvs.sh                 # rewrite the LVS reports (lvs-ctrl needs the PDK;
 layout/attest.sh              # re-attest afterwards (writes ../signoff/item2-analog.attest.json)
 ```
 
-The filled array hashes to `5ba2f5088a0fb03ce37ff293a8b146210abb2f9e050375f1f61a9213ef0cf2ab`.
-The sense router extends the CN Metal2 track west by 36 µm at its existing
-0.42 µm width. Its load rises from 13.515993 to 16.138599 fF, bringing it
-closer to CP at 16.296276 fF. Regenerating density fill around the new metal
-restores the native DM2.3 keepout. Removing the extension and regenerating
-fill reconstructs the previous widened array byte-for-byte. Its SHA-256 is
+The filled array with the two routed MIM capacitors hashes to
+`e467e5b242766e7bffcb394a0ce60128803f33e4eb3922202b879afd9d016687`.
+The sense router connects the 10.2 µm square on SREF and the 8.6 µm square
+on SBL to VSS over the existing layout. The array before these capacitors
+hashed to `5ba2f5088a0fb03ce37ff293a8b146210abb2f9e050375f1f61a9213ef0cf2ab`.
+It added the 36 × 0.42 µm CN Metal2 extension to the widened array
 `40f7f4cd0fd6f97c9a767584c14fed588ea781d6087a6a27e367e9dddcbf9841`.
-The released sense-cell sweep and full coupled array trial differ in scope
-and results. [Post-layout read and program measurements](../sim/README.md#full-array-read-and-program-path-trial-61).
+The extension increases the CN load from 13.515993 to 16.138599 fF, close
+to CP at 16.296276 fF. Both the extension and the input capacitors are present
+in the current whole-array PEX. [Read and program measurements](../sim/README.md#full-array-read-and-program-path-trial-61)
 
 Top-level array integration (#307: wiring the 32 rows, 32 row drivers, 8 column
 drivers and `efuse_sense` on M2–M5 without modifying any constituent cell, see
@@ -636,13 +637,20 @@ are 0.20 µm square. Fuse and transistor fingers use the actual contact
 footprints with ideal contact-to-device resistance. [Original address and
 corner sweep](https://github.com/2AMLogic/gf180-efuse-otp/issues/407#issuecomment-7185144585) · [Executable extraction and bench](https://github.com/2AMLogic/gf180-efuse-otp/issues/407#issuecomment-7185048631)
 
-The repaired stream includes fifteen contacts along each 10 µm program-MOS
-finger. Counting finite contact resistance on both the MOS and fuse, all
-256 addresses clear 10 mA at the binding stimulus under both interconnect
-corners. At row 31, bit 0, all 135 PVT/fuse points per interconnect corner
-pass. With each selected program PMOS and the select NMOS body tied to
-its own source, the refined minimum is **10.6532 mA nominal and 10.0955 mA
-high**, a high-resistance margin of 0.0955 mA. At the same high-resistance
+On the MIM array (`e467e5b2`), the DC mesh uses the foundry’s
+`via4.not(fusetop)` rule for M4–M5 connections. It excludes 269 capacitor
+cuts and retains 8,188 ordinary Via4 cuts. M2 probes at the SREF and SBL
+capacitor landings and the top-level M1 VSS pin occupy three distinct
+conductive components.
+
+The stream includes fifteen contacts along each 10 µm program-MOS finger.
+Counting finite contact resistance on both the MOS and fuse, all 256
+addresses clear 10 mA at the binding stimulus. The 1 µm² mesh gives
+10.6535–10.9214 mA nominal and 10.0958–10.3887 mA high. Row 31, bit 0
+is the minimum in both sweeps. On its 0.25 µm² mesh, all 135 PVT/fuse
+points per interconnect corner pass. With each selected program PMOS and
+the select NMOS body tied to its own source, the refined minimum is
+**10.6532 mA nominal and 10.0955 mA high**, a high-resistance margin of 0.0955 mA. At the same high-resistance
 point, tying the PMOS bodies to VPROG and the NMOS body to VSS gives
 **10.0296 mA**, a 0.0296 mA margin.
 The original geometry measured 9.27576 and 7.11335 mA respectively with
@@ -653,8 +661,16 @@ archived static transistor bench. Fuse-aware LVS (#32) and qualified PEX
 CI binds the current diagnostic to the delivered array GDS by its raw
 SHA-256. If the array changes before a new sweep is available, retain and
 cite the previous result as historical with its measured GDS digest.
-[Stream-bound result and multiport resistances](program-current.json) ·
-[Extraction source and replay](https://github.com/2AMLogic/gf180-efuse-otp/issues/407#issuecomment-7185378755)
+
+Run `layout/program-current/replay.sh` with `gh`, `uv`, ngspice 47 and the
+pinned GF180MCU-D models at `~/.ciel/gf180mcuD`. The script retrieves the
+original #407 mesh and bench sources, verifies their hashes, and applies
+the MIM connectivity correction before either solve. Its output directory
+contains the component IDs in `graph.json`, per-address currents in
+`addresses/results.csv`, refined sweeps in `pvt/pvt.csv`, and the high-R
+body ties and 4 µm select control in `controls.json`.
+[Stream-bound results and multiport resistances](program-current.json) ·
+[Executable replay](program-current/replay.sh)
 
 ## Array supply ties and physical fault controls
 

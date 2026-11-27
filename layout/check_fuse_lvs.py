@@ -5,7 +5,7 @@
 #   "klayout==0.30.14",
 # ]
 # ///
-"""Replay the fuse-aware candidate on the unchanged routed array and xschem netlist."""
+"""Replay fuse-aware LVS and physical fault controls on the routed array."""
 import argparse
 import json
 import os
@@ -48,7 +48,9 @@ def compare(stream, pairs, expected):
         "reference": {"netlist": str(NETLIST), "form": "subckt-call", "deck": "gf180mcu",
                       "top": ".TOP"},
         "options": {"anchor_top_level_pins": True, "flatten_reference": [".TOP"],
-                    "combine_devices": ["nfet", "pfet"], "compare_parameters": {"ppolyf_u": ["R"]}},
+                    "combine_devices": ["nfet", "pfet"],
+                    "compare_parameters": {"ppolyf_u": ["R"],
+                                           "cap_mim_2f0_m4m5_noshield": ["A", "P"]}},
         "hints": {"same_nets": pairs},
         "portable_paths": True,
     }
@@ -87,6 +89,21 @@ def short_one_fuse(path):
     layout.write(str(path), options)
 
 
+def open_sense_mim(path, x, y):
+    """Remove the signal Via3 from one sense capacitor, leaving its plates intact."""
+    layout = kdb.Layout()
+    layout.read(str(STREAM))
+    vias = layout.cell("efuse_sense").shapes(layout.layer(40, 0))
+    cut = kdb.DBox(x - 0.13, y - 0.13, x + 0.13, y + 0.13).to_itype(layout.dbu)
+    targets = [shape for shape in vias.each() if shape.is_box() and shape.box == cut]
+    if len(targets) != 1:
+        raise ValueError(f"expected one Via3 at {x}, {y}")
+    targets[0].delete()
+    options = kdb.SaveLayoutOptions()
+    options.gds2_write_timestamps = False
+    layout.write(str(path), options)
+
+
 def replay_fields(report):
     fresh = canonicalize(report, "lvs")
     # KLayout numbers extracted nets in a host-dependent order. Preserve
@@ -117,6 +134,12 @@ def main():
         path = Path(scratch) / "one-fuse-short.gds"
         short_one_fuse(path)
         short, _ = compare(path, pairs, "mismatch")
+        for signal, x, y in (("sref", 44, 20.51), ("sbl", 80, 19.79)):
+            opened = Path(scratch) / f"{signal}-mim-open.gds"
+            open_sense_mim(opened, x, y)
+            fault, _ = compare(opened, pairs, "mismatch")
+            if fault["counts"]["nets"]["layout"] != counts["nets"]["layout"] + 1:
+                raise ValueError(f"opening {signal} must isolate one additional net")
     errors = [m for m in short["mismatches"] if m["severity"] == "error"]
     if (short["counts"]["nets"]["layout"] != counts["nets"]["layout"] - 1 or
             not any(m["category"] == "device.unmatched" and m["device"]["class"] == "efuse" and

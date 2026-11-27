@@ -13,10 +13,13 @@ efuse_sense's rails merge with the efuse_comp instance's where they cross
 it).
 """
 
+import importlib.util
+from pathlib import Path
+
 import klayout.db as kdb
 
 from analog_core import (DBU_UM, GAP_UM, LS_M2, LS_M3, LS_VIA2, LS_W2, LS_W3N,
-                         gs, snap)
+                         gs, snap, parse_value)
 from route_drivers import CD_SHIFT, CD_TRACK_PITCH, SUPPLY
 
 # End-of-line reach of a narrow (< 0.34 um) M3 lane past a via2 centre in the
@@ -127,6 +130,8 @@ def _row_place_all(b, cell, subckt):
     2 um between bounding boxes. Returns the units."""
     units, x = [], 0.0
     for inst in b.netlist[subckt]:
+        if inst["master"] == "cap_mim_2f0_m4m5_noshield":
+            continue  # Sense-input MIMs occupy the upper metals over this row.
         u = _row_unit(b, cell, subckt, inst, x)
         units.append(u)
         x = gs(x + u["w"] + GAP_UM + 0.01)
@@ -175,6 +180,48 @@ def comp_cell(b, subckt):
     return cell
 
 
+def _input_mims(b, cell, subckt, track_y):
+    """Route the reference and bitline capacitors between their M2 tracks and VSS."""
+    source = (Path(b.klt.pdk_root) / b.klt.pdk / "libs.tech/klayout/tech/pymacros"
+              / "klayout_api_cells/draw_cap_mim.py")
+    spec = importlib.util.spec_from_file_location("gf180_mim", source)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    # These sites avoid the top-level M4/M5 program and supply straps at x=60..70.
+    sites = {"sref": (38.0, 44.0), "sbl": (77.0, 80.0)}
+    for inst in b.netlist[subckt]:
+        if inst["master"] != "cap_mim_2f0_m4m5_noshield":
+            continue
+        signal, ground = inst["nodes"]
+        if ground != "vss" or signal not in sites or inst["params"]["m"] != "1":
+            raise ValueError(f"Unsupported sense capacitor {inst}")
+        x, via_x = sites[signal]
+        y = 2.0
+        length = parse_value(inst["params"]["c_length"]) * 1e6
+        width = parse_value(inst["params"]["c_width"]) * 1e6
+        # Instantiate the foundry unit in a temporary layout. The PCell uses
+        # fixed internal names, including for the top vias of different sizes.
+        seed = kdb.Layout()
+        seed.dbu = b.layout.dbu
+        physical = module.draw_cap_mim(seed, length, width, "MIM-B", "M5")
+        unit = b.layout.create_cell(f"efuse_sense__{inst['name']}")
+        unit.copy_tree(physical)
+        cell.insert(kdb.CellInstArray(unit.cell_index(), kdb.Trans(
+            round(x / b.layout.dbu), round(y / b.layout.dbu))))
+        m4, m5 = (46, 0), (81, 0)
+        sy = track_y[signal]
+        ry = CS_RAIL_Y[ground]
+        b._box(cell, m4, via_x - 0.21, y + length - 0.21, via_x + 0.21, sy + 0.21)
+        b._box(cell, m5, via_x - 0.23, ry - 0.23, via_x + 0.23, y + 0.23)
+        for height in (sy, ry):
+            for layer in (LS_M2, LS_M3, m4):
+                b._box(cell, layer, via_x - 0.21, height - 0.21,
+                       via_x + 0.21, height + 0.21)
+            for cut in (LS_VIA2, (40, 0)):
+                b._cut(cell, cut, via_x, height)
+        b._cut(cell, (41, 0), via_x, ry)
+
+
 def sense_cell(b, subckt):
     """efuse_sense on a one-row floorplan: the twenty leaf instances
     (sixteen MOS, two ppolyf_u resistors, the W=60 select folded to six
@@ -188,7 +235,7 @@ def sense_cell(b, subckt):
     expected = {"XMb", "XRb", "XMbs", "XMbp", "XMf", "XMrf", "XRref", "XMsw",
                 "XMsel", "XMpca", "XMpcb", "XMnca", "XMncb", "Xcmp",
                 "XMpqa", "XMpqb", "XMnqa", "XMnqb", "XMpba", "XMpbb",
-                "XMnba", "XMnbb"}
+                "XMnba", "XMnbb", "XCref", "XCbl"}
     assert {i["name"] for i in b.netlist[subckt]} == expected, \
         f"efuse_sense netlist changed: {sorted(i['name'] for i in b.netlist[subckt])}"
     cell = b.layout.create_cell(subckt)
@@ -219,6 +266,7 @@ def sense_cell(b, subckt):
     cn_y = track_y["cn"]
     b._box(cell, LS_M2, cn_left - 36.0, cn_y - LS_W2 / 2,
            cn_left + 0.10, cn_y + LS_W2 / 2)
+    _input_mims(b, cell, subckt, track_y)
     b.sa_ports = {"net_pins": net_pins, "label_at": label_at,
                   "track_y": track_y, "rail_x": rail_x}
     b.cells[subckt] = cell

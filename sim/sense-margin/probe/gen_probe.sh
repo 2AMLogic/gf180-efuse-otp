@@ -82,6 +82,7 @@ deck="$(
   # The netlist instantiates the PDK resistor (ppolyf_u), which the MOS corner
   # sections above do not pull in (it lives in the res_* sections).
   printf '.lib %s/sm141064.ngspice res_%s\n' "$lib_dir" "$corner"
+  printf '.lib %s/sm141064.ngspice mimcap_typical\n' "$lib_dir"
   printf '.temp 25\n'
   sed -e "s#@DESIGN@#$lib_dir/design.ngspice#g" -e "s#@RFUSE@#$rfuse#g" "$bench"
   echo
