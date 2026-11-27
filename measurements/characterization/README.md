@@ -5,7 +5,8 @@ and section 3 "can show" claims `C1`-`C3`), with the record each verdict rests o
 This report **aggregates committed records; it produces no evidence and edits no
 `sim/` result.** State read at `main` `fafa4a6`, 2026-11-10; the DRC rows (P02,
 P13) re-read at `3a40550`, 2026-11-24 (the `sim/` records are append-only, so
-the earlier read stands for them).
+the earlier read stands for them). The controller timing and power table uses
+the 100 ns STA report added in `302f29d`.
 
 Verdict vocabulary: `met` (a committed record shows the bound over the stated
 conditions), `not met`, `partial` (record covers part of the bound), `not measured`
@@ -45,22 +46,21 @@ working value, not a fact, and a verdict against it says nothing about a real fu
 
 ## Controller (digital partition): Fmax, area, power
 
-Clock target is decision 0006, `Status: proposed` (10 MHz). It is **not ratified**;
-the 100 ns column below is not "ratified spec". The 10 ns report is cited only as
-out-of-spec headroom.
+Clock target is decision 0006, `Status: ratified` (10 MHz, 100 ns period). The
+10 ns report is cited only as out-of-spec headroom.
 
 Fmax, worst setup and hold slack come from `klt sta` on the routed DEF
 (`geometry_source: routed`, `clock_mode: ideal`, no SPEF: wire parasitics are
-estimated by the engine). Source: `sim/controller-sta/sta-100ns.report.json`
+estimated by the engine). Source: `sim/controller-sta/sta-100ns.ddba55a3.report.json`
 (`corners[]`).
 
 | Corner | Fmax (MHz) | Setup slack @ 100 ns (ns) | Hold slack (ns) | Estimated power (mW) |
 |---|---|---|---|---|
-| ss_n40C_3v00 | 130.122 | 92.3149 | 1.61053 | 0.2765 |
-| ss_125C_3v00 | 89.0309 | 88.7679 | 2.30944 | 0.2932 |
-| tt_025C_3v30 | 181.228 | 94.4821 | 1.13542 | 0.3505 |
-| ff_n40C_3v60 | 316.613 | 96.8416 | 0.64285 | 0.4236 |
-| ff_125C_3v60 | 215.51 | 95.3598 | 0.90653 | 0.4519 |
+| ss_n40C_3v00 | 130.122 | 92.3149 | 1.61053 | 0.2798 |
+| ss_125C_3v00 | 89.0309 | 88.7679 | 2.30944 | 0.2968 |
+| tt_025C_3v30 | 181.228 | 94.4821 | 1.13542 | 0.3548 |
+| ff_n40C_3v60 | 316.613 | 96.8416 | 0.64285 | 0.4288 |
+| ff_125C_3v60 | 215.51 | 95.3598 | 0.90653 | 0.4577 |
 
 - **Power is an estimate, not a switching-activity result.** Basis in the
   report: `activity_source: engine_default`, `parasitics: estimate_only`. It
@@ -82,8 +82,8 @@ estimated by the engine). Source: `sim/controller-sta/sta-100ns.report.json`
 Not omitted, only unmeasured: the LVS part of P13 (#32). P02 is measured
 above (#60). P08, P09,
 P10 and C2 are cited above from the post-#85 corner and Monte Carlo records; they
-rest on assumptions A4-A6 and the unsourced reference-tolerance sigma. Post-layout rows (#61) and the clock-target ratification
-(decision 0006, #35) will change the controller section; update the rows then.
+rest on assumptions A4-A6 and the unsourced reference-tolerance sigma. Issue #61
+tracks the remaining post-layout controller measurements.
 
 ## Reproduce / re-derive
 

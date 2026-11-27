@@ -106,6 +106,38 @@
         ]
       }
     ],
+    "5.digital": [
+      {
+        "file": "sim/controller-sta/sta-100ns.ddba55a3.report.json"
+      },
+      {
+        "file": "sim/controller-fv/1x8_max.report.json"
+      },
+      {
+        "file": "sim/controller-fv/1x8_min.report.json"
+      },
+      {
+        "file": "sim/controller-fv/1x8_nom.report.json"
+      },
+      {
+        "file": "sim/controller-fv/32x8_100MHz_max.report.json"
+      },
+      {
+        "file": "sim/controller-fv/32x8_clamp_hi.report.json"
+      },
+      {
+        "file": "sim/controller-fv/32x8_clamp_lo.report.json"
+      },
+      {
+        "file": "sim/controller-fv/32x8_max.report.json"
+      },
+      {
+        "file": "sim/controller-fv/32x8_min.report.json"
+      },
+      {
+        "file": "sim/controller-fv/32x8_nom.report.json"
+      }
+    ],
     "6.analog": [
       {
         "file": "sim/sense-mc/records/20261105T084326Z-f6eeac7/yield/intact.yield.json",
@@ -124,21 +156,21 @@
       "not_applicable": {
         "spec": {
           "file": "signoff/item6-digital-spec.json",
-          "content_hash": "sha256:b9db9195de9287d5ce37d6cd093d5ca6b38ff23df99c11e84a0555c4c4254aef"
+          "content_hash": "sha256:6fff8c47d46dddebda6bc9830ce238e0254dafab5ec9e2e56d3b2603594000cd"
         },
         "statement": {
           "file": "signoff/item6-digital-statement.json",
-          "content_hash": "sha256:395adbd68602b3b3ffd57ca929395b801b310b651e8f27a62a54d1fe554216a6"
+          "content_hash": "sha256:08bc4b3d2cdb25493ac0009b1607984ef533ffcb3bdd66ad670a95b55dcfe763"
         }
       }
     },
     "8.analog": {
       "file": "signoff/attest/item8.envelope.json",
-      "content_hash": "sha256:536ec692635a94ee8f186f78fe186f870738f10cef173179d4904d5c7340d0ac"
+      "content_hash": "sha256:588bac64bb12273691ae043643c58228801fba136689d8d28a5762c824501455"
     },
     "8.digital": {
       "file": "signoff/attest/item8.envelope.json",
-      "content_hash": "sha256:536ec692635a94ee8f186f78fe186f870738f10cef173179d4904d5c7340d0ac"
+      "content_hash": "sha256:588bac64bb12273691ae043643c58228801fba136689d8d28a5762c824501455"
     },
     "11.digital": [
       {

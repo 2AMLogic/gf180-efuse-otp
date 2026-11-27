@@ -3,7 +3,7 @@
  "description": "Rows of spec/efuse-otp.md section 2 that bear on the digital partition (rtl/efuse_otp_ctrl.v and its row/column/strobe outputs), each as its verbatim table row. Derived extract for klt signoff item 6 (not_applicable form); the source is spec/efuse-otp.md, bound by sha256. signoff/check-item6-digital.sh fails when the source changes or a row no longer matches.",
  "source": {
   "file": "spec/efuse-otp.md",
-  "sha256": "8db0fe91da9043e06f2569782226b17905067105b20cee99304e6d32e25217ea"
+  "sha256": "ba2721deb64d17f40023ff94388881a554eb9b40dd5b337a5d93cb65b5844b71"
  },
  "rows": [
   {
@@ -25,6 +25,11 @@
    "id": "controller-behavior",
    "parameter": "Controller behavior",
    "text": "| Controller behavior | Program only after an explicit registered arm state set after reset release; program drive held inactive in reset and power-up; fixed sense-settle count for read; address stable before enable | — | — | Protection against unintended programming at power-up. (0004) |"
+  },
+  {
+   "id": "controller-clock",
+   "parameter": "Controller clock",
+   "text": "| Controller clock | 10 MHz (100 ns period) | — | — | The routed controller passes setup and hold at 100 ns at all five available GF180D library corners (3.00–3.60 V, TT/SS/FF). Decision 0005 also specifies FS/SF and 2.97–3.63 V. The 10 ns run measures headroom. Ratified in decision 0006, operator ruling on #35. [Corner coverage](../sta/README.md#mapping-to-decision-0005-not-a-complete-match). |"
   },
   {
    "id": "pvt-corners",

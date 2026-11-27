@@ -1,16 +1,16 @@
 # 0006 — Controller clock rate
 
-Status: **proposed**. Date: 2026-10-28. It takes effect only after the EE and
-market key reviews have run as input and the operator has ratified it. Until
-then it changes nothing in `spec/efuse-otp.md`, and T1 item 5 (digital) is not
-claimed.
+Status: **ratified**. Date: 2026-10-28; ratified 2026-11-08 by operator ruling
+(round 20261107-r9 q24, option (a), issue #35). Spec row: "Controller clock" in
+`spec/efuse-otp.md` section 2, linked to issue #35.
 
 ## Decision
 
 The controller clock target is **10 MHz (100 ns period)**. 100 MHz (10 ns) is
 not a requirement.
 
-Operator ruling, 2026-10-28, option (a) on issue #35. The alternatives were
+Operator ruling, 2026-10-28, option (a) on issue #35, confirmed and ratified
+2026-11-08. The alternatives were
 requiring 100 MHz with a timing-driven RTL or constraint change (b), and
 leaving the rate unspecified (c).
 
@@ -30,8 +30,8 @@ No RTL, layout, constraint or clock was changed to produce either result.
 
 ## Consequences
 
-- Once ratified, T1 item 5 (digital) cites the existing 100 ns report. No RTL
-  or layout change is needed.
+- T1 item 5 (digital) cites the existing 100 ns report, with the committed
+  `klt functional-verification` reports. No RTL or layout change was needed.
 - This record does not close the gaps `sta/README.md` already lists. The
   library has no `fs`/`sf` corner and brackets 3.3 V at ±9 %, not ±10 %.
   Decision 0005 is unchanged.

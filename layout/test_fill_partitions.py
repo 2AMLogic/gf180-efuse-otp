@@ -65,9 +65,12 @@ class DensityTests(unittest.TestCase):
         signoff.mkdir()
         (signoff / "klt.sh").write_text(
             'klt() { cat route.json; }\nklt_python() { "$TEST_PYTHON" "$@"; }\n')
+        route_def = self.root / "route.def"
+        route_def.write_text("DESIGN efuse_otp_ctrl ;\nEND DESIGN\n")
         netlist = self.root / "route.v"
         response = {"status": "ok", "stage_reached": "route", "power": {"pdn": True},
                     "route_drc_violation_count": 0, "antenna_violation_count": 0,
+                    "def_path": {"path": route_def.name, "scope": "repo"},
                     "gds_path": self.route.name, "verilog_path": netlist.name}
         (self.root / "route.json").write_text(json.dumps(response))
         netlist.write_text("module efuse_otp_ctrl; endmodule\n")
@@ -78,10 +81,12 @@ class DensityTests(unittest.TestCase):
         subprocess.run(checksum_cmd, cwd=layout, check=True, capture_output=True)
         published = {name: (layout / name).read_bytes() for name in (
             "pnr-report.json", "fill-ctrl.report.json", "efuse_otp_ctrl.asbuilt.v",
-            "efuse_otp_ctrl.gds", "efuse_otp_ctrl.gds.sha256")}
+            "efuse_otp_ctrl.def", "efuse_otp_ctrl.gds", "efuse_otp_ctrl.gds.sha256")}
+        self.assertEqual(published["efuse_otp_ctrl.def"], route_def.read_bytes())
         files = set(layout.iterdir())
 
         write_stream(self.route, comp=24999)
+        route_def.write_text("DESIGN new_candidate ;\nEND DESIGN\n")
         netlist.write_text("module new_candidate; endmodule\n")
         response["run"] = "new candidate"
         (self.root / "route.json").write_text(json.dumps(response))

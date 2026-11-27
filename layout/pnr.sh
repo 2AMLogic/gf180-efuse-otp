@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Place and route the mapped controller netlist rtl/efuse_otp_ctrl.gl.v with the
 # pinned klt (never a host-installed one) from layout/pnr-request.json.
-#   layout/pnr.sh           publish the P&R report, as-built netlist, filled
+#   layout/pnr.sh           publish the P&R report, routed DEF, as-built netlist, filled
 #                           controller GDS, GDS checksum and fill-ctrl.report.json.
 #                           Requires status ok, route reached, PDN present,
 #                           and zero route DRC and antenna violations. Keep
@@ -39,6 +39,7 @@ assert d["route_drc_violation_count"] == 0, d["route_drc_violation_count"]
 assert d["antenna_violation_count"] == 0, d["antenna_violation_count"]
 def src(v):
     return v["path"] if isinstance(v, dict) else v
+shutil.copyfile(src(d["def_path"]), f"{sys.argv[2]}/efuse_otp_ctrl.def")
 shutil.copyfile(src(d["gds_path"]), f"{sys.argv[2]}/intermediate.gds")
 shutil.copyfile(src(d["verilog_path"]), f"{sys.argv[2]}/efuse_otp_ctrl.asbuilt.v")
 PY
@@ -54,5 +55,5 @@ klt_python -I layout/fill_partitions.py --input "$out/routed.gds" --output "$out
 (cd "$out" && sha256sum efuse_otp_ctrl.gds > efuse_otp_ctrl.gds.sha256)
 
 # All producer checks passed. Each staged file is on the destination filesystem.
-mv "$out/pnr-report.json" "$out/efuse_otp_ctrl.asbuilt.v" "$out/efuse_otp_ctrl.gds" \
+mv "$out/pnr-report.json" "$out/efuse_otp_ctrl.def" "$out/efuse_otp_ctrl.asbuilt.v" "$out/efuse_otp_ctrl.gds" \
    "$out/efuse_otp_ctrl.gds.sha256" "$out/fill-ctrl.report.json" layout/
