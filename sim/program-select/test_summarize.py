@@ -262,6 +262,30 @@ class Test(unittest.TestCase):
         self.assertIsNotNone(rec)
         self.assertEqual(rec["engine_versions"], [])
 
+    def test_l_invalid_voltage_disqualifies_the_selected_width(self):
+        chosen = self.committed["chosen_w_um"]
+        stem = f"cell_r{self.fuse_ohms[0]}_w{chosen:g}"
+        for name in ("vgs", "vds"):
+            for value in (None, float("-inf"), False):
+                with self.subTest(name=name, value=value):
+
+                    def invalidate_voltage(rep, name=name, value=value):
+                        measurements = rep["corners"][0]["measurements"]
+                        measurement = next(m for m in measurements if m["name"] == name)
+                        measurement["value"] = value
+
+                    p, rec = self.run_case(edit=(stem, invalidate_voltage))
+                    self.assertEqual(p.returncode, 0, p.stderr)
+                    width = next(w for w in rec["widths"] if w["w_um"] == chosen)
+                    self.assertTrue(width["all_pass"])
+                    self.assertFalse(width["within_voltage_limit"])
+                    self.assertFalse(width["candidate"])
+                    self.assertNotEqual(rec["chosen_w_um"], chosen)
+                    self.assertIsNone(width["max_vgs_vds_v"])
+                    self.assertIn(
+                        value, [pt[name + "_v"] for pt in width["point_list"]]
+                    )
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
