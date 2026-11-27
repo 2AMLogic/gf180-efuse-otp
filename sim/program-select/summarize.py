@@ -22,6 +22,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import bench_record  # noqa: E402  (needs the path insert above under python3 -I)
 
 
+def recorded_voltage(value):
+    """Use JSON null for a float that cannot be written as a JSON number."""
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    return value
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("rec")
@@ -63,8 +70,8 @@ def main():
                 "vprog_v": c["supply_v"]["vdd"],
                 "fuse_ohm": fuse,
                 "i_fuse_a": i,
-                "vgs_v": vgs,
-                "vds_v": vds,
+                "vgs_v": recorded_voltage(vgs),
+                "vds_v": recorded_voltage(vds),
                 "status": c.get("status"),
                 "pass": bool(ok and i >= a.ireq),
             }
@@ -77,8 +84,13 @@ def main():
         valid = [p for p in pts if p["i_fuse_a"] is not None and math.isfinite(p["i_fuse_a"])]
         bind = min(valid, key=lambda p: p["i_fuse_a"]) if valid else None
         all_pass = bool(pts) and all(p["pass"] for p in pts)
-        vmax = max((max(p["vgs_v"], p["vds_v"]) for p in valid
-                    if p["vgs_v"] is not None and p["vds_v"] is not None), default=None)
+        voltages = [p[key] for p in pts for key in ("vgs_v", "vds_v")]
+        vmax = None
+        # Non-finite floats are already null. Compare JSON numbers directly
+        # so even integers outside the float range retain their exact value.
+        if voltages and all(type(v) in (int, float) for v in voltages):
+            vmax = max(voltages)
+        within_voltage_limit = vmax is not None and vmax <= a.vmax
         out_w.append({
             "w_um": round(w * 1e6, 6),
             "points": len(pts),
@@ -87,8 +99,8 @@ def main():
             "min_i_fuse_a": bind["i_fuse_a"] if bind else None,
             "binding_corner": bind,
             "max_vgs_vds_v": vmax,
-            "within_voltage_limit": vmax is not None and vmax <= a.vmax,
-            "candidate": all_pass and vmax is not None and vmax <= a.vmax,
+            "within_voltage_limit": within_voltage_limit,
+            "candidate": all_pass and within_voltage_limit,
             "point_list": pts,
         })
     # Guarded like the per-width `all_pass` above: an empty grid, or a width
